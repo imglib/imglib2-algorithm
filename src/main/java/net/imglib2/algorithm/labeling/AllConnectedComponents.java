@@ -122,7 +122,7 @@ public class AllConnectedComponents {
 		Cursor<BitType> c = img.localizingCursor();
 		RandomAccess<BitType> raSrc = img.randomAccess();
 		OutOfBoundsFactory<LabelingType<T>, Img<LabelingType<T>>> factory =
-			new LabelingOutOfBoundsRandomAccessFactory<T, Img<LabelingType<T>>>();
+			new LabelingOutOfBoundsRandomAccessFactory<T, Labeling<T>>();
 		OutOfBounds<LabelingType<T>> oob = factory.create(labeling);
 		OutOfBoundsRandomAccess<LabelingType<T>> raDest = 
 			new OutOfBoundsRandomAccess<LabelingType<T>>(labeling.numDimensions(), oob);
