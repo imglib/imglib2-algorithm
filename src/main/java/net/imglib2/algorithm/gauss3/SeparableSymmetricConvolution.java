@@ -436,7 +436,7 @@ public final class SeparableSymmetricConvolution
 	{
 		if ( canUseArrayImgFactory( targetsize, halfkernels ) )
 			return new ArrayImgFactory< T >();
-		final int cellSize = ( int ) Math.pow( Integer.MAX_VALUE / type.getEntitiesPerPixel(), 1.0 / targetsize.numDimensions() );
+		final int cellSize = ( int ) Math.pow( Integer.MAX_VALUE / type.getEntitiesPerPixel().getRatio(), 1.0 / targetsize.numDimensions() );
 		return new CellImgFactory< T >( cellSize );
 	}
 }

@@ -112,12 +112,6 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 	}
 
 	@Override
-	public boolean equalIterationOrder( final IterableRealInterval< ? > f )
-	{
-		return iterationOrder().equals( f.iterationOrder() );
-	}
-
-	@Override
 	public double realMin( final int d )
 	{
 		return currentMin[ d ];

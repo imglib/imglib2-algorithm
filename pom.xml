@@ -4,29 +4,44 @@
 
 	<parent>
 		<groupId>net.imglib2</groupId>
-		<artifactId>pom-imglib2-algorithms</artifactId>
-		<version>2.0.0-SNAPSHOT</version>
+		<artifactId>pom-imglib2</artifactId>
+		<version>4.1</version>
+		<relativePath />
 	</parent>
 
-	<artifactId>imglib2-algorithms</artifactId>
+	<artifactId>imglib2-algorithm</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>
 
+	<repositories>
+		<!-- NB: for SciJava dependencies -->
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
-		<!-- Project dependencies -->
+		<!-- ImgLib2 dependencies -->
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>imglib2-meta</artifactId>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-roi</artifactId>
+		</dependency>
+
+		<!-- ImageJ dependencies -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-common</artifactId>
 		</dependency>
 
 		<!-- Third-party dependencies -->
 		<dependency>
-			<!-- FIXME: NOT IN CENTRAL -->
 			<groupId>edu.mines</groupId>
 			<artifactId>mines-jtk</artifactId>
 			<version>20100113</version>
@@ -34,7 +49,6 @@
 		<dependency>
 			<groupId>gov.nist.math</groupId>
 			<artifactId>jama</artifactId>
-			<version>${jama.version}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
@@ -59,13 +73,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<repositories>
-		<!-- NB: for project parent, in case of partial checkout -->
-		<repository>
-			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
-		</repository>
-	</repositories>
 
 </project>

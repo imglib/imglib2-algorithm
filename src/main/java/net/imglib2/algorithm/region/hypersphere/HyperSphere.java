@@ -136,12 +136,6 @@ public class HyperSphere< T > implements IterableInterval< T >
 	}
 
 	@Override
-	public boolean equalIterationOrder( final IterableRealInterval< ? > f )
-	{
-		return iterationOrder().equals( f.iterationOrder() );
-	}
-
-	@Override
 	public double realMin( final int d )
 	{
 		return min( d );

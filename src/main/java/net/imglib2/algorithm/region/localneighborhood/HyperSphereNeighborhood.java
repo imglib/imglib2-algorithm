@@ -315,12 +315,6 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 	}
 
 	@Override
-	public boolean equalIterationOrder( final IterableRealInterval< ? > f )
-	{
-		return iterationOrder().equals( f.iterationOrder() );
-	}
-
-	@Override
 	public double realMin( final int d )
 	{
 		return position[ d ] - radius;

@@ -126,12 +126,6 @@ public class HyperSphereShape implements Shape
 		}
 
 		@Override
-		public boolean equalIterationOrder( final IterableRealInterval< ? > f )
-		{
-			return iterationOrder().equals( f.iterationOrder() );
-		}
-
-		@Override
 		public Iterator< Neighborhood< T >> iterator()
 		{
 			return cursor();

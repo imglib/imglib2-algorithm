@@ -120,12 +120,6 @@ public class RectangleNeighborhoodSkipCenter< T > extends AbstractLocalizable im
 	}
 
 	@Override
-	public boolean equalIterationOrder( final IterableRealInterval< ? > f )
-	{
-		return iterationOrder().equals( f.iterationOrder() );
-	}
-
-	@Override
 	public double realMin( final int d )
 	{
 		return currentMin[ d ];
