@@ -1,15 +1,19 @@
+
 package net.imglib2.algorithm.morphology.neighborhoods;
 
 import java.util.Iterator;
 
+import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.AbstractInterval;
 import net.imglib2.Cursor;
 import net.imglib2.FlatIterationOrder;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
-import net.imglib2.IterableRealInterval;
 import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
+import net.imglib2.algorithm.region.localneighborhood.Shape;
 
 public class DiamondShape implements Shape
 {
@@ -22,32 +26,31 @@ public class DiamondShape implements Shape
 	}
 
 	@Override
-	public < T > NeighborhoodsAccessible< T > neighborhoods( final RandomAccessibleInterval< T > source )
+	public < T > IterableInterval< Neighborhood< T >> neighborhoods( final RandomAccessibleInterval< T > source )
 	{
-		return neighborhoodsRandomAccessible( source );
+		return new NeighborhoodsIterableInterval< T >( source, radius, DiamondNeighborhoodUnsafe.< T >factory() );
 	}
 
 	@Override
-	public < T > NeighborhoodsAccessible< T > neighborhoodsRandomAccessible( final RandomAccessibleInterval< T > source )
+	public < T > NeighborhoodsAccessible< T > neighborhoodsRandomAccessible( final RandomAccessible< T > source )
 	{
 		final DiamondNeighborhoodFactory< T > f = DiamondNeighborhoodUnsafe.< T >factory();
 		return new NeighborhoodsAccessible< T >( source, radius, f );
 	}
 
 	@Override
-	public < T > IterableInterval< Neighborhood< T >> neighborhoodsSafe( final RandomAccessibleInterval< T > source )
+	public < T > NeighborhoodsIterableInterval< T > neighborhoodsSafe( final RandomAccessibleInterval< T > source )
 	{
-		return neighborhoods( source );
+		return new NeighborhoodsIterableInterval< T >( source, radius, DiamondNeighborhood.< T >factory() );
 	}
 
 	@Override
-	public < T > NeighborhoodsAccessible< T > neighborhoodsRandomAccessibleSafe( final RandomAccessibleInterval< T > source )
+	public < T > NeighborhoodsAccessible< T > neighborhoodsRandomAccessibleSafe( final RandomAccessible< T > source )
 	{
-		final DiamondNeighborhoodFactory< T > f = DiamondNeighborhood.< T >factory();
-		return new NeighborhoodsAccessible< T >( source, radius, f );
+		return new NeighborhoodsAccessible< T >( source, radius, DiamondNeighborhood.< T >factory() );
 	}
 
-	public static final class NeighborhoodsAccessible< T > extends AbstractInterval implements RandomAccessibleInterval< Neighborhood< T > >, IterableInterval< Neighborhood< T > >
+	public static final class NeighborhoodsIterableInterval< T > extends AbstractInterval implements IterableInterval< Neighborhood< T > >
 	{
 		final RandomAccessibleInterval< T > source;
 
@@ -57,7 +60,7 @@ public class DiamondShape implements Shape
 
 		private final long radius;
 
-		public NeighborhoodsAccessible( final RandomAccessibleInterval< T > source, final long radius, final DiamondNeighborhoodFactory< T > factory )
+		public NeighborhoodsIterableInterval( final RandomAccessibleInterval< T > source, final long radius, final DiamondNeighborhoodFactory< T > factory )
 		{
 			super( source );
 			this.source = source;
@@ -72,21 +75,9 @@ public class DiamondShape implements Shape
 		}
 
 		@Override
-		public RandomAccess< Neighborhood< T >> randomAccess()
-		{
-			return new DiamondNeighborhoodRandomAccess< T >( source, radius, factory );
-		}
-
-		@Override
 		public Cursor< Neighborhood< T >> cursor()
 		{
 			return new DiamondNeighborhoodCursor< T >( source, radius, factory );
-		}
-
-		@Override
-		public RandomAccess< Neighborhood< T >> randomAccess( final Interval interval )
-		{
-			return randomAccess();
 		}
 
 		@Override
@@ -108,9 +99,9 @@ public class DiamondShape implements Shape
 		}
 
 		@Override
-		public boolean equalIterationOrder( final IterableRealInterval< ? > f )
+		public Cursor< Neighborhood< T >> localizingCursor()
 		{
-			return iterationOrder().equals( f.iterationOrder() );
+			return cursor();
 		}
 
 		@Override
@@ -118,11 +109,41 @@ public class DiamondShape implements Shape
 		{
 			return cursor();
 		}
+	}
+
+	public static final class NeighborhoodsAccessible< T > extends AbstractEuclideanSpace implements RandomAccessible< Neighborhood< T > >
+	{
+		final RandomAccessible< T > source;
+
+		final DiamondNeighborhoodFactory< T > factory;
+
+		private final long radius;
+
+		public NeighborhoodsAccessible( final RandomAccessible< T > source, final long radius, final DiamondNeighborhoodFactory< T > factory )
+		{
+			super( source.numDimensions() );
+			this.source = source;
+			this.radius = radius;
+			this.factory = factory;
+		}
 
 		@Override
-		public Cursor< Neighborhood< T >> localizingCursor()
+		public RandomAccess< Neighborhood< T >> randomAccess()
 		{
-			return cursor();
+			return new DiamondNeighborhoodRandomAccess< T >( source, radius, factory );
 		}
+
+		@Override
+		public RandomAccess< Neighborhood< T >> randomAccess( final Interval interval )
+		{
+			return randomAccess();
+		}
+
+		@Override
+		public int numDimensions()
+		{
+			return source.numDimensions();
+		}
+
 	}
 }

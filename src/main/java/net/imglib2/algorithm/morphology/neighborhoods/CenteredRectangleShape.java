@@ -47,7 +47,17 @@ import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.IterableRealInterval;
 import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhood;
+import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodCursor;
+import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodFactory;
+import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodRandomAccess;
+import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodSkipCenter;
+import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodSkipCenterUnsafe;
+import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodUnsafe;
+import net.imglib2.algorithm.region.localneighborhood.RectangleShape;
+import net.imglib2.algorithm.region.localneighborhood.Shape;
 
 /**
  * A factory for Accessibles on rectangular neighborhoods.
@@ -97,7 +107,7 @@ public class CenteredRectangleShape implements Shape
 	}
 
 	@Override
-	public < T > NeighborhoodsAccessible< T > neighborhoodsRandomAccessible( final RandomAccessibleInterval< T > source )
+	public < T > NeighborhoodsAccessible< T > neighborhoodsRandomAccessible( final RandomAccessible< T > source )
 	{
 		final RectangleNeighborhoodFactory< T > f = skipCenter ? RectangleNeighborhoodSkipCenterUnsafe.< T >factory() : RectangleNeighborhoodUnsafe.< T >factory();
 		final Interval spanInterval = createSpan();
@@ -148,7 +158,9 @@ public class CenteredRectangleShape implements Shape
 			this.factory = factory;
 			long s = source.dimension( 0 );
 			for ( int d = 1; d < n; ++d )
+			{
 				s *= source.dimension( d );
+			}
 			size = s;
 		}
 

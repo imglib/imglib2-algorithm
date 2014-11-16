@@ -7,10 +7,10 @@ import net.imglib2.AbstractLocalizable;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
-import net.imglib2.IterableRealInterval;
 import net.imglib2.Positionable;
 import net.imglib2.RandomAccess;
 import net.imglib2.RealPositionable;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 
 public class DiamondNeighborhood< T > extends AbstractLocalizable implements Neighborhood< T >
 {
@@ -279,12 +279,6 @@ public class DiamondNeighborhood< T > extends AbstractLocalizable implements Nei
 	public Object iterationOrder()
 	{
 		return this; // iteration order is only compatible with ourselves
-	}
-
-	@Override
-	public boolean equalIterationOrder( final IterableRealInterval< ? > f )
-	{
-		return iterationOrder().equals( f.iterationOrder() );
 	}
 
 	@Override
