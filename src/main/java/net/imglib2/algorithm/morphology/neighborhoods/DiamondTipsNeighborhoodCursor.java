@@ -2,6 +2,7 @@ package net.imglib2.algorithm.morphology.neighborhoods;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.util.IntervalIndexer;
 
 public class DiamondTipsNeighborhoodCursor< T > extends DiamondTipsNeighborhoodLocalizableSampler< T > implements Cursor< Neighborhood< T > >
@@ -15,11 +16,21 @@ public class DiamondTipsNeighborhoodCursor< T > extends DiamondTipsNeighborhoodL
 
 	private long index;
 
+	private long[] min;
+
+	private long[] max;
+
 	public DiamondTipsNeighborhoodCursor( final RandomAccessibleInterval< T > source, final long radius, final DiamondTipsNeighborhoodFactory< T > factory )
 	{
-		super( source, radius, factory );
+		super( source, radius, factory, source );
 		dimensions = new long[ n ];
-		dimensions( dimensions );
+
+		min = new long[ n ];
+		max = new long[ n ];
+		source.dimensions( dimensions );
+		source.min( min );
+		source.max( max );
+
 		long size = dimensions[ 0 ];
 		for ( int d = 1; d < n; ++d )
 		{

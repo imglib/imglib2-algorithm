@@ -1,6 +1,7 @@
 package net.imglib2.algorithm.morphology.neighborhoods;
 
 import net.imglib2.RandomAccess;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 
 public class DiamondTipsNeighborhoodUnsafe< T > extends DiamondTipsNeighborhood< T >
 {

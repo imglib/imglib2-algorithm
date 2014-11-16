@@ -1,15 +1,22 @@
 package net.imglib2.algorithm.morphology.neighborhoods;
 
+import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RandomAccessible;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 
 public class DiamondTipsNeighborhoodRandomAccess< T > extends DiamondTipsNeighborhoodLocalizableSampler< T > implements RandomAccess< Neighborhood< T > >
 {
 
-	protected DiamondTipsNeighborhoodRandomAccess( final RandomAccessibleInterval< T > source, final long radius, final DiamondTipsNeighborhoodFactory< T > factory )
+	protected DiamondTipsNeighborhoodRandomAccess( final RandomAccessible< T > source, final long radius, final DiamondTipsNeighborhoodFactory< T > factory )
 	{
-		super( source, radius, factory );
+		super( source, radius, factory, null );
+	}
+
+	protected DiamondTipsNeighborhoodRandomAccess( final RandomAccessible< T > source, final long radius, final DiamondTipsNeighborhoodFactory< T > factory, final Interval interval )
+	{
+		super( source, radius, factory, interval );
 	}
 
 	private DiamondTipsNeighborhoodRandomAccess( final DiamondTipsNeighborhoodRandomAccess< T > c )
