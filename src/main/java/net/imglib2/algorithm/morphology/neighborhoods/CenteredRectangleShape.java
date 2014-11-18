@@ -39,16 +39,17 @@ package net.imglib2.algorithm.morphology.neighborhoods;
 
 import java.util.Iterator;
 
+import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.AbstractInterval;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.FlatIterationOrder;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
-import net.imglib2.IterableRealInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhood;
 import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodCursor;
 import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodFactory;
@@ -101,9 +102,11 @@ public class CenteredRectangleShape implements Shape
 	}
 
 	@Override
-	public < T > NeighborhoodsAccessible< T > neighborhoods( final RandomAccessibleInterval< T > source )
+	public < T > NeighborhoodsIterableInterval< T > neighborhoods( final RandomAccessibleInterval< T > source )
 	{
-		return neighborhoodsRandomAccessible( source );
+		final RectangleNeighborhoodFactory< T > f = skipCenter ? RectangleNeighborhoodSkipCenterUnsafe.< T >factory() : RectangleNeighborhoodUnsafe.< T >factory();
+		final Interval spanInterval = createSpan();
+		return new NeighborhoodsIterableInterval< T >( source, spanInterval, f );
 	}
 
 	@Override
@@ -115,13 +118,15 @@ public class CenteredRectangleShape implements Shape
 	}
 
 	@Override
-	public < T > NeighborhoodsAccessible< T > neighborhoodsSafe( final RandomAccessibleInterval< T > source )
+	public < T > NeighborhoodsIterableInterval< T > neighborhoodsSafe( final RandomAccessibleInterval< T > source )
 	{
-		return neighborhoodsRandomAccessibleSafe( source );
+		final RectangleNeighborhoodFactory< T > f = skipCenter ? RectangleNeighborhoodSkipCenter.< T >factory() : RectangleNeighborhood.< T >factory();
+		final Interval spanInterval = createSpan();
+		return new NeighborhoodsIterableInterval< T >( source, spanInterval, f );
 	}
 
 	@Override
-	public < T > NeighborhoodsAccessible< T > neighborhoodsRandomAccessibleSafe( final RandomAccessibleInterval< T > source )
+	public < T > NeighborhoodsAccessible< T > neighborhoodsRandomAccessibleSafe( final RandomAccessible< T > source )
 	{
 		final RectangleNeighborhoodFactory< T > f = skipCenter ? RectangleNeighborhoodSkipCenter.< T >factory() : RectangleNeighborhood.< T >factory();
 		final Interval spanInterval = createSpan();
@@ -140,7 +145,7 @@ public class CenteredRectangleShape implements Shape
 		return new FinalInterval( min, max );
 	}
 
-	public static final class NeighborhoodsAccessible< T > extends AbstractInterval implements RandomAccessibleInterval< Neighborhood< T > >, IterableInterval< Neighborhood< T > >
+	public static final class NeighborhoodsIterableInterval< T > extends AbstractInterval implements IterableInterval< Neighborhood< T > >
 	{
 		final RandomAccessibleInterval< T > source;
 
@@ -150,7 +155,7 @@ public class CenteredRectangleShape implements Shape
 
 		final long size;
 
-		public NeighborhoodsAccessible( final RandomAccessibleInterval< T > source, final Interval span, final RectangleNeighborhoodFactory< T > factory )
+		public NeighborhoodsIterableInterval( final RandomAccessibleInterval< T > source, final Interval span, final RectangleNeighborhoodFactory< T > factory )
 		{
 			super( source );
 			this.source = source;
@@ -165,21 +170,9 @@ public class CenteredRectangleShape implements Shape
 		}
 
 		@Override
-		public RandomAccess< Neighborhood< T >> randomAccess()
-		{
-			return new RectangleNeighborhoodRandomAccess< T >( source, spanInterval, factory );
-		}
-
-		@Override
 		public Cursor< Neighborhood< T >> cursor()
 		{
 			return new RectangleNeighborhoodCursor< T >( source, spanInterval, factory );
-		}
-
-		@Override
-		public RandomAccess< Neighborhood< T >> randomAccess( final Interval interval )
-		{
-			return randomAccess();
 		}
 
 		@Override
@@ -201,12 +194,6 @@ public class CenteredRectangleShape implements Shape
 		}
 
 		@Override
-		public boolean equalIterationOrder( final IterableRealInterval< ? > f )
-		{
-			return iterationOrder().equals( f.iterationOrder() );
-		}
-
-		@Override
 		public Iterator< Neighborhood< T >> iterator()
 		{
 			return cursor();
@@ -217,5 +204,41 @@ public class CenteredRectangleShape implements Shape
 		{
 			return cursor();
 		}
+	}
+
+	public static final class NeighborhoodsAccessible< T > extends AbstractEuclideanSpace implements RandomAccessible< Neighborhood< T > >
+	{
+		final RandomAccessible< T > source;
+
+		final RectangleNeighborhoodFactory< T > factory;
+
+		final Interval spanInterval;
+
+		public NeighborhoodsAccessible( final RandomAccessible< T > source, final Interval span, final RectangleNeighborhoodFactory< T > factory )
+		{
+			super( source.numDimensions() );
+			this.source = source;
+			this.spanInterval = span;
+			this.factory = factory;
+		}
+
+		@Override
+		public RandomAccess< Neighborhood< T >> randomAccess()
+		{
+			return new RectangleNeighborhoodRandomAccess< T >( source, spanInterval, factory );
+		}
+
+		@Override
+		public RandomAccess< Neighborhood< T >> randomAccess( final Interval interval )
+		{
+			return randomAccess();
+		}
+
+		@Override
+		public int numDimensions()
+		{
+			return source.numDimensions();
+		}
+
 	}
 }
