@@ -1,14 +1,21 @@
 package net.imglib2.algorithm.morphology.neighborhoods;
 
+import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RandomAccessible;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 
 public class HorizontalLineNeighborhoodRandomAccess< T > extends HorizontalLineNeighborhoodLocalizableSampler< T > implements RandomAccess< Neighborhood< T > >
 {
-	public HorizontalLineNeighborhoodRandomAccess( final RandomAccessibleInterval< T > source, final long span, final int dim, final boolean skipCenter, final HorizontalLineNeighborhoodFactory< T > factory )
+	public HorizontalLineNeighborhoodRandomAccess( final RandomAccessible< T > source, final long span, final int dim, final boolean skipCenter, final HorizontalLineNeighborhoodFactory< T > factory, final Interval interval )
 	{
-		super( source, span, dim, skipCenter, factory );
+		super( source, span, dim, skipCenter, factory, interval );
+	}
+
+	public HorizontalLineNeighborhoodRandomAccess( final RandomAccessible< T > source, final long span, final int dim, final boolean skipCenter, final HorizontalLineNeighborhoodFactory< T > factory )
+	{
+		super( source, span, dim, skipCenter, factory, null );
 	}
 
 	private HorizontalLineNeighborhoodRandomAccess( final HorizontalLineNeighborhoodRandomAccess< T > c )
