@@ -1,14 +1,21 @@
 package net.imglib2.algorithm.morphology.neighborhoods;
 
+import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RandomAccessible;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 
 public class PeriodicLineNeighborhoodRandomAccess< T > extends PeriodicLineNeighborhoodLocalizableSampler< T > implements RandomAccess< Neighborhood< T > >
 {
-	public PeriodicLineNeighborhoodRandomAccess( final RandomAccessibleInterval< T > source, final long span, final int[] increments, final PeriodicLineNeighborhoodFactory< T > factory )
+	public PeriodicLineNeighborhoodRandomAccess( final RandomAccessible< T > source, final long span, final int[] increments, final PeriodicLineNeighborhoodFactory< T > factory, final Interval interval )
 	{
-		super( source, span, increments, factory );
+		super( source, span, increments, factory, interval );
+	}
+
+	public PeriodicLineNeighborhoodRandomAccess( final RandomAccessible< T > source, final long span, final int[] increments, final PeriodicLineNeighborhoodFactory< T > factory )
+	{
+		super( source, span, increments, factory, null );
 	}
 
 	private PeriodicLineNeighborhoodRandomAccess( final PeriodicLineNeighborhoodRandomAccess< T > c )

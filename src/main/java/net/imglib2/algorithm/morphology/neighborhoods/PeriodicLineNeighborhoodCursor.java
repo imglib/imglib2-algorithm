@@ -2,6 +2,7 @@ package net.imglib2.algorithm.morphology.neighborhoods;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.util.IntervalIndexer;
 
 public class PeriodicLineNeighborhoodCursor< T > extends PeriodicLineNeighborhoodLocalizableSampler< T > implements Cursor< Neighborhood< T > >
@@ -14,12 +15,21 @@ public class PeriodicLineNeighborhoodCursor< T > extends PeriodicLineNeighborhoo
 
 	private long maxIndexOnLine;
 
+	private long[] min;
+
+	private long[] max;
+
 	public PeriodicLineNeighborhoodCursor( final RandomAccessibleInterval< T > source, final long span, final int[] increments, final PeriodicLineNeighborhoodFactory< T > factory )
 	{
-		super( source, span, increments, factory );
+		super( source, span, increments, factory, source );
 
 		dimensions = new long[ n ];
-		dimensions( dimensions );
+		min = new long[ n ];
+		max = new long[ n ];
+		source.dimensions( dimensions );
+		source.min( min );
+		source.max( max );
+
 		long size = dimensions[ 0 ];
 		for ( int d = 1; d < n; ++d )
 			size *= dimensions[ d ];

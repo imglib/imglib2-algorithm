@@ -43,10 +43,10 @@ import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.AbstractLocalizable;
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
-import net.imglib2.IterableRealInterval;
 import net.imglib2.Positionable;
 import net.imglib2.RandomAccess;
 import net.imglib2.RealPositionable;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.util.Intervals;
 
 /**
@@ -84,7 +84,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	/**
 	 * The increments for the periodic line. The elements iterated have an index
 	 * calculated from:
-	 *
+	 * 
 	 * <pre>
 	 * position - span x increments,
 	 * ...
@@ -108,7 +108,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	/**
 	 * Creates a new periodic line, centered on <code>position</code>, and that
 	 * will iterate over <code>2 × span + 1</code> pixels as follow:
-	 *
+	 * 
 	 * <pre>
 	 * position - span x increments,
 	 * ...
@@ -120,7 +120,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	 * ...
 	 * position + span x increments
 	 * </pre>
-	 *
+	 * 
 	 * @param position
 	 *            the center of the neighborhood.
 	 * @param span
@@ -164,12 +164,6 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	public Object iterationOrder()
 	{
 		return this; // iteration order is only compatible with ourselves
-	}
-
-	@Override
-	public boolean equalIterationOrder( final IterableRealInterval< ? > f )
-	{
-		return iterationOrder().equals( f.iterationOrder() );
 	}
 
 	@Override
