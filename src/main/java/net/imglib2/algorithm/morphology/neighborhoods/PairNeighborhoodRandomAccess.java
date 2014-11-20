@@ -1,14 +1,21 @@
 package net.imglib2.algorithm.morphology.neighborhoods;
 
+import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RandomAccessible;
+import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 
 public class PairNeighborhoodRandomAccess< T > extends PairNeighborhoodLocalizableSampler< T > implements RandomAccess< Neighborhood< T > >
 {
-	public PairNeighborhoodRandomAccess( final RandomAccessibleInterval< T > source, final long[] offset, final PairNeighborhoodFactory< T > factory )
+	public PairNeighborhoodRandomAccess( final RandomAccessible< T > source, final long[] offset, final PairNeighborhoodFactory< T > factory, final Interval interval )
 	{
-		super( source, offset, factory );
+		super( source, offset, factory, interval );
+	}
+
+	public PairNeighborhoodRandomAccess( final RandomAccessible< T > source, final long[] offset, final PairNeighborhoodFactory< T > factory )
+	{
+		super( source, offset, factory, null );
 	}
 
 	private PairNeighborhoodRandomAccess( final PairNeighborhoodRandomAccess< T > c )
