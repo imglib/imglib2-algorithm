@@ -10,7 +10,7 @@ import java.util.Vector;
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RandomAccessible;
 import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.algorithm.region.localneighborhood.Shape;
 import net.imglib2.img.Img;
@@ -236,7 +236,7 @@ public class MorphologicalOperations
 		 * Prepare iteration.
 		 */
 
-		final RandomAccessibleInterval< Neighborhood< T >> accessible;
+		final RandomAccessible< Neighborhood< T >> accessible;
 		if ( numThreads > 1 )
 		{
 			accessible = strel.neighborhoodsRandomAccessibleSafe( source );
@@ -363,7 +363,7 @@ public class MorphologicalOperations
 		 * Prepare iteration.
 		 */
 
-		final RandomAccessibleInterval< Neighborhood< T >> accessible;
+		final RandomAccessible< Neighborhood< T >> accessible;
 		if ( numThreads > 1 )
 		{
 			accessible = strel.neighborhoodsRandomAccessibleSafe( source );
@@ -701,7 +701,7 @@ public class MorphologicalOperations
 		 * Prepare iteration.
 		 */
 
-		final RandomAccessibleInterval< Neighborhood< T >> accessible;
+		final RandomAccessible< Neighborhood< T >> accessible;
 		if ( numThreads > 1 )
 		{
 			accessible = strel.neighborhoodsRandomAccessibleSafe( source );
@@ -931,7 +931,7 @@ public class MorphologicalOperations
 		 * Prepare iteration.
 		 */
 
-		final RandomAccessibleInterval< Neighborhood< T >> accessible;
+		final RandomAccessible< Neighborhood< T >> accessible;
 		if ( numThreads > 1 )
 		{
 			accessible = strel.neighborhoodsRandomAccessibleSafe( source );
@@ -1330,7 +1330,7 @@ public class MorphologicalOperations
 		 * Prepare iteration.
 		 */
 
-		final RandomAccessibleInterval< Neighborhood< T >> accessible;
+		final RandomAccessible< Neighborhood< T >> accessible;
 		if ( numThreads > 1 )
 		{
 			accessible = strel.neighborhoodsRandomAccessibleSafe( source );
