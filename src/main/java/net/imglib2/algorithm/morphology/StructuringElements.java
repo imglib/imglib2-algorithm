@@ -3,12 +3,12 @@ package net.imglib2.algorithm.morphology;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.imglib2.algorithm.region.localneighborhood.CenteredRectangleShape;
-import net.imglib2.algorithm.region.localneighborhood.DiamondShape;
-import net.imglib2.algorithm.region.localneighborhood.DiamondTipsShape;
-import net.imglib2.algorithm.region.localneighborhood.HorizontalLineShape;
+import net.imglib2.algorithm.morphology.neighborhoods.CenteredRectangleShape;
+import net.imglib2.algorithm.morphology.neighborhoods.DiamondShape;
+import net.imglib2.algorithm.morphology.neighborhoods.DiamondTipsShape;
+import net.imglib2.algorithm.morphology.neighborhoods.HorizontalLineShape;
+import net.imglib2.algorithm.morphology.neighborhoods.PeriodicLineShape;
 import net.imglib2.algorithm.region.localneighborhood.HyperSphereShape;
-import net.imglib2.algorithm.region.localneighborhood.PeriodicLineShape;
 import net.imglib2.algorithm.region.localneighborhood.RectangleShape;
 import net.imglib2.algorithm.region.localneighborhood.Shape;
 
@@ -54,7 +54,7 @@ public class StructuringElements
 	 * <p>
 	 * This methods relies on heuristics to determine automatically what
 	 * decomposition level to use.
-	 *
+	 * 
 	 * @param radius
 	 *            the radius of the disk, so that it extends over
 	 *            <code>2 × radius + 1</code> in all dimensions
@@ -111,7 +111,7 @@ public class StructuringElements
 	 * only an approximation of a disk, and this method offers a parameter to
 	 * select the level of approximation. For other dimensionalities, no
 	 * optimization are available yet and the parameter is ignored.
-	 *
+	 * 
 	 * @param radius
 	 *            the radius of the disk, so that it extends over
 	 *            <code>2 × radius + 1</code> in all dimensions
@@ -124,7 +124,7 @@ public class StructuringElements
 	 *            <li> No approximation is made and a full dimension-generic
 	 *            disk is returned. <li value="4"> The disk is decomposed in 4
 	 *            periodic lines, plus in some cases 2 horizontal lines. <li * *
-	 *            * * * value="6"> The disk is decomposed in 6 periodic lines,
+	 *            * * * * value="6"> The disk is decomposed in 6 periodic lines,
 	 *            plus in some cases 2 horizontal lines. <li value="8"> The disk
 	 *            is decomposed in 8 periodic lines, plus in some cases 2
 	 *            horizontal lines.
@@ -256,7 +256,7 @@ public class StructuringElements
 	 * specified. <b>Warning:</b> Undesired effects will occur if the specified
 	 * dimensionality and target dimensionality do not match. Non-decomposed
 	 * vesion are dimension-generic.
-	 *
+	 * 
 	 * @param radius
 	 *            the radius of the square.
 	 * @param dimensionality
@@ -305,7 +305,7 @@ public class StructuringElements
 	 * <p>
 	 * This method determines whether it is worth returning a decomposed strel
 	 * based on simple heuristics.
-	 *
+	 * 
 	 * @param radius
 	 *            the radius of the square.
 	 * @param dimensionality
@@ -335,7 +335,7 @@ public class StructuringElements
 	 * better performance. The rectangle strel can be decomposed in a succession
 	 * of orthogonal lines and yield the exact same results on any of the
 	 * morphological operations.
-	 *
+	 * 
 	 * @param halfSpans
 	 *            an <code>int[]</code> array containing the half-span of the
 	 *            symmetric rectangle in each dimension. The total extent of the
@@ -388,7 +388,7 @@ public class StructuringElements
 	 * of orthogonal lines and yield the exact same results on any of the
 	 * morphological operations. This method uses a simple heuristic to decide
 	 * whether to decompose the rectangle or not.
-	 *
+	 * 
 	 * @param halfSpans
 	 *            an <code>int[]</code> array containing the half-span of the
 	 *            symmetric rectangle in each dimension. The total extent of the
@@ -443,7 +443,7 @@ public class StructuringElements
 	 * dimensions, the theorem does not hold (even in practice), and we have to
 	 * fall back on a linear decomposition, still very effective (see [1] as
 	 * well).
-	 *
+	 * 
 	 * @param radius
 	 *            the desired radius of the diamond structuring element. The
 	 *            strel will extend over <code>2 × radius + 1</code> in all
@@ -453,7 +453,7 @@ public class StructuringElements
 	 *            used with. A structuring element build for one dimension will
 	 *            <b>not</b> work properly for any other dimensions.
 	 * @return the structuring element as a list of {@link Shape}s.
-	 *
+	 * 
 	 * @see <a href =
 	 *      "http://www.sciencedirect.com/science/article/pii/1049965292900553.htm"
 	 *      >[1]</a> Rein van den Boomgard and Richard van Balen, <i>Methods for
@@ -492,7 +492,7 @@ public class StructuringElements
 	 * dimensions, the theorem does not hold (even in practice), and we have to
 	 * fall back on a linear decomposition, still very effective (see [1] as
 	 * well).
-	 *
+	 * 
 	 * @param radius
 	 *            the desired radius of the diamond structuring element. The
 	 *            strel will extend over <code>2 × radius + 1</code> in all
@@ -505,7 +505,7 @@ public class StructuringElements
 	 *            if <code>true</code>, this strel will be optimized through
 	 *            decomposition.
 	 * @return the structuring element as a list of {@link Shape}s.
-	 *
+	 * 
 	 * @see <a href =
 	 *      "http://www.sciencedirect.com/science/article/pii/1049965292900553.htm"
 	 *      >[1]</a> Rein van den Boomgard and Richard van Balen, <i>Methods for
@@ -573,7 +573,7 @@ public class StructuringElements
 	/**
 	 * Creates a new periodic line structuring element, that will iterate over
 	 * <code>2 × span + 1</code> pixels as follow:
-	 *
+	 * 
 	 * <pre>
 	 * position - span x increments,
 	 * ...
