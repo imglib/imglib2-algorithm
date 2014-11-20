@@ -9,7 +9,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.array.ArrayRandomAccess;
-import net.imglib2.img.basictypeaccess.array.BitArray;
+import net.imglib2.img.basictypeaccess.array.LongArray;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.util.Util;
 
@@ -20,7 +20,7 @@ public class MorphologyUtils
 	{
 		final int numDims = space.numDimensions();
 		final long[] dimensions = Util.getArrayFromValue( 1l, numDims );
-		final ArrayImg< BitType, BitArray > img = ArrayImgs.bits( dimensions );
+		final ArrayImg< BitType, LongArray > img = ArrayImgs.bits( dimensions );
 		final IterableInterval< Neighborhood< BitType >> neighborhoods = shape.neighborhoods( img );
 		final Neighborhood< BitType > neighborhood = neighborhoods.cursor().next();
 		return neighborhood;
@@ -48,7 +48,7 @@ public class MorphologyUtils
 		{
 			final long[] dimensions = Util.getArrayFromValue( 1l, dimensionality );
 
-			final ArrayImg< BitType, BitArray > img = ArrayImgs.bits( dimensions );
+			final ArrayImg< BitType, LongArray > img = ArrayImgs.bits( dimensions );
 			final ArrayRandomAccess< BitType > randomAccess = img.randomAccess();
 			randomAccess.setPosition( Util.getArrayFromValue( 0, dimensions.length ) );
 			randomAccess.get().set( true );
