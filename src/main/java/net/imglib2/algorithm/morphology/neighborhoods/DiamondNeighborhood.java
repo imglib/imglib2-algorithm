@@ -91,7 +91,6 @@ public class DiamondNeighborhood< T > extends AbstractLocalizable implements Nei
 		@Override
 		public void fwd()
 		{
-
 			if ( --s[ 0 ] >= 0 )
 			{
 				source.fwd( 0 );

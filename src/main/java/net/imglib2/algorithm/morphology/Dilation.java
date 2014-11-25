@@ -7,6 +7,7 @@ import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.algorithm.region.localneighborhood.Shape;
 import net.imglib2.img.Img;
@@ -102,7 +103,7 @@ public class Dilation
 					final Cursor< T > cursorDilated = target.cursor();
 					cursorDilated.jumpFwd( chunk.getStartPosition() );
 
-					final T max = MorphologyUtils.getType( source, target );
+					final T max = MorphologyUtils.createVariable( source, target );
 					for ( long steps = 0; steps < chunk.getLoopSize(); steps++ )
 					{
 						cursorDilated.fwd();
@@ -139,16 +140,20 @@ public class Dilation
 		SimpleMultiThreading.startAndJoin( threads );
 	}
 
-	public static < T extends Type< T > & Comparable< T > > void dilateInPlace( final RandomAccessible< T > source, final Interval interval, final Shape strel, final T minVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final Shape strel, final T minVal, final int numThreads )
 	{
+		final ExtendedRandomAccessibleInterval< T, RandomAccessibleInterval< T >> extended = Views.extendValue( source, minVal );
+		// Any chance we could do something smilar with a RandomAccessible?
+		// Using Views.iterable generate a bug FIXME
+
 		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, minVal );
 		final Img< T > img = factory.create( interval, minVal );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );
 
-		dilate( source, translated, strel, minVal, numThreads );
-		MorphologyUtils.copy( translated, source );
+		dilate( extended, translated, strel, minVal, numThreads );
+		MorphologyUtils.copy( translated, extended );
 	}
 
 	public static < T extends Type< T > & Comparable< T > > Img< T > dilate( final Img< T > source, final Shape strel, final T minVal, final int numThreads )

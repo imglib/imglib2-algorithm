@@ -252,20 +252,21 @@ public class MorphologyUtils
 	 * @param interval
 	 * @return type instance
 	 */
-	public static < T > T getType( final RandomAccessible< T > accessible, final Interval interval )
+	public static < T extends Type< T >> T createVariable( final RandomAccessible< T > accessible, final Interval interval )
 	{
 		final RandomAccess< T > a = accessible.randomAccess();
 		interval.min( a );
-		return a.get();
+		return a.get().createVariable();
 	}
-	
+
 	public static < T > ImgFactory< T > getSuitableFactory( final Dimensions targetSize, final T type )
 	{
 		if ( type instanceof NativeType )
 		{
 			final NativeType nt = ( NativeType ) type;
-			if ( Intervals.numElements( targetSize ) <= Integer.MAX_VALUE )
+			if ( Intervals.numElements( targetSize ) <= Integer.MAX_VALUE ) {
 				return new ArrayImgFactory();
+			}
 			final int cellSize = ( int ) Math.pow( Integer.MAX_VALUE / nt.getEntitiesPerPixel().getRatio(), 1.0 / targetSize.numDimensions() );
 			return new CellImgFactory( cellSize );
 		}
