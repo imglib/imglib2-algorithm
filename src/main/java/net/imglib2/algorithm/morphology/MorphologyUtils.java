@@ -1,16 +1,27 @@
 package net.imglib2.algorithm.morphology;
 
+import net.imglib2.Cursor;
+import net.imglib2.Dimensions;
 import net.imglib2.EuclideanSpace;
+import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
 import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.algorithm.region.localneighborhood.Shape;
 import net.imglib2.img.Img;
+import net.imglib2.img.ImgFactory;
 import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.array.ArrayRandomAccess;
 import net.imglib2.img.basictypeaccess.array.LongArray;
+import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.img.list.ListImgFactory;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 
 public class MorphologyUtils
@@ -232,4 +243,63 @@ public class MorphologyUtils
 		}
 		str.append( '\n' );
 	}
+
+	/**
+	 * Get an instance of type T from a {@link RandomAccess} on accessible that
+	 * is positioned at the min of interval.
+	 * 
+	 * @param accessible
+	 * @param interval
+	 * @return type instance
+	 */
+	public static < T > T getType( final RandomAccessible< T > accessible, final Interval interval )
+	{
+		final RandomAccess< T > a = accessible.randomAccess();
+		interval.min( a );
+		return a.get();
+	}
+	
+	public static < T > ImgFactory< T > getSuitableFactory( final Dimensions targetSize, final T type )
+	{
+		if ( type instanceof NativeType )
+		{
+			final NativeType nt = ( NativeType ) type;
+			if ( Intervals.numElements( targetSize ) <= Integer.MAX_VALUE )
+				return new ArrayImgFactory();
+			final int cellSize = ( int ) Math.pow( Integer.MAX_VALUE / nt.getEntitiesPerPixel().getRatio(), 1.0 / targetSize.numDimensions() );
+			return new CellImgFactory( cellSize );
+		}
+		else
+		{
+			return new ListImgFactory< T >();
+		}
+	}
+
+	public static < T extends Type< T > > void copy( final RandomAccessible< T > source, final IterableInterval< T > target )
+	{
+		final Cursor< T > targetCursor = target.localizingCursor();
+		final RandomAccess< T > sourceRandomAccess = source.randomAccess();
+
+		// iterate over the input cursor
+		while ( targetCursor.hasNext() )
+		{
+			targetCursor.fwd();
+			sourceRandomAccess.setPosition( targetCursor );
+			targetCursor.get().set( sourceRandomAccess.get() );
+		}
+	}
+
+	public static < T extends Type< T > > void copy( final IterableInterval< T > source, final RandomAccessible< T > target )
+	{
+		final Cursor< T > sourceCursor = source.localizingCursor();
+		final RandomAccess< T > targetRandomAccess = target.randomAccess();
+
+		while ( sourceCursor.hasNext() )
+		{
+			sourceCursor.fwd();
+			targetRandomAccess.setPosition( sourceCursor );
+			targetRandomAccess.get().set( sourceCursor.get() );
+		}
+	}
+
 }
