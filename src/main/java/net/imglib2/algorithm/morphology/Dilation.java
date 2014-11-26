@@ -16,6 +16,7 @@ import net.imglib2.multithreading.Chunk;
 import net.imglib2.multithreading.SimpleMultiThreading;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -91,6 +92,8 @@ public class Dilation
 
 		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
 		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+
+
 		for ( int i = 0; i < threads.length; i++ )
 		{
 			final Chunk chunk = chunks.get( i );
@@ -238,14 +241,120 @@ public class Dilation
 			}
 		}
 		final IntervalView< T > offsetTarget = Views.offset( target, offset );
-
-		/*
-		 * Prepare iteration.
-		 */
-
 		final ExtendedRandomAccessibleInterval< T, Img< T >> extended = Views.extendValue( source, minVal );
 
 		dilate( extended, offsetTarget, strel, minVal, numThreads );
+		return target;
+	}
+
+	public static < T extends RealType< T >> void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, int numThreads )
+	{
+		final T minVal = MorphologyUtils.createVariable( source, target );
+
+		if ( minVal instanceof BitType )
+		{
+			/*
+			 * Slightly quicker version for binary type.
+			 */
+			final RandomAccessible< Neighborhood< T >> accessible;
+			if ( numThreads > 1 )
+			{
+				accessible = strel.neighborhoodsRandomAccessibleSafe( source );
+			}
+			else
+			{
+				accessible = strel.neighborhoodsRandomAccessible( source );
+			}
+
+			/*
+			 * Multithread
+			 */
+
+			numThreads = Math.max( 1, numThreads );
+			final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
+			final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+
+
+			for ( int i = 0; i < threads.length; i++ )
+			{
+				final Chunk chunk = chunks.get( i );
+				threads[ i ] = new Thread( "Morphology dilate thread " + i )
+				{
+					@Override
+					public void run()
+					{
+						final RandomAccess< Neighborhood< T >> randomAccess = accessible.randomAccess( target );
+						@SuppressWarnings( "unchecked" )
+						final Cursor< BitType > cursorDilated = ( Cursor< BitType > ) target.cursor();
+						cursorDilated.jumpFwd( chunk.getStartPosition() );
+
+						for ( long steps = 0; steps < chunk.getLoopSize(); steps++ )
+						{
+							cursorDilated.fwd();
+							randomAccess.setPosition( cursorDilated );
+							final Neighborhood< T > neighborhood = randomAccess.get();
+							@SuppressWarnings( "unchecked" )
+							final Cursor< BitType > nc = ( Cursor< BitType > ) neighborhood.cursor();
+
+							while ( nc.hasNext() )
+							{
+								nc.fwd();
+								final BitType val = nc.get();
+								if ( val.get() )
+								{
+									cursorDilated.get().set( true );
+									break;
+								}
+							}
+						}
+
+					}
+				};
+			}
+
+			/*
+			 * Launch calculation
+			 */
+
+			SimpleMultiThreading.startAndJoin( threads );
+		}
+		else
+		{
+			minVal.setReal( minVal.getMinValue() );
+			dilate( source, target, strel, minVal, numThreads );
+		}
+	}
+
+	/**
+	 * Performs the dilation morphological operation, on a {@link RealType}
+	 * {@link Img} using a {@link Shape} as a flat structuring element.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * The result image has the same dimensions that of the source image. It is
+	 * limited to flat structuring elements, only having <code>on/off</code>
+	 * pixels, contrary to grayscale structuring elements. This allows to simply
+	 * use a {@link Shape} as a type for these structuring elements.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param strel
+	 *            the structuring element as a {@link Shape}.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image and the dilation result. Must be
+	 *            a sub-type of <code>T extends {@link RealType}</code>.
+	 * @return a new {@link Img}, of same dimensions than the source.
+	 */
+	public static < T extends RealType< T >> Img< T > dilate( final Img< T > source, final Shape strel, final int numThreads )
+	{
+		final Img< T > target = source.factory().create( source, source.firstElement().copy() );
+		final T minVal = source.firstElement().createVariable();
+		minVal.setReal( minVal.getMinValue() );
+		final ExtendedRandomAccessibleInterval< T, Img< T >> extended = Views.extendValue( source, minVal );
+		dilate( extended, target, strel, numThreads );
 		return target;
 	}
 
