@@ -142,9 +142,17 @@ public class Dilation
 
 	public static < T extends Type< T > & Comparable< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final Shape strel, final T minVal, final int numThreads )
 	{
-		final ExtendedRandomAccessibleInterval< T, RandomAccessibleInterval< T >> extended = Views.extendValue( source, minVal );
 		// Any chance we could do something smilar with a RandomAccessible?
-		// Using Views.iterable generate a bug FIXME
+		// Doing the following with a RandomAccessible as source generated an
+		// java.lang.ArrayIndexOutOfBoundsException when the cursor neighborhood
+		// meets the central point of the neighborhood, if this point is out of
+		// bounds.
+		// final ExtendedRandomAccessibleInterval< T, IntervalView< T >>
+		// extended = Views.extendValue(
+		// Views.interval( source, interval ),
+		// minVal );
+
+		final ExtendedRandomAccessibleInterval< T, RandomAccessibleInterval< T >> extended = Views.extendValue( source, minVal );
 
 		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, minVal );
 		final Img< T > img = factory.create( interval, minVal );
