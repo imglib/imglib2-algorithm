@@ -164,10 +164,8 @@ public class Dilation
 		return target;
 	}
 
-	public static < T extends Type< T > & Comparable< T > > Img< T > dilateFull( final Img< T > source, final Shape strel, final T minVal, int numThreads )
+	public static < T extends Type< T > & Comparable< T > > Img< T > dilateFull( final Img< T > source, final Shape strel, final T minVal, final int numThreads )
 	{
-		numThreads = Math.max( 1, numThreads );
-
 		/*
 		 * Compute target image size
 		 */
@@ -216,10 +214,10 @@ public class Dilation
 		 * Instantiate target images.
 		 */
 
-		final Img< T > dilated = source.factory().create( targetDims, source.firstElement().copy() );
+		final Img< T > target = source.factory().create( targetDims, source.firstElement().copy() );
 		// Offset coordinates so that they match the source coordinates, which
 		// will not be extended.
-		final long[] offset = new long[ dilated.numDimensions() ];
+		final long[] offset = new long[ target.numDimensions() ];
 		for ( int d = 0; d < offset.length; d++ )
 		{
 			if ( d < sampleNeighborhood.numDimensions() )
@@ -231,78 +229,16 @@ public class Dilation
 				offset[ d ] = 0;
 			}
 		}
-		final IntervalView< T > offsetDilated = Views.offset( dilated, offset );
+		final IntervalView< T > offsetTarget = Views.offset( target, offset );
 
 		/*
 		 * Prepare iteration.
 		 */
 
 		final ExtendedRandomAccessibleInterval< T, Img< T >> extended = Views.extendValue( source, minVal );
-		final RandomAccessible< Neighborhood< T >> accessible;
-		if ( numThreads > 1 )
-		{
-			accessible = strel.neighborhoodsRandomAccessibleSafe( extended );
-		}
-		else
-		{
-			accessible = strel.neighborhoodsRandomAccessible( extended );
-		}
-		final IterableInterval< T > iterable = Views.iterable( offsetDilated );
 
-		/*
-		 * Multithread
-		 */
-
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( iterable.size(), numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-		for ( int i = 0; i < threads.length; i++ )
-		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology dilate thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final RandomAccess< Neighborhood< T >> randomAccess = accessible.randomAccess( source );
-					final Cursor< T > cursorDilated = iterable.cursor();
-					cursorDilated.jumpFwd( chunk.getStartPosition() );
-
-					final T max = source.firstElement().createVariable();
-					for ( long steps = 0; steps < chunk.getLoopSize(); steps++ )
-					{
-						cursorDilated.fwd();
-						randomAccess.setPosition( cursorDilated );
-						final Neighborhood< T > neighborhood = randomAccess.get();
-						final Cursor< T > nc = neighborhood.cursor();
-
-						/*
-						 * Look for max in the neighborhood.
-						 */
-
-						max.set( minVal );
-						while ( nc.hasNext() )
-						{
-							nc.fwd();
-							final T val = nc.get();
-							// We need only Comparable to do this:
-							if ( val.compareTo( max ) > 0 )
-							{
-								max.set( val );
-							}
-						}
-						cursorDilated.get().set( max );
-					}
-
-				}
-			};
-		}
-
-		/*
-		 * Launch calculation
-		 */
-
-		SimpleMultiThreading.startAndJoin( threads );
-		return dilated;
+		dilate( extended, offsetTarget, strel, minVal, numThreads );
+		return target;
 	}
 
 }
