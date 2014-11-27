@@ -49,13 +49,14 @@ public class PeriodicLineShape implements Shape
 	 * 
 	 * @param span
 	 *            the span of the neighborhood, so that it will iterate over
-	 *            <code>2 × span + 1</code> pixels.
+	 *            <code>2 × span + 1</code> pixels. Must be positive.
 	 * @param increments
 	 *            the values by which each element of the position vector is to
 	 *            be incremented when iterating.
 	 */
 	public PeriodicLineShape( final long span, final int[] increments )
 	{
+		if ( span < 0 ) { throw new IllegalArgumentException( "Span cannot be negative." ); }
 		this.span = span;
 		this.increments = increments;
 	}

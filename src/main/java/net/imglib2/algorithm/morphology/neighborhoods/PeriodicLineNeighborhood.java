@@ -262,7 +262,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	@Override
 	public long dimension( final int d )
 	{
-		return 1 + 2 * span * increments[ d ];
+		return 1 + 2 * span * Math.abs( increments[ d ] );
 	}
 
 	@Override
@@ -421,11 +421,11 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 		final long[] minmax = new long[ 2 * position.length ];
 		for ( int i = 0; i < position.length; i++ )
 		{
-			minmax[ i ] = position[ i ] - span * increments[ i ];
+			minmax[ i ] = position[ i ] - span * Math.abs( increments[ i ] );
 		}
 		for ( int i = position.length; i < minmax.length; i++ )
 		{
-			minmax[ i ] = position[ i - position.length ] + span * increments[ i - position.length ];
+			minmax[ i ] = position[ i - position.length ] + span * Math.abs( increments[ i - position.length ] );
 		}
 		return Intervals.createMinMax( minmax );
 	}
