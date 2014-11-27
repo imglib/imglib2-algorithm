@@ -24,6 +24,22 @@ import net.imglib2.view.Views;
 
 public class Dilation
 {
+	/**
+	 * Static util to compute the final image dimensions and required offset
+	 * when performing a full dilation with the specified strel.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param strel
+	 *            the strel to use for dilation.
+	 * @return a 2-elements <code>long[][]</code>:
+	 *         <ol start="0">
+	 *         <li>a <code>long[]</code> array with the final image target
+	 *         dimensions.
+	 *         <li>a <code>long[]</code> array with the offset to apply to the
+	 *         source image.
+	 *         </ol>
+	 */
 	private static final < T > long[][] computeTargetImageDimensionsAndOffset( final RandomAccessibleInterval< T > source, final Shape strel )
 	{
 		/*
@@ -88,6 +104,34 @@ public class Dilation
 		return new long[][] { targetDims, offset };
 	}
 
+	/**
+	 * Performs the dilation morphological operation, on a {@link RealType}
+	 * {@link Img} using a list of {@link Shape}s as a flat structuring element.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the source image is returned.
+	 * <p>
+	 * The result image has the same dimensions that of the source image. It is
+	 * limited to flat structuring elements, only having <code>on/off</code>
+	 * pixels, contrary to grayscale structuring elements. This allows to simply
+	 * use a {@link Shape} as a type for these structuring elements.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param strels
+	 *            the structuring element as a list of {@link Shape}s.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image and the dilation result. Must be
+	 *            a sub-type of <code>T extends {@link RealType}</code>.
+	 * @return a new {@link Img}, of same dimensions than the source.
+	 */
 	public static < T extends RealType< T > > Img< T > dilate( final Img< T > source, final List< Shape > strels, final int numThreads )
 	{
 		Img< T > target = source;
@@ -98,6 +142,48 @@ public class Dilation
 		return target;
 	}
 
+	/**
+	 * Performs the dilation morphological operation, on an {@link Img} using a
+	 * list of {@link Shape}s as a flat structuring element.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * The result image has the same dimensions that of the source image. It is
+	 * limited to flat structuring elements, only having <code>on/off</code>
+	 * pixels, contrary to grayscale structuring elements. This allows to simply
+	 * use a {@link Shape} as a type for these structuring elements.
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the source image is returned.
+	 * <p>
+	 * This method relies on a specified minimal value to start comparing to
+	 * other pixels in the neighborhood. For this code to properly perform
+	 * dilation, it is sufficient that the specified min value is smaller
+	 * (against {@link Comparable}) than any of the value found in the source
+	 * image. This normally unseen parameter is required to operate on
+	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param strels
+	 *            the structuring element, as a list of {@link Shape}s.
+	 * @param minVal
+	 *            a T containing set to a value smaller than any of the values
+	 *            in the source {@link Img} (against {@link Comparable}. This is
+	 *            required to perform a proper mathematical dilation. Because we
+	 *            operate on a generic {@link Type}, it has to be provided
+	 *            manually.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image and the dilation result. Must be
+	 *            a sub-type of <code>T extends {@link Comparable} &
+	 *            {@link Type}</code>.
+	 * @return a new {@link Img}, of same dimensions than the source.
+	 */
 	public static < T extends Type< T > & Comparable< T > > Img< T > dilate( final Img< T > source, final List< Shape > strels, final T minVal, final int numThreads )
 	{
 		Img< T > target = source;
@@ -141,6 +227,43 @@ public class Dilation
 		return target;
 	}
 
+	/**
+	 * Performs the dilation morphological operation, on an {@link Img} using a
+	 * {@link Shape} as a flat structuring element.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * The result image has the same dimensions that of the source image. It is
+	 * limited to flat structuring elements, only having <code>on/off</code>
+	 * pixels, contrary to grayscale structuring elements. This allows to simply
+	 * use a {@link Shape} as a type for these structuring elements.
+	 * <p>
+	 * This method relies on a specified minimal value to start comparing to
+	 * other pixels in the neighborhood. For this code to properly perform
+	 * dilation, it is sufficient that the specified min value is smaller
+	 * (against {@link Comparable}) than any of the value found in the source
+	 * image. This normally unseen parameter is required to operate on
+	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param strel
+	 *            the structuring element as a {@link Shape}.
+	 * @param minVal
+	 *            a T containing set to a value smaller than any of the values
+	 *            in the source {@link Img} (against {@link Comparable}. This is
+	 *            required to perform a proper mathematical dilation. Because we
+	 *            operate on a generic {@link Type}, it has to be provided
+	 *            manually.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image and the dilation result. Must be
+	 *            a sub-type of <code>T extends {@link Comparable} &
+	 *            {@link Type}</code>.
+	 * @return a new {@link Img}, of same dimensions than the source.
+	 */
 	public static < T extends Type< T > & Comparable< T > > Img< T > dilate( final Img< T > source, final Shape strel, final T minVal, final int numThreads )
 	{
 		final Img< T > target = source.factory().create( source, source.firstElement().copy() );
@@ -149,6 +272,41 @@ public class Dilation
 		return target;
 	}
 
+	/**
+	 * Performs the dilation morphological operation, on a {@link RealType}
+	 * {@link RandomAccessible} as a source and writing results in an
+	 * {@link IterableInterval}.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the target is left untouched.
+	 * 
+	 * @param source
+	 *            the source {@link RandomAccessible}, must be sufficiently
+	 *            padded.
+	 * @param target
+	 *            the target image.
+	 * @param strels
+	 *            the structuring element, as a list of {@link Shape}s.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 */
 	public static < T extends RealType< T >> void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final int numThreads )
 	{
 		final T minVal = MorphologyUtils.createVariable( source, target );
@@ -156,6 +314,57 @@ public class Dilation
 		dilate( source, target, strels, minVal, numThreads );
 	}
 
+	/**
+	 * Performs the dilation morphological operation, using a
+	 * {@link RandomAccessible} as a source and writing results in an
+	 * {@link IterableInterval}.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the target is left untouched.
+	 * <p>
+	 * This method relies on a specified minimal value to start comparing to
+	 * other pixels in the neighborhood. For this code to properly perform
+	 * dilation, it is sufficient that the specified min value is smaller
+	 * (against {@link Comparable}) than any of the value found in the source
+	 * image. This normally unseen parameter is required to operate on
+	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * 
+	 * @param source
+	 *            the source {@link RandomAccessible}, must be sufficiently
+	 *            padded.
+	 * @param target
+	 *            the target image.
+	 * @param strels
+	 *            the structuring element, as a list of {@link Shape}s.
+	 * @param minVal
+	 *            a T containing set to a value smaller than any of the values
+	 *            in the source (against {@link Comparable}. This is required to
+	 *            perform a proper mathematical dilation. Because we operate on
+	 *            a generic {@link Type}, it has to be provided manually.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image and the dilation result. Must be
+	 *            a sub-type of <code>T extends {@link Comparable} &
+	 *            {@link Type}</code>.
+	 */
 	public static < T extends Type< T > & Comparable< T > > void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T minVal, final int numThreads )
 	{
 		if ( strels.isEmpty() ) { return; }
@@ -186,6 +395,36 @@ public class Dilation
 		dilate( extended, target, strels.get( strels.size() - 1 ), minVal, numThreads );
 	}
 
+	/**
+	 * Performs the dilation morphological operation, on a {@link RealType}
+	 * {@link RandomAccessible} as a source and writing results in an
+	 * {@link IterableInterval}.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * 
+	 * @param source
+	 *            the source {@link RandomAccessible}, must be sufficiently
+	 *            padded.
+	 * @param target
+	 *            the target image.
+	 * @param strel
+	 *            the structuring element, as a {@link Shape}.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 */
 	public static < T extends RealType< T >> void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final int numThreads )
 	{
 		final T minVal = MorphologyUtils.createVariable( source, target );
@@ -194,10 +433,19 @@ public class Dilation
 	}
 
 	/**
-	 * Performs the dilation morphological operation, on an {@link Img} using a
-	 * {@link Shape} as a flat structuring element.
+	 * Performs the dilation morphological operation, using a
+	 * {@link RandomAccessible} as a source and writing results in an
+	 * {@link IterableInterval}.
+	 * 
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * It is limited to flat structuring elements, only having
 	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
@@ -213,23 +461,18 @@ public class Dilation
 	 * 
 	 * @param source
 	 *            the source {@link RandomAccessible}, must be sufficiently
-	 *            padded (<it>e.g.</it>
-	 *            {@link Views#extendValue(net.imglib2.RandomAccessibleInterval, Type)}
-	 *            using the minVal parameter).
+	 *            padded.
 	 * @param target
-	 *            an {@link IterableInterval} into the target. <b>Careful:
-	 *            Dilation does not work for target pointing to the source
-	 *            data.</b>
+	 *            the target image.
 	 * @param strel
-	 *            the structuring element as a {@link Shape}.
-	 * @param numThreads
-	 *            the number of threads to use for the calculation.
+	 *            the structuring element, as a {@link Shape}.
 	 * @param minVal
 	 *            a T containing set to a value smaller than any of the values
-	 *            in the source {@link Img} (against {@link Comparable}. This is
-	 *            required to perform a proper mathematical dilation. Because we
-	 *            operate on a generic {@link Type}, it has to be provided
-	 *            manually.
+	 *            in the source (against {@link Comparable}. This is required to
+	 *            perform a proper mathematical dilation. Because we operate on
+	 *            a generic {@link Type}, it has to be provided manually.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
 	 *            a sub-type of <code>T extends {@link Comparable} &
@@ -392,7 +635,7 @@ public class Dilation
 	 * 
 	 * @param source
 	 *            the source image.
-	 * @param strel
+	 * @param strels
 	 *            the structuring element as a list of {@link Shape}s.
 	 * @param numThreads
 	 *            the number of threads to use for the calculation.
@@ -450,16 +693,16 @@ public class Dilation
 	 * 
 	 * @param source
 	 *            the source image.
-	 * @param strel
+	 * @param strels
 	 *            the structuring element as a list of {@link Shape}s.
-	 * @param numThreads
-	 *            the number of threads to use for the calculation.
 	 * @param minVal
 	 *            a T containing set to a value smaller than any of the values
 	 *            in the source {@link Img} (against {@link Comparable}. This is
 	 *            required to perform a proper mathematical dilation. Because we
 	 *            operate on a generic {@link Type}, it has to be provided
 	 *            manually.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
 	 *            a sub-type of <code>T extends {@link Comparable} &
@@ -476,6 +719,42 @@ public class Dilation
 		return target;
 	}
 
+	/**
+	 * Performs the dilation morphological operation, on a {@link RealType}
+	 * {@link Img} using a list of {@link Shape}s as a flat structuring element.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * This method performs what is called the 'full' dilation. That is: the
+	 * result image has its dimension dilated by the structuring element, with
+	 * respect to the source image. It is limited to flat structuring elements,
+	 * only having <code>on/off</code> pixels, contrary to grayscale structuring
+	 * elements. This allows to simply use a {@link Shape} as a type for these
+	 * structuring elements.
+	 * <p>
+	 * <b>Warning:</b> Current implementation does not do <i>stricto sensu</i>
+	 * the full dilation. Indeed, if the structuring element has more dimensions
+	 * than the source {@link Img}, they are ignored, and the returned
+	 * {@link Img} has the same number of dimensions that of the source (but
+	 * dilated). This is due to the fact that we use a {@link Shape} for
+	 * structuring elements, and that it does not return a number of dimensions.
+	 * The neighborhood created have therefore at most as many dimensions as the
+	 * source image. The real, full dilation results should have a number of
+	 * dimensions equals to the maximum of the number of dimension of both
+	 * source and structuring element.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param strel
+	 *            the structuring element as {@link Shape}.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image and the dilation result. Must be
+	 *            a sub-type of <code>T extends {@link RealType}</code>.
+	 * @return a new {@link Img}, possibly of larger dimensions than the source.
+	 */
 	public static < T extends RealType< T >> Img< T > dilateFull( final Img< T > source, final Shape strel, final int numThreads )
 	{
 		final long[][] dimensionsAndOffset = computeTargetImageDimensionsAndOffset( source, strel );
@@ -493,6 +772,56 @@ public class Dilation
 		return target;
 	}
 
+	/**
+	 * Performs the dilation morphological operation, on an {@link Img} using a
+	 * list of {@link Shape}s as a flat structuring element.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * This method performs what is called the 'full' dilation. That is: the
+	 * result image has its dimension dilated by the structuring element, with
+	 * respect to the source image. It is limited to flat structuring elements,
+	 * only having <code>on/off</code> pixels, contrary to grayscale structuring
+	 * elements. This allows to simply use a {@link Shape} as a type for these
+	 * structuring elements.
+	 * <p>
+	 * This method relies on a specified minimal value to start comparing to
+	 * other pixels in the neighborhood. For this code to properly perform
+	 * dilation, it is sufficient that the specified min value is smaller
+	 * (against {@link Comparable}) than any of the value found in the source
+	 * image. This normally unseen parameter is required to operate on
+	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * <p>
+	 * <b>Warning:</b> Current implementation does not do <i>stricto sensu</i>
+	 * the full dilation. Indeed, if the structuring element has more dimensions
+	 * than the source {@link Img}, they are ignored, and the returned
+	 * {@link Img} has the same number of dimensions that of the source (but
+	 * dilated). This is due to the fact that we use a {@link Shape} for
+	 * structuring elements, and that it does not return a number of dimensions.
+	 * The neighborhood created have therefore at most as many dimensions as the
+	 * source image. The real, full dilation results should have a number of
+	 * dimensions equals to the maximum of the number of dimension of both
+	 * source and structuring element.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param strel
+	 *            the structuring element as a {@link Shape}.
+	 * @param minVal
+	 *            a T containing set to a value smaller than any of the values
+	 *            in the source {@link Img} (against {@link Comparable}. This is
+	 *            required to perform a proper mathematical dilation. Because we
+	 *            operate on a generic {@link Type}, it has to be provided
+	 *            manually.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image and the dilation result. Must be
+	 *            a sub-type of <code>T extends {@link Comparable} &
+	 *            {@link Type}</code>.
+	 * @return a new {@link Img}, possibly of larger dimensions than the source.
+	 */
 	public static < T extends Type< T > & Comparable< T > > Img< T > dilateFull( final Img< T > source, final Shape strel, final T minVal, final int numThreads )
 	{
 
@@ -508,7 +837,40 @@ public class Dilation
 		return target;
 	}
 
-	
+	/**
+	 * Performs the dilation morphological operation, on a {@link RealType}
+	 * {@link RandomAccessibleInterval} using a {@link Shape} as a flat
+	 * structuring element.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * The result is written in the source image. This method is limited to flat
+	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * grayscale structuring elements. This allows to simply use a {@link Shape}
+	 * as a type for these structuring elements.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)} *
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the source image is returned.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param interval
+	 *            an interval in the source image to process.
+	 * @param strels
+	 *            the structuring element as a list of {@link Shape}s.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image. Must be a sub-type of
+	 *            <code>T extends {@link RealType}</code>.
+	 */
 	public static < T extends RealType< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
 	{
 		for ( final Shape strel : strels )
@@ -517,6 +879,52 @@ public class Dilation
 		}
 	}
 
+	/**
+	 * Performs the dilation morphological operation, on a {@link RealType}
+	 * {@link RandomAccessibleInterval} using a {@link Shape} as a flat
+	 * structuring element.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * The result is written in the source image. This method is limited to flat
+	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * grayscale structuring elements. This allows to simply use a {@link Shape}
+	 * as a type for these structuring elements.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)} *
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the source image is returned. *
+	 * <p>
+	 * This method relies on a specified minimal value to start comparing to
+	 * other pixels in the neighborhood. For this code to properly perform
+	 * dilation, it is sufficient that the specified min value is smaller
+	 * (against {@link Comparable}) than any of the value found in the source
+	 * image. This normally unseen parameter is required to operate on
+	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param interval
+	 *            an interval in the source image to process.
+	 * @param strels
+	 *            the structuring element as a list of {@link Shape}s.
+	 * @param minVal
+	 *            a T containing set to a value smaller than any of the values
+	 *            in the source (against {@link Comparable}. This is required to
+	 *            perform a proper mathematical dilation. Because we operate on
+	 *            a generic {@link Type}, it has to be provided manually.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image. Must be a sub-type of
+	 *            <code>T extends {@link Comparable} & {@link Type}</code>.
+	 */
 	public static < T extends Type< T > & Comparable< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final T minVal, final int numThreads )
 	{
 		for ( final Shape strel : strels )
@@ -525,6 +933,36 @@ public class Dilation
 		}
 	}
 
+	/**
+	 * Performs the dilation morphological operation, on a {@link RealType}
+	 * {@link RandomAccessibleInterval} using a {@link Shape} as a flat
+	 * structuring element.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * The result is written in the source image. This method is limited to flat
+	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * grayscale structuring elements. This allows to simply use a {@link Shape}
+	 * as a type for these structuring elements.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param interval
+	 *            an interval in the source image to process.
+	 * @param strel
+	 *            the structuring element as a {@link Shape}.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image. Must be a sub-type of
+	 *            <code>T extends {@link RealType}</code>.
+	 */
 	public static < T extends RealType< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final Shape strel, final int numThreads )
 	{
 		final T minVal = MorphologyUtils.createVariable( source, interval );
@@ -541,6 +979,47 @@ public class Dilation
 		MorphologyUtils.copy( translated, extended );
 	}
 
+	/**
+	 * Performs the dilation morphological operation, on a {@link RealType}
+	 * {@link RandomAccessibleInterval} using a {@link Shape} as a flat
+	 * structuring element.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
+	 * Dilation_(morphology)</a>.
+	 * <p>
+	 * The result is written in the source image. This method is limited to flat
+	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * grayscale structuring elements. This allows to simply use a {@link Shape}
+	 * as a type for these structuring elements.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)} *
+	 * <p>
+	 * This method relies on a specified minimal value to start comparing to
+	 * other pixels in the neighborhood. For this code to properly perform
+	 * dilation, it is sufficient that the specified min value is smaller
+	 * (against {@link Comparable}) than any of the value found in the source
+	 * image. This normally unseen parameter is required to operate on
+	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param interval
+	 *            an interval in the source image to process.
+	 * @param strel
+	 *            the structuring element as a {@link Shape}.
+	 * @param minVal
+	 *            a T containing set to a value smaller than any of the values
+	 *            in the source (against {@link Comparable}. This is required to
+	 *            perform a proper mathematical dilation. Because we operate on
+	 *            a generic {@link Type}, it has to be provided manually.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param <T>
+	 *            the type of the source image. Must be a sub-type of
+	 *            <code>T extends {@link Comparable} & {@link Type}</code>.
+	 */
 	public static < T extends Type< T > & Comparable< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final Shape strel, final T minVal, final int numThreads )
 	{
 		// Any chance we could do something similar with a RandomAccessible?
@@ -565,6 +1044,9 @@ public class Dilation
 		MorphologyUtils.copy( translated, extended );
 	}
 
+	/**
+	 * Private constructor. Unused.
+	 */
 	private Dilation()
 	{}
 }
