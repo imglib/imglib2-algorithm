@@ -149,6 +149,43 @@ public class Dilation
 		return target;
 	}
 
+	public static < T extends RealType< T >> void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final int numThreads )
+	{
+		final T minVal = MorphologyUtils.createVariable( source, target );
+		minVal.setReal( minVal.getMinValue() );
+		dilate( source, target, strels, minVal, numThreads );
+	}
+
+	public static < T extends Type< T > & Comparable< T > > void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T minVal, final int numThreads )
+	{
+		if ( strels.isEmpty() ) { return; }
+		if ( strels.size() == 1 )
+		{
+			dilate( source, target, strels.get( 0 ), minVal, numThreads );
+			return;
+		}
+
+		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( target, minVal );
+		Img< T > temp = factory.create( target, minVal );
+		final long[] translation = new long[ target.numDimensions() ];
+		target.min( translation );
+		IntervalView< T > translated = Views.translate( temp, translation );
+
+		// First shape.
+		dilate( source, translated, strels.get( 0 ), minVal, numThreads );
+
+		// Middle shapes.
+		for ( int i = 1; i < strels.size() - 1; i++ )
+		{
+			temp = dilate( temp, strels.get( i ), minVal, numThreads );
+		}
+
+		// Last shape
+		translated = Views.translate( temp, translation );
+		final ExtendedRandomAccessibleInterval< T, IntervalView< T >> extended = Views.extendValue( translated, minVal );
+		dilate( extended, target, strels.get( strels.size() - 1 ), minVal, numThreads );
+	}
+
 	public static < T extends RealType< T >> void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final int numThreads )
 	{
 		final T minVal = MorphologyUtils.createVariable( source, target );
@@ -472,6 +509,22 @@ public class Dilation
 	}
 
 	
+	public static < T extends RealType< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
+	{
+		for ( final Shape strel : strels )
+		{
+			dilateInPlace( source, interval, strel, numThreads );
+		}
+	}
+
+	public static < T extends Type< T > & Comparable< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final T minVal, final int numThreads )
+	{
+		for ( final Shape strel : strels )
+		{
+			dilateInPlace( source, interval, strel, minVal, numThreads );
+		}
+	}
+
 	public static < T extends RealType< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final Shape strel, final int numThreads )
 	{
 		final T minVal = MorphologyUtils.createVariable( source, interval );
