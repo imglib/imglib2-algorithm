@@ -73,6 +73,12 @@ public class HorizontalLineShape implements Shape
 		return new NeighborhoodsAccessible< T >( source, span, dim, skipCenter, f );
 	}
 
+	@Override
+	public String toString()
+	{
+		return "HorizontalLineShape, span = " + span + " in dim " + dim + ", skipCenter = " + skipCenter;
+	}
+
 	public static final class NeighborhoodsIterableInterval< T > extends AbstractInterval implements IterableInterval< Neighborhood< T > >
 	{
 		final RandomAccessibleInterval< T > source;

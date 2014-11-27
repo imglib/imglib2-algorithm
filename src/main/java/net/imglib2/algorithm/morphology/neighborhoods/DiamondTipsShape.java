@@ -50,6 +50,12 @@ public class DiamondTipsShape implements Shape
 		return new NeighborhoodsAccessible< T >( source, radius, f );
 	}
 
+	@Override
+	public String toString()
+	{
+		return "DiamondTipsShape, radius = " + radius;
+	}
+
 	public static final class NeighborhoodsIterableInterval< T > extends AbstractInterval implements IterableInterval< Neighborhood< T > >
 	{
 		final RandomAccessibleInterval< T > source;

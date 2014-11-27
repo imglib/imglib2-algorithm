@@ -13,6 +13,7 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.algorithm.region.localneighborhood.Shape;
+import net.imglib2.util.Util;
 
 /**
  * A factory for Accessibles on {@link PeriodicLineNeighborhood}s, that iterate
@@ -85,6 +86,12 @@ public class PeriodicLineShape implements Shape
 	{
 		final PeriodicLineNeighborhoodFactory< T > f = PeriodicLineNeighborhood.< T >factory();
 		return new NeighborhoodsAccessible< T >( source, span, increments, f );
+	}
+
+	@Override
+	public String toString()
+	{
+		return "PeriodicLineShape, span = " + span + ", increments = " + Util.printCoordinates( increments );
 	}
 
 	public static final class NeighborhoodsIterableInterval< T > extends AbstractInterval implements IterableInterval< Neighborhood< T > >

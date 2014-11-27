@@ -59,6 +59,7 @@ import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodSkipC
 import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodUnsafe;
 import net.imglib2.algorithm.region.localneighborhood.RectangleShape;
 import net.imglib2.algorithm.region.localneighborhood.Shape;
+import net.imglib2.util.Util;
 
 /**
  * A factory for Accessibles on rectangular neighborhoods.
@@ -131,6 +132,12 @@ public class CenteredRectangleShape implements Shape
 		final RectangleNeighborhoodFactory< T > f = skipCenter ? RectangleNeighborhoodSkipCenter.< T >factory() : RectangleNeighborhood.< T >factory();
 		final Interval spanInterval = createSpan();
 		return new NeighborhoodsAccessible< T >( source, spanInterval, f );
+	}
+
+	@Override
+	public String toString()
+	{
+		return "CenteredRectangleShape, span = " + Util.printCoordinates( span );
 	}
 
 	private Interval createSpan()

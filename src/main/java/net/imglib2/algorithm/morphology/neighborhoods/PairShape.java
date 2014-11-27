@@ -13,6 +13,7 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.algorithm.region.localneighborhood.Shape;
+import net.imglib2.util.Util;
 
 /**
  * A {@link Shape} representing a pair of points.
@@ -65,6 +66,12 @@ public class PairShape implements Shape
 	{
 		final PairNeighborhoodFactory< T > f = PairNeighborhood.< T >factory();
 		return new NeighborhoodsAccessible< T >( source, offset, f );
+	}
+
+	@Override
+	public String toString()
+	{
+		return "PairShape, offset = " + Util.printCoordinates( offset );
 	}
 
 	public static final class NeighborhoodsIterableInterval< T > extends AbstractInterval implements IterableInterval< Neighborhood< T > >
