@@ -25,6 +25,7 @@ import net.imglib2.multithreading.SimpleMultiThreading;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.operators.Sub;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 
@@ -330,6 +331,88 @@ public class MorphologyUtils
 						sourceCursor.fwd();
 						targetRandomAccess.setPosition( sourceCursor );
 						targetRandomAccess.get().set( sourceCursor.get() );
+					}
+				}
+			};
+		}
+
+		SimpleMultiThreading.startAndJoin( threads );
+	}
+
+	/**
+	 * Does A = A - B.
+	 * 
+	 * @param source
+	 *            A
+	 * @param target
+	 *            B
+	 * @param numThreads
+	 */
+	public static < T extends Sub< T > > void subtractInPlace( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
+	{
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			{
+				@Override
+				public void run()
+				{
+
+					final Cursor< T > targetCursor = target.localizingCursor();
+					final RandomAccess< T > sourceRandomAccess = source.randomAccess();
+
+					while ( targetCursor.hasNext() )
+					{
+						targetCursor.fwd();
+						sourceRandomAccess.setPosition( targetCursor );
+						sourceRandomAccess.get().sub( targetCursor.get() );
+					}
+				}
+			};
+		}
+
+		SimpleMultiThreading.startAndJoin( threads );
+	}
+
+	/**
+	 * Does A = B - A.
+	 * 
+	 * @param source
+	 *            A
+	 * @param target
+	 *            B
+	 * @param numThreads
+	 */
+	public static < T extends Sub< T > & Type< T >> void minusSubtractInPlace( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
+	{
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final T tmp = createVariable( source, target );
+					final Cursor< T > targetCursor = target.localizingCursor();
+					final RandomAccess< T > sourceRandomAccess = source.randomAccess();
+
+					while ( targetCursor.hasNext() )
+					{
+						targetCursor.fwd();
+						sourceRandomAccess.setPosition( targetCursor );
+
+						tmp.set( sourceRandomAccess.get() );
+						tmp.sub( targetCursor.get() );
+
+						sourceRandomAccess.get().set( tmp );
 					}
 				}
 			};
