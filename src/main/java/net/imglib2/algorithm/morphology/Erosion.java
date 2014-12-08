@@ -504,8 +504,8 @@ public class Erosion
 		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
 		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
 
-
-		if ( maxVal instanceof BitType )
+		final Object tmp = maxVal;
+		if ( tmp instanceof BitType )
 		{
 			/*
 			 * Optimization for BitType
@@ -521,7 +521,8 @@ public class Erosion
 					{
 						final RandomAccess< Neighborhood< T >> randomAccess = accessible.randomAccess( target );
 						@SuppressWarnings( "unchecked" )
-						final Cursor< BitType > cursorTarget = ( Cursor< BitType > ) target.cursor();
+						final Object tmp2 = target.cursor();
+						final Cursor< BitType > cursorTarget = ( Cursor< BitType > ) tmp2;
 						cursorTarget.jumpFwd( chunk.getStartPosition() );
 
 						for ( long steps = 0; steps < chunk.getLoopSize(); steps++ )
@@ -529,7 +530,8 @@ public class Erosion
 							cursorTarget.fwd();
 							randomAccess.setPosition( cursorTarget );
 							@SuppressWarnings( "unchecked" )
-							final Neighborhood< BitType > neighborhood = ( Neighborhood< BitType > ) randomAccess.get();
+							final Object tmp3 = randomAccess.get();
+							final Neighborhood< BitType > neighborhood = ( Neighborhood< BitType > ) tmp3;
 							final Cursor< BitType > nc = neighborhood.cursor();
 
 							cursorTarget.get().set( true );

@@ -504,7 +504,8 @@ public class Dilation
 		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
 
 
-		if ( minVal instanceof BitType )
+		final Object tmp = minVal;
+		if ( tmp instanceof BitType )
 		{
 			/*
 			 * Optimization for BitType
@@ -520,7 +521,8 @@ public class Dilation
 					{
 						final RandomAccess< Neighborhood< T >> randomAccess = accessible.randomAccess( target );
 						@SuppressWarnings( "unchecked" )
-						final Cursor< BitType > cursorDilated = ( Cursor< BitType > ) target.cursor();
+						final Object tmp2 = target.cursor();
+						final Cursor< BitType > cursorDilated = ( Cursor< BitType > ) tmp2;
 						cursorDilated.jumpFwd( chunk.getStartPosition() );
 
 						for ( long steps = 0; steps < chunk.getLoopSize(); steps++ )
@@ -529,7 +531,8 @@ public class Dilation
 							randomAccess.setPosition( cursorDilated );
 							final Neighborhood< T > neighborhood = randomAccess.get();
 							@SuppressWarnings( "unchecked" )
-							final Cursor< BitType > nc = ( Cursor< BitType > ) neighborhood.cursor();
+							final Object tmp3 = neighborhood.cursor();
+							final Cursor< BitType > nc = ( Cursor< BitType > ) tmp3;
 
 							while ( nc.hasNext() )
 							{
