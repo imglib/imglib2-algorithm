@@ -63,7 +63,7 @@ public class MorphologyUtils
 			final ArrayRandomAccess< BitType > randomAccess = img.randomAccess();
 			randomAccess.setPosition( Util.getArrayFromValue( 0, dimensions.length ) );
 			randomAccess.get().set( true );
-			neighborhood = MorphologicalOperations.dilateFull( img, shape, 1 );
+			neighborhood = Dilation.dilateFull( img, shape, 1 );
 		}
 
 		final StringBuilder str = new StringBuilder();
@@ -259,6 +259,7 @@ public class MorphologyUtils
 		return a.get().createVariable();
 	}
 
+	@SuppressWarnings( { "rawtypes", "unchecked" } )
 	public static < T > ImgFactory< T > getSuitableFactory( final Dimensions targetSize, final T type )
 	{
 		if ( type instanceof NativeType )

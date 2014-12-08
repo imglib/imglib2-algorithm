@@ -6,7 +6,7 @@ import java.util.List;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
-import net.imglib2.algorithm.morphology.MorphologicalOperations;
+import net.imglib2.algorithm.morphology.Dilation;
 import net.imglib2.algorithm.morphology.StructuringElements;
 import net.imglib2.algorithm.region.localneighborhood.Shape;
 import net.imglib2.img.Img;
@@ -34,9 +34,9 @@ public class DiamondStrelTest
 		for ( final int radius : radiuses )
 		{
 			final List< Shape > strelStd = StructuringElements.diamond( radius, img.numDimensions(), false );
-			final Img< UnsignedByteType > std = MorphologicalOperations.dilate( img, strelStd, 1 );
+			final Img< UnsignedByteType > std = Dilation.dilate( img, strelStd, 1 );
 			final List< Shape > strelOpt = StructuringElements.diamond( radius, img.numDimensions(), true );
-			final Img< UnsignedByteType > opt = MorphologicalOperations.dilate( img, strelOpt, 1 );
+			final Img< UnsignedByteType > opt = Dilation.dilate( img, strelOpt, 1 );
 
 			final Cursor< UnsignedByteType > cStd = std.cursor();
 			final RandomAccess< UnsignedByteType > raOpt = opt.randomAccess( opt );
@@ -63,9 +63,9 @@ public class DiamondStrelTest
 		for ( final int radius : radiuses )
 		{
 			final List< Shape > strelStd = StructuringElements.diamond( radius, img.numDimensions(), false );
-			final Img< UnsignedByteType > std = MorphologicalOperations.dilate( img, strelStd, 1 );
+			final Img< UnsignedByteType > std = Dilation.dilate( img, strelStd, 1 );
 			final List< Shape > strelOpt = StructuringElements.diamond( radius, img.numDimensions(), true );
-			final Img< UnsignedByteType > opt = MorphologicalOperations.dilate( img, strelOpt, 1 );
+			final Img< UnsignedByteType > opt = Dilation.dilate( img, strelOpt, 1 );
 
 			final Cursor< UnsignedByteType > cStd = std.cursor();
 			final RandomAccess< UnsignedByteType > raOpt = opt.randomAccess( opt );
