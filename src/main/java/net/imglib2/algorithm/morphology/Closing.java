@@ -596,7 +596,7 @@ public class Closing
 		final IntervalView< T > translated = Views.translate( img, min );
 
 		close( extended, translated, strel, minVal, maxVal, numThreads );
-		MorphologyUtils.copy( translated, extended );
+		MorphologyUtils.copy( translated, extended, numThreads );
 	}
 
 	/**

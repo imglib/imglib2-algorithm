@@ -1,5 +1,7 @@
 package net.imglib2.algorithm.morphology;
 
+import java.util.Vector;
+
 import net.imglib2.Cursor;
 import net.imglib2.Dimensions;
 import net.imglib2.EuclideanSpace;
@@ -18,6 +20,8 @@ import net.imglib2.img.array.ArrayRandomAccess;
 import net.imglib2.img.basictypeaccess.array.LongArray;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.img.list.ListImgFactory;
+import net.imglib2.multithreading.Chunk;
+import net.imglib2.multithreading.SimpleMultiThreading;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
@@ -277,31 +281,60 @@ public class MorphologyUtils
 		}
 	}
 
-	public static < T extends Type< T > > void copy( final RandomAccessible< T > source, final IterableInterval< T > target )
+	public static < T extends Type< T > > void copy( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
 	{
-		final Cursor< T > targetCursor = target.localizingCursor();
-		final RandomAccess< T > sourceRandomAccess = source.randomAccess();
-
-		// iterate over the input cursor
-		while ( targetCursor.hasNext() )
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+		for ( int i = 0; i < threads.length; i++ )
 		{
-			targetCursor.fwd();
-			sourceRandomAccess.setPosition( targetCursor );
-			targetCursor.get().set( sourceRandomAccess.get() );
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final Cursor< T > targetCursor = target.localizingCursor();
+					final RandomAccess< T > sourceRandomAccess = source.randomAccess();
+
+					// iterate over the input cursor
+					while ( targetCursor.hasNext() )
+					{
+						targetCursor.fwd();
+						sourceRandomAccess.setPosition( targetCursor );
+						targetCursor.get().set( sourceRandomAccess.get() );
+					}
+				}
+			};
 		}
+
+		SimpleMultiThreading.startAndJoin( threads );
 	}
 
-	public static < T extends Type< T > > void copy( final IterableInterval< T > source, final RandomAccessible< T > target )
+	public static < T extends Type< T > > void copy( final IterableInterval< T > source, final RandomAccessible< T > target, final int numThreads )
 	{
-		final Cursor< T > sourceCursor = source.localizingCursor();
-		final RandomAccess< T > targetRandomAccess = target.randomAccess();
-
-		while ( sourceCursor.hasNext() )
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( source.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+		for ( int i = 0; i < threads.length; i++ )
 		{
-			sourceCursor.fwd();
-			targetRandomAccess.setPosition( sourceCursor );
-			targetRandomAccess.get().set( sourceCursor.get() );
-		}
-	}
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final Cursor< T > sourceCursor = source.localizingCursor();
+					final RandomAccess< T > targetRandomAccess = target.randomAccess();
 
+					while ( sourceCursor.hasNext() )
+					{
+						sourceCursor.fwd();
+						targetRandomAccess.setPosition( sourceCursor );
+						targetRandomAccess.get().set( sourceCursor.get() );
+					}
+				}
+			};
+		}
+
+		SimpleMultiThreading.startAndJoin( threads );
+	}
 }

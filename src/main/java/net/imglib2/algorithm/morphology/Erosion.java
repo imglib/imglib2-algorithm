@@ -978,7 +978,7 @@ public class Erosion
 		final IntervalView< T > translated = Views.translate( img, min );
 
 		erode( extended, translated, strel, numThreads );
-		MorphologyUtils.copy( translated, extended );
+		MorphologyUtils.copy( translated, extended, numThreads );
 	}
 
 	/**
@@ -1034,7 +1034,7 @@ public class Erosion
 		final IntervalView< T > translated = Views.translate( img, min );
 
 		erode( extended, translated, strel, maxVal, numThreads );
-		MorphologyUtils.copy( translated, extended );
+		MorphologyUtils.copy( translated, extended, numThreads );
 	}
 
 	/**

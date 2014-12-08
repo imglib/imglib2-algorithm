@@ -976,7 +976,7 @@ public class Dilation
 		final IntervalView< T > translated = Views.translate( img, min );
 
 		dilate( extended, translated, strel, numThreads );
-		MorphologyUtils.copy( translated, extended );
+		MorphologyUtils.copy( translated, extended, numThreads );
 	}
 
 	/**
@@ -1041,7 +1041,7 @@ public class Dilation
 		final IntervalView< T > translated = Views.translate( img, min );
 
 		dilate( extended, translated, strel, minVal, numThreads );
-		MorphologyUtils.copy( translated, extended );
+		MorphologyUtils.copy( translated, extended, numThreads );
 	}
 
 	/**

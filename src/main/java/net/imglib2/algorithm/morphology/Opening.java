@@ -596,7 +596,7 @@ public class Opening
 		final IntervalView< T > translated = Views.translate( img, min );
 
 		open( extended, translated, strel, minVal, maxVal, numThreads );
-		MorphologyUtils.copy( translated, extended );
+		MorphologyUtils.copy( translated, extended, numThreads );
 	}
 
 	/**
