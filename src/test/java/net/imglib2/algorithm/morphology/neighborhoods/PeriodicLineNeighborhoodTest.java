@@ -52,7 +52,6 @@ public class PeriodicLineNeighborhoodTest
 		}
 
 		expected = new int[][][] { { { 17, 14 }, { 18, 16 }, { 19, 18 }, { 20, 20 }, { 21, 22 }, { 22, 24 }, { 23, 26 } }, { { 34, 42 }, { 37, 41 }, { 40, 40 }, { 43, 39 }, { 46, 38 } } };
-
 	}
 
 	@Test
@@ -136,7 +135,7 @@ public class PeriodicLineNeighborhoodTest
 			final PeriodicLineNeighborhood< UnsignedByteType > neighborhood = neighborhoods[ i ];
 			for ( int d = 0; d < img.numDimensions(); d++ )
 			{
-				assertEquals( positions[ i ][ d ] - spans[ i ] * increments[ i ][ d ], neighborhood.min( d ) );
+				assertEquals( positions[ i ][ d ] - spans[ i ] * Math.abs( increments[ i ][ d ] ), neighborhood.min( d ) );
 			}
 		}
 	}
@@ -149,7 +148,7 @@ public class PeriodicLineNeighborhoodTest
 			final PeriodicLineNeighborhood< UnsignedByteType > neighborhood = neighborhoods[ i ];
 			for ( int d = 0; d < img.numDimensions(); d++ )
 			{
-				assertEquals( positions[ i ][ d ] + spans[ i ] * increments[ i ][ d ], neighborhood.max( d ) );
+				assertEquals( positions[ i ][ d ] + spans[ i ] * Math.abs( increments[ i ][ d ] ), neighborhood.max( d ) );
 			}
 		}
 	}
