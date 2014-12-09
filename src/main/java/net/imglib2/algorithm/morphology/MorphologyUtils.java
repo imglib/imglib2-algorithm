@@ -9,6 +9,7 @@ import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.algorithm.region.localneighborhood.Shape;
 import net.imglib2.img.Img;
@@ -28,117 +29,12 @@ import net.imglib2.type.logic.BitType;
 import net.imglib2.type.operators.Sub;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
+import net.imglib2.view.Views;
 
 public class MorphologyUtils
 {
 
-	static final Neighborhood< BitType > getNeighborhood( final Shape shape, final EuclideanSpace space )
-	{
-		final int numDims = space.numDimensions();
-		final long[] dimensions = Util.getArrayFromValue( 1l, numDims );
-		final ArrayImg< BitType, LongArray > img = ArrayImgs.bits( dimensions );
-		final IterableInterval< Neighborhood< BitType >> neighborhoods = shape.neighborhoods( img );
-		final Neighborhood< BitType > neighborhood = neighborhoods.cursor().next();
-		return neighborhood;
-	}
-
-	/**
-	 * Returns a string representation of the specified flat structuring element
-	 * (given as a {@link Shape}), cast over the dimensionality specified by an
-	 * {@link EuclideanSpace}.
-	 * <p>
-	 * This method only prints the first 3 dimensions of the structuring
-	 * element. Dimensions above 3 are skipped.
-	 *
-	 * @param shape
-	 *            the structuring element to print.
-	 * @param dimensionality
-	 *            the dimensionality to cast it over. This is required as
-	 *            {@link Shape} does not carry a dimensionality, and we need one
-	 *            to generate a neighborhood to iterate.
-	 * @return a string representation of the structuring element.
-	 */
-	public static final String printNeighborhood( final Shape shape, final int dimensionality )
-	{
-		final Img< BitType > neighborhood;
-		{
-			final long[] dimensions = Util.getArrayFromValue( 1l, dimensionality );
-
-			final ArrayImg< BitType, LongArray > img = ArrayImgs.bits( dimensions );
-			final ArrayRandomAccess< BitType > randomAccess = img.randomAccess();
-			randomAccess.setPosition( Util.getArrayFromValue( 0, dimensions.length ) );
-			randomAccess.get().set( true );
-			neighborhood = Dilation.dilateFull( img, shape, 1 );
-		}
-
-		final StringBuilder str = new StringBuilder();
-		for ( int d = 3; d < neighborhood.numDimensions(); d++ )
-		{
-			if ( neighborhood.dimension( d ) > 1 )
-			{
-				str.append( "Cannot print structuring elements with n dimensions > 3.\n" + "Skipping dimensions beyond 3.\n\n" );
-				break;
-			}
-		}
-
-		final RandomAccess< BitType > randomAccess = neighborhood.randomAccess();
-		if ( neighborhood.numDimensions() > 2 )
-		{
-			appendManySlice( randomAccess, neighborhood.dimension( 0 ), neighborhood.dimension( 1 ), neighborhood.dimension( 2 ), str );
-		}
-		else if ( neighborhood.numDimensions() > 1 )
-		{
-			appendSingleSlice( randomAccess, neighborhood.dimension( 0 ), neighborhood.dimension( 1 ), str );
-		}
-		else if ( neighborhood.numDimensions() > 0 )
-		{
-			appendLine( randomAccess, neighborhood.dimension( 0 ), str );
-		}
-		else
-		{
-			str.append( "Void structuring element.\n" );
-		}
-
-		return str.toString();
-	}
-
-	private static final void appendSingleSlice( final RandomAccess< BitType > ra, final long maxX, final long maxY, final StringBuilder str )
-	{
-		// Top line
-		str.append( '┌' );
-		for ( long x = 0; x < maxX; x++ )
-		{
-			str.append( '─' );
-		}
-		str.append( "┐\n" );
-		for ( long y = 0; y < maxY; y++ )
-		{
-			str.append( '│' );
-			ra.setPosition( y, 1 );
-			for ( long x = 0; x < maxX; x++ )
-			{
-				ra.setPosition( x, 0 );
-				if ( ra.get().get() )
-				{
-					str.append( '█' );
-				}
-				else
-				{
-					str.append( ' ' );
-				}
-			}
-			str.append( "│\n" );
-		}
-		// Bottom line
-		str.append( '└' );
-		for ( long x = 0; x < maxX; x++ )
-		{
-			str.append( '─' );
-		}
-		str.append( "┘\n" );
-	}
-
-	private static final void appendLine( final RandomAccess< BitType > ra, final long maxX, final StringBuilder str )
+	static final void appendLine( final RandomAccess< BitType > ra, final long maxX, final StringBuilder str )
 	{
 		// Top line
 		str.append( '┌' );
@@ -249,6 +145,101 @@ public class MorphologyUtils
 		str.append( '\n' );
 	}
 
+	private static final void appendSingleSlice( final RandomAccess< BitType > ra, final long maxX, final long maxY, final StringBuilder str )
+	{
+		// Top line
+		str.append( '┌' );
+		for ( long x = 0; x < maxX; x++ )
+		{
+			str.append( '─' );
+		}
+		str.append( "┐\n" );
+		for ( long y = 0; y < maxY; y++ )
+		{
+			str.append( '│' );
+			ra.setPosition( y, 1 );
+			for ( long x = 0; x < maxX; x++ )
+			{
+				ra.setPosition( x, 0 );
+				if ( ra.get().get() )
+				{
+					str.append( '█' );
+				}
+				else
+				{
+					str.append( ' ' );
+				}
+			}
+			str.append( "│\n" );
+		}
+		// Bottom line
+		str.append( '└' );
+		for ( long x = 0; x < maxX; x++ )
+		{
+			str.append( '─' );
+		}
+		str.append( "┘\n" );
+	}
+
+	static < T extends Type< T > > void copy( final IterableInterval< T > source, final RandomAccessible< T > target, final int numThreads )
+	{
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( source.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final Cursor< T > sourceCursor = source.localizingCursor();
+					sourceCursor.jumpFwd( chunk.getStartPosition() );
+					final RandomAccess< T > targetRandomAccess = target.randomAccess();
+
+					for ( long step = 0; step < chunk.getLoopSize(); step++ )
+					{
+						sourceCursor.fwd();
+						targetRandomAccess.setPosition( sourceCursor );
+						targetRandomAccess.get().set( sourceCursor.get() );
+					}
+				}
+			};
+		}
+
+		SimpleMultiThreading.startAndJoin( threads );
+	}
+
+	static < T extends Type< T > > void copy( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
+	{
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final Cursor< T > targetCursor = target.localizingCursor();
+					targetCursor.jumpFwd( chunk.getStartPosition() );
+					final RandomAccess< T > sourceRandomAccess = source.randomAccess();
+
+					// iterate over the input cursor
+					for ( long step = 0; step < chunk.getLoopSize(); step++ )
+					{
+						targetCursor.fwd();
+						sourceRandomAccess.setPosition( targetCursor );
+						targetCursor.get().set( sourceRandomAccess.get() );
+					}
+				}
+			};
+		}
+
+		SimpleMultiThreading.startAndJoin( threads );
+	}
+
 	/**
 	 * Get an instance of type T from a {@link RandomAccess} on accessible that
 	 * is positioned at the min of interval.
@@ -257,15 +248,25 @@ public class MorphologyUtils
 	 * @param interval
 	 * @return type instance
 	 */
-	public static < T extends Type< T >> T createVariable( final RandomAccessible< T > accessible, final Interval interval )
+	static < T extends Type< T >> T createVariable( final RandomAccessible< T > accessible, final Interval interval )
 	{
 		final RandomAccess< T > a = accessible.randomAccess();
 		interval.min( a );
 		return a.get().createVariable();
 	}
 
+	public static final Neighborhood< BitType > getNeighborhood( final Shape shape, final EuclideanSpace space )
+	{
+		final int numDims = space.numDimensions();
+		final long[] dimensions = Util.getArrayFromValue( 1l, numDims );
+		final ArrayImg< BitType, LongArray > img = ArrayImgs.bits( dimensions );
+		final IterableInterval< Neighborhood< BitType >> neighborhoods = shape.neighborhoods( img );
+		final Neighborhood< BitType > neighborhood = neighborhoods.cursor().next();
+		return neighborhood;
+	}
+
 	@SuppressWarnings( { "rawtypes", "unchecked" } )
-	public static < T > ImgFactory< T > getSuitableFactory( final Dimensions targetSize, final T type )
+	static < T > ImgFactory< T > getSuitableFactory( final Dimensions targetSize, final T type )
 	{
 		if ( type instanceof NativeType )
 		{
@@ -282,65 +283,159 @@ public class MorphologyUtils
 		}
 	}
 
-	public static < T extends Type< T > > void copy( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
+	/**
+	 * Returns a string representation of the specified flat structuring element
+	 * (given as a {@link Shape}), cast over the dimensionality specified by an
+	 * {@link EuclideanSpace}.
+	 * <p>
+	 * This method only prints the first 3 dimensions of the structuring
+	 * element. Dimensions above 3 are skipped.
+	 *
+	 * @param shape
+	 *            the structuring element to print.
+	 * @param dimensionality
+	 *            the dimensionality to cast it over. This is required as
+	 *            {@link Shape} does not carry a dimensionality, and we need one
+	 *            to generate a neighborhood to iterate.
+	 * @return a string representation of the structuring element.
+	 */
+	public static final String printNeighborhood( final Shape shape, final int dimensionality )
 	{
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-		for ( int i = 0; i < threads.length; i++ )
+		final Img< BitType > neighborhood;
 		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final Cursor< T > targetCursor = target.localizingCursor();
-					final RandomAccess< T > sourceRandomAccess = source.randomAccess();
+			final long[] dimensions = Util.getArrayFromValue( 1l, dimensionality );
 
-					// iterate over the input cursor
-					while ( targetCursor.hasNext() )
-					{
-						targetCursor.fwd();
-						sourceRandomAccess.setPosition( targetCursor );
-						targetCursor.get().set( sourceRandomAccess.get() );
-					}
-				}
-			};
+			final ArrayImg< BitType, LongArray > img = ArrayImgs.bits( dimensions );
+			final ArrayRandomAccess< BitType > randomAccess = img.randomAccess();
+			randomAccess.setPosition( Util.getArrayFromValue( 0, dimensions.length ) );
+			randomAccess.get().set( true );
+			neighborhood = Dilation.dilateFull( img, shape, 1 );
 		}
 
-		SimpleMultiThreading.startAndJoin( threads );
+		final StringBuilder str = new StringBuilder();
+		for ( int d = 3; d < neighborhood.numDimensions(); d++ )
+		{
+			if ( neighborhood.dimension( d ) > 1 )
+			{
+				str.append( "Cannot print structuring elements with n dimensions > 3.\n" + "Skipping dimensions beyond 3.\n\n" );
+				break;
+			}
+		}
+
+		final RandomAccess< BitType > randomAccess = neighborhood.randomAccess();
+		if ( neighborhood.numDimensions() > 2 )
+		{
+			appendManySlice( randomAccess, neighborhood.dimension( 0 ), neighborhood.dimension( 1 ), neighborhood.dimension( 2 ), str );
+		}
+		else if ( neighborhood.numDimensions() > 1 )
+		{
+			appendSingleSlice( randomAccess, neighborhood.dimension( 0 ), neighborhood.dimension( 1 ), str );
+		}
+		else if ( neighborhood.numDimensions() > 0 )
+		{
+			appendLine( randomAccess, neighborhood.dimension( 0 ), str );
+		}
+		else
+		{
+			str.append( "Void structuring element.\n" );
+		}
+
+		return str.toString();
 	}
 
-	public static < T extends Type< T > > void copy( final IterableInterval< T > source, final RandomAccessible< T > target, final int numThreads )
+	private static final long size( final Interval interval, final int length )
 	{
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( source.size(), numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-		for ( int i = 0; i < threads.length; i++ )
+		long size = interval.dimension( 0 );
+		for ( int d = 1; d < length; ++d )
 		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final Cursor< T > sourceCursor = source.localizingCursor();
-					final RandomAccess< T > targetRandomAccess = target.randomAccess();
-
-					while ( sourceCursor.hasNext() )
-					{
-						sourceCursor.fwd();
-						targetRandomAccess.setPosition( sourceCursor );
-						targetRandomAccess.get().set( sourceCursor.get() );
-					}
-				}
-			};
+			size *= interval.dimension( d );
 		}
 
-		SimpleMultiThreading.startAndJoin( threads );
+		return size;
 	}
 
 	/**
-	 * Does A = A - B.
+	 * Does A = A - B. Writes the results in A.
+	 * 
+	 * @param A
+	 *            A
+	 * @param B
+	 *            B
+	 * @param numThreads
+	 */
+	static < T extends Sub< T > > void subAAB( final RandomAccessible< T > A, final IterableInterval< T > B, final int numThreads )
+	{
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( B.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final Cursor< T > Bcursor = B.localizingCursor();
+					Bcursor.jumpFwd( chunk.getStartPosition() );
+					final RandomAccess< T > Ara = A.randomAccess();
+
+					for ( long step = 0; step < chunk.getLoopSize(); step++ )
+					{
+						Bcursor.fwd();
+						Ara.setPosition( Bcursor );
+						Ara.get().sub( Bcursor.get() );
+					}
+				}
+			};
+		}
+
+		SimpleMultiThreading.startAndJoin( threads );
+	}
+
+
+	/**
+	 * Does A = A - B. Writes the results in A.
+	 * 
+	 * @param A
+	 *            A
+	 * @param B
+	 *            B
+	 * @param numThreads
+	 */
+	static < T extends Sub< T > > void subAAB2( final IterableInterval< T > A, final RandomAccessible< T > B, final int numThreads )
+	{
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( A.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology source thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final Cursor< T > Acursor = A.localizingCursor();
+					Acursor.jumpFwd( chunk.getStartPosition() );
+					final RandomAccess< T > Bra = B.randomAccess(); // LOL
+
+					for ( long step = 0; step < chunk.getLoopSize(); step++ )
+					{
+						Acursor.fwd();
+						Bra.setPosition( Acursor );
+						Acursor.get().sub( Bra.get() );
+					}
+				}
+			};
+		}
+
+		SimpleMultiThreading.startAndJoin( threads );
+	}
+
+
+	/**
+	 * Does A = B - A. Writes the results in A.
 	 * 
 	 * @param source
 	 *            A
@@ -348,7 +443,7 @@ public class MorphologyUtils
 	 *            B
 	 * @param numThreads
 	 */
-	public static < T extends Sub< T > > void subtractInPlace( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
+	static < T extends Sub< T > & Type< T >> void subABA( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
 	{
 		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
 		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
@@ -356,61 +451,23 @@ public class MorphologyUtils
 		for ( int i = 0; i < threads.length; i++ )
 		{
 			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
-			{
-				@Override
-				public void run()
-				{
-
-					final Cursor< T > targetCursor = target.localizingCursor();
-					final RandomAccess< T > sourceRandomAccess = source.randomAccess();
-
-					while ( targetCursor.hasNext() )
-					{
-						targetCursor.fwd();
-						sourceRandomAccess.setPosition( targetCursor );
-						sourceRandomAccess.get().sub( targetCursor.get() );
-					}
-				}
-			};
-		}
-
-		SimpleMultiThreading.startAndJoin( threads );
-	}
-
-	/**
-	 * Does A = B - A.
-	 * 
-	 * @param source
-	 *            A
-	 * @param target
-	 *            B
-	 * @param numThreads
-	 */
-	public static < T extends Sub< T > & Type< T >> void minusSubtractInPlace( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
-	{
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-
-		for ( int i = 0; i < threads.length; i++ )
-		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			threads[ i ] = new Thread( "Morphology minusSubtractInPlace thread " + i )
 			{
 				@Override
 				public void run()
 				{
 					final T tmp = createVariable( source, target );
 					final Cursor< T > targetCursor = target.localizingCursor();
+					targetCursor.jumpFwd( chunk.getStartPosition() );
 					final RandomAccess< T > sourceRandomAccess = source.randomAccess();
 
-					while ( targetCursor.hasNext() )
+					for ( long step = 0; step < chunk.getLoopSize(); step++ )
 					{
 						targetCursor.fwd();
 						sourceRandomAccess.setPosition( targetCursor );
 
-						tmp.set( sourceRandomAccess.get() );
-						tmp.sub( targetCursor.get() );
+						tmp.set( targetCursor.get() );
+						tmp.sub( sourceRandomAccess.get() );
 
 						sourceRandomAccess.get().set( tmp );
 					}
@@ -420,4 +477,99 @@ public class MorphologyUtils
 
 		SimpleMultiThreading.startAndJoin( threads );
 	}
+
+	/**
+	 * Does A = B - A. Writes the results in A.
+	 * 
+	 * @param source
+	 *            A
+	 * @param target
+	 *            B
+	 * @param numThreads
+	 */
+	static < T extends Sub< T > & Type< T >> void subABA2( final RandomAccessibleInterval< T > source, final RandomAccessible< T > target, final int numThreads )
+	{
+		final long size = size( source, source.numDimensions() );
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( size, numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology minusSubtractInPlaceRAI thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final T tmp = createVariable( target, source );
+					final Cursor< T > sourceCursor = Views.iterable( source ).localizingCursor();
+					sourceCursor.jumpFwd( chunk.getStartPosition() );
+					final RandomAccess< T > targetRandomAccess = target.randomAccess( source );
+
+					for ( long step = 0; step < chunk.getLoopSize(); step++ )
+					{
+
+					}
+					while ( sourceCursor.hasNext() )
+					{
+						sourceCursor.fwd();
+						targetRandomAccess.setPosition( sourceCursor );
+
+						tmp.set( targetRandomAccess.get() );
+						tmp.sub( sourceCursor.get() );
+
+						targetRandomAccess.get().set( tmp );
+					}
+				}
+			};
+		}
+
+		SimpleMultiThreading.startAndJoin( threads );
+	}
+
+	/**
+	 * Does B = A - B. Writes the results in B.
+	 * 
+	 * @param A
+	 *            A
+	 * @param B
+	 *            B
+	 * @param numThreads
+	 */
+	static < T extends Type< T > & Sub< T > > void subBAB( final RandomAccessible< T > A, final IterableInterval< T > B, final int numThreads )
+	{
+		final long size = size( B, B.numDimensions() );
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( size, numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology subtractInPlaceRAI thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final T tmp = createVariable( A, B );
+					final Cursor< T > BCursor = B.localizingCursor();
+					BCursor.jumpFwd( chunk.getStartPosition() );
+					final RandomAccess< T > Ara = A.randomAccess();
+
+					for ( long step = 0; step < chunk.getLoopSize(); step++ )
+					{
+						BCursor.fwd();
+						Ara.setPosition( BCursor );
+
+						tmp.set( Ara.get() );
+						tmp.sub( BCursor.get() );
+
+						BCursor.get().set( tmp );
+					}
+				}
+			};
+		}
+
+		SimpleMultiThreading.startAndJoin( threads );
+	}
+
 }
