@@ -29,10 +29,91 @@ import net.imglib2.type.logic.BitType;
 import net.imglib2.type.operators.Sub;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 public class MorphologyUtils
 {
+
+	/**
+	 * Static util to compute the final image dimensions and required offset
+	 * when performing a full dilation with the specified strel.
+	 * 
+	 * @param source
+	 *            the source image.
+	 * @param strel
+	 *            the strel to use for dilation.
+	 * @return a 2-elements <code>long[][]</code>:
+	 *         <ol start="0">
+	 *         <li>a <code>long[]</code> array with the final image target
+	 *         dimensions.
+	 *         <li>a <code>long[]</code> array with the offset to apply to the
+	 *         source image.
+	 *         </ol>
+	 */
+	static final < T > long[][] computeTargetImageDimensionsAndOffset( final RandomAccessibleInterval< T > source, final Shape strel )
+	{
+		/*
+		 * Compute target image size
+		 */
+
+		final long[] targetDims;
+
+		/*
+		 * Get a neighborhood to play with. Note: if we would have a dedicated
+		 * interface for structuring elements, that would extend Shape and
+		 * Dimensions, we would need to do what we are going to do now. On top
+		 * of that, this is the part that causes the full dilation not to be a
+		 * real full dilation: if the structuring element has more dimensions
+		 * than the source, they are ignored. This is because we use the source
+		 * as the Dimension to create the sample neighborhood we play with.
+		 */
+		final Neighborhood< BitType > sampleNeighborhood = MorphologyUtils.getNeighborhood( strel, source );
+		int ndims = sampleNeighborhood.numDimensions();
+		ndims = Math.max( ndims, source.numDimensions() );
+		targetDims = new long[ ndims ];
+		for ( int d = 0; d < ndims; d++ )
+		{
+			long d1;
+			if ( d < source.numDimensions() )
+			{
+				d1 = source.dimension( d );
+			}
+			else
+			{
+				d1 = 1;
+			}
+
+			long d2;
+			if ( d < sampleNeighborhood.numDimensions() )
+			{
+				d2 = sampleNeighborhood.dimension( d );
+			}
+			else
+			{
+				d2 = 1;
+			}
+
+			targetDims[ d ] = d1 + d2 - 1;
+		}
+
+		// Offset coordinates so that they match the source coordinates, which
+		// will not be extended.
+		final long[] offset = new long[ source.numDimensions() ];
+		for ( int d = 0; d < offset.length; d++ )
+		{
+			if ( d < sampleNeighborhood.numDimensions() )
+			{
+				offset[ d ] = -sampleNeighborhood.min( d );
+			}
+			else
+			{
+				offset[ d ] = 0;
+			}
+		}
+
+		return new long[][] { targetDims, offset };
+	}
 
 	static final void appendLine( final RandomAccess< BitType > ra, final long maxX, final StringBuilder str )
 	{
@@ -210,7 +291,7 @@ public class MorphologyUtils
 		SimpleMultiThreading.startAndJoin( threads );
 	}
 
-	static < T extends Type< T > > void copy( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
+	static < T extends Type< T > > void copy2( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
 	{
 		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
 		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
@@ -238,6 +319,43 @@ public class MorphologyUtils
 		}
 
 		SimpleMultiThreading.startAndJoin( threads );
+	}
+
+	static < T extends Type< T > > Img< T > copyCropped( final Img< T > largeSource, final Interval interval, final int numThreads )
+	{
+		final long[] offset = new long[ largeSource.numDimensions() ];
+		for ( int d = 0; d < offset.length; d++ )
+		{
+			offset[ d ] = ( largeSource.dimension( d ) - interval.dimension( d ) ) / 2;
+		}
+		final Img< T > create = largeSource.factory().create( interval, largeSource.firstElement().copy() );
+
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( create.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final IntervalView< T > intervalView = Views.offset( largeSource, offset );
+					final Cursor< T > cursor = create.cursor();
+					cursor.jumpFwd( chunk.getStartPosition() );
+					final RandomAccess< T > randomAccess = intervalView.randomAccess();
+					for ( long step = 0; step < chunk.getLoopSize(); step++ )
+					{
+						cursor.fwd();
+						randomAccess.setPosition( cursor );
+						cursor.get().set( randomAccess.get() );
+					}
+				}
+			};
+		}
+
+		SimpleMultiThreading.startAndJoin( threads );
+		return create;
 	}
 
 	/**
