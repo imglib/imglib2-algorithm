@@ -25,87 +25,6 @@ import net.imglib2.view.Views;
 public class Erosion
 {
 	/**
-	 * Static util to compute the final image dimensions and required offset
-	 * when performing a full erosion with the specified strel.
-	 * 
-	 * @param source
-	 *            the source image.
-	 * @param strel
-	 *            the strel to use for erosion.
-	 * @return a 2-elements <code>long[][]</code>:
-	 *         <ol start="0">
-	 *         <li>a <code>long[]</code> array with the final image target
-	 *         dimensions.
-	 *         <li>a <code>long[]</code> array with the offset to apply to the
-	 *         source image.
-	 *         </ol>
-	 */
-	private static final < T > long[][] computeTargetImageDimensionsAndOffset( final RandomAccessibleInterval< T > source, final Shape strel )
-	{
-		/*
-		 * Compute target image size
-		 */
-
-		final long[] targetDims;
-
-		/*
-		 * Get a neighborhood to play with. Note: if we would have a dedicated
-		 * interface for structuring elements, that would extend Shape and
-		 * Dimensions, we would need to do what we are going to do now. On top
-		 * of that, this is the part that causes the full erosion not to be a
-		 * real full erosion: if the structuring element has more dimensions
-		 * than the source, they are ignored. This is because we use the source
-		 * as the Dimension to create the sample neighborhood we play with.
-		 */
-		final Neighborhood< BitType > sampleNeighborhood = MorphologyUtils.getNeighborhood( strel, source );
-		int ndims = sampleNeighborhood.numDimensions();
-		ndims = Math.max( ndims, source.numDimensions() );
-		targetDims = new long[ ndims ];
-		for ( int d = 0; d < ndims; d++ )
-		{
-			long d1;
-			if ( d < source.numDimensions() )
-			{
-				d1 = source.dimension( d );
-			}
-			else
-			{
-				d1 = 1;
-			}
-
-			long d2;
-			if ( d < sampleNeighborhood.numDimensions() )
-			{
-				d2 = sampleNeighborhood.dimension( d );
-			}
-			else
-			{
-				d2 = 1;
-			}
-
-			targetDims[ d ] = Math.max( 1, d1 - ( d2 - 1 ) );
-			// At least of size 1 in all dimensions. We do not prune dimensions.
-		}
-
-		// Offset coordinates so that they match the source coordinates, which
-		// will not be extended.
-		final long[] offset = new long[ source.numDimensions() ];
-		for ( int d = 0; d < offset.length; d++ )
-		{
-			if ( d < sampleNeighborhood.numDimensions() )
-			{
-				offset[ d ] = Math.min( sampleNeighborhood.min( d ), targetDims[ d ] - 1 );
-			}
-			else
-			{
-				offset[ d ] = 0;
-			}
-		}
-
-		return new long[][] { targetDims, offset };
-	}
-
-	/**
 	 * Performs the erosion morphological operation, on a {@link RealType}
 	 * {@link Img} using a list of {@link Shape}s as a flat structuring element.
 	 * 
@@ -138,9 +57,9 @@ public class Erosion
 		Img< T > target = source;
 		for ( final Shape strel : strels )
 		{
-			target = erode( target, strel, numThreads );
+			target = erodeFull( target, strel, numThreads );
 		}
-		return target;
+		return MorphologyUtils.copyCropped( target, source, numThreads );
 	}
 
 	/**
@@ -190,9 +109,9 @@ public class Erosion
 		Img< T > target = source;
 		for ( final Shape strel : strels )
 		{
-			target = erode( target, strel, maxVal, numThreads );
+			target = erodeFull( target, strel, maxVal, numThreads );
 		}
-		return target;
+		return MorphologyUtils.copyCropped( target, source, numThreads );
 	}
 
 	/**
@@ -761,7 +680,7 @@ public class Erosion
 	 */
 	public static < T extends RealType< T >> Img< T > erodeFull( final Img< T > source, final Shape strel, final int numThreads )
 	{
-		final long[][] dimensionsAndOffset = computeTargetImageDimensionsAndOffset( source, strel );
+		final long[][] dimensionsAndOffset = MorphologyUtils.computeTargetImageDimensionsAndOffset( source, strel );
 
 		final long[] targetDims = dimensionsAndOffset[ 0 ];
 		final long[] offset = dimensionsAndOffset[ 1 ];
@@ -829,7 +748,7 @@ public class Erosion
 	public static < T extends Type< T > & Comparable< T > > Img< T > erodeFull( final Img< T > source, final Shape strel, final T maxVal, final int numThreads )
 	{
 
-		final long[][] dimensionsAndOffset = computeTargetImageDimensionsAndOffset( source, strel );
+		final long[][] dimensionsAndOffset = MorphologyUtils.computeTargetImageDimensionsAndOffset( source, strel );
 		final long[] targetDims = dimensionsAndOffset[ 0 ];
 		final long[] offset = dimensionsAndOffset[ 1 ];
 
@@ -856,7 +775,7 @@ public class Erosion
 	 * <p>
 	 * It is the caller responsibility to ensure that the source is sufficiently
 	 * padded to properly cover the target range plus the shape size. See
-	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)} *
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * The structuring element is specified through a list of {@link Shape}s, to
 	 * allow for performance optimization through structuring element
@@ -875,7 +794,7 @@ public class Erosion
 	 *            the type of the source image. Must be a sub-type of
 	 *            <code>T extends {@link RealType}</code>.
 	 */
-	public static < T extends RealType< T > > void erodeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T > > void erodeInPlace( final RandomAccessible< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
 	{
 		for ( final Shape strel : strels )
 		{
@@ -967,20 +886,17 @@ public class Erosion
 	 *            the type of the source image. Must be a sub-type of
 	 *            <code>T extends {@link RealType}</code>.
 	 */
-	public static < T extends RealType< T > > void erodeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final Shape strel, final int numThreads )
+	public static < T extends RealType< T > > void erodeInPlace( final RandomAccessible< T > source, final Interval interval, final Shape strel, final int numThreads )
 	{
 		final T maxVal = MorphologyUtils.createVariable( source, interval );
-		maxVal.setReal( maxVal.getMaxValue() );
-		final ExtendedRandomAccessibleInterval< T, RandomAccessibleInterval< T >> extended = Views.extendValue( source, maxVal );
-
 		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, maxVal );
 		final Img< T > img = factory.create( interval, maxVal );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );
 
-		erode( extended, translated, strel, numThreads );
-		MorphologyUtils.copy( translated, extended, numThreads );
+		erode( source, translated, strel, numThreads );
+		MorphologyUtils.copy( translated, source, numThreads );
 	}
 
 	/**
