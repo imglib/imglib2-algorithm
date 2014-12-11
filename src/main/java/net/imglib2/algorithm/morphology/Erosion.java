@@ -293,26 +293,44 @@ public class Erosion
 			erode( source, target, strels.get( 0 ), maxVal, numThreads );
 			return;
 		}
-
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( target, maxVal );
-		Img< T > temp = factory.create( target, maxVal );
+		
+		// Compute inflated temp size and offset.
+		final long[] targetDims = new long[ target.numDimensions() ];
 		final long[] translation = new long[ target.numDimensions() ];
-		target.min( translation );
-		IntervalView< T > translated = Views.translate( temp, translation );
-
-		// First shape.
-		erode( source, translated, strels.get( 0 ), maxVal, numThreads );
-
-		// Middle shapes.
-		for ( int i = 1; i < strels.size() - 1; i++ )
+		for ( int d = 0; d < targetDims.length; d++ )
 		{
-			temp = erode( temp, strels.get( i ), maxVal, numThreads );
+			targetDims[ d ] = target.dimension( d );
+			translation[ d ] = target.min( d );
+		}
+		for ( final Shape strel : strels )
+		{
+			final Neighborhood< BitType > nh = MorphologyUtils.getNeighborhood( strel, target );
+			for ( int d = 0; d < translation.length; d++ )
+			{
+				translation[ d ] -= nh.dimension( d ) / 2;
+				targetDims[ d ] += nh.dimension( d ) - 1;
+			}
 		}
 
-		// Last shape
-		translated = Views.translate( temp, translation );
-		final ExtendedRandomAccessibleInterval< T, IntervalView< T >> extended = Views.extendValue( translated, maxVal );
-		erode( extended, target, strels.get( strels.size() - 1 ), maxVal, numThreads );
+		// First shape -> write to temp.
+		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( targetDims, maxVal );
+		Img< T > temp = factory.create( targetDims, maxVal );
+		final IntervalView< T > translated = Views.translate( temp, translation );
+		erode( source, translated, strels.get( 0 ), maxVal, numThreads );
+		
+		// Middle and last shapes -> do full erosion.
+		for ( int i = 1; i < strels.size(); i++ )
+		{
+			temp = erodeFull( temp, strels.get( i ), maxVal, numThreads );
+		}
+
+		// Copy-crop back on target, focusing on the center part.
+		final long[] offset = new long[ target.numDimensions() ];
+		for ( int d = 0; d < offset.length; d++ )
+		{
+			offset[ d ] = target.min( d ) - ( ( temp.dimension( d ) - target.dimension( d ) ) / 2 );
+		}
+		MorphologyUtils.copy2( Views.translate( temp, offset ), target, numThreads );
 	}
 
 	/**
@@ -439,8 +457,8 @@ public class Erosion
 					public void run()
 					{
 						final RandomAccess< Neighborhood< T >> randomAccess = accessible.randomAccess( target );
-						@SuppressWarnings( "unchecked" )
 						final Object tmp2 = target.cursor();
+						@SuppressWarnings( "unchecked" )
 						final Cursor< BitType > cursorTarget = ( Cursor< BitType > ) tmp2;
 						cursorTarget.jumpFwd( chunk.getStartPosition() );
 
@@ -448,8 +466,8 @@ public class Erosion
 						{
 							cursorTarget.fwd();
 							randomAccess.setPosition( cursorTarget );
-							@SuppressWarnings( "unchecked" )
 							final Object tmp3 = randomAccess.get();
+							@SuppressWarnings( "unchecked" )
 							final Neighborhood< BitType > neighborhood = ( Neighborhood< BitType > ) tmp3;
 							final Cursor< BitType > nc = neighborhood.cursor();
 

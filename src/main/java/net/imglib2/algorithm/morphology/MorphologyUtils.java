@@ -5,6 +5,7 @@ import java.util.Vector;
 import net.imglib2.Cursor;
 import net.imglib2.Dimensions;
 import net.imglib2.EuclideanSpace;
+import net.imglib2.FinalDimensions;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
@@ -51,7 +52,7 @@ public class MorphologyUtils
 	 *         source image.
 	 *         </ol>
 	 */
-	static final < T > long[][] computeTargetImageDimensionsAndOffset( final RandomAccessibleInterval< T > source, final Shape strel )
+	static final < T > long[][] computeTargetImageDimensionsAndOffset( final Interval source, final Shape strel )
 	{
 		/*
 		 * Compute target image size
@@ -335,7 +336,7 @@ public class MorphologyUtils
 		for ( int i = 0; i < threads.length; i++ )
 		{
 			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			threads[ i ] = new Thread( "Morphology copyCropped thread " + i )
 			{
 				@Override
 				public void run()
@@ -381,6 +382,12 @@ public class MorphologyUtils
 		final IterableInterval< Neighborhood< BitType >> neighborhoods = shape.neighborhoods( img );
 		final Neighborhood< BitType > neighborhood = neighborhoods.cursor().next();
 		return neighborhood;
+	}
+
+	static < T > ImgFactory< T > getSuitableFactory( final long[] targetSize, final T type )
+	{
+		final FinalDimensions dim = FinalDimensions.wrap( targetSize );
+		return getSuitableFactory( dim, type );
 	}
 
 	@SuppressWarnings( { "rawtypes", "unchecked" } )
