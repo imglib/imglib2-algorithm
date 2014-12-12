@@ -312,16 +312,16 @@ public class Erosion
 			}
 		}
 
-		// First shape -> write to temp.
+		// First shape -> write to enlarged temp.
 		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( targetDims, maxVal );
 		Img< T > temp = factory.create( targetDims, maxVal );
 		final IntervalView< T > translated = Views.translate( temp, translation );
 		erode( source, translated, strels.get( 0 ), maxVal, numThreads );
 		
-		// Middle and last shapes -> do full erosion.
+		// Middle and last shapes -> do erosion.
 		for ( int i = 1; i < strels.size(); i++ )
 		{
-			temp = erodeFull( temp, strels.get( i ), maxVal, numThreads );
+			temp = erode( temp, strels.get( i ), maxVal, numThreads );
 		}
 
 		// Copy-crop back on target, focusing on the center part.
