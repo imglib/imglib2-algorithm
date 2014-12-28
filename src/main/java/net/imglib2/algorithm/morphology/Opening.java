@@ -15,6 +15,13 @@ import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
+/**
+ * Morphological opening for ImgLib2. See <a
+ * href="http://en.wikipedia.org/wiki/Opening_(morphology)">Opening_(
+ * morphology)</a>.
+ * 
+ * @author Jean-Yves Tinevez - 2014
+ */
 public class Opening
 {
 	/**
@@ -78,10 +85,10 @@ public class Opening
 	 *            element.
 	 * @param minVal
 	 *            a T containing set to a value smaller than any of the values
-	 *            in the source {@link Img} (against {@link Comparable}.
+	 *            in the source {@link Img} (against {@link Comparable}).
 	 * @param maxVal
 	 *            a T containing set to a value larger than any of the values in
-	 *            the source {@link Img} (against {@link Comparable}.
+	 *            the source {@link Img} (against {@link Comparable}).
 	 * @param numThreads
 	 *            the number of threads to use for calculation.
 	 * @param <T>
@@ -148,10 +155,10 @@ public class Opening
 	 *            the {@link Shape} that serves as a structuring element.
 	 * @param minVal
 	 *            a T containing set to a value smaller than any of the values
-	 *            in the source {@link Img} (against {@link Comparable}.
+	 *            in the source {@link Img} (against {@link Comparable}).
 	 * @param maxVal
 	 *            a T containing set to a value larger than any of the values in
-	 *            the source {@link Img} (against {@link Comparable}.
+	 *            the source {@link Img} (against {@link Comparable}).
 	 * @param numThreads
 	 *            the number of threads to use for calculation.
 	 * @param <T>
@@ -259,10 +266,10 @@ public class Opening
 	 *            the structuring element, as a list of {@link Shape}s.
 	 * @param minVal
 	 *            a T containing set to a value smaller than any of the values
-	 *            in the source (against {@link Comparable}.
+	 *            in the source (against {@link Comparable}).
 	 * @param maxVal
 	 *            a T containing set to a value larger than any of the values in
-	 *            the source (against {@link Comparable}.
+	 *            the source (against {@link Comparable}).
 	 * @param numThreads
 	 *            the number of threads to use for calculation.
 	 * @param <T>
@@ -365,10 +372,10 @@ public class Opening
 	 *            the {@link Shape} that serves as a structuring element.
 	 * @param minVal
 	 *            a T containing set to a value smaller than any of the values
-	 *            in the source (against {@link Comparable}.
+	 *            in the source (against {@link Comparable}).
 	 * @param maxVal
 	 *            a T containing set to a value larger than any of the values in
-	 *            the source (against {@link Comparable}.
+	 *            the source (against {@link Comparable}).
 	 * @param numThreads
 	 *            the number of threads to use for calculation.
 	 * @param <T>
@@ -410,7 +417,7 @@ public class Opening
 	 * The structuring element is specified through a list of {@link Shape}s, to
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
-	 * the list is empty, the source image is returned.
+	 * the list is empty, the source image is left untouched.
 	 * 
 	 * @param source
 	 *            the source image.
@@ -454,7 +461,7 @@ public class Opening
 	 * The structuring element is specified through a list of {@link Shape}s, to
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
-	 * the list is empty, the source image is returned.
+	 * the list is empty, the source image is left untouched.
 	 * <p>
 	 * This method relies on specified minimal and maximal values to start
 	 * comparing to other pixels in the neighborhood. For this code to properly
@@ -472,10 +479,10 @@ public class Opening
 	 *            the structuring element as a list of {@link Shape}s.
 	 * @param minVal
 	 *            a T containing set to a value smaller than any of the values
-	 *            in the source (against {@link Comparable}.
+	 *            in the source (against {@link Comparable}).
 	 * @param maxVal
 	 *            a T containing set to a value larger than any of the values in
-	 *            the source (against {@link Comparable}.
+	 *            the source (against {@link Comparable}).
 	 * @param numThreads
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
@@ -506,14 +513,6 @@ public class Opening
 	 * It is the caller responsibility to ensure that the source is sufficiently
 	 * padded to properly cover the target range plus the shape size. See
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}.
-	 * <p>
-	 * This method relies on specified minimal and maximal values to start
-	 * comparing to other pixels in the neighborhood. For this code to properly
-	 * perform opening, it is sufficient that the specified max value is larger
-	 * (against {@link Comparable}) than any of the value found in the source
-	 * image, and conversely for the min value. These normally unseen parameters
-	 * are required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
 	 * 
 	 * @param source
 	 *            the source image.
@@ -554,11 +553,6 @@ public class Opening
 	 * padded to properly cover the target range plus the shape size. See
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
-	 * The structuring element is specified through a list of {@link Shape}s, to
-	 * allow for performance optimization through structuring element
-	 * decomposition. Each shape is processed in order as given in the list. If
-	 * the list is empty, the source image is returned.
-	 * <p>
 	 * This method relies on specified minimal and maximal values to start
 	 * comparing to other pixels in the neighborhood. For this code to properly
 	 * perform opening, it is sufficient that the specified max value is larger
@@ -575,10 +569,10 @@ public class Opening
 	 *            the structuring element as a {@link Shape}.
 	 * @param minVal
 	 *            a T containing set to a value smaller than any of the values
-	 *            in the source (against {@link Comparable}.
+	 *            in the source (against {@link Comparable}).
 	 * @param maxVal
 	 *            a T containing set to a value larger than any of the values in
-	 *            the source (against {@link Comparable}.
+	 *            the source (against {@link Comparable}).
 	 * @param numThreads
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
