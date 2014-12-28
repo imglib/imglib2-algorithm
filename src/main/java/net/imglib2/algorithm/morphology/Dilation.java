@@ -294,25 +294,43 @@ public class Dilation
 			return;
 		}
 
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( target, minVal );
-		Img< T > temp = factory.create( target, minVal );
+		// Compute inflated temp size and offset.
+		final long[] targetDims = new long[ target.numDimensions() ];
 		final long[] translation = new long[ target.numDimensions() ];
-		target.min( translation );
-		IntervalView< T > translated = Views.translate( temp, translation );
+		for ( int d = 0; d < targetDims.length; d++ )
+		{
+			targetDims[ d ] = target.dimension( d );
+			translation[ d ] = target.min( d );
+		}
+		for ( final Shape strel : strels )
+		{
+			final Neighborhood< BitType > nh = MorphologyUtils.getNeighborhood( strel, target );
+			for ( int d = 0; d < translation.length; d++ )
+			{
+				translation[ d ] -= nh.dimension( d ) / 2;
+				targetDims[ d ] += nh.dimension( d ) - 1;
+			}
+		}
 
-		// First shape.
+		// First shape -> write to enlarged temp.
+		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( targetDims, minVal );
+		Img< T > temp = factory.create( targetDims, minVal );
+		final IntervalView< T > translated = Views.translate( temp, translation );
 		dilate( source, translated, strels.get( 0 ), minVal, numThreads );
 
-		// Middle shapes.
-		for ( int i = 1; i < strels.size() - 1; i++ )
+		// Middle and last shapes -> do erosion.
+		for ( int i = 1; i < strels.size(); i++ )
 		{
 			temp = dilate( temp, strels.get( i ), minVal, numThreads );
 		}
 
-		// Last shape
-		translated = Views.translate( temp, translation );
-		final ExtendedRandomAccessibleInterval< T, IntervalView< T >> extended = Views.extendValue( translated, minVal );
-		dilate( extended, target, strels.get( strels.size() - 1 ), minVal, numThreads );
+		// Copy-crop back on target, focusing on the center part.
+		final long[] offset = new long[ target.numDimensions() ];
+		for ( int d = 0; d < offset.length; d++ )
+		{
+			offset[ d ] = target.min( d ) - ( ( temp.dimension( d ) - target.dimension( d ) ) / 2 );
+		}
+		MorphologyUtils.copy2( Views.translate( temp, offset ), target, numThreads );
 	}
 
 	/**
