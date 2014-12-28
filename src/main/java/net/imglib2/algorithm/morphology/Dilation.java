@@ -57,9 +57,9 @@ public class Dilation
 		Img< T > target = source;
 		for ( final Shape strel : strels )
 		{
-			target = dilate( target, strel, numThreads );
+			target = dilateFull( target, strel, numThreads );
 		}
-		return target;
+		return MorphologyUtils.copyCropped( target, source, numThreads );
 	}
 
 	/**
@@ -109,9 +109,9 @@ public class Dilation
 		Img< T > target = source;
 		for ( final Shape strel : strels )
 		{
-			target = dilate( target, strel, minVal, numThreads );
+			target = dilateFull( target, strel, minVal, numThreads );
 		}
-		return target;
+		return MorphologyUtils.copyCropped( target, source, numThreads );
 	}
 
 	/**
