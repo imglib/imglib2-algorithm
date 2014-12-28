@@ -552,7 +552,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * This method performs what is called the 'full' dilation. That is: the
-	 * result image has its dimension dilated by the structuring element, with
+	 * result image has its dimension enlarged by the structuring element, with
 	 * respect to the source image. It is limited to flat structuring elements,
 	 * only having <code>on/off</code> pixels, contrary to grayscale structuring
 	 * elements. This allows to simply use a {@link Shape} as a type for these
@@ -603,7 +603,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * This method performs what is called the 'full' dilation. That is: the
-	 * result image has its dimension dilated by the structuring element, with
+	 * result image has its dimension enlarged by the structuring element, with
 	 * respect to the source image. It is limited to flat structuring elements,
 	 * only having <code>on/off</code> pixels, contrary to grayscale structuring
 	 * elements. This allows to simply use a {@link Shape} as a type for these
@@ -668,7 +668,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * This method performs what is called the 'full' dilation. That is: the
-	 * result image has its dimension dilated by the structuring element, with
+	 * result image has its dimension enlarged by the structuring element, with
 	 * respect to the source image. It is limited to flat structuring elements,
 	 * only having <code>on/off</code> pixels, contrary to grayscale structuring
 	 * elements. This allows to simply use a {@link Shape} as a type for these
@@ -721,7 +721,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * This method performs what is called the 'full' dilation. That is: the
-	 * result image has its dimension dilated by the structuring element, with
+	 * result image has its dimension enlarged by the structuring element, with
 	 * respect to the source image. It is limited to flat structuring elements,
 	 * only having <code>on/off</code> pixels, contrary to grayscale structuring
 	 * elements. This allows to simply use a {@link Shape} as a type for these
