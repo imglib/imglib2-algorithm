@@ -25,86 +25,6 @@ import net.imglib2.view.Views;
 public class Dilation
 {
 	/**
-	 * Static util to compute the final image dimensions and required offset
-	 * when performing a full dilation with the specified strel.
-	 * 
-	 * @param source
-	 *            the source image.
-	 * @param strel
-	 *            the strel to use for dilation.
-	 * @return a 2-elements <code>long[][]</code>:
-	 *         <ol start="0">
-	 *         <li>a <code>long[]</code> array with the final image target
-	 *         dimensions.
-	 *         <li>a <code>long[]</code> array with the offset to apply to the
-	 *         source image.
-	 *         </ol>
-	 */
-	private static final < T > long[][] computeTargetImageDimensionsAndOffset( final RandomAccessibleInterval< T > source, final Shape strel )
-	{
-		/*
-		 * Compute target image size
-		 */
-
-		final long[] targetDims;
-
-		/*
-		 * Get a neighborhood to play with. Note: if we would have a dedicated
-		 * interface for structuring elements, that would extend Shape and
-		 * Dimensions, we would need to do what we are going to do now. On top
-		 * of that, this is the part that causes the full dilation not to be a
-		 * real full dilation: if the structuring element has more dimensions
-		 * than the source, they are ignored. This is because we use the source
-		 * as the Dimension to create the sample neighborhood we play with.
-		 */
-		final Neighborhood< BitType > sampleNeighborhood = MorphologyUtils.getNeighborhood( strel, source );
-		int ndims = sampleNeighborhood.numDimensions();
-		ndims = Math.max( ndims, source.numDimensions() );
-		targetDims = new long[ ndims ];
-		for ( int d = 0; d < ndims; d++ )
-		{
-			long d1;
-			if ( d < source.numDimensions() )
-			{
-				d1 = source.dimension( d );
-			}
-			else
-			{
-				d1 = 1;
-			}
-
-			long d2;
-			if ( d < sampleNeighborhood.numDimensions() )
-			{
-				d2 = sampleNeighborhood.dimension( d );
-			}
-			else
-			{
-				d2 = 1;
-			}
-
-			targetDims[ d ] = d1 + d2 - 1;
-		}
-
-		// Offset coordinates so that they match the source coordinates, which
-		// will not be extended.
-		final long[] offset = new long[ source.numDimensions() ];
-		for ( int d = 0; d < offset.length; d++ )
-		{
-			if ( d < sampleNeighborhood.numDimensions() )
-			{
-				offset[ d ] = -sampleNeighborhood.min( d );
-			}
-			else
-			{
-				offset[ d ] = 0;
-			}
-		}
-
-		return new long[][] { targetDims, offset };
-	}
-
-	/**
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link Img} using a list of {@link Shape}s as a flat structuring element.
 	 * 
@@ -760,7 +680,7 @@ public class Dilation
 	 */
 	public static < T extends RealType< T >> Img< T > dilateFull( final Img< T > source, final Shape strel, final int numThreads )
 	{
-		final long[][] dimensionsAndOffset = computeTargetImageDimensionsAndOffset( source, strel );
+		final long[][] dimensionsAndOffset = MorphologyUtils.computeTargetImageDimensionsAndOffset( source, strel );
 
 		final long[] targetDims = dimensionsAndOffset[ 0 ];
 		final long[] offset = dimensionsAndOffset[ 1 ];
@@ -828,7 +748,7 @@ public class Dilation
 	public static < T extends Type< T > & Comparable< T > > Img< T > dilateFull( final Img< T > source, final Shape strel, final T minVal, final int numThreads )
 	{
 
-		final long[][] dimensionsAndOffset = computeTargetImageDimensionsAndOffset( source, strel );
+		final long[][] dimensionsAndOffset = MorphologyUtils.computeTargetImageDimensionsAndOffset( source, strel );
 		final long[] targetDims = dimensionsAndOffset[ 0 ];
 		final long[] offset = dimensionsAndOffset[ 1 ];
 
