@@ -1,7 +1,6 @@
 package net.imglib2.algorithm.morphology;
 
 import static org.junit.Assert.assertEquals;
-import ij.ImageJ;
 
 import java.util.List;
 import java.util.Random;
@@ -15,7 +14,6 @@ import net.imglib2.algorithm.region.localneighborhood.Neighborhood;
 import net.imglib2.algorithm.region.localneighborhood.Shape;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Util;
