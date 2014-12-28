@@ -54,7 +54,7 @@ public class ErosionTest
 
 		diamondShape = new DiamondShape( 8 );
 		diamondStrelDecomp = StructuringElements.diamond( 8, 2, true );
-		diamondStrelStraight = StructuringElements.diamond( 8, 2, true );
+		diamondStrelStraight = StructuringElements.diamond( 8, 2, false );
 
 		interval = FinalInterval.createMinSize( 10, 10, 20, 20 );
 
