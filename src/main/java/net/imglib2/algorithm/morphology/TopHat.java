@@ -38,6 +38,12 @@ public class TopHat
 	 * limited to flat structuring elements, only having <code>on/off</code>
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the source image is returned.
+	 * <p>
 	 * 
 	 * @param source
 	 *            the source image.
