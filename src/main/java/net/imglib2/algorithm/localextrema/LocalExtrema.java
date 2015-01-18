@@ -111,7 +111,7 @@ public class LocalExtrema
 		final int splitd = n - 1;
 		// FIXME is there a better way to determine number of threads
 		final int numThreads = Runtime.getRuntime().availableProcessors();
-		final int numTasks = numThreads <= 1 ? 1 : ( int ) Math.min( full.dimension( splitd ), numThreads * 20 );
+		final int numTasks = Math.max( numThreads <= 1 ? 1 : ( int ) Math.min( full.dimension( splitd ), numThreads * 20 ), 1);
 		final long dsize = full.dimension( splitd ) / numTasks;
 		final long[] min = new long[ n ];
 		final long[] max = new long[ n ];
