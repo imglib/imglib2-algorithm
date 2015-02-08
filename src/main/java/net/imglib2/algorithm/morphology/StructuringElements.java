@@ -3,14 +3,14 @@ package net.imglib2.algorithm.morphology;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.imglib2.algorithm.morphology.neighborhoods.CenteredRectangleShape;
-import net.imglib2.algorithm.morphology.neighborhoods.DiamondShape;
-import net.imglib2.algorithm.morphology.neighborhoods.DiamondTipsShape;
-import net.imglib2.algorithm.morphology.neighborhoods.HorizontalLineShape;
-import net.imglib2.algorithm.morphology.neighborhoods.PeriodicLineShape;
-import net.imglib2.algorithm.region.localneighborhood.HyperSphereShape;
-import net.imglib2.algorithm.region.localneighborhood.RectangleShape;
-import net.imglib2.algorithm.region.localneighborhood.Shape;
+import net.imglib2.algorithm.neighborhood.CenteredRectangleShape;
+import net.imglib2.algorithm.neighborhood.DiamondShape;
+import net.imglib2.algorithm.neighborhood.DiamondTipsShape;
+import net.imglib2.algorithm.neighborhood.HorizontalLineShape;
+import net.imglib2.algorithm.neighborhood.HyperSphereShape;
+import net.imglib2.algorithm.neighborhood.PeriodicLineShape;
+import net.imglib2.algorithm.neighborhood.RectangleShape;
+import net.imglib2.algorithm.neighborhood.Shape;
 
 /**
  * A collection of static utilities to facilitate the creation of morphological
