@@ -450,8 +450,8 @@ public class Dilation
 					public void run()
 					{
 						final RandomAccess< Neighborhood< T >> randomAccess = accessible.randomAccess( target );
-						@SuppressWarnings( "unchecked" )
 						final Object tmp2 = target.cursor();
+						@SuppressWarnings( "unchecked" )
 						final Cursor< BitType > cursorDilated = ( Cursor< BitType > ) tmp2;
 						cursorDilated.jumpFwd( chunk.getStartPosition() );
 
@@ -460,8 +460,8 @@ public class Dilation
 							cursorDilated.fwd();
 							randomAccess.setPosition( cursorDilated );
 							final Neighborhood< T > neighborhood = randomAccess.get();
-							@SuppressWarnings( "unchecked" )
 							final Object tmp3 = neighborhood.cursor();
+							@SuppressWarnings( "unchecked" )
 							final Cursor< BitType > nc = ( Cursor< BitType > ) tmp3;
 
 							while ( nc.hasNext() )
