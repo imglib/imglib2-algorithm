@@ -39,7 +39,7 @@ public class MorphologyUtils
 	/**
 	 * Static util to compute the final image dimensions and required offset
 	 * when performing a full dilation with the specified strel.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -270,7 +270,7 @@ public class MorphologyUtils
 		for ( int i = 0; i < threads.length; i++ )
 		{
 			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			threads[ i ] = new Thread( "Morphology copy thread " + i )
 			{
 				@Override
 				public void run()
@@ -299,7 +299,7 @@ public class MorphologyUtils
 		for ( int i = 0; i < threads.length; i++ )
 		{
 			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			threads[ i ] = new Thread( "Morphology copy2 thread " + i )
 			{
 				@Override
 				public void run()
@@ -362,7 +362,7 @@ public class MorphologyUtils
 	/**
 	 * Get an instance of type T from a {@link RandomAccess} on accessible that
 	 * is positioned at the min of interval.
-	 * 
+	 *
 	 * @param accessible
 	 * @param interval
 	 * @return type instance
@@ -481,7 +481,7 @@ public class MorphologyUtils
 
 	/**
 	 * Does A = A - B. Writes the results in A.
-	 * 
+	 *
 	 * @param A
 	 *            A
 	 * @param B
@@ -496,7 +496,7 @@ public class MorphologyUtils
 		for ( int i = 0; i < threads.length; i++ )
 		{
 			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subtractInPlace thread " + i )
+			threads[ i ] = new Thread( "Morphology subAAB thread " + i )
 			{
 				@Override
 				public void run()
@@ -521,7 +521,7 @@ public class MorphologyUtils
 
 	/**
 	 * Does A = A - B. Writes the results in A.
-	 * 
+	 *
 	 * @param A
 	 *            A
 	 * @param B
@@ -536,7 +536,7 @@ public class MorphologyUtils
 		for ( int i = 0; i < threads.length; i++ )
 		{
 			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology source thread " + i )
+			threads[ i ] = new Thread( "Morphology subAAB2 thread " + i )
 			{
 				@Override
 				public void run()
@@ -561,7 +561,7 @@ public class MorphologyUtils
 
 	/**
 	 * Does A = B - A. Writes the results in A.
-	 * 
+	 *
 	 * @param source
 	 *            A
 	 * @param target
@@ -576,7 +576,7 @@ public class MorphologyUtils
 		for ( int i = 0; i < threads.length; i++ )
 		{
 			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology minusSubtractInPlace thread " + i )
+			threads[ i ] = new Thread( "Morphology subABA thread " + i )
 			{
 				@Override
 				public void run()
@@ -605,7 +605,7 @@ public class MorphologyUtils
 
 	/**
 	 * Does A = B - A. Writes the results in A.
-	 * 
+	 *
 	 * @param source
 	 *            A
 	 * @param target
@@ -621,7 +621,7 @@ public class MorphologyUtils
 		for ( int i = 0; i < threads.length; i++ )
 		{
 			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology minusSubtractInPlaceRAI thread " + i )
+			threads[ i ] = new Thread( "Morphology subABA2 thread " + i )
 			{
 				@Override
 				public void run()
@@ -654,7 +654,7 @@ public class MorphologyUtils
 
 	/**
 	 * Does B = A - B. Writes the results in B.
-	 * 
+	 *
 	 * @param A
 	 *            A
 	 * @param B
@@ -670,7 +670,7 @@ public class MorphologyUtils
 		for ( int i = 0; i < threads.length; i++ )
 		{
 			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subtractInPlaceRAI thread " + i )
+			threads[ i ] = new Thread( "Morphology subBAB thread " + i )
 			{
 				@Override
 				public void run()
