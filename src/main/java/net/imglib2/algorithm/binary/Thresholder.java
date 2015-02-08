@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.morphology;
+package net.imglib2.algorithm.binary;
 
 import java.util.Vector;
 
@@ -78,7 +78,7 @@ public class Thresholder
 				for ( int i = 0; i < threads.length; i++ )
 				{
 					final Chunk chunk = chunks.get( i );
-					threads[ i ] = new Thread( "Morphology thresholder thread " + i )
+					threads[ i ] = new Thread( "Thresholder thread " + i )
 					{
 						@Override
 						public void run()
@@ -102,7 +102,7 @@ public class Thresholder
 				for ( int i = 0; i < threads.length; i++ )
 				{
 					final Chunk chunk = chunks.get( i );
-					threads[ i ] = new Thread( "Morphology erode thread " + i )
+					threads[ i ] = new Thread( "Thresholder thread " + i )
 					{
 						@Override
 						public void run()
