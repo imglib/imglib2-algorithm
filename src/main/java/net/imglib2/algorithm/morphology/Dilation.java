@@ -27,7 +27,7 @@ public class Dilation
 	/**
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link Img} using a list of {@link Shape}s as a flat structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -40,7 +40,7 @@ public class Dilation
 	 * limited to flat structuring elements, only having <code>on/off</code>
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -65,7 +65,7 @@ public class Dilation
 	/**
 	 * Performs the dilation morphological operation, on an {@link Img} using a
 	 * list of {@link Shape}s as a flat structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -85,7 +85,7 @@ public class Dilation
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
 	 * <code>T extends {@link Comparable} & {@link Type}</code>.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -117,7 +117,7 @@ public class Dilation
 	/**
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link Img} using a {@link Shape} as a flat structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -125,7 +125,7 @@ public class Dilation
 	 * limited to flat structuring elements, only having <code>on/off</code>
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -150,7 +150,7 @@ public class Dilation
 	/**
 	 * Performs the dilation morphological operation, on an {@link Img} using a
 	 * {@link Shape} as a flat structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -165,7 +165,7 @@ public class Dilation
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
 	 * <code>T extends {@link Comparable} & {@link Type}</code>.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -196,7 +196,7 @@ public class Dilation
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link RandomAccessible} as a source and writing results in an
 	 * {@link IterableInterval}.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -216,7 +216,7 @@ public class Dilation
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the target is left untouched.
-	 * 
+	 *
 	 * @param source
 	 *            the source {@link RandomAccessible}, must be sufficiently
 	 *            padded.
@@ -238,7 +238,7 @@ public class Dilation
 	 * Performs the dilation morphological operation, using a
 	 * {@link RandomAccessible} as a source and writing results in an
 	 * {@link IterableInterval}.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -265,7 +265,7 @@ public class Dilation
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
 	 * <code>T extends {@link Comparable} & {@link Type}</code>.
-	 * 
+	 *
 	 * @param source
 	 *            the source {@link RandomAccessible}, must be sufficiently
 	 *            padded.
@@ -337,7 +337,7 @@ public class Dilation
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link RandomAccessible} as a source and writing results in an
 	 * {@link IterableInterval}.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -352,7 +352,7 @@ public class Dilation
 	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
 	 * This allows to simply use a {@link Shape} as a type for these structuring
 	 * elements.
-	 * 
+	 *
 	 * @param source
 	 *            the source {@link RandomAccessible}, must be sufficiently
 	 *            padded.
@@ -374,7 +374,7 @@ public class Dilation
 	 * Performs the dilation morphological operation, using a
 	 * {@link RandomAccessible} as a source and writing results in an
 	 * {@link IterableInterval}.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -396,7 +396,7 @@ public class Dilation
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
 	 * <code>T extends {@link Comparable} & {@link Type}</code>.
-	 * 
+	 *
 	 * @param source
 	 *            the source {@link RandomAccessible}, must be sufficiently
 	 *            padded.
@@ -424,15 +424,7 @@ public class Dilation
 		 * Prepare iteration.
 		 */
 
-		final RandomAccessible< Neighborhood< T >> accessible;
-		if ( numThreads > 1 )
-		{
-			accessible = strel.neighborhoodsRandomAccessibleSafe( source );
-		}
-		else
-		{
-			accessible = strel.neighborhoodsRandomAccessible( source );
-		}
+		final RandomAccessible< Neighborhood< T >> accessible = strel.neighborhoodsRandomAccessible( source );
 
 		/*
 		 * Multithread
@@ -547,7 +539,7 @@ public class Dilation
 	/**
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link Img} using a list of {@link Shape}s as a flat structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -573,7 +565,7 @@ public class Dilation
 	 * source image. The real, full dilation results should have a number of
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -598,7 +590,7 @@ public class Dilation
 	/**
 	 * Performs the dilation morphological operation, on an {@link Img} using a
 	 * list of {@link Shape}s as a flat structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -631,7 +623,7 @@ public class Dilation
 	 * source image. The real, full dilation results should have a number of
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -663,7 +655,7 @@ public class Dilation
 	/**
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link Img} using a list of {@link Shape}s as a flat structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -684,7 +676,7 @@ public class Dilation
 	 * source image. The real, full dilation results should have a number of
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -716,7 +708,7 @@ public class Dilation
 	/**
 	 * Performs the dilation morphological operation, on an {@link Img} using a
 	 * list of {@link Shape}s as a flat structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -744,7 +736,7 @@ public class Dilation
 	 * source image. The real, full dilation results should have a number of
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -782,7 +774,7 @@ public class Dilation
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link RandomAccessibleInterval} using a {@link Shape} as a flat
 	 * structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -799,7 +791,7 @@ public class Dilation
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -824,7 +816,7 @@ public class Dilation
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link RandomAccessibleInterval} using a {@link Shape} as a flat
 	 * structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -848,7 +840,7 @@ public class Dilation
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
 	 * <code>T extends {@link Comparable} & {@link Type}</code>.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -878,7 +870,7 @@ public class Dilation
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link RandomAccessibleInterval} using a {@link Shape} as a flat
 	 * structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -891,7 +883,7 @@ public class Dilation
 	 * padded to properly cover the target range plus the shape size. See
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -924,7 +916,7 @@ public class Dilation
 	 * Performs the dilation morphological operation, on a {@link RealType}
 	 * {@link RandomAccessibleInterval} using a {@link Shape} as a flat
 	 * structuring element.
-	 * 
+	 *
 	 * See <a href="http://en.wikipedia.org/wiki/Dilation_(morphology)">
 	 * Dilation_(morphology)</a>.
 	 * <p>
@@ -943,7 +935,7 @@ public class Dilation
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
 	 * <code>T extends {@link Comparable} & {@link Type}</code>.
-	 * 
+	 *
 	 * @param source
 	 *            the source image.
 	 * @param interval
