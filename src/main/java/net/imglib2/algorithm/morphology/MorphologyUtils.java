@@ -468,17 +468,6 @@ public class MorphologyUtils
 		return str.toString();
 	}
 
-	private static final long size( final Interval interval, final int length )
-	{
-		long size = interval.dimension( 0 );
-		for ( int d = 1; d < length; ++d )
-		{
-			size *= interval.dimension( d );
-		}
-
-		return size;
-	}
-
 	/**
 	 * Does A = A - B. Writes the results in A.
 	 *
@@ -614,7 +603,7 @@ public class MorphologyUtils
 	 */
 	static < T extends Sub< T > & Type< T >> void subABA2( final RandomAccessibleInterval< T > source, final RandomAccessible< T > target, final int numThreads )
 	{
-		final long size = size( source, source.numDimensions() );
+		final long size = Intervals.numElements( source );
 		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( size, numThreads );
 		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
 
@@ -663,7 +652,7 @@ public class MorphologyUtils
 	 */
 	static < T extends Type< T > & Sub< T > > void subBAB( final RandomAccessible< T > A, final IterableInterval< T > B, final int numThreads )
 	{
-		final long size = size( B, B.numDimensions() );
+		final long size = Intervals.numElements( B );
 		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( size, numThreads );
 		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
 
