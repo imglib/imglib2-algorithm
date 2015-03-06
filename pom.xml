@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>net.imglib2</groupId>
 		<artifactId>pom-imglib2</artifactId>
-		<version>5.0</version>
+		<version>5.2.0</version>
 		<relativePath />
 	</parent>
 
 	<artifactId>imglib2-algorithm</artifactId>
-	<version>0.1.2-SNAPSHOT</version>
+	<version>0.2.1-SNAPSHOT</version>
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>

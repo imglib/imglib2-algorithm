@@ -2,11 +2,12 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2014 Stephan Preibisch, Tobias Pietzsch, Barry DeZonia,
- * Stephan Saalfeld, Albert Cardona, Curtis Rueden, Christian Dietz, Jean-Yves
- * Tinevez, Johannes Schindelin, Lee Kamentsky, Larry Lindsey, Grant Harris,
- * Mark Hiner, Aivar Grislis, Martin Horn, Nick Perry, Michael Zinsmaier,
- * Steffen Jaensch, Jan Funke, Mark Longair, and Dimiter Prodanov.
+ * Copyright (C) 2009 - 2015 Tobias Pietzsch, Stephan Preibisch, Barry DeZonia,
+ * Stephan Saalfeld, Curtis Rueden, Albert Cardona, Christian Dietz, Jean-Yves
+ * Tinevez, Johannes Schindelin, Jonathan Hale, Lee Kamentsky, Larry Lindsey, Mark
+ * Hiner, Michael Zinsmaier, Martin Horn, Grant Harris, Aivar Grislis, John
+ * Bogovic, Steffen Jaensch, Stefan Helfrich, Jan Funke, Nick Perry, Mark Longair,
+ * Melissa Linkert and Dimiter Prodanov.
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -111,7 +112,7 @@ public class LocalExtrema
 		final int splitd = n - 1;
 		// FIXME is there a better way to determine number of threads
 		final int numThreads = Runtime.getRuntime().availableProcessors();
-		final int numTasks = numThreads <= 1 ? 1 : ( int ) Math.min( full.dimension( splitd ), numThreads * 20 );
+		final int numTasks = Math.max( Math.min( ( int ) full.dimension( splitd ), numThreads * 20 ), 1 );
 		final long dsize = full.dimension( splitd ) / numTasks;
 		final long[] min = new long[ n ];
 		final long[] max = new long[ n ];
