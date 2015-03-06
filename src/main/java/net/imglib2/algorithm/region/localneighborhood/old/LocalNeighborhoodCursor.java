@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -44,12 +44,13 @@ import net.imglib2.util.IntervalIndexer;
 /**
  * Iterates all pixels in a 3 by 3 by .... by 3 neighborhood of a certain
  * location but skipping the central pixel
- * 
+ *
  * @param <T>
- * 
+ *
  * @author Stephan Preibisch
  * @author Stephan Saalfeld
  */
+@Deprecated
 public class LocalNeighborhoodCursor< T > implements Cursor< T >
 {
 	final RandomAccessible< T > source;
@@ -65,10 +66,10 @@ public class LocalNeighborhoodCursor< T > implements Cursor< T >
 	/**
 	 * Create new {@link LocalNeighborhoodCursor} on a {@link RandomAccessible}
 	 * at a certain location.
-	 * 
+	 *
 	 * Note: the location can be updated without need to re-instantiate all the
 	 * times.
-	 * 
+	 *
 	 * @param source
 	 *            - the data as {@link RandomAccessible}
 	 * @param center
@@ -101,10 +102,10 @@ public class LocalNeighborhoodCursor< T > implements Cursor< T >
 	/**
 	 * Create new {@link LocalNeighborhoodCursor} on a {@link RandomAccessible}
 	 * at a certain location.
-	 * 
+	 *
 	 * Note: the location can be updated without need to re-instantiate all the
 	 * times.
-	 * 
+	 *
 	 * @param source
 	 *            - the data as {@link RandomAccessible}
 	 * @param center
