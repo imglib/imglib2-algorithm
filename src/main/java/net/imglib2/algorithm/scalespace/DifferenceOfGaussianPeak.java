@@ -15,24 +15,26 @@ import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
+import net.imglib2.algorithm.scalespace.Blob.SpecialPoint;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-public class DifferenceOfGaussianPeak extends Point
+/**
+ * Intermediate use class needed to compute and subpixel localize blobs found by
+ * the scale-space algorithm. This class needs not to be used by end-user, which
+ * will be return a collection of Blob.
+ */
+class DifferenceOfGaussianPeak extends Point
 {
 
 	private SpecialPoint peakType;
 
 	private final double value;
 
-	public static enum SpecialPoint
-	{
-		INVALID, MIN, MAX
-	}
 
-	public DifferenceOfGaussianPeak( final Localizable position, final double value, final SpecialPoint peakType )
+	DifferenceOfGaussianPeak( final Localizable position, final double value, final SpecialPoint peakType )
 	{
 		super( position );
 		this.value = value;

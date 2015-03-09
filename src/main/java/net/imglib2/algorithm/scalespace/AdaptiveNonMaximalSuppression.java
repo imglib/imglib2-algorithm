@@ -7,26 +7,22 @@ import java.util.List;
 import net.imglib2.KDTree;
 import net.imglib2.algorithm.Algorithm;
 import net.imglib2.algorithm.Benchmark;
-import net.imglib2.algorithm.scalespace.DifferenceOfGaussianPeak.SpecialPoint;
+import net.imglib2.algorithm.scalespace.Blob.SpecialPoint;
 import net.imglib2.neighborsearch.RadiusNeighborSearch;
 import net.imglib2.neighborsearch.RadiusNeighborSearchOnKDTree;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.RealType;
 
 /**
- * TODO
- *
  * @author Stephan Preibisch
  */
-public class AdaptiveNonMaximalSuppression< T extends RealType< T > & NativeType< T >> implements Algorithm, Benchmark
+public class AdaptiveNonMaximalSuppression implements Algorithm, Benchmark
 {
-	final Collection< DifferenceOfGaussianPeak > detections;
+	private final Collection< DifferenceOfGaussianPeak > detections;
 
-	double radius;
+	private long processingTime;
 
-	long processingTime;
+	private String errorMessage = "";
 
-	String errorMessage = "";
+	private final double radiusFactor;
 
 	/**
 	 * Performs adaptive non maximal suppression in the local neighborhood of
@@ -37,14 +33,16 @@ public class AdaptiveNonMaximalSuppression< T extends RealType< T > & NativeType
 	 * {@link DifferenceOfGaussianPeak}s.
 	 *
 	 * @param detections
-	 *            - the {@link List} of {@link DifferenceOfGaussianPeak}s
-	 * @param radius
-	 *            - the radius of the local neighborhood
+	 *            the {@link Collection} of {@link DifferenceOfGaussianPeak}s to
+	 *            suppress.
+	 * @param radiusFactor
+	 *            how far, as multiple of the inspected peak radius, should we
+	 *            search for neighbors.
 	 */
-	public AdaptiveNonMaximalSuppression( final Collection< DifferenceOfGaussianPeak > detections, final double radius )
+	public AdaptiveNonMaximalSuppression( final Collection< DifferenceOfGaussianPeak > detections, final double radiusFactor )
 	{
 		this.detections = detections;
-		this.radius = radius;
+		this.radiusFactor = radiusFactor;
 
 		processingTime = -1;
 	}
@@ -53,7 +51,7 @@ public class AdaptiveNonMaximalSuppression< T extends RealType< T > & NativeType
 	 * Creates a new {@link List} that only contains all
 	 * {@link DifferenceOfGaussianPeak}s that are valid.
 	 *
-	 * @return - {@link List} of {@link DifferenceOfGaussianPeak}s
+	 * @return a new {@link List} of {@link DifferenceOfGaussianPeak}s
 	 */
 	public List< DifferenceOfGaussianPeak > getClearedList()
 	{
@@ -84,7 +82,8 @@ public class AdaptiveNonMaximalSuppression< T extends RealType< T > & NativeType
 				// highest detection
 				if ( det.isValid() )
 				{
-					searcher.search( det, radius, false );
+					final double lradius = radiusFactor * det.getDoublePosition( det.numDimensions() - 1 );
+					searcher.search( det, lradius, false );
 					final ArrayList< DifferenceOfGaussianPeak > extrema = new ArrayList< DifferenceOfGaussianPeak >();
 					for ( int i = 0; i < searcher.numNeighbors(); i++ )
 					{
@@ -120,9 +119,9 @@ public class AdaptiveNonMaximalSuppression< T extends RealType< T > & NativeType
 			errorMessage = "List<DifferenceOfGaussianPeak<T>> detections is null.";
 			return false;
 		}
-		else if ( Double.isNaN( radius ) )
+		else if ( Double.isNaN( radiusFactor ) || radiusFactor <= 0 )
 		{
-			errorMessage = "Radius is NaN.";
+			errorMessage = "Invalud value for radiusFactor: " + radiusFactor + ".";
 			return false;
 		}
 		return true;

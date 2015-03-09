@@ -26,7 +26,9 @@
 
 package net.imglib2.algorithm.scalespace;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import net.imglib2.Cursor;
@@ -49,8 +51,6 @@ import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
 /**
- * TODO
- *
  * @author Stephan Preibisch
  * @author Stephan Saalfeld
  */
@@ -61,7 +61,9 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 
 	private final Converter< A, FloatType > converter;
 
-	private List< RefinedPeak< DifferenceOfGaussianPeak >> peaks;
+	private Collection< Blob > darkBlobs;
+
+	private Collection< Blob > brightBlobs;
 
 	private Img< FloatType > scaleSpace;
 
@@ -83,7 +85,9 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 
 	private String errorMessage = "";
 
-	public ScaleSpace( final Img< A > image, final Converter< A, FloatType > converter, final double initialSigma, final double threshold )
+	private final double suppressingRadiusFactor;
+
+	public ScaleSpace( final Img< A > image, final Converter< A, FloatType > converter, final double initialSigma, final double threshold, final double suppressingRadiusFactor )
 	{
 		setNumThreads();
 		this.image = image;
@@ -94,6 +98,7 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 		this.minImageSize = 16;
 		this.stepsPerOctave = 7;
 		this.threshold = threshold;
+		this.suppressingRadiusFactor = suppressingRadiusFactor;
 	}
 
 	@Override
@@ -102,9 +107,14 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 		return scaleSpace;
 	}
 
-	public List< RefinedPeak< DifferenceOfGaussianPeak >> getPeaks()
+	public Collection< Blob > getBrightBlobs()
 	{
-		return peaks;
+		return brightBlobs;
+	}
+
+	public Collection< Blob > getDarkBlobs()
+	{
+		return darkBlobs;
 	}
 
 	public void setMinImageSize( final int minImageSize )
@@ -186,38 +196,48 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 		}
 
 		/*
-		 * Find and suppress extrema.
+		 * Find extrema.
 		 */
 
-
 		final List< DifferenceOfGaussianPeak > integerPeaks = DifferenceOfGaussianPeak.findPeaks( scaleSpace, threshold, numThreads );
-		System.out.println("Found " + integerPeaks.size() + " peaks.");// DEBUG
 
-		final double radius = sigma[ 0 ] * 3;
-		// FIXME what should be a good value?
-		final AdaptiveNonMaximalSuppression< FloatType > nonMaximaSuppressor = new AdaptiveNonMaximalSuppression< FloatType >( integerPeaks, radius );
-		if ( !nonMaximaSuppressor.checkInput() || !nonMaximaSuppressor.process() )
+		/*
+		 * Suppress blobs.
+		 */
+
+		final AdaptiveNonMaximalSuppression nonMaximaSuppressor = new AdaptiveNonMaximalSuppression( integerPeaks, suppressingRadiusFactor );
+		// Only execute if suppressingRadiusFactor > 0
+		if ( suppressingRadiusFactor > 0 )
 		{
-			errorMessage = "Cannot suppress peaks: " + nonMaximaSuppressor.getErrorMessage();
-			return false;
+			if ( !nonMaximaSuppressor.checkInput() || !nonMaximaSuppressor.process() )
+			{
+				errorMessage = "Cannot suppress peaks: " + nonMaximaSuppressor.getErrorMessage();
+				return false;
+			}
 		}
-
 		final List< DifferenceOfGaussianPeak > validPeaks = nonMaximaSuppressor.getClearedList();
-		System.out.println( "Had " + integerPeaks.size() + " peaks, " + validPeaks.size() + " of them are valid." );// DEBUG
 
 		/*
 		 * Subpixel localize them.
 		 */
+
 		final SubpixelLocalization< DifferenceOfGaussianPeak, FloatType > spl = new SubpixelLocalization< DifferenceOfGaussianPeak, FloatType >( scaleSpace.numDimensions() );
 		spl.setNumThreads( numThreads );
-		peaks = spl.process( validPeaks, scaleSpace, scaleSpace );
+		final ArrayList< RefinedPeak< DifferenceOfGaussianPeak >> refinedPeaks = spl.process( validPeaks, scaleSpace, scaleSpace );
 
 		/*
 		 * Adjust the correct sigma and correct the locations if the image was
-		 * originally upscaled.
+		 * originally upscaled. Also create the collection of blobs.
 		 */
-		for ( final RefinedPeak< DifferenceOfGaussianPeak > peak : peaks )
+
+		brightBlobs = new ArrayList< Blob >( refinedPeaks.size() );
+		darkBlobs = new ArrayList< Blob >( refinedPeaks.size() );
+		for ( final RefinedPeak< DifferenceOfGaussianPeak > peak : refinedPeaks )
 		{
+			if ( !peak.isValid() )
+			{
+				continue;
+			}
 			/*
 			 * +0.5 to get it relative to the sigmas and not the difference of
 			 * the sigmas e.g. dog 1 corresponds to between sigmas 1 and 2
@@ -234,8 +254,18 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 					peak.setPosition( sizeHalf, d );
 				}
 			}
-		}
 
+			final double radius = peak.getDoublePosition( image.numDimensions() ) * Math.sqrt( image.numDimensions() );
+			final Blob blob = new Blob( peak, radius );
+			if ( blob.isMax() )
+			{
+				brightBlobs.add( blob );
+			}
+			else
+			{
+				darkBlobs.add( blob );
+			}
+		}
 		processingTime = System.currentTimeMillis() - startTime;
 		return true;
 	}
