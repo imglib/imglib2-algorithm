@@ -33,6 +33,10 @@
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-roi</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-realtransform</artifactId>
+		</dependency>
 
 		<!-- ImageJ dependencies -->
 		<dependency>

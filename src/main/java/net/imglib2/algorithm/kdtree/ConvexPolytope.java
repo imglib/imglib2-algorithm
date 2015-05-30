@@ -34,10 +34,13 @@
 
 package net.imglib2.algorithm.kdtree;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
 import net.imglib2.AbstractEuclideanSpace;
+import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.util.LinAlgHelpers;
 
 public class ConvexPolytope extends AbstractEuclideanSpace
 {
@@ -57,5 +60,39 @@ public class ConvexPolytope extends AbstractEuclideanSpace
 	public Collection< ? extends HyperPlane > getHyperplanes()
 	{
 		return hyperplanes;
+	}
+
+	/**
+	 * Apply an {@link AffineTransform3D} to a 3D {@link ConvexPolytope}.
+	 *
+	 * @param polytope
+	 *            a 3D polytope.
+	 * @param transform
+	 *            affine transformation to apply to the polytope.
+	 * @return the transformed polytope.
+	 */
+	public static ConvexPolytope transform( final ConvexPolytope polytope, final AffineTransform3D transform )
+	{
+		assert polytope.numDimensions() == 3;
+
+		final double[] O = new double[ 3 ];
+		final double[] tO = new double[ 3 ];
+		final double[] tN = new double[ 3 ];
+		final double[][] m = new double[3][3];
+		for ( int r = 0; r < 3; ++r )
+			for ( int c = 0; c < 3; ++c )
+				m[r][c] = transform.inverse().get( c, r );
+
+		final ArrayList< HyperPlane > transformedPlanes = new ArrayList< HyperPlane >();
+		for ( final HyperPlane plane : polytope.getHyperplanes() )
+		{
+			LinAlgHelpers.scale( plane.getNormal(), plane.getDistance(), O );
+			transform.apply( O, tO );
+			LinAlgHelpers.mult( m, plane.getNormal(), tN );
+			LinAlgHelpers.normalize( tN );
+			final double td = LinAlgHelpers.dot( tN, tO );
+			transformedPlanes.add( new HyperPlane( tN, td ) );
+		}
+		return new ConvexPolytope( transformedPlanes );
 	}
 }
