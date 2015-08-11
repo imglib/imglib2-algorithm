@@ -142,7 +142,6 @@ public final class RectangleNeighborhoodCursor< T > extends RectangleNeighborhoo
 		for ( int d = 0; d < n; ++d )
 		{
 			currentMin[ d ] = currentPos[ d ] + span.min( d );
-			currentMax[ d ] = currentPos[ d ] + span.max( d );
 		}
 	}
 
