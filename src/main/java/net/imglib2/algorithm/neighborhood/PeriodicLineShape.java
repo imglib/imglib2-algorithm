@@ -22,6 +22,7 @@ import net.imglib2.util.Util;
  * to granulometries. Pattern Recognition Letters (1996) vol. 17 (10) pp. 1057-1063</tt>
  * 
  * @author Jean-Yves Tinevez, 2013
+ * @author Jonathan Hale (University of Konstanz)
  */
 public class PeriodicLineShape implements Shape
 {
@@ -87,6 +88,22 @@ public class PeriodicLineShape implements Shape
 		return new NeighborhoodsAccessible< T >( source, span, increments, f );
 	}
 
+	/**
+	 * @return The span of this shape.
+	 */
+	public long getSpan()
+	{
+		return span;
+	}
+	
+	/**
+	 * @return Copy of the increments of this shape.
+	 */
+	public int[] getIncrements()
+	{
+		return increments.clone();
+	}
+	
 	@Override
 	public String toString()
 	{
