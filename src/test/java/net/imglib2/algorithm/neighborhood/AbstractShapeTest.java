@@ -1,5 +1,6 @@
 package net.imglib2.algorithm.neighborhood;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import net.imglib2.Cursor;
@@ -156,5 +157,29 @@ public abstract class AbstractShapeTest
 		final Cursor< UnsignedShortType > craunsafe1 = neighborhoodUnsafeRA.cursor();
 		final Cursor< UnsignedShortType > craunsafe2 = neighborhoodUnsafeRA.cursor();
 		assertEquals( "The two cursors from the unsafe iterator are not the same object.", craunsafe1, craunsafe2 );
+	}
+	
+	@Test
+	public void testJumpFwd()
+	{
+		// cursor which will be moved via .jumpFwd()
+		final Cursor< Neighborhood< UnsignedShortType >> cNeigh1 =
+				shape.neighborhoodsSafe( img ).localizingCursor();
+		// cursor which will be moved via .fwd() for reference
+		final Cursor< Neighborhood< UnsignedShortType >> cNeigh2 =
+				shape.neighborhoodsSafe( img ).localizingCursor();
+
+		final long[] dims1 = new long[ cNeigh1.numDimensions() ];
+		final long[] dims2 = new long[ cNeigh2.numDimensions() ];
+
+		while ( cNeigh1.hasNext() )
+		{
+			cNeigh1.jumpFwd( 1 );
+			cNeigh2.fwd();
+
+			cNeigh1.localize( dims1 );
+			cNeigh2.localize( dims2 );
+			assertArrayEquals( "Incorrect position for jumpFwd()", dims2, dims1 );
+		}
 	}
 }

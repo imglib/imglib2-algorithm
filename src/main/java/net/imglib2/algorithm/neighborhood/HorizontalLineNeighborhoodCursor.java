@@ -33,7 +33,7 @@ public class HorizontalLineNeighborhoodCursor< T > extends HorizontalLineNeighbo
 		long size = dimensions[ 0 ];
 		for ( int d = 1; d < n; ++d )
 			size *= dimensions[ d ];
-		maxIndex = size;
+		maxIndex = size - 1;
 		reset();
 	}
 
@@ -73,8 +73,8 @@ public class HorizontalLineNeighborhoodCursor< T > extends HorizontalLineNeighbo
 	@Override
 	public void reset()
 	{
-		index = 0;
-		maxIndexOnLine = dimensions[ 0 ];
+		index = -1;
+		maxIndexOnLine = dimensions[ 0 ] - 1;
 		for ( int d = 0; d < n; ++d )
 		{
 			currentPos[ d ] = ( d == 0 ) ? min[ d ] - 1 : min[ d ];
@@ -91,8 +91,9 @@ public class HorizontalLineNeighborhoodCursor< T > extends HorizontalLineNeighbo
 	public void jumpFwd( final long steps )
 	{
 		index += steps;
-		maxIndexOnLine = ( index < 0 ) ? dimensions[ 0 ] : ( 1 + index / dimensions[ 0 ] ) * dimensions[ 0 ];
-		IntervalIndexer.indexToPositionWithOffset( index + 1, dimensions, min, currentPos );
+		final long l = index / dimensions[ 0 ];
+		maxIndexOnLine = ( l < 0 ) ? ( l * dimensions[ 0 ] ) : ( ( 1 + l ) * dimensions[ 0 ] - 1 );
+		IntervalIndexer.indexToPositionWithOffset( index, dimensions, min, currentPos );
 	}
 
 	@Override
