@@ -50,6 +50,7 @@ import net.imglib2.RandomAccessibleInterval;
  * A factory for Accessibles on hyper-sphere neighboorhoods.
  * 
  * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Jonathan Hale (University of Konstanz)
  */
 public class HyperSphereShape implements Shape
 {
@@ -82,6 +83,20 @@ public class HyperSphereShape implements Shape
 	public < T > NeighborhoodsAccessible< T > neighborhoodsRandomAccessibleSafe( final RandomAccessible< T > source )
 	{
 		return new NeighborhoodsAccessible< T >( source, radius, HyperSphereNeighborhood.< T >factory() );
+	}
+
+	/**
+	 * @return The radius of this shape.
+	 */
+	public long getRadius()
+	{
+		return radius;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "HyperSphereShape, radius = " + radius;
 	}
 
 	public static final class NeighborhoodsIterableInterval< T > extends AbstractInterval implements IterableInterval< Neighborhood< T > >

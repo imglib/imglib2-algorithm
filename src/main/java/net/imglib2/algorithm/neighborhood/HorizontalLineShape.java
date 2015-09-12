@@ -16,7 +16,8 @@ import net.imglib2.RandomAccessibleInterval;
  * A {@link Shape} representing finite, centered, symmetric lines, that are
  * parallel to the image axes.
  * 
- * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>
+ * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>#
+ * @author Jonathan Hale (University of Konstanz)
  */
 public class HorizontalLineShape implements Shape
 {
@@ -71,6 +72,32 @@ public class HorizontalLineShape implements Shape
 		return new NeighborhoodsAccessible< T >( source, span, dim, skipCenter, f );
 	}
 
+	/**
+	 * @return <code>true</code> if <code>skipCenter</code> was set to true
+	 *         during construction, <code>false</code> otherwise.
+	 * @see CenteredRectangleShape#CenteredRectangleShape(int[], boolean)
+	 */
+	public boolean isSkippingCenter()
+	{
+		return skipCenter;
+	}
+
+	/**
+	 * @return The span of this shape.
+	 */
+	public long getSpan()
+	{
+		return span;
+	}
+	
+	/**
+	 * @return The dimension along which the line is layed.
+	 */
+	public int getLineDimension()
+	{
+		return dim;
+	}
+	
 	@Override
 	public String toString()
 	{

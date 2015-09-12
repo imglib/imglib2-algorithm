@@ -61,6 +61,7 @@ import net.imglib2.util.Util;
  *
  * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
  * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>
+ * @author Jonathan Hale (University of Konstanz)
  */
 public class CenteredRectangleShape implements Shape
 {
@@ -117,6 +118,24 @@ public class CenteredRectangleShape implements Shape
 		final RectangleNeighborhoodFactory< T > f = skipCenter ? RectangleNeighborhoodSkipCenter.< T >factory() : RectangleNeighborhood.< T >factory();
 		final Interval spanInterval = createSpan();
 		return new NeighborhoodsAccessible< T >( source, spanInterval, f );
+	}
+
+	/**
+	 * @return <code>true</code> if <code>skipCenter</code> was set to true
+	 *         during construction, <code>false</code> otherwise.
+	 * @see CenteredRectangleShape#CenteredRectangleShape(int[], boolean)
+	 */
+	public boolean isSkippingCenter()
+	{
+		return skipCenter;
+	}
+
+	/**
+	 * @return Copy of the span of this shape.
+	 */
+	public int[] getSpan()
+	{
+		return span.clone();
 	}
 
 	@Override

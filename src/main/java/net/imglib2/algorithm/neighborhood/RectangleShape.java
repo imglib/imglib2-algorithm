@@ -51,6 +51,7 @@ import net.imglib2.RandomAccessibleInterval;
  * A factory for Accessibles on rectangular neighboorhoods.
  *
  * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Jonathan Hale (University of Konstanz)
  */
 public class RectangleShape implements Shape
 {
@@ -111,7 +112,30 @@ public class RectangleShape implements Shape
 		}
 		return new FinalInterval( min, max );
 	}
+	
+	/**
+	 * @return <code>true</code> if <code>skipCenter</code> was set to true
+	 *         during construction, <code>false</code> otherwise.
+	 * @see CenteredRectangleShape#CenteredRectangleShape(int[], boolean)
+	 */
+	public boolean isSkippingCenter()
+	{
+		return skipCenter;
+	}
 
+	/**
+	 * @return The span of this shape.
+	 */
+	public int getSpan()
+	{
+		return span;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "RectangleShape, span = " + span;
+	}
 
 	public static final class NeighborhoodsIterableInterval< T > extends AbstractInterval implements IterableInterval< Neighborhood< T > >
 	{
