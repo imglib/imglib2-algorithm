@@ -7,8 +7,6 @@ import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
-import net.imglib2.algorithm.neighborhood.Neighborhood;
-import net.imglib2.algorithm.neighborhood.Shape;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.array.ArrayLocalizingCursor;
@@ -181,5 +179,25 @@ public abstract class AbstractShapeTest
 			cNeigh2.localize( dims2 );
 			assertArrayEquals( "Incorrect position for jumpFwd()", dims2, dims1 );
 		}
+	}
+
+	@Test
+	public void testNegativeIndices()
+	{
+		// cursor which will be moved via .jumpFwd()
+		final Cursor< Neighborhood< UnsignedShortType > > c = shape.neighborhoods( img ).cursor();
+		final long[] pos = new long[ img.numDimensions() ];
+
+		c.jumpFwd( -1237 );
+		for ( int i = 0; i < 1238; ++i )
+			c.jumpFwd( 1 );
+		c.localize( pos );
+		assertArrayEquals( "Incorrect position for jumpFwd() with negative indices", new long[] {0, 0, 0}, pos );
+
+		c.jumpFwd( -241 );
+		for ( int i = 0; i < 241; ++i )
+			c.fwd();
+		c.localize( pos );
+		assertArrayEquals( "Incorrect position for jumpFwd() with negative indices", new long[] {0, 0, 0}, pos );
 	}
 }
