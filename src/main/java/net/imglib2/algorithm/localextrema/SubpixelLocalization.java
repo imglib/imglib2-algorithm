@@ -442,7 +442,6 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 		final int n = p.numDimensions();
 
 		access.setPosition( p );
-
 		final double a1 = access.get().getRealDouble();
 		for ( int d = 0; d < n; ++d )
 		{
@@ -463,6 +462,9 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 			access.move( 2, d );
 			final double a2 = access.get().getRealDouble();
 			g.set( d, 0, ( a2 - a0 ) * 0.5 );
+
+			// Move back to center point
+			access.bck( d );
 
 			// @formatter:off
 			// Hessian
@@ -494,6 +496,8 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 			// we divide by 2 because these are always jumps over two pixels
 			for ( int e = d + 1; e < n; ++e )
 			{
+				// We start from center point.
+				access.fwd( d );
 				access.fwd( e );
 				final double a2b2 = access.get().getRealDouble();
 				access.move( -2, d );
