@@ -367,7 +367,7 @@ public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img
 		return true;
 	}
 
-	private void eliminateEdgeResponses( final List< DifferenceOfGaussianPeak > detections, final Img< FloatType > scaleSpace, final double rth )
+	protected void eliminateEdgeResponses( final List< DifferenceOfGaussianPeak > detections, final Img< FloatType > scaleSpace, final double rth )
 	{
 		// Store detections to remove.
 		final Collection< DifferenceOfGaussianPeak > toRemove = new ArrayList< DifferenceOfGaussianPeak >();
@@ -436,7 +436,7 @@ public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img
 		detections.removeAll( toRemove );
 	}
 
-	private Img< FloatType > computeScaleSpace( final Img< FloatType > image, final double[] sigma, final double norm ) throws IncompatibleTypeException
+	protected Img< FloatType > computeScaleSpace( final Img< FloatType > image, final double[] sigma, final double norm ) throws IncompatibleTypeException
 	{
 		// Compute the dimensions for the scale space.
 		final long[] dimensions = new long[ image.numDimensions() + 1 ];
