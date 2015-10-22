@@ -135,6 +135,14 @@ public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img
 	private final double edgeResponseThreshold;
 
 	/**
+	 * Stores information about filtering. The first element stores how much
+	 * detections were filtered out by non-maximal suppression. The second
+	 * element stores how much detections were filtered out by eliminating edge
+	 * responses.
+	 */
+	private final int[] filteringStat = new int[ 2 ];
+
+	/**
 	 * Creates a new scale-space algorithm.
 	 * <p>
 	 * if the specified <code>initialSigma</code> is smaller than one, the image
@@ -213,6 +221,17 @@ public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img
 	public int getMinImageSize()
 	{
 		return minImageSize;
+	}
+	
+	/**
+	 * Returns information about filtering. The first element stores how much
+	 * detections were filtered out by non-maximal suppression. The second
+	 * element stores how much detections were filtered out by eliminating edge
+	 * responses.
+	 */
+	public int[] getFilteringStat()
+	{
+		return filteringStat;
 	}
 
 	@Override
@@ -305,16 +324,19 @@ public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img
 			}
 		}
 		final List< DifferenceOfGaussianPeak > validPeaks = nonMaximaSuppressor.getClearedList();
+		filteringStat[ 0 ] = integerPeaks.size() - validPeaks.size();
 
 		/*
 		 * Eliminate edge responses.
 		 */
 
+		final int nbeforeeer = validPeaks.size();
 		if ( edgeResponseThreshold > 0 )
 		{
 			eliminateEdgeResponses( validPeaks, scaleSpace, edgeResponseThreshold );
 		}
-
+		final int naftereer = validPeaks.size();
+		filteringStat[ 1 ] = nbeforeeer - naftereer;
 		/*
 		 * Subpixel localize them.
 		 */
