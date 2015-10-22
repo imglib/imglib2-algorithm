@@ -57,10 +57,12 @@ import net.imglib2.type.Type;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
+import Jama.Matrix;
 
 /**
  * @author Stephan Preibisch
  * @author Stephan Saalfeld
+ * @author Jean-Yves Tinevez
  */
 public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< FloatType >>, MultiThreaded, Benchmark
 {
@@ -95,7 +97,44 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 
 	private final double suppressingRadiusFactor;
 
-	public ScaleSpace( final Img< A > image, final Converter< A, FloatType > converter, final double initialSigma, final double threshold, final double suppressingRadiusFactor )
+	/**
+	 * The threshold used to discard edge responses in blob detection. Adapted
+	 * from the SIFT framework.
+	 * <p>
+	 * This value is the maximal ratio between the largest and smallesst
+	 * curvature at the blob location. If the two curvatures are too different,
+	 * and this ratio is <b>big</b>, then it is likely that we detected an edge.
+	 * <p>
+	 * In the SIFT paper, the value 10. is used.
+	 * 
+	 * @see <a
+	 *      href=https://en.wikipedia.org/wiki/Scale-invariant_feature_transform
+	 *      #Eliminating_edge_responses>Eliminating edge responses</a>
+	 * 
+	 */
+	private final double edgeResponseThreshold;
+
+	/**
+	 * Creates a new scale-space algorithm.
+	 * <p>
+	 * 
+	 * 
+	 * @param image
+	 *            the source image to operate on.
+	 * @param converter
+	 *            a converter than can convert the type of the source image to
+	 *            floats.
+	 * @param initialSigma
+	 *            the smallest gaussian sigma to build the scale space from.
+	 * @param threshold
+	 *            the intensity threshold on blobs.
+	 * @param suppressingRadiusFactor
+	 *            the radius factor when searching non-maxima blobs to suppress.
+	 * @param edgeResponseThreshold
+	 *            the edge response threshold. If negative, edge responses will
+	 *            not be eliminated.
+	 */
+	public ScaleSpace( final Img< A > image, final Converter< A, FloatType > converter, final double initialSigma, final double threshold, final double suppressingRadiusFactor, final double edgeResponseThreshold )
 	{
 		setNumThreads();
 		this.image = image;
@@ -107,6 +146,7 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 		this.stepsPerOctave = 7;
 		this.threshold = threshold;
 		this.suppressingRadiusFactor = suppressingRadiusFactor;
+		this.edgeResponseThreshold = edgeResponseThreshold;
 	}
 
 	@Override
@@ -211,7 +251,7 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 		final ArrayList< DifferenceOfGaussianPeak > integerPeaks = LocalExtrema.findLocalExtrema( scaleSpace, new ScaleSpaceExtremaCheck( threshold ), service );
 
 		/*
-		 * Suppress blobs.
+		 * Suppress non-maximal blobs.
 		 */
 
 		final AdaptiveNonMaximalSuppression nonMaximaSuppressor = new AdaptiveNonMaximalSuppression( integerPeaks, suppressingRadiusFactor );
@@ -227,12 +267,23 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 		final List< DifferenceOfGaussianPeak > validPeaks = nonMaximaSuppressor.getClearedList();
 
 		/*
+		 * Eliminate edge responses.
+		 */
+
+		if ( edgeResponseThreshold > 0 )
+		{
+			eliminateEdgeResponses( validPeaks, scaleSpace, edgeResponseThreshold );
+		}
+
+		/*
 		 * Subpixel localize them.
 		 */
 
 		final SubpixelLocalization< DifferenceOfGaussianPeak, FloatType > spl = new SubpixelLocalization< DifferenceOfGaussianPeak, FloatType >( scaleSpace.numDimensions() );
 		spl.setNumThreads( numThreads );
 		final ArrayList< RefinedPeak< DifferenceOfGaussianPeak >> refinedPeaks = spl.process( validPeaks, scaleSpace, scaleSpace );
+
+
 
 		/*
 		 * Adjust the correct sigma and correct the locations if the image was
@@ -277,6 +328,75 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 		}
 		processingTime = System.currentTimeMillis() - startTime;
 		return true;
+	}
+
+	private void eliminateEdgeResponses( final List< DifferenceOfGaussianPeak > detections, final Img< FloatType > scaleSpace, final double rth )
+	{
+		// Store detections to remove.
+		final Collection< DifferenceOfGaussianPeak > toRemove = new ArrayList< DifferenceOfGaussianPeak >();
+
+		// Store the Hessian.
+		final int n = scaleSpace.numDimensions();
+		final Matrix H = new Matrix( n - 1, n - 1 );
+
+		// Access scale space value.
+		final RandomAccess< FloatType > access = scaleSpace.randomAccess( scaleSpace );
+
+		for ( final DifferenceOfGaussianPeak detection : detections )
+		{
+			access.setPosition( detection );
+
+			// We compute the Hessian at a fixed scale.
+			final double a1 = access.get().getRealDouble();
+			for ( int d = 0; d < n - 1; ++d )
+			{
+				access.bck( d );
+				final double a0 = access.get().getRealDouble();
+				access.move( 2, d );
+				final double a2 = access.get().getRealDouble();
+				H.set( d, d, a2 - 2 * a1 + a0 );
+
+				// Move back to center point
+				access.bck( d );
+
+				for ( int e = d + 1; e < n - 1; ++e )
+				{
+					// We start from center point.
+					access.fwd( d );
+					access.fwd( e );
+					final double a2b2 = access.get().getRealDouble();
+					access.move( -2, d );
+					final double a0b2 = access.get().getRealDouble();
+					access.move( -2, e );
+					final double a0b0 = access.get().getRealDouble();
+					access.move( 2, d );
+					final double a2b0 = access.get().getRealDouble();
+					// back to the original position
+					access.bck( d );
+					access.fwd( e );
+					final double v = ( a2b2 - a0b2 - a2b0 + a0b0 ) * 0.25;
+					H.set( d, e, v );
+					H.set( e, d, v );
+				}
+			}
+
+			final double detHessian = H.det();
+			final double traceHessian = H.trace();
+			final double r = Math.abs( traceHessian * traceHessian / detHessian );
+
+			/*
+			 * See
+			 * https://en.wikipedia.org/wiki/Scale-invariant_feature_transform
+			 * #Eliminating_edge_responses.
+			 */
+
+			if ( r > ( ( rth + 1 ) * ( rth + 1 ) / rth ) )
+			{
+				toRemove.add( detection );
+			}
+		}
+
+		detections.removeAll( toRemove );
 	}
 
 	private Img< FloatType > computeScaleSpace( final Img< FloatType > image, final double[] sigma, final double norm ) throws IncompatibleTypeException
