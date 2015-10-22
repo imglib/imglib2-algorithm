@@ -30,17 +30,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import net.imglib2.Cursor;
+import net.imglib2.Localizable;
 import net.imglib2.RandomAccess;
+import net.imglib2.Sampler;
 import net.imglib2.algorithm.Benchmark;
 import net.imglib2.algorithm.MultiThreaded;
 import net.imglib2.algorithm.OutputAlgorithm;
 import net.imglib2.algorithm.function.Function;
 import net.imglib2.algorithm.function.SubtractNormReal;
 import net.imglib2.algorithm.gauss3.Gauss3;
+import net.imglib2.algorithm.localextrema.LocalExtrema;
+import net.imglib2.algorithm.localextrema.LocalExtrema.LocalNeighborhoodCheck;
 import net.imglib2.algorithm.localextrema.RefinedPeak;
 import net.imglib2.algorithm.localextrema.SubpixelLocalization;
+import net.imglib2.algorithm.neighborhood.Neighborhood;
+import net.imglib2.algorithm.scalespace.Blob.SpecialPoint;
 import net.imglib2.converter.Converter;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
@@ -199,7 +207,8 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 		 * Find extrema.
 		 */
 
-		final List< DifferenceOfGaussianPeak > integerPeaks = DifferenceOfGaussianPeak.findPeaks( scaleSpace, threshold, numThreads );
+		final ExecutorService service = Executors.newFixedThreadPool( numThreads );
+		final ArrayList< DifferenceOfGaussianPeak > integerPeaks = LocalExtrema.findLocalExtrema( scaleSpace, new ScaleSpaceExtremaCheck( threshold ), service );
 
 		/*
 		 * Suppress blobs.
@@ -551,6 +560,57 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 	public int getNumThreads()
 	{
 		return numThreads;
+	}
+
+	/*
+	 * INNER CLASSES
+	 */
+
+	private static class ScaleSpaceExtremaCheck implements LocalNeighborhoodCheck< DifferenceOfGaussianPeak, FloatType >
+	{
+		private final double threshold;
+
+		public ScaleSpaceExtremaCheck( final double threshold )
+		{
+			this.threshold = threshold;
+		}
+
+		@Override
+		public < C extends Localizable & Sampler< FloatType >> DifferenceOfGaussianPeak check( final C center, final Neighborhood< FloatType > neighborhood )
+		{
+			final float centerValue = center.get().get();
+			if ( Math.abs( centerValue ) < threshold ) { return null; }
+
+			final Cursor< FloatType > c = neighborhood.cursor();
+			while ( c.hasNext() )
+			{
+				final float v = c.next().get();
+				if ( centerValue < v )
+				{
+					// it can only be a minimum
+					while ( c.hasNext() )
+						if ( centerValue > c.next().get() )
+							return null;
+					// this mixup is intended, a minimum in the 2nd derivation
+					// is a maxima in image space and vice versa
+					return new DifferenceOfGaussianPeak( center, centerValue, SpecialPoint.MAX );
+
+				}
+				else if ( centerValue > v )
+				{
+					// it can only be a maximum
+					while ( c.hasNext() )
+						if ( centerValue < c.next().get() )
+							return null;
+					// this mixup is intended, a minimum in the 2nd derivation
+					// is a maxima in image space and vice versa
+					return new DifferenceOfGaussianPeak( center, centerValue, SpecialPoint.MIN );
+				}
+			}
+			return new DifferenceOfGaussianPeak( center, centerValue, SpecialPoint.MIN );
+			// all neighboring pixels have the same value. count it as MIN.
+		}
+
 	}
 
 }
