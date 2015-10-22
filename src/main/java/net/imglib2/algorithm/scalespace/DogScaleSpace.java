@@ -57,6 +57,7 @@ import net.imglib2.type.Type;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
+import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
 /**
@@ -417,15 +418,26 @@ public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img
 				}
 			}
 
-			final double detHessian = H.det();
-			final double traceHessian = H.trace();
-			final double r = Math.abs( traceHessian * traceHessian / detHessian );
+			final double r;
+			if ( n == 3 )
+			{
+				// 2D case, shortcut for the computation of eigenvalues.
+				final double detHessian = H.det();
+				final double traceHessian = H.trace();
+				r = Math.abs( traceHessian * traceHessian / detHessian );
 
-			/*
-			 * See
-			 * https://en.wikipedia.org/wiki/Scale-invariant_feature_transform
-			 * #Eliminating_edge_responses.
-			 */
+				/*
+				 * See
+				 * https://en.wikipedia.org/wiki/Scale-invariant_feature_transform
+				 * #Eliminating_edge_responses.
+				 */
+			}
+			else
+			{
+				final EigenvalueDecomposition decomposition = H.eig();
+				final double[] eig = decomposition.getRealEigenvalues();
+				r = Math.abs( Util.max( eig ) / Util.min( eig ) );
+			}
 
 			if ( r > ( ( rth + 1 ) * ( rth + 1 ) / rth ) )
 			{
