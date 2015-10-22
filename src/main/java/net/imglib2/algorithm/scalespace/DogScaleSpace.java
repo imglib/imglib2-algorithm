@@ -64,7 +64,7 @@ import Jama.Matrix;
  * @author Stephan Saalfeld
  * @author Jean-Yves Tinevez
  */
-public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< FloatType >>, MultiThreaded, Benchmark
+public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< FloatType >>, MultiThreaded, Benchmark
 {
 
 	private final Img< A > image;
@@ -134,7 +134,7 @@ public class ScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img< F
 	 *            the edge response threshold. If negative, edge responses will
 	 *            not be eliminated.
 	 */
-	public ScaleSpace( final Img< A > image, final Converter< A, FloatType > converter, final double initialSigma, final double threshold, final double suppressingRadiusFactor, final double edgeResponseThreshold )
+	public DogScaleSpace( final Img< A > image, final Converter< A, FloatType > converter, final double initialSigma, final double threshold, final double suppressingRadiusFactor, final double edgeResponseThreshold )
 	{
 		setNumThreads();
 		this.image = image;
