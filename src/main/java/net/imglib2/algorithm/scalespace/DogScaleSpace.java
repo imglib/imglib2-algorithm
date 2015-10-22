@@ -60,6 +60,25 @@ import net.imglib2.view.Views;
 import Jama.Matrix;
 
 /**
+ * Scale-space detection algorithm, based on difference-of-gaussians.
+ * <p>
+ * This algorithm first computes the scale-space of the provided source image,
+ * using difference-of-gaussians. Blobs corresponding to scales are then
+ * detected and returned. The detection processes as follow:
+ * 
+ * <ol start="1">
+ * <li>Computation of the scale-space on floats. Can be retrieved with the
+ * {@link #getResult()} method.
+ * <li>Detection of extrema (maxima and minima) in the scale-space.
+ * <li>Non-maximal suppression. This permits the suppression of sprurious
+ * detections at small scale when a better detection at a larger scale exists.
+ * <li>Elimination of edges responses. Edges give extrema in the scale-space
+ * image as well. This step discards them based on the expected difference in
+ * the principal curvature at the blob detection (large difference for edges).
+ * <li>Sub-pixel localization, using a quadratic interpolation.
+ * </ol>
+ * 
+ * 
  * @author Stephan Preibisch
  * @author Stephan Saalfeld
  * @author Jean-Yves Tinevez
@@ -101,7 +120,7 @@ public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img
 	 * The threshold used to discard edge responses in blob detection. Adapted
 	 * from the SIFT framework.
 	 * <p>
-	 * This value is the maximal ratio between the largest and smallesst
+	 * This value is the maximal ratio between the largest and smallest
 	 * curvature at the blob location. If the two curvatures are too different,
 	 * and this ratio is <b>big</b>, then it is likely that we detected an edge.
 	 * <p>
@@ -117,7 +136,25 @@ public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img
 	/**
 	 * Creates a new scale-space algorithm.
 	 * <p>
+	 * if the specified <code>initialSigma</code> is smaller than one, the image
+	 * is upsampled prior to scale-space calculation.
+	 * <p>
+	 * The <code>threshold</code> on intensity is taken on the normalized
+	 * scale-space image, which contain absolute value ranging from 0 to 1.
+	 * Typical values are around 0.03.
+	 * <p>
+	 * The <code>suppressingRadiusFactor</code> determines a search radius for
+	 * non-maximal suppression, in units of the larger detection. A value of 2
+	 * is a good starting point.
+	 * <p>
+	 * The <code>edgeResponseThreshold</code> is the maximal ratio between the
+	 * largest and smallest curvature at the blob location tolerated. If the two
+	 * curvatures are too different, and this ratio is <b>big</b>, then it is
+	 * likely that we detected an edge. In the SIFT paper, the value 10 is used.
 	 * 
+	 * @see <a
+	 *      href=https://en.wikipedia.org/wiki/Scale-invariant_feature_transform
+	 *      #Eliminating_edge_responses>Eliminating edge responses</a>
 	 * 
 	 * @param image
 	 *            the source image to operate on.
@@ -129,7 +166,9 @@ public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img
 	 * @param threshold
 	 *            the intensity threshold on blobs.
 	 * @param suppressingRadiusFactor
-	 *            the radius factor when searching non-maxima blobs to suppress.
+	 *            the radius factor when searching non-maximal blobs to
+	 *            suppress. If negative, non-maximal blobs will not be
+	 *            suppressed.
 	 * @param edgeResponseThreshold
 	 *            the edge response threshold. If negative, edge responses will
 	 *            not be eliminated.
@@ -282,8 +321,6 @@ public class DogScaleSpace< A extends Type< A >> implements OutputAlgorithm< Img
 		final SubpixelLocalization< DifferenceOfGaussianPeak, FloatType > spl = new SubpixelLocalization< DifferenceOfGaussianPeak, FloatType >( scaleSpace.numDimensions() );
 		spl.setNumThreads( numThreads );
 		final ArrayList< RefinedPeak< DifferenceOfGaussianPeak >> refinedPeaks = spl.process( validPeaks, scaleSpace, scaleSpace );
-
-
 
 		/*
 		 * Adjust the correct sigma and correct the locations if the image was
