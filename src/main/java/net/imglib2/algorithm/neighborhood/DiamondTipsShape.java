@@ -12,11 +12,24 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 
+
+/**
+ * TODO
+ * 
+ * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>
+ * @author Jonathan Hale (University of Konstanz)
+ */
 public class DiamondTipsShape implements Shape
 {
 
 	private final long radius;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param radius
+	 *            Radius for the diamond shape.
+	 */
 	public DiamondTipsShape( final long radius )
 	{
 		this.radius = radius;
@@ -46,6 +59,15 @@ public class DiamondTipsShape implements Shape
 	{
 		final DiamondTipsNeighborhoodFactory< T > f = DiamondTipsNeighborhood.< T >factory();
 		return new NeighborhoodsAccessible< T >( source, radius, f );
+	}
+
+	/**
+	 * @return Radius of this shape.
+	 * @see DiamondTipsShape#DiamondTipsShape(long)
+	 */
+	public long getRadius()
+	{
+		return radius;
 	}
 
 	@Override

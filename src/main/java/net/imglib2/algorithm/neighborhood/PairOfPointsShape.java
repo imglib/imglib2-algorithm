@@ -66,10 +66,18 @@ public class PairOfPointsShape implements Shape
 		return new NeighborhoodsAccessible< T >( source, offset, f );
 	}
 
+	/**
+	 * @return Copy of the offset of this shape.
+	 */
+	public long[] getOffset()
+	{
+		return offset.clone();
+	}
+
 	@Override
 	public String toString()
 	{
-		return "PairShape, offset = " + Util.printCoordinates( offset );
+		return "PairOfPointsShape, offset = " + Util.printCoordinates( offset );
 	}
 
 	public static final class NeighborhoodsIterableInterval< T > extends AbstractInterval implements IterableInterval< Neighborhood< T > >

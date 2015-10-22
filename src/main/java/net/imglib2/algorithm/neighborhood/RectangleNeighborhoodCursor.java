@@ -66,7 +66,7 @@ public final class RectangleNeighborhoodCursor< T > extends RectangleNeighborhoo
 		long size = dimensions[ 0 ];
 		for ( int d = 1; d < n; ++d )
 			size *= dimensions[ d ];
-		maxIndex = size;
+		maxIndex = size - 1;
 		reset();
 	}
 
@@ -116,11 +116,11 @@ public final class RectangleNeighborhoodCursor< T > extends RectangleNeighborhoo
 	@Override
 	public void reset()
 	{
-		index = 0;
-		maxIndexOnLine = dimensions[ 0 ];
+		index = -1;
+		maxIndexOnLine = -1;
 		for ( int d = 0; d < n; ++d )
 		{
-			currentPos[ d ] = ( d == 0 ) ? min[ d ] - 1 : min[ d ];
+			currentPos[ d ] = max[ d ];
 			currentMin[ d ] = currentPos[ d ] + span.min( d );
 			currentMax[ d ] = currentPos[ d ] + span.max( d );
 		}
@@ -136,8 +136,17 @@ public final class RectangleNeighborhoodCursor< T > extends RectangleNeighborhoo
 	public void jumpFwd( final long steps )
 	{
 		index += steps;
-		maxIndexOnLine = ( index < 0 ) ? dimensions[ 0 ] : ( 1 + index / dimensions[ 0 ] ) * dimensions[ 0 ];
-		IntervalIndexer.indexToPositionWithOffset( index + 1, dimensions, min, currentPos );
+		if ( index < 0 )
+		{
+			maxIndexOnLine = ( ( 1 + index ) / dimensions[ 0 ] ) * dimensions[ 0 ] - 1;
+			final long size = maxIndex + 1;
+			IntervalIndexer.indexToPositionWithOffset( size - ( -index % size ), dimensions, min, currentPos );
+		}
+		else
+		{
+			maxIndexOnLine = ( 1 + index / dimensions[ 0 ] ) * dimensions[ 0 ] - 1;
+			IntervalIndexer.indexToPositionWithOffset( index, dimensions, min, currentPos );
+		}
 		for ( int d = 0; d < n; ++d )
 		{
 			currentMin[ d ] = currentPos[ d ] + span.min( d );

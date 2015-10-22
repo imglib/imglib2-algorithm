@@ -55,6 +55,7 @@ import net.imglib2.view.Views;
  * 
  * @author Lee Kamentsky
  */
+@Deprecated
 public class AllConnectedComponents
 {
 	protected static class PositionStack

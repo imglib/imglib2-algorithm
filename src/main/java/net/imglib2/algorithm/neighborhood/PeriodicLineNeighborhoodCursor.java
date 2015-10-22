@@ -32,7 +32,7 @@ public class PeriodicLineNeighborhoodCursor< T > extends PeriodicLineNeighborhoo
 		long size = dimensions[ 0 ];
 		for ( int d = 1; d < n; ++d )
 			size *= dimensions[ d ];
-		maxIndex = size;
+		maxIndex = size - 1;
 		reset();
 	}
 
@@ -72,12 +72,9 @@ public class PeriodicLineNeighborhoodCursor< T > extends PeriodicLineNeighborhoo
 	@Override
 	public void reset()
 	{
-		index = 0;
-		maxIndexOnLine = dimensions[ 0 ];
-		for ( int d = 0; d < n; ++d )
-		{
-			currentPos[ d ] = ( d == 0 ) ? min[ d ] - 1 : min[ d ];
-		}
+		index = -1;
+		maxIndexOnLine = -1;
+		System.arraycopy( max, 0, currentPos, 0, n );
 	}
 
 	@Override
@@ -90,8 +87,17 @@ public class PeriodicLineNeighborhoodCursor< T > extends PeriodicLineNeighborhoo
 	public void jumpFwd( final long steps )
 	{
 		index += steps;
-		maxIndexOnLine = ( index < 0 ) ? dimensions[ 0 ] : ( 1 + index / dimensions[ 0 ] ) * dimensions[ 0 ];
-		IntervalIndexer.indexToPositionWithOffset( index + 1, dimensions, min, currentPos );
+		if ( index < 0 )
+		{
+			maxIndexOnLine = ( ( 1 + index ) / dimensions[ 0 ] ) * dimensions[ 0 ] - 1;
+			final long size = maxIndex + 1;
+			IntervalIndexer.indexToPositionWithOffset( size - ( -index % size ), dimensions, min, currentPos );
+		}
+		else
+		{
+			maxIndexOnLine = ( 1 + index / dimensions[ 0 ] ) * dimensions[ 0 ] - 1;
+			IntervalIndexer.indexToPositionWithOffset( index, dimensions, min, currentPos );
+		}
 	}
 
 	@Override

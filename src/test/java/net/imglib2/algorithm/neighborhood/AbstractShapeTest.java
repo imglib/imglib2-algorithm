@@ -1,13 +1,12 @@
 package net.imglib2.algorithm.neighborhood;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
-import net.imglib2.algorithm.neighborhood.Neighborhood;
-import net.imglib2.algorithm.neighborhood.Shape;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.array.ArrayLocalizingCursor;
@@ -156,5 +155,49 @@ public abstract class AbstractShapeTest
 		final Cursor< UnsignedShortType > craunsafe1 = neighborhoodUnsafeRA.cursor();
 		final Cursor< UnsignedShortType > craunsafe2 = neighborhoodUnsafeRA.cursor();
 		assertEquals( "The two cursors from the unsafe iterator are not the same object.", craunsafe1, craunsafe2 );
+	}
+	
+	@Test
+	public void testJumpFwd()
+	{
+		// cursor which will be moved via .jumpFwd()
+		final Cursor< Neighborhood< UnsignedShortType >> cNeigh1 =
+				shape.neighborhoodsSafe( img ).localizingCursor();
+		// cursor which will be moved via .fwd() for reference
+		final Cursor< Neighborhood< UnsignedShortType >> cNeigh2 =
+				shape.neighborhoodsSafe( img ).localizingCursor();
+
+		final long[] dims1 = new long[ cNeigh1.numDimensions() ];
+		final long[] dims2 = new long[ cNeigh2.numDimensions() ];
+
+		while ( cNeigh1.hasNext() )
+		{
+			cNeigh1.jumpFwd( 1 );
+			cNeigh2.fwd();
+
+			cNeigh1.localize( dims1 );
+			cNeigh2.localize( dims2 );
+			assertArrayEquals( "Incorrect position for jumpFwd()", dims2, dims1 );
+		}
+	}
+
+	@Test
+	public void testNegativeIndices()
+	{
+		// cursor which will be moved via .jumpFwd()
+		final Cursor< Neighborhood< UnsignedShortType > > c = shape.neighborhoods( img ).cursor();
+		final long[] pos = new long[ img.numDimensions() ];
+
+		c.jumpFwd( -1237 );
+		for ( int i = 0; i < 1238; ++i )
+			c.jumpFwd( 1 );
+		c.localize( pos );
+		assertArrayEquals( "Incorrect position for jumpFwd() with negative indices", new long[] {0, 0, 0}, pos );
+
+		c.jumpFwd( -241 );
+		for ( int i = 0; i < 241; ++i )
+			c.fwd();
+		c.localize( pos );
+		assertArrayEquals( "Incorrect position for jumpFwd() with negative indices", new long[] {0, 0, 0}, pos );
 	}
 }

@@ -72,8 +72,6 @@ public class SplitHyperPlaneKDTree< T >
 
 	private final double[] xmax;
 
-	private final double[] x;
-
 	private final ArrayList< KDTreeNode< T > > aboveNodes;
 
 	private final ArrayList< KDTreeNode< T > > aboveSubtrees;
@@ -87,7 +85,6 @@ public class SplitHyperPlaneKDTree< T >
 		n = tree.numDimensions();
 		xmin = new double[ n ];
 		xmax = new double[ n ];
-		x = new double[ n ];
 		normal = new double[ n ];
 		this.tree = tree;
 		aboveNodes = new ArrayList< KDTreeNode< T > >();
