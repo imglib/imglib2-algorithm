@@ -76,11 +76,19 @@ public class IntegralImg< R extends NumericType< R >, T extends NumericType< T >
 
 	protected final Converter< R, T > converter;
 
+	protected final int order;
+
 	public IntegralImg( final RandomAccessibleInterval< R > img, final T type, final Converter< R, T > converter )
+	{
+		this(img, type, converter, 1);
+	}
+
+	public IntegralImg( final RandomAccessibleInterval< R > img, final T type, final Converter< R, T > converter, final int order )
 	{
 		this.img = img;
 		this.type = type;
 		this.converter = converter;
+		this.order = order;
 	}
 
 	@Override
@@ -264,6 +272,12 @@ public class IntegralImg< R extends NumericType< R >, T extends NumericType< T >
 	{
 		// compute the first pixel
 		converter.convert( cursorIn.get(), sum );
+		// compute Math.pow(tmpVar, order) imglib-style
+		for ( int j = 0; j < order-1; ++j)
+		{
+			sum.mul(sum);
+		}
+
 		cursorOut.get().set( sum );
 
 		for ( int i = 2; i < size; ++i )
@@ -272,6 +286,13 @@ public class IntegralImg< R extends NumericType< R >, T extends NumericType< T >
 			cursorOut.fwd( 0 );
 
 			converter.convert( cursorIn.get(), tmpVar );
+
+			// compute Math.pow(tmpVar, order) imglib-style
+			for ( int j = 0; j < order-1; ++j)
+			{
+				tmpVar.mul(tmpVar);
+			}
+
 			sum.add( tmpVar );
 			cursorOut.get().set( sum );
 		}
