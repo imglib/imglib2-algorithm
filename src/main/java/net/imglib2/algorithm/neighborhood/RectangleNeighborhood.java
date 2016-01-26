@@ -221,6 +221,7 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 	{
 		return cursor();
 	}
+	
 
 	public final class LocalCursor extends AbstractEuclideanSpace implements Cursor< T >
 	{
@@ -367,4 +368,138 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 			return copy();
 		}
 	}
+	
+	public IntegralCursor integralCursor()
+	{
+		return new IntegralCursor( sourceRandomAccess.copyRandomAccess() );
+	}
+
+	private enum IntegralPosition {
+		NONE,
+		A,
+		B,
+		C,
+		D;
+	}
+	
+	public class IntegralCursor extends AbstractEuclideanSpace implements Cursor<T> {
+
+		private final RandomAccess<T> source;
+
+		private long index;
+
+		private IntegralPosition currentIntegralPosition;
+		
+		public IntegralCursor(final RandomAccess<T> source) {
+			super(source.numDimensions());
+			this.source = source;
+			reset();
+		}
+
+		protected IntegralCursor(final IntegralCursor c) {
+			super(c.numDimensions());
+			source = c.source.copyRandomAccess();
+			index = c.index;
+			currentIntegralPosition = c.currentIntegralPosition;
+		}
+
+		@Override
+		public T get() {
+			return source.get();
+		}
+
+		@Override
+		public void fwd() {
+			switch (currentIntegralPosition) {
+				case NONE: source.setPosition(currentMin); currentIntegralPosition = IntegralPosition.A; break;
+				case A: source.setPosition(new long[]{currentMax[0]-1, currentMin[1]}); currentIntegralPosition = IntegralPosition.B; break;
+				case B: source.setPosition(new long[]{currentMin[0], currentMax[1]-1}); currentIntegralPosition = IntegralPosition.C; break;
+				case C: source.setPosition(new long[]{currentMax[0]-1, currentMax[1]-1}); currentIntegralPosition = IntegralPosition.D; break;
+				case D: source.setPosition(currentMin); break;
+			}
+		}
+
+		@Override
+		public void jumpFwd(final long steps) {
+			// TODO Implement
+			for (long i = 0; i < steps; ++i)
+				fwd();
+		}
+
+		@Override
+		public T next() {
+			fwd();
+			return get();
+		}
+
+		@Override
+		public void remove() {
+			// NB: no action.
+		}
+
+		@Override
+		public void reset() {
+			source.setPosition(currentMin);
+			currentIntegralPosition = IntegralPosition.NONE;
+			source.bck(0);
+			index = 0;
+		}
+
+		@Override
+		public boolean hasNext() {
+			// FIXME
+			return index < maxIndex;
+		}
+
+		@Override
+		public float getFloatPosition(final int d) {
+			return source.getFloatPosition(d);
+		}
+
+		@Override
+		public double getDoublePosition(final int d) {
+			return source.getDoublePosition(d);
+		}
+
+		@Override
+		public int getIntPosition(final int d) {
+			return source.getIntPosition(d);
+		}
+
+		@Override
+		public long getLongPosition(final int d) {
+			return source.getLongPosition(d);
+		}
+
+		@Override
+		public void localize(final long[] position) {
+			source.localize(position);
+		}
+
+		@Override
+		public void localize(final float[] position) {
+			source.localize(position);
+		}
+
+		@Override
+		public void localize(final double[] position) {
+			source.localize(position);
+		}
+
+		@Override
+		public void localize(final int[] position) {
+			source.localize(position);
+		}
+
+		@Override
+		public IntegralCursor copy() {
+			return new IntegralCursor(this);
+		}
+
+		@Override
+		public IntegralCursor copyCursor() {
+			return copy();
+		}
+	}
+	
 }
