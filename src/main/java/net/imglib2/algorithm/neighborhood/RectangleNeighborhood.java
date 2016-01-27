@@ -383,6 +383,26 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 		return new IntegralCursor( sourceRandomAccess.copyRandomAccess() );
 	}
 
+	/**
+	 * A cursor implementation that returns specific corner values of
+	 * {@link RectangleNeighborhood}s.
+	 * 
+	 * The cursor returns, for example in 2D, the values at the following
+	 * positions:
+	 * 
+	 * <ol>
+	 * <li>(neighMin, neighMin),</li>
+	 * <li>(neighMax-1, neighMin),</li>
+	 * <li>(neighMin, neighMax-1), and</li>
+	 * <li>(neighMax-1, neighMax-1).</li>
+	 * </ol>
+	 * 
+	 * The mechanism naturally extends to nD. The current position can be
+	 * obtained from {@code getVector()} with 0s encoding neighMin and 1s
+	 * encoding neighMax-1.
+	 * 
+	 * @author Stefan Helfrich
+	 */
 	public class IntegralCursor extends LocalCursor
 	{
 
