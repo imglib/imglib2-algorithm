@@ -222,7 +222,6 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 	{
 		return cursor();
 	}
-	
 
 	public class LocalCursor extends AbstractEuclideanSpace implements Cursor< T >
 	{
@@ -368,7 +367,7 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 		{
 			return copy();
 		}
-		
+
 		/**
 		 * @return the source
 		 */
@@ -386,21 +385,21 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 	/**
 	 * A cursor implementation that returns specific corner values of
 	 * {@link RectangleNeighborhood}s.
-	 * 
+	 *
 	 * The cursor returns, for example in 2D, the values at the following
 	 * positions:
-	 * 
+	 *
 	 * <ol>
 	 * <li>(neighMin, neighMin),</li>
 	 * <li>(neighMax-1, neighMin),</li>
 	 * <li>(neighMin, neighMax-1), and</li>
 	 * <li>(neighMax-1, neighMax-1).</li>
 	 * </ol>
-	 * 
+	 *
 	 * The mechanism naturally extends to nD. The current position can be
 	 * obtained from {@code getVector()} with 0s encoding neighMin and 1s
 	 * encoding neighMax-1.
-	 * 
+	 *
 	 * @author Stefan Helfrich
 	 */
 	public class IntegralCursor extends LocalCursor
@@ -408,12 +407,13 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 
 		// Refrain from using index to make the separation clear
 		private int currentPosition = 0;
+
 		private int maxPosition = 0;
 
 		public IntegralCursor( final RandomAccess< T > source )
 		{
 			super( source );
-			maxPosition = (int) Math.round( Math.pow( 2, currentMin.length ) );
+			maxPosition = ( int ) Math.round( Math.pow( 2, currentMin.length ) );
 		}
 
 		protected IntegralCursor( final IntegralCursor c )
@@ -427,7 +427,7 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 		public void fwd()
 		{
 			// Extract each dimension individually from currentPosition
-			long[] cornerPosition = new long[ currentMin.length ];
+			final long[] cornerPosition = new long[ currentMin.length ];
 			for ( int d = 0; d < currentMin.length; ++d )
 			{
 				int valueInDimension = currentPosition >> d;
@@ -478,10 +478,10 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 		{
 			return currentPosition;
 		}
-		
+
 		public Vector< Integer > getCornerVector()
 		{
-			Vector< Integer > vec = new Vector< Integer >();
+			final Vector< Integer > vec = new Vector< Integer >();
 
 			// Extract each dimension individually from currentPosition
 			for ( int d = 0; d < currentMin.length; ++d )
