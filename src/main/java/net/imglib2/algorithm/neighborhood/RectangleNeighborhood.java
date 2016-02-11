@@ -35,7 +35,6 @@
 package net.imglib2.algorithm.neighborhood;
 
 import java.util.Iterator;
-import java.util.Vector;
 
 import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.AbstractLocalizable;
@@ -92,6 +91,14 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 	public Interval getStructuringElementBoundingBox()
 	{
 		return structuringElementBoundingBox;
+	}
+
+	/**
+	 * @return the sourceRandomAccess
+	 */
+	public RandomAccess< T > getSourceRandomAccess()
+	{
+		return sourceRandomAccess;
 	}
 
 	@Override
@@ -223,7 +230,7 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 		return cursor();
 	}
 
-	public class LocalCursor extends AbstractEuclideanSpace implements Cursor< T >
+	public final class LocalCursor extends AbstractEuclideanSpace implements Cursor< T >
 	{
 		private final RandomAccess< T > source;
 
@@ -366,133 +373,6 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 		public LocalCursor copyCursor()
 		{
 			return copy();
-		}
-
-		/**
-		 * @return the source
-		 */
-		public RandomAccess< T > getSource()
-		{
-			return source;
-		}
-	}
-
-	public IntegralCursor integralCursor()
-	{
-		return new IntegralCursor( sourceRandomAccess.copyRandomAccess() );
-	}
-
-	/**
-	 * A cursor implementation that returns specific corner values of
-	 * {@link RectangleNeighborhood}s.
-	 *
-	 * The cursor returns, for example in 2D, the values at the following
-	 * positions:
-	 *
-	 * <ol>
-	 * <li>(neighMin, neighMin),</li>
-	 * <li>(neighMax-1, neighMin),</li>
-	 * <li>(neighMin, neighMax-1), and</li>
-	 * <li>(neighMax-1, neighMax-1).</li>
-	 * </ol>
-	 *
-	 * The mechanism naturally extends to nD. The current position can be
-	 * obtained from {@code getVector()} with 0s encoding neighMin and 1s
-	 * encoding neighMax-1.
-	 *
-	 * @author Stefan Helfrich
-	 */
-	public class IntegralCursor extends LocalCursor
-	{
-
-		// Refrain from using index to make the separation clear
-		private int currentPosition = 0;
-
-		private int maxPosition = 0;
-
-		public IntegralCursor( final RandomAccess< T > source )
-		{
-			super( source );
-			maxPosition = ( int ) Math.round( Math.pow( 2, currentMin.length ) );
-		}
-
-		protected IntegralCursor( final IntegralCursor c )
-		{
-			super( c );
-			currentPosition = c.currentPosition;
-			maxPosition = c.maxPosition;
-		}
-
-		@Override
-		public void fwd()
-		{
-			// Extract each dimension individually from currentPosition
-			final long[] cornerPosition = new long[ currentMin.length ];
-			for ( int d = 0; d < currentMin.length; ++d )
-			{
-				int valueInDimension = currentPosition >> d;
-				valueInDimension = valueInDimension & 1;
-
-				if ( valueInDimension == 1 )
-				{
-					// if bit in dimension is set
-					cornerPosition[ d ] = currentMax[ d ] - 1;
-				}
-				else
-				{
-					// if not
-					cornerPosition[ d ] = currentMin[ d ];
-				}
-			}
-
-			getSource().setPosition( cornerPosition );
-			++currentPosition;
-		}
-
-		@Override
-		public void reset()
-		{
-			super.reset();
-			currentPosition = 0;
-		}
-
-		@Override
-		public boolean hasNext()
-		{
-			return currentPosition < maxPosition;
-		}
-
-		@Override
-		public IntegralCursor copy()
-		{
-			return new IntegralCursor( this );
-		}
-
-		@Override
-		public IntegralCursor copyCursor()
-		{
-			return copy();
-		}
-
-		public int getCornerInteger()
-		{
-			return currentPosition;
-		}
-
-		public Vector< Integer > getCornerVector()
-		{
-			final Vector< Integer > vec = new Vector< Integer >();
-
-			// Extract each dimension individually from currentPosition
-			for ( int d = 0; d < currentMin.length; ++d )
-			{
-				int valueInDimension = currentPosition >> d;
-				valueInDimension = valueInDimension & 1;
-
-				vec.add( valueInDimension );
-			}
-
-			return vec;
 		}
 	}
 
