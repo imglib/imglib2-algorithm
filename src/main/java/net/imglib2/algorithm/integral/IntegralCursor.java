@@ -34,8 +34,6 @@
 
 package net.imglib2.algorithm.integral;
 
-import java.util.Vector;
-
 import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
@@ -45,19 +43,23 @@ import net.imglib2.algorithm.neighborhood.RectangleNeighborhood;
  * A cursor implementation that returns specific corner values of
  * {@link RectangleNeighborhood}s.
  *
- * The cursor returns, for example in 2D, the values at the following
- * positions:
+ * The cursor returns, for example in 2D, the values at the following positions:
  *
- * <ol>
+ * <ul>
  * <li>(neighMin, neighMin),</li>
  * <li>(neighMax-1, neighMin),</li>
  * <li>(neighMin, neighMax-1), and</li>
  * <li>(neighMax-1, neighMax-1).</li>
- * </ol>
+ * </ul>
  *
- * The mechanism naturally extends to nD. The current position can be
- * obtained from {@code getVector()} with 0s encoding neighMin and 1s
- * encoding neighMax-1.
+ * The mechanism naturally extends to nD. The current position can be obtained
+ * from {@code getVector()} with 0s encoding (neighMin) and 1s encoding
+ * (neighMax-1). The iteration order follows the (binary-reflected) Gray code
+ * pattern such that only one dimension of the target position is modified per
+ * move.
+ * 
+ * @see <a href="http://en.wikipedia.org/wiki/Gray_code">http://en.wikipedia.org
+ *      /wiki/Gray_code</a>
  *
  * @author Stefan Helfrich
  */
@@ -65,6 +67,9 @@ public class IntegralCursor< T > extends AbstractEuclideanSpace implements Curso
 {
 
 	private int index = 0;
+
+	/** Reflected binary code (Gray code) **/
+	private int code = 0;
 
 	private final int maxIndex;
 
@@ -77,7 +82,7 @@ public class IntegralCursor< T > extends AbstractEuclideanSpace implements Curso
 		super( neighborhood.numDimensions() );
 		this.neighborhood = neighborhood;
 		source = neighborhood.getSourceRandomAccess();
-		maxIndex = ( int ) Math.round( Math.pow( 2, neighborhood.numDimensions() ) );
+		maxIndex = ( ( int ) Math.round( Math.pow( 2, neighborhood.numDimensions() ) ) ) - 1;
 		reset();
 	}
 
@@ -93,37 +98,49 @@ public class IntegralCursor< T > extends AbstractEuclideanSpace implements Curso
 	@Override
 	public void reset()
 	{
+		index = -1;
+
 		long[] min = new long[ neighborhood.numDimensions() ];
 		neighborhood.min( min );
 		source.setPosition( min );
-		source.bck( 0 );
-		index = 0;
 	}
 
 	@Override
 	public void fwd()
 	{
-		// Extract each dimension individually from currentPosition
-		final long[] cornerPosition = new long[ neighborhood.numDimensions() ];
-		for ( int d = 0; d < neighborhood.numDimensions(); ++d )
+		// Check if cursor is uninitialized
+		if ( index == -1 )
 		{
-			int valueInDimension = index >> d;
-			valueInDimension = valueInDimension & 1;
-
-			if ( valueInDimension == 1 )
-			{
-				// if bit in dimension is set
-				cornerPosition[ d ] = neighborhood.max( d ) - 1;
-			}
-			else
-			{
-				// if not
-				cornerPosition[ d ] = neighborhood.min( d );
-			}
+			index++;
+			return;
 		}
 
-		source.setPosition( cornerPosition );
-		++index;
+		/*
+		 * Adapted from Wikipedia:
+		 * 
+		 * To construct the binary-reflected Gray code iteratively, at step 0
+		 * start with the code = 0, and at each step index > 0 find the bit
+		 * position of the least significant 1 in the binary representation of
+		 * index and flip the bit at that position in the previous code to get
+		 * the next code.
+		 */
+		index++;
+
+		// Update Gray code
+		int mask = Integer.lowestOneBit( index );
+		code ^= mask;
+
+		// Move the cursor in the dimension of the updated bit
+		int updatedDimension = Integer.numberOfTrailingZeros( index );
+		int bitInDimension = ( code & mask ) >> updatedDimension;
+		if ( bitInDimension == 1 )
+		{
+			source.setPosition( neighborhood.max( updatedDimension ) - 1, updatedDimension );
+		}
+		else
+		{
+			source.setPosition( neighborhood.min( updatedDimension ), updatedDimension );
+		}
 	}
 
 	@Override
@@ -164,25 +181,9 @@ public class IntegralCursor< T > extends AbstractEuclideanSpace implements Curso
 		return copy();
 	}
 
-	public int getCornerInteger()
+	public int getCornerRepresentation()
 	{
-		return index;
-	}
-
-	public Vector< Integer > getCornerVector()
-	{
-		final Vector< Integer > vec = new Vector< Integer >();
-
-		// Extract each dimension individually from currentPosition
-		for ( int d = 0; d < neighborhood.numDimensions(); ++d )
-		{
-			int valueInDimension = index >> d;
-			valueInDimension = valueInDimension & 1;
-
-			vec.add( valueInDimension );
-		}
-
-		return vec;
+		return code;
 	}
 
 	@Override
