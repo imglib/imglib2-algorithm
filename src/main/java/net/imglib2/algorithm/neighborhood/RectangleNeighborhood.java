@@ -93,6 +93,14 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 		return structuringElementBoundingBox;
 	}
 
+	/**
+	 * @return the sourceRandomAccess
+	 */
+	public RandomAccess< T > getSourceRandomAccess()
+	{
+		return sourceRandomAccess;
+	}
+
 	@Override
 	public long size()
 	{
