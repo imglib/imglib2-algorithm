@@ -52,7 +52,7 @@ public class MorphologyUtils
 	 *         source image.
 	 *         </ol>
 	 */
-	static final < T > long[][] computeTargetImageDimensionsAndOffset( final Interval source, final Shape strel )
+	public static final < T > long[][] computeTargetImageDimensionsAndOffset( final Interval source, final Shape strel )
 	{
 		/*
 		 * Compute target image size
