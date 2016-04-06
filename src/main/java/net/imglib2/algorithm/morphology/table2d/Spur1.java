@@ -57,17 +57,17 @@ class Spur1 extends Abstract3x3TableOperation
 		return true;
 	}
 
-	static public < T extends BooleanType< T > > Img< T > spur1( final Img< T > source )
+	public static < T extends BooleanType< T > > Img< T > spur1( final Img< T > source )
 	{
 		return new Spur1().calculate( source );
 	}
 
-	static public < T extends BooleanType< T > > void spur1( final RandomAccessible< T > source, final IterableInterval< T > target )
+	public static < T extends BooleanType< T > > void spur1( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Spur1().calculate( source, target );
 	}
 
-	final static private boolean[] table = {
+	private static final boolean[] table = {
 			false, false, false, false, false, false, false, false,
 			false, false, false, false, false, false, false, false,
 			true, false, false, true, false, true, true, true,

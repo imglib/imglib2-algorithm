@@ -73,13 +73,13 @@ import net.imglib2.util.Util;
  */
 public class Thin
 {
-	static public < T extends BooleanType< T > > Img< T > thin( final Img< T > source )
+	public static < T extends BooleanType< T > > Img< T > thin( final Img< T > source )
 	{
 		return new Thin2().calculate( new Thin1().calculate( source ) );
 	}
 
 	@SuppressWarnings( { "unchecked", "rawtypes" } )
-	static public < T extends BooleanType< T > > void thin( final RandomAccessible< T > source, final IterableInterval< T > target )
+	public static < T extends BooleanType< T > > void thin( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		long[] targetDims = new long[] { target.dimension( 0 ), target.dimension( 1 ) };
 		final T extendedVal = target.firstElement().createVariable();

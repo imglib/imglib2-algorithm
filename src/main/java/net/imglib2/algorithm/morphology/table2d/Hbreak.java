@@ -65,17 +65,17 @@ public class Hbreak extends Abstract3x3TableOperation
 		return false;
 	}
 
-	static public < T extends BooleanType< T > > Img< T > hbreak( final Img< T > source )
+	public static < T extends BooleanType< T > > Img< T > hbreak( final Img< T > source )
 	{
 		return new Hbreak().calculate( source );
 	}
 
-	static public < T extends BooleanType< T > > void hbreak( final RandomAccessible< T > source, final IterableInterval< T > target )
+	public static < T extends BooleanType< T > > void hbreak( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Hbreak().calculate( source, target );
 	}
 
-	final static private boolean[] table = {
+	private static final boolean[] table = {
 			false, false, false, false, false, false, false, false,
 			false, false, false, false, false, false, false, false,
 			true, true, true, true, true, true, true, true,

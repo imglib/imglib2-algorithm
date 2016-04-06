@@ -65,17 +65,17 @@ public class Fill extends Abstract3x3TableOperation
 		return true;
 	}
 
-	static public < T extends BooleanType< T > > Img< T > fill( final Img< T > source )
+	public static < T extends BooleanType< T > > Img< T > fill( final Img< T > source )
 	{
 		return new Fill().calculate( source );
 	}
 
-	static public < T extends BooleanType< T > > void fill( final RandomAccessible< T > source, final IterableInterval< T > target )
+	public static < T extends BooleanType< T > > void fill( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Fill().calculate( source, target );
 	}
 
-	final static private boolean[] table = {
+	private static final boolean[] table = {
 			false, false, false, false, false, false, false, false,
 			false, false, false, false, false, false, false, false,
 			true, true, true, true, true, true, true, true,

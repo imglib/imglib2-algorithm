@@ -53,7 +53,7 @@ import net.imglib2.view.Views;
  */
 public abstract class Abstract3x3TableOperation
 {
-	final static private RectangleShape shape = new RectangleShape( 1, false );
+	private static final RectangleShape shape = new RectangleShape( 1, false );
 
 	/**
 	 * The index to the table that's returned is built by examining each pixel

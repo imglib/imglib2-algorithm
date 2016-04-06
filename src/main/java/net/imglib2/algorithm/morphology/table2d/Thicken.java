@@ -72,17 +72,17 @@ public class Thicken extends Abstract3x3TableOperation
 		return false;
 	}
 
-	static public < T extends BooleanType< T > > Img< T > thicken( final Img< T > source )
+	public static < T extends BooleanType< T > > Img< T > thicken( final Img< T > source )
 	{
 		return new Thicken().calculate( source );
 	}
 
-	static public < T extends BooleanType< T > > void thicken( final RandomAccessible< T > source, final IterableInterval< T > target )
+	public static < T extends BooleanType< T > > void thicken( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Thicken().calculate( source, target );
 	}
 
-	final static private boolean[] table = {
+	private static final boolean[] table = {
 			false, true, true, true, true, false, true, true,
 			true, true, true, true, false, false, true, true,
 			true, true, true, true, true, true, true, true,

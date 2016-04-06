@@ -59,13 +59,13 @@ import net.imglib2.util.Util;
  */
 public class Spur
 {
-	static public < T extends BooleanType< T > > Img< T > spur( final Img< T > source )
+	public static < T extends BooleanType< T > > Img< T > spur( final Img< T > source )
 	{
 		return new Spur2().calculate( new Spur1().calculate( source ) );
 	}
 
 	@SuppressWarnings( { "unchecked", "rawtypes" } )
-	static public < T extends BooleanType< T > > void spur( final RandomAccessible< T > source, final IterableInterval< T > target )
+	public static < T extends BooleanType< T > > void spur( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		long[] targetDims = new long[] { target.dimension( 0 ), target.dimension( 1 ) };
 		final T extendedVal = target.firstElement().createVariable();

@@ -65,17 +65,17 @@ public class Clean extends Abstract3x3TableOperation
 		return false;
 	}
 
-	static public < T extends BooleanType< T > > Img< T > clean( final Img< T > source )
+	public static < T extends BooleanType< T > > Img< T > clean( final Img< T > source )
 	{
 		return new Clean().calculate( source );
 	}
 
-	static public < T extends BooleanType< T > > void clean( final RandomAccessible< T > source, final IterableInterval< T > target )
+	public static < T extends BooleanType< T > > void clean( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Clean().calculate( source, target );
 	}
 
-	final static private boolean[] table = {
+	private static final boolean[] table = {
 			false, false, false, false, false, false, false, false,
 			false, false, false, false, false, false, false, false,
 			false, true, true, true, true, true, true, true,

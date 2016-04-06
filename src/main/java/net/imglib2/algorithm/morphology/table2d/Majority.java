@@ -66,17 +66,17 @@ public class Majority extends Abstract3x3TableOperation
 		return false;
 	}
 
-	static public < T extends BooleanType< T > > Img< T > majority( final Img< T > source )
+	public static < T extends BooleanType< T > > Img< T > majority( final Img< T > source )
 	{
 		return new Majority().calculate( source );
 	}
 
-	static public < T extends BooleanType< T > > void majority( final RandomAccessible< T > source, final IterableInterval< T > target )
+	public static < T extends BooleanType< T > > void majority( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Majority().calculate( source, target );
 	}
 
-	final static private boolean[] table = {
+	private static final boolean[] table = {
 			false, false, false, false, false, false, false, false,
 			false, false, false, false, false, false, false, false,
 			false, false, false, false, false, false, false, false,
