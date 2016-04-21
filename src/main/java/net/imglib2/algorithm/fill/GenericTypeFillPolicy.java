@@ -18,6 +18,21 @@ public class GenericTypeFillPolicy<T extends Type<T>> implements FillPolicy<T> {
         this.newType = newType;
     }
 
+    public static class Factory< U extends Type< U > > implements FillPolicyFactory< U >
+    {
+
+        private final U newType;
+
+        public Factory(U newType) {
+            this.newType = newType;
+        }
+
+        @Override
+        public GenericTypeFillPolicy<U> call(U seedType) {
+            return new GenericTypeFillPolicy<U>( seedType.copy(), newType );
+        }
+    }
+
     @Override
     public void fill(T t) {
         t.set( newType );
