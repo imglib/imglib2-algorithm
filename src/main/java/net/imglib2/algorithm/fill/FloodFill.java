@@ -16,6 +16,28 @@ public class FloodFill {
 
     /**
      *
+     * convenience method to automatically determine filler policy from value at seed point
+     *
+     * @param randomAccessible input (also written into)
+     * @param seed flood fill starting at this location
+     * @param shape neighborhood that is checked for filling
+     * @param fillerFactory rule for creating {@link FillPolicy} from pixel located at seed
+     * @param <T> no restrictions on T as long as appropriate {@link FillPolicy} is provided
+     */
+    public static < T > void fill(
+            final RandomAccessible< T > randomAccessible,
+            final Localizable seed,
+            final Shape shape,
+            final FillPolicyFactory< T > fillerFactory )
+    {
+        RandomAccess<T> access = randomAccessible.randomAccess();
+        access.setPosition( seed );
+        fill( randomAccessible, seed, shape, fillerFactory.call( access.get() ) );
+    }
+
+
+    /**
+     *
      * @param randomAccessible input (also written into)
      * @param seed flood fill starting at this location
      * @param shape neighborhood that is checked for filling
