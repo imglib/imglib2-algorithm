@@ -86,33 +86,4 @@ public class FloodFill {
         }
     }
 
-
-//    public static void main(String[] args) {
-//        long[] dim = {120, 90};
-//
-//        long[] circle = { 40, 50, 30 }; // x, y, r
-//
-//        ArrayImg<LongType, LongArray> img = ArrayImgs.longs(dim);
-//        ArrayCursor<LongType> c;
-//        for(c = img.cursor(); c.hasNext(); )
-//        {
-//            c.fwd();
-//            long x = c.getLongPosition(0) - circle[0];
-//            long y = c.getLongPosition(1) - circle[1];
-//            if ( x*x + y*y <= circle[2]*circle[2] && ( y < 10 || y > 12 ) )
-//                c.get().set( 5 );
-//
-//        }
-//
-//
-//        new ImageJ();
-//        ImageJFunctions.show( img.copy() );
-//
-//        LongType seedType = new LongType(5);
-//        LongType newType = new LongType(8);
-//        GenericTypeFillPolicy<LongType> filler = new GenericTypeFillPolicy<LongType>(seedType, newType);
-//        fill( img, new Point( circle[0], circle[1] ), new DiamondShape(1), filler );
-//        ImageJFunctions.show( img );
-//    }
-
 }
