@@ -37,6 +37,7 @@ package net.imglib2.algorithm.fill;
 
 /**
  * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
  *
  *
  * Interface for comparing {@link T} t and {@link U} u and accepting them as equivalent in a

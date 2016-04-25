@@ -37,6 +37,7 @@ package net.imglib2.algorithm.fill;
 
 /**
  * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
  *
  *
  * Interface for writing from arbitrary source into target (same types).

@@ -39,6 +39,7 @@ import net.imglib2.type.Type;
 
 /**
  * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
  *
  *
  * Default implementation of {@link Writer} for {@link Type}.

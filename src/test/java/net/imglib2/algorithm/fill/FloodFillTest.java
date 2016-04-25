@@ -51,6 +51,7 @@ import org.junit.Test;
 
 /**
  * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
  */
 public class FloodFillTest {
 
