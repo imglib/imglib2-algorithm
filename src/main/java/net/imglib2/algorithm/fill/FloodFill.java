@@ -48,8 +48,6 @@ import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 
-import java.util.Comparator;
-
 
 /**
  * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
@@ -68,27 +66,30 @@ public class FloodFill {
      * pixel is in the same connected component and fillLabel has not been written into that location yet (comparator
      * evaluates to 0).
      *
-     * Convenience call to {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Comparable, Type, Shape)}.
+     * Convenience call to {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Object, Type, Shape, Filter)}.
      * seedLabel is extracted from source at seed location.
      *
      * @param source input
      * @param target {@link RandomAccessible} to be written into. May be the same as input.
      * @param seed Start flood fill at this location.
      * @param fillLabel Immutable. Value to be written into valid flood fill locations.
-     * @param <T> T implements {@link Type<U>} and {@link Comparable<T>}.
-     * @param <U> U implements {@link Type<U>} and {@link Comparable<U>}.
+     * @param filter Returns true if pixel has not been visited yet and should be written into. Returns false if target pixel has been visited
+     *                   or source pixel is not part of the same connected component.
+     * @param <T> T implements {@link Type<U>}.
+     * @param <U> U implements {@link Type<U>}.
      */
-    public static < T extends Type< T > & Comparable< T >, U extends Type< U > & Comparable< U > > void fill(
+    public static < T extends Type< T >, U extends Type< U > > void fill(
             final RandomAccessible< T > source,
             final RandomAccessible< U > target,
             final Localizable seed,
             final U fillLabel,
-            final Shape shape
+            final Shape shape,
+            Filter< Pair< T, U >, Pair< T, U > > filter
     )
     {
         RandomAccess<T> access = source.randomAccess();
         access.setPosition( seed );
-        fill( source, target, seed, access.get().copy(), fillLabel, shape );
+        fill( source, target, seed, access.get().copy(), fillLabel, shape, filter );
     }
 
 
@@ -98,27 +99,30 @@ public class FloodFill {
      * pixel is in the same connected component and fillLabel has not been written into that location yet (comparator
      * evaluates to 0).
      *
-     * Convenience call to {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Object, Object, Shape, Comparator, Writer)}
-     * with {@link ComparableComparator} as comparator and {@link TypeWriter} as writer.
+     * Convenience call to {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Object, Object, Shape, Filter, Writer)}
+     * with {@link TypeWriter} as writer.
      *
      * @param source input
      * @param target {@link RandomAccessible} to be written into. May be the same as input.
      * @param seed Start flood fill at this location.
      * @param seedLabel Immutable. Reference value of input at seed location.
      * @param fillLabel Immutable. Value to be written into valid flood fill locations.
-     * @param <T> T implements {@link Comparable<T>}.
-     * @param <U> U implements {@link Type<U>} and {@link Comparable<U>}.
+     * @param filter Returns true if pixel has not been visited yet and should be written into. Returns false if target pixel has been visited
+     *                   or source pixel is not part of the same connected component.
+     * @param <T> No restrictions on {@link T}.
+     * @param <U> {@link U} implements {@link Type<U>}.
      */
-    public static < T extends Comparable< T >, U extends Type< U > & Comparable< U > > void fill(
+    public static < T , U extends Type< U > > void fill(
             final RandomAccessible< T > source,
             final RandomAccessible< U > target,
             final Localizable seed,
             final T seedLabel,
             final U fillLabel,
-            final Shape shape
+            final Shape shape,
+            Filter< Pair< T, U >, Pair< T, U > > filter
     )
     {
-        fill( source, target, seed, seedLabel, fillLabel, shape, new ComparableComparator<T, U>(), new TypeWriter<U>() );
+        fill( source, target, seed, seedLabel, fillLabel, shape, filter, new TypeWriter<U>() );
     }
 
 
@@ -135,10 +139,8 @@ public class FloodFill {
      * @param seedLabel Immutable. Reference value of input at seed location.
      * @param fillLabel Immutable. Value to be written into valid flood fill locations.
      * @param shape Defines neighborhood that is considered for connected components, e.g. {@link net.imglib2.algorithm.neighborhood.DiamondShape}
-     * @param comparator Returns 0 if pixel has not been visited yet and should be written into. Returns non-zero if target pixel has been visited
-     *                   or source pixel is not part of the same connected component. In the most trivial case, comparator will return 0
-     *                   if and only if source at the current location is equal to seedLabel and target at the current location is different
-     *                   from fillLabel, cf {@link ComparableComparator}.
+     * @param filter Returns true if pixel has not been visited yet and should be written into. Returns false if target pixel has been visited
+     *                   or source pixel is not part of the same connected component.
      * @param writer Defines how fillLabel is written into target at current location.
      * @param <T> No restrictions on T. Appropriate comparator is the only requirement.
      * @param <U> No restrictions on U. Appropriate comparator and writer is the only requirement.
@@ -150,7 +152,7 @@ public class FloodFill {
             final T seedLabel,
             final U fillLabel,
             final Shape shape,
-            final Comparator< Pair< T, U > > comparator,
+            final Filter< Pair< T, U >, Pair< T, U > > filter,
             final Writer< U > writer )
     {
         final int n = source.numDimensions();
@@ -183,7 +185,7 @@ public class FloodFill {
             while ( neighborhoodCursor.hasNext() )
             {
                 Pair< T, U > p = neighborhoodCursor.next();
-                if ( comparator.compare( p, reference ) == 0 )
+                if ( filter.accept( p, reference ) )
                 {
                     writer.write( fillLabel, p.getB() );
                     for ( int d = 0; d < n; ++d )

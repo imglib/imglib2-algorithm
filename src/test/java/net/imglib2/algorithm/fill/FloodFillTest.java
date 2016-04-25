@@ -43,6 +43,7 @@ import net.imglib2.img.ImgFactory;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.LongType;
+import net.imglib2.util.Pair;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import org.junit.Assert;
@@ -107,7 +108,15 @@ public class FloodFillTest {
 
         ExtendedRandomAccessibleInterval<T, Img<T>> extendedImg = Views.extendValue(img, fillLabel);
 
-        FloodFill.fill( extendedImg, extendedImg, new Point( c ), fillLabel, new DiamondShape( 1 ) );
+        Filter<Pair<T, T>, Pair<T, T>> filter = new Filter< Pair< T, T >, Pair< T, T > >() {
+            @Override
+            public boolean accept(Pair< T, T > p1, Pair< T, T > p2) {
+                return ( p1.getB().getIntegerLong() != p2.getB().getIntegerLong() ) &&
+                        ( p1.getA().getIntegerLong() == p2.getA().getIntegerLong() );
+            }
+        };
+
+        FloodFill.fill( extendedImg, extendedImg, new Point( c ), fillLabel, new DiamondShape( 1 ), filter );
 
         for ( Cursor< T > imgCursor = img.cursor(), refCursor = refImg.cursor(); imgCursor.hasNext(); )
         {

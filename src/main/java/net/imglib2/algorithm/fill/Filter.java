@@ -8,18 +8,18 @@
  * Mark Hiner, Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey,
  * Melissa Linkert, Mark Longair, Brian Northan, Nick Perry, Dimiter Prodanov,
  * Curtis Rueden, Johannes Schindelin, Jean-Yves Tinevez and Michael Zinsmaier.
- * All rights reserved.       
- *                            
+ * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *                            
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *                            
+ *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *                            
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -35,27 +35,18 @@
 
 package net.imglib2.algorithm.fill;
 
-import net.imglib2.util.Pair;
-
-import java.util.Comparator;
-
 /**
  * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
  *
  *
- * Default implementation of {@link Comparable} for the use in {@link FloodFill} when source and target are both
- * {@link net.imglib2.RandomAccessible<Comparable>}
+ * Interface for comparing {@link T} t and {@link U} u and accepting them as equivalent in a
+ * sense specified by implementation thereof.
  *
+ * @param <T>
+ * @param <U>
  */
-public class ComparableComparator< T extends Comparable< T >, U extends Comparable< U >  >
-        implements Comparator<Pair< T, U > > {
+public interface Filter< T, U > {
 
-    @Override
-    public int compare( final Pair< T, U > p1, final Pair< T, U > p2) {
-        int comp1 = p1.getA().compareTo( p2.getA() );
-        int comp2 = p1.getB().compareTo( p2.getB() );
-        return  comp1 == 0 ?
-                ( comp2 == 0 ? 1 : 0 )
-                : comp1;
-    }
+    boolean accept( T t, U u );
+
 }
