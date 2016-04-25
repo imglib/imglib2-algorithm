@@ -73,7 +73,7 @@ public class Spur
 
 		final ImgFactory< T > factory;
 		if ( extendedVal instanceof NativeType )
-			factory = Util.getArrayOrCellImgFactory( target, ( NativeType ) extendedVal );
+			factory = ( ImgFactory< T > ) Util.getArrayOrCellImgFactory( target, ( NativeType ) extendedVal );
 		else
 			factory = new ListImgFactory< T >();
 		Img< T > temp = factory.create( targetDims, extendedVal );
