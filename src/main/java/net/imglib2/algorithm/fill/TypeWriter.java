@@ -46,7 +46,7 @@ import net.imglib2.type.Type;
  */
 public class TypeWriter< T extends Type< T > > implements Writer< T > {
 
-        @Override
+    @Override
     public void write( final T source, final T target) {
         target.set( source );
     }
