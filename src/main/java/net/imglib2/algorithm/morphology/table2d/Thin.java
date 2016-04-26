@@ -87,7 +87,7 @@ public class Thin
 
 		final ImgFactory< T > factory;
 		if ( extendedVal instanceof NativeType )
-			factory = Util.< NativeType >getArrayOrCellImgFactory( target, ( NativeType ) extendedVal );
+			factory = ( ImgFactory< T > ) Util.getArrayOrCellImgFactory( target, ( NativeType ) extendedVal );
 		else
 			factory = new ListImgFactory< T >();
 		Img< T > temp = factory.create( targetDims, extendedVal );
