@@ -33,8 +33,15 @@
  */
 package net.imglib2.algorithm.neighborhood;
 
+import static org.junit.Assert.assertTrue;
+
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
 import net.imglib2.algorithm.neighborhood.PeriodicLineShape;
 import net.imglib2.algorithm.neighborhood.Shape;
+import net.imglib2.util.Intervals;
+
+import org.junit.Test;
 
 public class PeriodicLineShapeTest extends AbstractShapeTest
 {
@@ -74,6 +81,14 @@ public class PeriodicLineShapeTest extends AbstractShapeTest
 			}
 		}
 		return true;
+	}
+
+	@Test
+	public void testStructuringElementBoundingBox() {
+		Interval boundingBox = shape.getStructuringElementBoundingBox(
+			INCREMENTS.length);
+		assertTrue(Intervals.equals(boundingBox, new FinalInterval(new long[] { -4,
+			-2, 0 }, new long[] { 4, 2, 0 })));
 	}
 
 }

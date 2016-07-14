@@ -33,10 +33,17 @@
  */
 package net.imglib2.algorithm.neighborhood;
 
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
 import net.imglib2.algorithm.neighborhood.PairOfPointsShape;
 import net.imglib2.algorithm.neighborhood.Shape;
+import net.imglib2.util.Intervals;
+
+import org.junit.Test;
 
 public class PairOfPointsShapeTest extends AbstractShapeTest
 {
@@ -61,4 +68,11 @@ public class PairOfPointsShapeTest extends AbstractShapeTest
 		return true;
 	}
 
+	@Test
+	public void testStructuringElementBoundingBox() {
+		Interval boundingBox = shape.getStructuringElementBoundingBox(
+			OFFSET.length);
+		assertTrue(Intervals.equals(boundingBox, new FinalInterval(new long[] { 0,
+			0, 0 }, OFFSET)));
+	}
 }

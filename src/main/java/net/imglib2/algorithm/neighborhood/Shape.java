@@ -35,6 +35,7 @@
 package net.imglib2.algorithm.neighborhood;
 
 import net.imglib2.Cursor;
+import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
@@ -48,6 +49,14 @@ import net.imglib2.Sampler;
  */
 public interface Shape
 {
+	/**
+	 * TODO Documentation
+	 * 
+	 * @param numDimensions
+	 * @return
+	 */
+	public Interval getStructuringElementBoundingBox( final int numDimensions );
+
 	/**
 	 * Get an {@link IterableInterval} that contains all {@link Neighborhood
 	 * Neighborhoods} of the source image.

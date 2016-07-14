@@ -33,6 +33,14 @@
  */
 package net.imglib2.algorithm.neighborhood;
 
+import static org.junit.Assert.assertTrue;
+
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
+import net.imglib2.util.Intervals;
+
+import org.junit.Test;
+
 /**
  * Test {@link HyperSphereShape}.
  *
@@ -59,4 +67,11 @@ public class HypersphereShapeTest extends AbstractShapeTest
 		return squlen <= RADIUS * RADIUS;
 	}
 
+	@Test
+	public void testStructuringElementBoundingBox() {
+		Interval boundingBox = shape.getStructuringElementBoundingBox(img
+			.numDimensions());
+		assertTrue(Intervals.equals(boundingBox, new FinalInterval(new long[] { -3,
+			-3, -3 }, new long[] { 3, 3, 3 })));
+	}
 }

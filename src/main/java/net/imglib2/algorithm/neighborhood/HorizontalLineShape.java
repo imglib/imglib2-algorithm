@@ -38,12 +38,14 @@ import java.util.Iterator;
 import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.AbstractInterval;
 import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
 import net.imglib2.FlatIterationOrder;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.util.Intervals;
 
 /**
  * A {@link Shape} representing finite, centered, symmetric lines, that are
@@ -243,4 +245,16 @@ public class HorizontalLineShape implements Shape
 		}
 
 	}
+
+	@Override
+	public Interval getStructuringElementBoundingBox(final int numDimensions) {
+		final long[] a = new long[numDimensions];
+		final long[] b = new long[numDimensions];
+
+		a[dim] = -span;
+		b[dim] = span;
+
+		return Intervals.union(new FinalInterval(a, a), new FinalInterval(b, b));
+	}
+
 }
