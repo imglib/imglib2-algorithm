@@ -82,10 +82,10 @@ public class DifferenceOfGaussian
 	 * @param service
 	 *            service providing threads for multi-threading
 	 */
-	public static < T extends NumericType< T > & NativeType< T > > void DoG(
+	public static < I extends NumericType< I >, T extends NumericType< T > & NativeType< T > > void DoG(
 			final double[] sigmaSmaller,
 			final double[] sigmaLarger,
-			final RandomAccessible< T > input,
+			final RandomAccessible< I > input,
 			final RandomAccessibleInterval< T > dog,
 			final ExecutorService service )
 	{
@@ -117,10 +117,10 @@ public class DifferenceOfGaussian
 	 * @param service
 	 *            how many threads to use for the computation.
 	 */
-	public static < T extends NumericType< T > & NativeType< T > > void DoG(
+	public static < I extends NumericType< I >, T extends NumericType< T > & NativeType< T > > void DoG(
 			final double[] sigmaSmaller,
 			final double[] sigmaLarger,
-			final RandomAccessible< T > input,
+			final RandomAccessible< I > input,
 			final RandomAccessible< T > tmp,
 			final RandomAccessibleInterval< T > dog,
 			final ExecutorService service )
