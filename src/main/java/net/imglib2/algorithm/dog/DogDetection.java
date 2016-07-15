@@ -70,24 +70,24 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 
 	public < I extends RandomAccessibleInterval< T > & LinearSpace< ? > > DogDetection(
 			final I input,
-			final double sigma1,
-			final double sigma2,
+			final double sigmaSmaller,
+			final double sigmaLarger,
 			final ExtremaType extremaType,
 			final double minPeakValue )
 	{
-		this( Views.extendMirrorSingle( input ), input, getcalib( input ), sigma1, sigma2, extremaType, minPeakValue, true );
+		this( Views.extendMirrorSingle( input ), input, getcalib( input ), sigmaSmaller, sigmaLarger, extremaType, minPeakValue, true );
 	}
 
 	public DogDetection(
 			final RandomAccessibleInterval< T > input,
 			final double[] calibration,
-			final double sigma1,
-			final double sigma2,
+			final double sigmaSmaller,
+			final double sigmaLarger,
 			final ExtremaType extremaType,
 			final double minPeakValue,
 			final boolean normalizeMinPeakValue )
 	{
-		this( Views.extendMirrorSingle( input ), input, calibration, sigma1, sigma2, extremaType, minPeakValue, true );
+		this( Views.extendMirrorSingle( input ), input, calibration, sigmaSmaller, sigmaLarger, extremaType, minPeakValue, true );
 	}
 
 	/**
@@ -101,9 +101,9 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 	 * @param calibration
 	 *            The calibration, i.e., the voxel sizes in some unit for the
 	 *            input image.
-	 * @param sigma1
+	 * @param sigmaSmaller
 	 *            sigma for the smaller scale in the same units as calibration.
-	 * @param sigma2
+	 * @param sigmaLarger
 	 *            sigma for the larger scale in the same units as calibration.
 	 * @param extremaType
 	 *            which type of extrema (minima, maxima) to detect. Note that
@@ -118,7 +118,7 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 	 *            Whether the peak value should be normalized. The
 	 *            Difference-of-Gaussian is an approximation of the
 	 *            scale-normalized Laplacian-of-Gaussian, with a factor of
-	 *            <em>f = sigma1 / (sigma2 - sigma1)</em>. If
+	 *            <em>f = sigmaSmaller / (sigmaLarger - sigmaSmaller)</em>. If
 	 *            {@code normalizeMinPeakValue=true}, the {@code minPeakValue}
 	 *            will be divided by <em>f</em> (which is equivalent to scaling
 	 *            the DoG by <em>f</em>).
@@ -127,16 +127,16 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 			final RandomAccessible< T > input,
 			final Interval interval,
 			final double[] calibration,
-			final double sigma1,
-			final double sigma2,
+			final double sigmaSmaller,
+			final double sigmaLarger,
 			final ExtremaType extremaType,
 			final double minPeakValue,
 			final boolean normalizeMinPeakValue )
 	{
 		this.input = input;
 		this.interval = interval;
-		this.sigma1 = sigma1;
-		this.sigma2 = sigma2;
+		this.sigmaSmaller = sigmaSmaller;
+		this.sigmaLarger = sigmaLarger;
 		this.pixelSize = calibration;
 		this.imageSigma = 0.5;
 		this.minf = 2;
@@ -165,13 +165,13 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 		interval.min( translation );
 		dogImg = Views.translate( dogImg, translation );
 
-		final double[][] sigmas = DifferenceOfGaussian.computeSigmas( imageSigma, minf, pixelSize, sigma1, sigma2 );
+		final double[][] sigmas = DifferenceOfGaussian.computeSigmas( imageSigma, minf, pixelSize, sigmaSmaller, sigmaLarger );
 		DifferenceOfGaussian.DoG( sigmas[ 0 ], sigmas[ 1 ], input, dogImg, service );
 		final T val = type.createVariable();
 		final double minValueT = type.getMinValue();
 		final double maxValueT = type.getMaxValue();
 		final LocalNeighborhoodCheck< Point, T > localNeighborhoodCheck;
-		final double normalization = normalizeMinPeakValue ? ( sigma2 / sigma1 - 1.0 ) : 1.0;
+		final double normalization = normalizeMinPeakValue ? ( sigmaLarger / sigmaSmaller - 1.0 ) : 1.0;
 		switch ( extremaType )
 		{
 		case MINIMA:
@@ -212,9 +212,9 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 
 	protected final Interval interval;
 
-	protected final double sigma1;
+	protected final double sigmaSmaller;
 
-	protected final double sigma2;
+	protected final double sigmaLarger;
 
 	protected final double[] pixelSize;
 
