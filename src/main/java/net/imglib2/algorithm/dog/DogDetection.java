@@ -59,7 +59,15 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 {
 	public static enum ExtremaType
 	{
-		MINIMA, MAXIMA
+		/**
+		 * Bright blobs on dark background.
+		 */
+		MINIMA,
+
+		/**
+		 * Dark blobs on bright background.
+		 */
+		MAXIMA
 	}
 
 	/**
