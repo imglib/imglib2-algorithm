@@ -49,13 +49,27 @@ import net.imglib2.Sampler;
  */
 public interface Shape
 {
+
 	/**
-	 * TODO Documentation
+	 * Get the bounding box for a {@link Shape} with {@code numDimensions}
+	 * dimensions.
+	 * <p>
+	 * Providing {@code numDimensions} is required since the input from which
+	 * {@link Neighborhood neighborhoods} are generated is not known yet. The
+	 * bounding box is described by an {@link Interval} with the center of the
+	 * bounding box located at zero.
+	 * </p>
+	 * <p>
+	 * The values of this bounding box should only be used to determine the extent
+	 * of the {@link Shape}, ignoring the absolute {@link Interval#min(int) min}
+	 * and {@link Interval#max(int) max} values.
+	 * </p>
 	 * 
-	 * @param numDimensions
-	 * @return
+	 * @param numDimensions dimensions of the {@link Shape}
+	 * @return an {@link Interval} that describes the bounding box of a
+	 *         {@link Shape}
 	 */
-	public Interval getStructuringElementBoundingBox( final int numDimensions );
+	public Interval getStructuringElementBoundingBox(final int numDimensions);
 
 	/**
 	 * Get an {@link IterableInterval} that contains all {@link Neighborhood
