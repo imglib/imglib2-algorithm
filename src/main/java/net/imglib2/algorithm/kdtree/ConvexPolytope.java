@@ -39,7 +39,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import net.imglib2.AbstractEuclideanSpace;
-import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.AffineGet;
 import net.imglib2.util.LinAlgHelpers;
 
 public class ConvexPolytope extends AbstractEuclideanSpace
@@ -63,27 +63,29 @@ public class ConvexPolytope extends AbstractEuclideanSpace
 	}
 
 	/**
-	 * Apply an {@link AffineTransform3D} to a 3D {@link ConvexPolytope}.
+	 * Apply an {@link AffineGet affine transformation} to a {@link HyperPlane}.
 	 *
 	 * @param polytope
-	 *            a 3D polytope.
+	 *            a polytope.
 	 * @param transform
 	 *            affine transformation to apply to the polytope.
 	 * @return the transformed polytope.
 	 */
-	public static ConvexPolytope transform( final ConvexPolytope polytope, final AffineTransform3D transform )
+	public static ConvexPolytope transform( final ConvexPolytope polytope, final AffineGet transform )
 	{
-		assert polytope.numDimensions() == 3;
+		assert polytope.numDimensions() == transform.numDimensions();
 
-		final double[] O = new double[ 3 ];
-		final double[] tO = new double[ 3 ];
-		final double[] tN = new double[ 3 ];
-		final double[][] m = new double[3][3];
-		for ( int r = 0; r < 3; ++r )
-			for ( int c = 0; c < 3; ++c )
+		final int n = transform.numDimensions();
+
+		final double[] O = new double[ n ];
+		final double[] tO = new double[ n ];
+		final double[] tN = new double[ n ];
+		final double[][] m = new double[n][n];
+		for ( int r = 0; r < n; ++r )
+			for ( int c = 0; c < n; ++c )
 				m[r][c] = transform.inverse().get( c, r );
 
-		final ArrayList< HyperPlane > transformedPlanes = new ArrayList< HyperPlane >();
+		final ArrayList< HyperPlane > transformedPlanes = new ArrayList<>();
 		for ( final HyperPlane plane : polytope.getHyperplanes() )
 		{
 			LinAlgHelpers.scale( plane.getNormal(), plane.getDistance(), O );
