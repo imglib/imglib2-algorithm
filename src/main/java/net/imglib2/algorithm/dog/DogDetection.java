@@ -176,12 +176,12 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 		{
 		case MINIMA:
 			val.setReal( Math.max( Math.min( -minPeakValue * normalization, maxValueT ), minValueT ) );
-			localNeighborhoodCheck = new LocalExtrema.MinimumCheck< T >( val );
+			localNeighborhoodCheck = new LocalExtrema.MinimumCheck<>( val );
 			break;
 		case MAXIMA:
 		default:
 			val.setReal( Math.max( Math.min( minPeakValue * normalization, maxValueT ), minValueT ) );
-			localNeighborhoodCheck = new LocalExtrema.MaximumCheck< T >( val );
+			localNeighborhoodCheck = new LocalExtrema.MaximumCheck<>( val );
 		}
 		final ArrayList< Point > peaks = LocalExtrema.findLocalExtrema( dogImg, localNeighborhoodCheck, service );
 		if ( !keepDoGImg )
@@ -198,7 +198,7 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 		final boolean savedKeepDoGImg = keepDoGImg;
 		keepDoGImg = true;
 		final ArrayList< Point > peaks = getPeaks();
-		final SubpixelLocalization< Point, T > spl = new SubpixelLocalization< Point, T >( dogImg.numDimensions() );
+		final SubpixelLocalization< Point, T > spl = new SubpixelLocalization<>( dogImg.numDimensions() );
 		spl.setAllowMaximaTolerance( true );
 		spl.setMaxNumMoves( 10 );
 		final ArrayList< RefinedPeak< Point > > refined = spl.process( peaks, dogImg, dogImg );
