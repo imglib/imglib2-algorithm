@@ -229,6 +229,11 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<artifactId>trove4j</artifactId>
 			<version>3.0.3</version>
 		</dependency>
+		<dependency>
+			<groupId>org.ojalgo</groupId>
+			<artifactId>ojalgo</artifactId>
+			<version>43.0</version>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
