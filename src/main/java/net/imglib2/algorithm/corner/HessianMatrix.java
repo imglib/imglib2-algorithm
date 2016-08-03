@@ -25,8 +25,8 @@ public class HessianMatrix
 			final Interval interval,
 			final double sigma,
 			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
-			final ImgFactory< U > factory,
-			final U u ) throws IncompatibleTypeException
+					final ImgFactory< U > factory,
+					final U u ) throws IncompatibleTypeException
 	{
 		final double[] sigmas = new double[ source.numDimensions() ];
 		Arrays.fill( sigmas, sigma );
@@ -120,21 +120,89 @@ public class HessianMatrix
 		final Img< U > gradient = factory.create( gradientDim, u );
 		final Img< U > hessianMatrix = factory.create( dimensions, u );
 
-		impl( source, gaussianConvolved, gradient, hessianMatrix, nDim, sigma, outOfBounds, es );
+		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigma, outOfBounds, es );
 
 		return hessianMatrix;
 	}
 
-	private static < T extends RealType< T >, U extends RealType< U > > void impl(
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > gaussianConvolved,
 			final RandomAccessibleInterval< U > gradient,
 			final RandomAccessibleInterval< U > hessianMatrix,
-			final int nDim,
+			final double sigma,
+			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds ) throws IncompatibleTypeException
+	{
+		final double[] sigmas = new double[ source.numDimensions() ];
+		Arrays.fill( sigmas, sigma );
+		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigmas, outOfBounds );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > gaussianConvolved,
+			final RandomAccessibleInterval< U > gradient,
+			final RandomAccessibleInterval< U > hessianMatrix,
+			final double sigma,
+			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
+					final int nThreads ) throws IncompatibleTypeException
+	{
+		final double[] sigmas = new double[ source.numDimensions() ];
+		Arrays.fill( sigmas, sigma );
+		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigmas, outOfBounds, nThreads );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > gaussianConvolved,
+			final RandomAccessibleInterval< U > gradient,
+			final RandomAccessibleInterval< U > hessianMatrix,
+			final double sigma,
+			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
+					final ExecutorService es ) throws IncompatibleTypeException
+	{
+		final double[] sigmas = new double[ source.numDimensions() ];
+		Arrays.fill( sigmas, sigma );
+		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigmas, outOfBounds, es );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > gaussianConvolved,
+			final RandomAccessibleInterval< U > gradient,
+			final RandomAccessibleInterval< U > hessianMatrix,
+			final double[] sigma,
+			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds ) throws IncompatibleTypeException
+	{
+		final int nThreads = Runtime.getRuntime().availableProcessors();
+		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigma, outOfBounds, nThreads );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > gaussianConvolved,
+			final RandomAccessibleInterval< U > gradient,
+			final RandomAccessibleInterval< U > hessianMatrix,
+			final double[] sigma,
+			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
+					final int nThreads ) throws IncompatibleTypeException
+	{
+		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
+		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigma, outOfBounds, es );
+		es.shutdown();
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > gaussianConvolved,
+			final RandomAccessibleInterval< U > gradient,
+			final RandomAccessibleInterval< U > hessianMatrix,
 			final double[] sigma,
 			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
 					final ExecutorService es ) throws IncompatibleTypeException
 	{
+
+		final int nDim = source.numDimensions();
 
 		Gauss3.gauss( sigma, source, gaussianConvolved, es );
 
