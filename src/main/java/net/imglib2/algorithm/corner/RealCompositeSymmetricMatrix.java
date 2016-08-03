@@ -40,8 +40,8 @@ public class RealCompositeSymmetricMatrix< T extends RealType< T > > extends Abs
 	@Override
 	public RealMatrix copy()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		// Is this supposed to be deep copy?
+		return new RealCompositeSymmetricMatrix<>( this.data, this.nRowsOrCols );
 	}
 
 	@Override
