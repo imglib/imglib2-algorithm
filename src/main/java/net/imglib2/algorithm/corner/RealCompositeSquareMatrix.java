@@ -32,11 +32,4 @@ public class RealCompositeSquareMatrix< T extends RealType< T > > extends RealCo
 		return new RealCompositeSymmetricMatrix<>( data, nRows, length );
 	}
 
-	@Override
-	public RealMatrix copy()
-	{
-		// Is this supposed to be deep copy?
-		return new RealCompositeSquareMatrix<>( this.data, this.nRows );
-	}
-
 }

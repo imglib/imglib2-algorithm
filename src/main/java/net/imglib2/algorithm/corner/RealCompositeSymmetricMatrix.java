@@ -1,7 +1,5 @@
 package net.imglib2.algorithm.corner;
 
-import org.apache.commons.math3.linear.RealMatrix;
-
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.composite.RealComposite;
 
@@ -17,36 +15,6 @@ public class RealCompositeSymmetricMatrix< T extends RealType< T > > extends Rea
 	{
 		super( data, nRowsOrCols, length );
 	}
-
-	@Override
-	public RealMatrix copy()
-	{
-		// Is this supposed to be deep copy?
-		return new RealCompositeSymmetricMatrix<>( this.data, this.nRows );
-	}
-
-//	@Override
-//	public RealMatrix createMatrix( final int nRows, final int nColums ) throws NotStrictlyPositiveException
-//	{
-//		if ( nRows != nColums ) {
-//			throw new UnsupportedOperationException("Number of colums and number of rows must be the same!");
-//		}
-//
-//		final T t = this.data.get( 0 );
-//		final Img< T > img;
-//		final int length = expectedLength( nRows, nCols );
-//		if ( NativeType.class.isInstance( t ) )
-//		{
-//			img = ( ( NativeType ) t ).createSuitableNativeImg( new ArrayImgFactory<>(), new long[] { length } );
-//		}
-//		else
-//		{
-//			img = new ListImgFactory< T >().create( new long[] { length }, t );
-//		}
-//		final RealComposite< T > data = new RealComposite< T >( img.randomAccess(), length );
-//
-//		return new RealCompositeSymmetricMatrix<>( data, nRows, length );
-//	}
 
 	@Override
 	public int getRowDimension()

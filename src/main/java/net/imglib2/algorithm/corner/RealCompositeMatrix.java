@@ -43,8 +43,14 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 	@Override
 	public RealMatrix copy()
 	{
-		// Is this supposed to be deep copy?
-		return new RealCompositeMatrix<>( this.data, this.nRows, this.nCols );
+		// Supposed to be a deep copy, cf apache docs:
+		// http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/linear/RealMatrix.html#copy()
+		final RealCompositeMatrix< T > result = ( RealCompositeMatrix< T > ) createMatrix( nRows, nCols );
+		for ( int i = 0; i < length; ++i )
+		{
+			result.data.get( i ).set( this.data.get( i ) );
+		}
+		return result;
 	}
 
 	@Override
