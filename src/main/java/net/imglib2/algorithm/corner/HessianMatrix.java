@@ -209,12 +209,8 @@ public class HessianMatrix
 
 		final int nDim = source.numDimensions();
 
-		final long t0 = System.currentTimeMillis();
 		Gauss3.gauss( sigma, source, gaussianConvolved, es );
-		final long t1 = System.currentTimeMillis();
-		System.out.println( "Gauss: " + ( t1 - t0 ) + "ms" );
 
-		final long t2 = System.currentTimeMillis();
 		for ( long d = 0; d < nDim; ++d )
 		{
 			try
@@ -232,11 +228,8 @@ public class HessianMatrix
 				e.printStackTrace();
 			}
 		}
-		final long t3 = System.currentTimeMillis();
-		System.out.println( "Gradient " + ( t3 - t2 ) + "ms" );
 
 		int count = 0;
-		final long t4 = System.currentTimeMillis();
 		for ( long d1 = 0; d1 < nDim; ++d1 )
 		{
 			final IntervalView< U > hs1 = Views.hyperSlice( gradient, nDim, d1 );
@@ -260,8 +253,6 @@ public class HessianMatrix
 				++count;
 			}
 		}
-		final long t5 = System.currentTimeMillis();
-		System.out.println( "Second derivative " + ( t5 - t4 ) + "ms" );
 	}
 
 
