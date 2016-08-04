@@ -12,6 +12,12 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.composite.RealComposite;
 
+/**
+ *
+ * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ *
+ * @param <T>
+ */
 public class RealCompositeMatrix< T extends RealType< T > > extends AbstractRealMatrix
 {
 
