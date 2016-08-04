@@ -1,12 +1,22 @@
 package net.imglib2.algorithm.corner;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.apache.commons.math3.linear.EigenDecomposition;
 
 import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgFactory;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.RealComposite;
 
@@ -112,33 +122,83 @@ public class TensorEigenValues
 		}
 	}
 
+	// static methods
+
+	// symmetric
+
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSymmetric(
 			final RandomAccessibleInterval< T > tensor,
 			final ImgFactory< U > factory,
 			final U u )
 	{
+		final int nThreads = Runtime.getRuntime().availableProcessors();
+		return calculateEigenValuesSymmetric( tensor, factory, u, nThreads );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSymmetric(
+			final RandomAccessibleInterval< T > tensor,
+			final ImgFactory< U > factory,
+			final U u,
+			final int nThreads )
+	{
+		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
+		return calculateEigenValuesSymmetric( tensor, factory, u, nThreads, es );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSymmetric(
+			final RandomAccessibleInterval< T > tensor,
+			final ImgFactory< U > factory,
+			final U u,
+			final int nThreads,
+			final ExecutorService es )
+	{
 
 		final Img< U > eigenvalues = createAppropriateResultImg( tensor, factory, u );
 
-		calculateEigenValuesSymmetric( tensor, eigenvalues );
+		calculateEigenValuesSymmetric( tensor, eigenvalues, nThreads, es );
 
 		return eigenvalues;
 
 	}
+
+	// square
 
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSquare(
 			final RandomAccessibleInterval< T > tensor,
 			final ImgFactory< U > factory,
 			final U u )
 	{
+		final int nThreads = Runtime.getRuntime().availableProcessors();
+		return calculateEigenValuesSquare( tensor, factory, u, nThreads );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSquare(
+			final RandomAccessibleInterval< T > tensor,
+			final ImgFactory< U > factory,
+			final U u,
+			final int nThreads )
+	{
+		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
+		return calculateEigenValuesSquare( tensor, factory, u, nThreads, es );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSquare(
+			final RandomAccessibleInterval< T > tensor,
+			final ImgFactory< U > factory,
+			final U u,
+			final int nThreads,
+			final ExecutorService es )
+	{
 
 		final Img< U > eigenvalues = createAppropriateResultImg( tensor, factory, u );
 
-		calculateEigenValuesSquare( tensor, eigenvalues );
+		calculateEigenValuesSquare( tensor, eigenvalues, nThreads, es );
 
 		return eigenvalues;
 
 	}
+
+	// general
 
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValues(
 			final RandomAccessibleInterval< T > tensor,
@@ -146,16 +206,66 @@ public class TensorEigenValues
 			final EigenValues ev,
 			final U u )
 	{
+
+		final int nThreads = Runtime.getRuntime().availableProcessors();
+		return calculateEigenValues( tensor, factory, ev, u, nThreads );
+
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValues(
+			final RandomAccessibleInterval< T > tensor,
+			final ImgFactory< U > factory,
+			final EigenValues ev,
+			final U u,
+			final int nThreads )
+	{
+
+		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
+		return calculateEigenValues( tensor, factory, ev, u, nThreads, es );
+
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValues(
+			final RandomAccessibleInterval< T > tensor,
+			final ImgFactory< U > factory,
+			final EigenValues ev,
+			final U u,
+			final int nThreads,
+			final ExecutorService es )
+	{
 		final Img< U > eigenvalues = createAppropriateResultImg( tensor, factory, u );
 
-		calculateEigenValues( tensor, eigenvalues, ev );
+		calculateEigenValues( tensor, eigenvalues, ev, nThreads, es );
 
 		return eigenvalues;
 	}
 
+	// passing result arrays
+
+	// symmetric
+
 	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSymmetric(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues )
+	{
+		final int nThreads = Runtime.getRuntime().availableProcessors();
+		calculateEigenValuesSymmetric( tensor, eigenvalues, nThreads );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSymmetric(
+			final RandomAccessibleInterval< T > tensor,
+			final RandomAccessibleInterval< U > eigenvalues,
+			final int nThreads )
+	{
+		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
+		calculateEigenValuesSymmetric( tensor, eigenvalues, nThreads, es );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSymmetric(
+			final RandomAccessibleInterval< T > tensor,
+			final RandomAccessibleInterval< U > eigenvalues,
+			final int nThreads,
+			final ExecutorService es )
 	{
 
 		final int nDim = tensor.numDimensions();
@@ -179,12 +289,33 @@ public class TensorEigenValues
 			ev = new EigenValues()
 			{};
 		}
-		calculateEigenValues( tensor, eigenvalues, ev );
+		calculateEigenValues( tensor, eigenvalues, ev, nThreads, es );
 	}
+
+	// square
 
 	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSquare(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues )
+	{
+		final int nThreads = Runtime.getRuntime().availableProcessors();
+		calculateEigenValuesSquare( tensor, eigenvalues, nThreads );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSquare(
+			final RandomAccessibleInterval< T > tensor,
+			final RandomAccessibleInterval< U > eigenvalues,
+			final int nThreads )
+	{
+		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
+		calculateEigenValuesSquare( tensor, eigenvalues, nThreads, es );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSquare(
+			final RandomAccessibleInterval< T > tensor,
+			final RandomAccessibleInterval< U > eigenvalues,
+			final int nThreads,
+			final ExecutorService es )
 	{
 		final int nDim = tensor.numDimensions();
 		assert eigenvalues.dimension( nDim - 1 ) * eigenvalues.dimension( nDim - 1 ) == tensor.dimension( nDim - 1 );
@@ -207,10 +338,113 @@ public class TensorEigenValues
 			ev = new EigenValues()
 			{};
 		}
-		calculateEigenValues( tensor, eigenvalues, ev );
+		calculateEigenValues( tensor, eigenvalues, ev, nThreads, es );
+	}
+
+	// general
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValues(
+			final RandomAccessibleInterval< T > tensor,
+			final RandomAccessibleInterval< U > eigenvalues,
+			final EigenValues ev )
+	{
+		final int nThreads = Runtime.getRuntime().availableProcessors();
+		calculateEigenValues( tensor, eigenvalues, ev, nThreads );
 	}
 
 	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValues(
+			final RandomAccessibleInterval< T > tensor,
+			final RandomAccessibleInterval< U > eigenvalues,
+			final EigenValues ev,
+			final int nThreads )
+	{
+		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
+		calculateEigenValues( tensor, eigenvalues, ev, nThreads, es );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValues(
+			final RandomAccessibleInterval< T > tensor,
+			final RandomAccessibleInterval< U > eigenvalues,
+			final EigenValues ev,
+			final int nThreads,
+			final ExecutorService es )
+	{
+		final int nTasks = Math.max( nThreads, 1 );
+		if ( nTasks < 2 )
+		{
+			calculateEigenValuesImpl( tensor, eigenvalues, ev );
+			return;
+		}
+
+		final int nDim = tensor.numDimensions();
+
+		long dimensionMax = Long.MIN_VALUE;
+		int dimensionArgMax = -1;
+
+		for ( int d = 0; d < nDim - 1; ++d )
+		{
+			final long size = tensor.dimension( d );
+			if ( size > dimensionMax )
+			{
+				dimensionMax = size;
+				dimensionArgMax = d;
+			}
+		}
+
+		final long stepSize = Math.max( dimensionMax / nTasks, 1 );
+		final long stepSizeMinusOne = stepSize - 1;
+		final long max = dimensionMax - 1;
+
+		final ArrayList< Callable< Void > > tasks = new ArrayList<>();
+		for ( long currentMin = 0; currentMin < dimensionMax; currentMin += stepSize )
+		{
+			final long currentMax = Math.min( currentMin + stepSizeMinusOne, max );
+			final long[] minT = new long[ nDim ];
+			final long[] maxT = new long[ nDim ];
+			final long[] minE = new long[ nDim ];
+			final long[] maxE = new long[ nDim ];
+			tensor.min( minT );
+			tensor.max( maxT );
+			eigenvalues.min( minE );
+			eigenvalues.max( maxE );
+			minE[ dimensionArgMax ] = minT[ dimensionArgMax ] = currentMin;
+			maxE[ dimensionArgMax ] = maxT[ dimensionArgMax ] = currentMax;
+			final IntervalView< T > currentTensor = Views.interval( tensor, new FinalInterval( minT, maxT ) );
+			final IntervalView< U > currentEigenvalues = Views.interval( eigenvalues, new FinalInterval( minE, maxE ) );
+			tasks.add( () -> {
+				calculateEigenValuesImpl( currentTensor, currentEigenvalues, ev );
+				return null;
+			} );
+		}
+
+
+		try
+		{
+			final List< Future< Void > > futures = es.invokeAll( tasks );
+			for ( final Future< Void > f : futures )
+			{
+				try
+				{
+					f.get();
+				}
+				catch ( final ExecutionException e )
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		catch ( final InterruptedException e )
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+
+	}
+
+	private static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesImpl(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues,
 			final EigenValues ev )
