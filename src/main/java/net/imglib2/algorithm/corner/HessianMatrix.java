@@ -1,6 +1,7 @@
 package net.imglib2.algorithm.corner;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -54,11 +55,12 @@ public class HessianMatrix
 			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
 					final ImgFactory< U > factory,
 					final U u,
+			final int nThreads,
 					final ExecutorService es ) throws IncompatibleTypeException
 	{
 		final double[] sigmas = new double[ source.numDimensions() ];
 		Arrays.fill( sigmas, sigma );
-		return calculateMatrix( source, interval, sigmas, outOfBounds, factory, u, es );
+		return calculateMatrix( source, interval, sigmas, outOfBounds, factory, u, nThreads, es );
 	}
 
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateMatrix(
@@ -83,7 +85,7 @@ public class HessianMatrix
 					final int nThreads ) throws IncompatibleTypeException
 	{
 		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
-		final Img< U > hessianMatrix = calculateMatrix( source, interval, sigma, outOfBounds, factory, u, es );
+		final Img< U > hessianMatrix = calculateMatrix( source, interval, sigma, outOfBounds, factory, u, nThreads, es );
 		es.shutdown();
 		return hessianMatrix;
 	}
@@ -95,6 +97,7 @@ public class HessianMatrix
 			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
 					final ImgFactory< U > factory,
 					final U u,
+					final int nThreads,
 					final ExecutorService es ) throws IncompatibleTypeException
 	{
 		final int nDim = interval.numDimensions();
@@ -120,7 +123,7 @@ public class HessianMatrix
 		final Img< U > gradient = factory.create( gradientDim, u );
 		final Img< U > hessianMatrix = factory.create( dimensions, u );
 
-		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigma, outOfBounds, es );
+		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigma, outOfBounds, nThreads, es );
 
 		return hessianMatrix;
 	}
@@ -159,11 +162,12 @@ public class HessianMatrix
 			final RandomAccessibleInterval< U > hessianMatrix,
 			final double sigma,
 			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
+					final int nThreads,
 					final ExecutorService es ) throws IncompatibleTypeException
 	{
 		final double[] sigmas = new double[ source.numDimensions() ];
 		Arrays.fill( sigmas, sigma );
-		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigmas, outOfBounds, es );
+		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigmas, outOfBounds, nThreads, es );
 	}
 
 	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
@@ -188,7 +192,7 @@ public class HessianMatrix
 					final int nThreads ) throws IncompatibleTypeException
 	{
 		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
-		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigma, outOfBounds, es );
+		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigma, outOfBounds, nThreads, es );
 		es.shutdown();
 	}
 
@@ -199,29 +203,65 @@ public class HessianMatrix
 			final RandomAccessibleInterval< U > hessianMatrix,
 			final double[] sigma,
 			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
+					final int nThreads,
 					final ExecutorService es ) throws IncompatibleTypeException
 	{
 
 		final int nDim = source.numDimensions();
 
+		final long t0 = System.currentTimeMillis();
 		Gauss3.gauss( sigma, source, gaussianConvolved, es );
+		final long t1 = System.currentTimeMillis();
+		System.out.println( "Gauss: " + ( t1 - t0 ) + "ms" );
 
+		final long t2 = System.currentTimeMillis();
 		for ( long d = 0; d < nDim; ++d )
 		{
-			PartialDerivative.gradientCentralDifference2( Views.extend( gaussianConvolved, outOfBounds ), Views.hyperSlice( gradient, nDim, d ), ( int ) d );
+			try
+			{
+				PartialDerivative.gradientCentralDifferenceParallel( Views.extend( gaussianConvolved, outOfBounds ), Views.hyperSlice( gradient, nDim, d ), ( int ) d, nThreads, es );
+			}
+			catch ( final InterruptedException e )
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			catch ( final ExecutionException e )
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+		final long t3 = System.currentTimeMillis();
+		System.out.println( "Gradient " + ( t3 - t2 ) + "ms" );
 
 		int count = 0;
+		final long t4 = System.currentTimeMillis();
 		for ( long d1 = 0; d1 < nDim; ++d1 )
 		{
 			final IntervalView< U > hs1 = Views.hyperSlice( gradient, nDim, d1 );
 			for ( long d2 = d1; d2 < nDim; ++d2 )
 			{
 				final IntervalView< U > hs2 = Views.hyperSlice( hessianMatrix, nDim, count );
-				PartialDerivative.gradientCentralDifference2( Views.extend( hs1, outOfBounds ), hs2, ( int ) d2 );
+				try
+				{
+					PartialDerivative.gradientCentralDifferenceParallel( Views.extend( hs1, outOfBounds ), hs2, ( int ) d2, nThreads, es );
+				}
+				catch ( final InterruptedException e )
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch ( final ExecutionException e )
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				++count;
 			}
 		}
+		final long t5 = System.currentTimeMillis();
+		System.out.println( "Second derivative " + ( t5 - t4 ) + "ms" );
 	}
 
 
