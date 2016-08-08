@@ -84,6 +84,22 @@ public class PartialDerivative
 	}
 
 	// parallel version...
+	/**
+	 * Compute the partial derivative of source in a particular dimension.
+	 *
+	 * @param source
+	 *            source image, has to provide valid data in the interval of the
+	 *            gradient image plus a one pixel border in dimension.
+	 * @param gradient
+	 *            output image
+	 * @param dimension
+	 *            along which dimension the partial derivatives are computed
+	 * @param nThreads
+	 *            Number of threads/workers to be used for gradient computation.
+	 * @param es
+	 *            {@link ExecutorService} providing workers for gradient
+	 *            computation. Service is managed (created, shutdown) by caller.
+	 */
 	public static < T extends NumericType< T > > void gradientCentralDifferenceParallel(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< T > gradient,

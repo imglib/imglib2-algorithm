@@ -16,6 +16,9 @@ import net.imglib2.view.composite.RealComposite;
  *
  * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
  *
+ *         {@link RealMatrix} that reads data from {@link RealComposite}
+ *         (non-copy).
+ *
  * @param <T>
  */
 public class RealCompositeMatrix< T extends RealType< T > > extends AbstractRealMatrix

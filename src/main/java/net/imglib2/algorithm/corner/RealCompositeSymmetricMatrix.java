@@ -1,11 +1,16 @@
 package net.imglib2.algorithm.corner;
 
+import org.apache.commons.math3.linear.RealMatrix;
+
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.composite.RealComposite;
 
 /**
  *
  * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ *
+ *         Symmetric {@link RealMatrix} that reads data from
+ *         {@link RealComposite} (non-copy).
  *
  * @param <T>
  */

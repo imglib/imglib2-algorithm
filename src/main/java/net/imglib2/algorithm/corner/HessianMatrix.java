@@ -18,9 +18,42 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
+/**
+ *
+ * Compute entries of n-dimensional Hessian matrix.
+ *
+ * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ *
+ */
 public class HessianMatrix
 {
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of the input interval plus a one pixel border in
+	 *            all dimensions.
+	 * @param interval
+	 *            {@link Interval} that specifies the positions for which
+	 *            hessian matrices should be computed.
+	 * @param sigma
+	 *            width of Gaussian smoothing
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param factory
+	 *            {@link ImgFactory} used for creating the intermediate and
+	 *            result image.
+	 * @param u
+	 *            Variable necessary for creation of intermediate and result
+	 *            image.
+	 * @return n+1-dimensional {@link Img} holding linear representation of
+	 *         symmetric Hessian matrix in last dimension (size n * ( n + 1 ) /
+	 *         2): [h11, h12, ... , h1n, h22, h23, ... , hnn]
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateMatrix(
 			final RandomAccessible< T > source,
 			final Interval interval,
@@ -34,6 +67,35 @@ public class HessianMatrix
 		return calculateMatrix( source, interval, sigmas, outOfBounds, factory, u );
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of the input interval plus a one pixel border in
+	 *            all dimensions.
+	 * @param interval
+	 *            {@link Interval} that specifies the positions for which
+	 *            hessian matrices should be computed.
+	 * @param sigma
+	 *            width of Gaussian smoothing
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param factory
+	 *            {@link ImgFactory} used for creating the intermediate and
+	 *            result image.
+	 * @param u
+	 *            Variable necessary for creation of intermediate and result
+	 *            image.
+	 * @param es
+	 *            {@link ExecutorService} providing workers for parallel
+	 *            computation. Service is managed (created, shutdown) by caller.
+	 * @return n+1-dimensional {@link Img} holding linear representation of
+	 *         symmetric Hessian matrix in last dimension (size n * ( n + 1 ) /
+	 *         2): [h11, h12, ... , h1n, h22, h23, ... , hnn]
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateMatrix(
 			final RandomAccessible< T > source,
 			final Interval interval,
@@ -48,6 +110,38 @@ public class HessianMatrix
 		return calculateMatrix( source, interval, sigmas, outOfBounds, factory, u, nThreads );
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of the input interval plus a one pixel border in
+	 *            all dimensions.
+	 * @param interval
+	 *            {@link Interval} that specifies the positions for which
+	 *            hessian matrices should be computed.
+	 * @param sigma
+	 *            width of Gaussian smoothing
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param factory
+	 *            {@link ImgFactory} used for creating the intermediate and
+	 *            result image.
+	 * @param u
+	 *            Variable necessary for creation of intermediate and result
+	 *            image.
+	 * @param nThreads
+	 *            Number of threads/workers used for parallel computation of
+	 *            eigenvalues.
+	 * @param es
+	 *            {@link ExecutorService} providing workers for parallel
+	 *            computation. Service is managed (created, shutdown) by caller.
+	 * @return n+1-dimensional {@link Img} holding linear representation of
+	 *         symmetric Hessian matrix in last dimension (size n * ( n + 1 ) /
+	 *         2): [h11, h12, ... , h1n, h22, h23, ... , hnn]
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateMatrix(
 			final RandomAccessible< T > source,
 			final Interval interval,
@@ -55,7 +149,7 @@ public class HessianMatrix
 			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
 					final ImgFactory< U > factory,
 					final U u,
-			final int nThreads,
+					final int nThreads,
 					final ExecutorService es ) throws IncompatibleTypeException
 	{
 		final double[] sigmas = new double[ source.numDimensions() ];
@@ -63,6 +157,32 @@ public class HessianMatrix
 		return calculateMatrix( source, interval, sigmas, outOfBounds, factory, u, nThreads, es );
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of the input interval plus a one pixel border in
+	 *            all dimensions.
+	 * @param interval
+	 *            {@link Interval} that specifies the positions for which
+	 *            hessian matrices should be computed.
+	 * @param sigma
+	 *            width of Gaussian smoothing (isotropy not required)
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param factory
+	 *            {@link ImgFactory} used for creating the intermediate and
+	 *            result image.
+	 * @param u
+	 *            Variable necessary for creation of intermediate and result
+	 *            image.
+	 * @return n+1-dimensional {@link Img} holding linear representation of
+	 *         symmetric Hessian matrix in last dimension (size n * ( n + 1 ) /
+	 *         2): [h11, h12, ... , h1n, h22, h23, ... , hnn]
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateMatrix(
 			final RandomAccessible< T > source,
 			final Interval interval,
@@ -75,6 +195,35 @@ public class HessianMatrix
 		return calculateMatrix( source, interval, sigma, outOfBounds, factory, u, nThreads );
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of the input interval plus a one pixel border in
+	 *            all dimensions.
+	 * @param interval
+	 *            {@link Interval} that specifies the positions for which
+	 *            hessian matrices should be computed.
+	 * @param sigma
+	 *            width of Gaussian smoothing (isotropy not required)
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param factory
+	 *            {@link ImgFactory} used for creating the intermediate and
+	 *            result image.
+	 * @param u
+	 *            Variable necessary for creation of intermediate and result
+	 *            image.
+	 * @param nThreads
+	 *            Number of threads/workers used for parallel computation of
+	 *            eigenvalues.
+	 * @return n+1-dimensional {@link Img} holding linear representation of
+	 *         symmetric Hessian matrix in last dimension (size n * ( n + 1 ) /
+	 *         2): [h11, h12, ... , h1n, h22, h23, ... , hnn]
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateMatrix(
 			final RandomAccessible< T > source,
 			final Interval interval,
@@ -90,6 +239,38 @@ public class HessianMatrix
 		return hessianMatrix;
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of the input interval plus a one pixel border in
+	 *            all dimensions.
+	 * @param interval
+	 *            {@link Interval} that specifies the positions for which
+	 *            hessian matrices should be computed.
+	 * @param sigma
+	 *            width of Gaussian smoothing (isotropy not required)
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param factory
+	 *            {@link ImgFactory} used for creating the intermediate and
+	 *            result image.
+	 * @param u
+	 *            Variable necessary for creation of intermediate and result
+	 *            image.
+	 * @param nThreads
+	 *            Number of threads/workers used for parallel computation of
+	 *            eigenvalues.
+	 * @param es
+	 *            {@link ExecutorService} providing workers for parallel
+	 *            computation. Service is managed (created, shutdown) by caller.
+	 * @return n+1-dimensional {@link Img} holding linear representation of
+	 *         symmetric Hessian matrix in last dimension (size n * ( n + 1 ) /
+	 *         2): [h11, h12, ... , h1n, h22, h23, ... , hnn]
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateMatrix(
 			final RandomAccessible< T > source,
 			final Interval interval,
@@ -128,6 +309,31 @@ public class HessianMatrix
 		return hessianMatrix;
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of result/intermediate images plus a one pixel
+	 *            border in all dimensions.
+	 * @param gaussianConvolved
+	 *            n-dimensional {@link RandomAccessibleInterval} for storing the
+	 *            smoothed source
+	 * @param gradient
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            the gradients along all axes of the smoothed source (size of
+	 *            last dimension is n)
+	 * @param hessianMatrix
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            all second partial derivatives (size of last dimension is n *
+	 *            ( n + 1 ) / 2)
+	 * @param sigma
+	 *            width of Gaussian smoothing
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > gaussianConvolved,
@@ -141,6 +347,34 @@ public class HessianMatrix
 		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigmas, outOfBounds );
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of result/intermediate images plus a one pixel
+	 *            border in all dimensions.
+	 * @param gaussianConvolved
+	 *            n-dimensional {@link RandomAccessibleInterval} for storing the
+	 *            smoothed source
+	 * @param gradient
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            the gradients along all axes of the smoothed source (size of
+	 *            last dimension is n)
+	 * @param hessianMatrix
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            all second partial derivatives (size of last dimension is n *
+	 *            ( n + 1 ) / 2)
+	 * @param sigma
+	 *            width of Gaussian smoothing
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param nThreads
+	 *            Number of threads/workers used for parallel computation of
+	 *            eigenvalues.
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > gaussianConvolved,
@@ -155,6 +389,37 @@ public class HessianMatrix
 		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigmas, outOfBounds, nThreads );
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of result/intermediate images plus a one pixel
+	 *            border in all dimensions.
+	 * @param gaussianConvolved
+	 *            n-dimensional {@link RandomAccessibleInterval} for storing the
+	 *            smoothed source
+	 * @param gradient
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            the gradients along all axes of the smoothed source (size of
+	 *            last dimension is n)
+	 * @param hessianMatrix
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            all second partial derivatives (size of last dimension is n *
+	 *            ( n + 1 ) / 2)
+	 * @param sigma
+	 *            width of Gaussian smoothing
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param nThreads
+	 *            Number of threads/workers used for parallel computation of
+	 *            eigenvalues.
+	 * @param es
+	 *            {@link ExecutorService} providing workers for parallel
+	 *            computation. Service is managed (created, shutdown) by caller.
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > gaussianConvolved,
@@ -170,6 +435,31 @@ public class HessianMatrix
 		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigmas, outOfBounds, nThreads, es );
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of result/intermediate images plus a one pixel
+	 *            border in all dimensions.
+	 * @param gaussianConvolved
+	 *            n-dimensional {@link RandomAccessibleInterval} for storing the
+	 *            smoothed source
+	 * @param gradient
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            the gradients along all axes of the smoothed source (size of
+	 *            last dimension is n)
+	 * @param hessianMatrix
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            all second partial derivatives (size of last dimension is n *
+	 *            ( n + 1 ) / 2)
+	 * @param sigma
+	 *            width of Gaussian smoothing (isotropy not required)
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > gaussianConvolved,
@@ -182,6 +472,34 @@ public class HessianMatrix
 		calculateMatrix( source, gaussianConvolved, gradient, hessianMatrix, sigma, outOfBounds, nThreads );
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of result/intermediate images plus a one pixel
+	 *            border in all dimensions.
+	 * @param gaussianConvolved
+	 *            n-dimensional {@link RandomAccessibleInterval} for storing the
+	 *            smoothed source
+	 * @param gradient
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            the gradients along all axes of the smoothed source (size of
+	 *            last dimension is n)
+	 * @param hessianMatrix
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            all second partial derivatives (size of last dimension is n *
+	 *            ( n + 1 ) / 2)
+	 * @param sigma
+	 *            width of Gaussian smoothing (isotropy not required)
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param nThreads
+	 *            Number of threads/workers used for parallel computation of
+	 *            eigenvalues.
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > gaussianConvolved,
@@ -196,6 +514,37 @@ public class HessianMatrix
 		es.shutdown();
 	}
 
+	/**
+	 *
+	 * @param source
+	 *            n-dimensional {@link RandomAccessible}. Must provide data at
+	 *            all locations of result/intermediate images plus a one pixel
+	 *            border in all dimensions.
+	 * @param gaussianConvolved
+	 *            n-dimensional {@link RandomAccessibleInterval} for storing the
+	 *            smoothed source
+	 * @param gradient
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            the gradients along all axes of the smoothed source (size of
+	 *            last dimension is n)
+	 * @param hessianMatrix
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            all second partial derivatives (size of last dimension is n *
+	 *            ( n + 1 ) / 2)
+	 * @param sigma
+	 *            width of Gaussian smoothing (isotropy not required)
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param nThreads
+	 *            Number of threads/workers used for parallel computation of
+	 *            eigenvalues.
+	 * @param es
+	 *            {@link ExecutorService} providing workers for parallel
+	 *            computation. Service is managed (created, shutdown) by caller.
+	 * @throws IncompatibleTypeException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void calculateMatrix(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > gaussianConvolved,

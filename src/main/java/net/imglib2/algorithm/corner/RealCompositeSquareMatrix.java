@@ -10,6 +10,9 @@ import net.imglib2.view.composite.RealComposite;
  *
  * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
  *
+ *         Square {@link RealMatrix} that reads data from {@link RealComposite}
+ *         (non-copy).
+ *
  * @param <T>
  */
 public class RealCompositeSquareMatrix< T extends RealType< T > > extends RealCompositeMatrix< T >
