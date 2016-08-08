@@ -53,14 +53,6 @@ public class HessianMatrixEigenValuesTest
 		final Img< DoubleType > hessian =
 				HessianMatrix.calculateMatrix( Views.extendBorder( img ), img, sigma, new OutOfBoundsBorderFactory<>(), new ArrayImgFactory<>(), new DoubleType(), 1 );
 
-		Assert.assertEquals( img.numDimensions() + 1, hessian.numDimensions() );
-		for ( int d = 0; d < img.numDimensions(); ++d )
-		{
-			Assert.assertEquals( img.dimension( d ), hessian.dimension( d ) );
-		}
-
-		Assert.assertEquals( img.numDimensions() * ( img.numDimensions() + 1 ) / 2, hessian.dimension( img.numDimensions() ) );
-
 		final Img< DoubleType > eigenvalues = TensorEigenValues.calculateEigenValuesSymmetric( hessian, new ArrayImgFactory<>(), new DoubleType(), 1 );
 
 		Assert.assertEquals( img.numDimensions() + 1, eigenvalues.numDimensions() );
