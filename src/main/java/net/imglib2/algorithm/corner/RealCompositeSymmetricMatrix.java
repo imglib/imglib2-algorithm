@@ -7,7 +7,7 @@ import net.imglib2.view.composite.RealComposite;
 
 /**
  *
- * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ * @author Philipp Hanslovsky
  *
  *         Symmetric {@link RealMatrix} that reads data from
  *         {@link RealComposite} (non-copy).

@@ -22,7 +22,7 @@ import net.imglib2.view.composite.RealComposite;
 
 /**
  *
- * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ * @author Philipp Hanslovsky
  *
  *         Compute eigenvalues of rank 2 tensors.
  *

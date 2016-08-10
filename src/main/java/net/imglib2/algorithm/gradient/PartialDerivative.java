@@ -52,8 +52,8 @@ import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 /**
- * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
- * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ * @author Tobias Pietzsch
+ * @author Philipp Hanslovsky
  *
  */
 public class PartialDerivative

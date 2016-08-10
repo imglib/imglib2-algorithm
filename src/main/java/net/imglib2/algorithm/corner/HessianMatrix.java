@@ -22,7 +22,7 @@ import net.imglib2.view.Views;
  *
  * Compute entries of n-dimensional Hessian matrix.
  *
- * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
+ * @author Philipp Hanslovsky
  *
  */
 public class HessianMatrix
