@@ -42,7 +42,7 @@ import java.util.Set;
  * @param <T>
  *            the node type
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public interface Forest< T extends TreeNode< T > >
 {

@@ -70,7 +70,7 @@ import Jama.Matrix;
  * coordinates move out of the valid image.
  * 
  * @author Stephan Preibisch
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public class SubpixelLocalization< P extends Localizable, T extends RealType< T > >
 {

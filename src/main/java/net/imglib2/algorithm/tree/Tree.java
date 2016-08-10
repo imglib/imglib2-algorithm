@@ -39,7 +39,7 @@ package net.imglib2.algorithm.tree;
  * @param <T>
  *            the node type
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public interface Tree< T extends TreeNode< T > > extends Forest< T >
 {

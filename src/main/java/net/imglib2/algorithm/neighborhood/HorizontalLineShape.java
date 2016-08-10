@@ -49,7 +49,7 @@ import net.imglib2.RandomAccessibleInterval;
  * A {@link Shape} representing finite, centered, symmetric lines, that are
  * parallel to the image axes.
  * 
- * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>#
+ * @author Jean-Yves Tinevez#
  * @author Jonathan Hale (University of Konstanz)
  */
 public class HorizontalLineShape implements Shape

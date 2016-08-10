@@ -48,7 +48,7 @@ import net.imglib2.type.numeric.NumericType;
  * {@link Integer#MAX_VALUE} elements. For smaller images, the faster
  * {@link ConvolverNativeTypeBuffered} should be used.
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  * @see ConvolverFactory
  * 
  * @param <T>

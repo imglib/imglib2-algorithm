@@ -64,7 +64,7 @@ import net.imglib2.view.Views;
 /**
  * Convolution with a separable symmetric kernel.
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public final class SeparableSymmetricConvolution
 {

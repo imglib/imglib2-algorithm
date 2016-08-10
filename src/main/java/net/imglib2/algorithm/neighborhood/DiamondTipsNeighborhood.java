@@ -51,7 +51,7 @@ import net.imglib2.util.Intervals;
  * Though it has very few direct applications, it is used in structuring element
  * decomposition for mathematical morphology.
  * 
- * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com> Nov 6, 2013
+ * @author Jean-Yves Tinevez Nov 6, 2013
  * @param <T>
  */
 public class DiamondTipsNeighborhood< T > extends AbstractLocalizable implements Neighborhood< T >

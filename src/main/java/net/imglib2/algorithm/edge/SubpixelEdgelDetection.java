@@ -60,7 +60,7 @@ import net.imglib2.view.Views;
  * , RR 2724, INRIA, nov. 1995
  * </p>
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public class SubpixelEdgelDetection
 {

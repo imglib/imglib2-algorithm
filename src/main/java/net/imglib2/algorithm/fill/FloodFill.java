@@ -50,8 +50,8 @@ import net.imglib2.view.Views;
 /**
  * Iterative n-dimensional flood fill for arbitrary neighborhoods.
  *
- * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
- * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
+ * @author Philipp Hanslovsky
+ * @author Stephan Saalfeld
  */
 public class FloodFill
 {

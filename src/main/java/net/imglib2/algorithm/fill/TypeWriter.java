@@ -39,8 +39,8 @@ import net.imglib2.type.Type;
 /**
  * Default implementation of {@link Writer} for {@link Type}.
  *
- * @author Philipp Hanslovsky &lt;hanslovskyp@janelia.hhmi.org&gt;
- * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
+ * @author Philipp Hanslovsky
+ * @author Stephan Saalfeld
  */
 public class TypeWriter< T extends Type< T > > implements Writer< T >
 {

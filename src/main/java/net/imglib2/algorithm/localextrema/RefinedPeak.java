@@ -44,7 +44,7 @@ import net.imglib2.RealPoint;
  * 
  * @param <P>
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public class RefinedPeak< P extends Localizable > extends RealPoint
 {

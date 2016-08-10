@@ -50,7 +50,7 @@ import net.imglib2.RandomAccessibleInterval;
 /**
  * A factory for Accessibles on rectangular neighboorhoods.
  *
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  * @author Jonathan Hale (University of Konstanz)
  */
 public class RectangleShape implements Shape
