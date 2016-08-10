@@ -46,7 +46,7 @@ import net.imglib2.Localizable;
  * component (extremal region) can be obtained by {@link #value()}.
  * 
  * @author Florian Jug
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public interface Component< T, C extends Component< T, C > > extends Iterable< Localizable >
 {

@@ -44,7 +44,7 @@ import net.imglib2.type.numeric.RealType;
  * than {@link Integer#MAX_VALUE} elements. For smaller images, the faster
  * {@link DoubleConvolverRealTypeBuffered} should be used.
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  * @see ConvolverFactory
  * 
  * @param <S>

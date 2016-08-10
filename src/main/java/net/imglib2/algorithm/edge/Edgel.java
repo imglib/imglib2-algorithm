@@ -40,7 +40,7 @@ import net.imglib2.AbstractRealLocalizable;
  * An oriented point representing a sub-pixel localized segment of a
  * (hyper-)edge.
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public class Edgel extends AbstractRealLocalizable
 {

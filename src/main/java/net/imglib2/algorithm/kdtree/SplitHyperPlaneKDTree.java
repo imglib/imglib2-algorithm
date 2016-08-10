@@ -56,7 +56,7 @@ import net.imglib2.KDTreeNode;
  * @param <T>
  *            type of values stored in the tree.
  *
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public class SplitHyperPlaneKDTree< T >
 {

@@ -48,9 +48,9 @@ import net.imglib2.RealPositionable;
 /**
  * TODO
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
- * @author Stephan Preibisch <preibisch@mpi-cbg.de>
- * @author Stephan Saalfeld <saalfeld@mpi-cbg.de>
+ * @author Tobias Pietzsch
+ * @author Stephan Preibisch
+ * @author Stephan Saalfeld
  */
 public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements Neighborhood< T >
 {

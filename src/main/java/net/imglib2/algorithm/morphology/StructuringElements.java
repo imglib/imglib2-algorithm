@@ -49,7 +49,7 @@ import net.imglib2.algorithm.neighborhood.Shape;
  * A collection of static utilities to facilitate the creation of morphological
  * structuring elements.
  *
- * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com> Sep - Nov 2013
+ * @author Jean-Yves Tinevez Sep - Nov 2013
  */
 public class StructuringElements
 {

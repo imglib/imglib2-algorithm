@@ -52,7 +52,7 @@ import net.imglib2.util.Intervals;
  * <tt>Jones and Soilles. Periodic lines: Definition, cascades, and application
  * to granulometries. Pattern Recognition Letters (1996) vol. 17 (10) pp. 1057-1063</tt>
  * 
- * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com> Sep 3, 2013
+ * @author Jean-Yves Tinevez Sep 3, 2013
  * 
  * @param <T>
  */

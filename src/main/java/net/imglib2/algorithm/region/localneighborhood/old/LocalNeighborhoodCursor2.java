@@ -46,7 +46,7 @@ import net.imglib2.RandomAccess;
  * @author Stephan Preibisch
  * @author Stephan Saalfeld
  * @author Benjamin Schmid
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 @Deprecated
 public class LocalNeighborhoodCursor2< T > extends AbstractCursor< T >

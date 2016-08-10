@@ -56,7 +56,7 @@ import net.imglib2.view.Views;
 /**
  * Compute Difference-of-Gaussian of a {@link RandomAccessible}.
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public class DifferenceOfGaussian
 {

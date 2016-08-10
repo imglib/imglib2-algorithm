@@ -40,7 +40,7 @@ import net.imglib2.IterableInterval;
 /**
  * Find the maximum value and its position in an {@link IterableInterval}.
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public class Max
 {

@@ -41,7 +41,7 @@ import java.util.List;
  * @param <T>
  *            the node type
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public interface TreeNode< T extends TreeNode< T > >
 {

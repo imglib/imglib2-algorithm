@@ -49,7 +49,7 @@ import net.imglib2.RandomAccessibleInterval;
 /**
  * TODO
  * 
- * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>
+ * @author Jean-Yves Tinevez
  * @author Jonathan Hale (University of Konstanz)
  */
 public class DiamondTipsShape implements Shape

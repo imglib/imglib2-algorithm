@@ -58,7 +58,7 @@ import org.junit.Test;
  * TODO
  *
  * @author Lee Kamentsky
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public class ConnectedComponentsTest
 {

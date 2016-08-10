@@ -46,9 +46,9 @@ import net.imglib2.RandomAccessible;
  * 
  * @author Stephan Preibisch
  * @author Stephan Saalfeld
- * @author Stephan Preibisch <preibisch@mpi-cbg.de>
- * @author Stephan Saalfeld <saalfeld@mpi-cbg.de>
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Stephan Preibisch
+ * @author Stephan Saalfeld
+ * @author Tobias Pietzsch
  */
 public class HyperSphereCursor< T > implements Cursor< T >
 {

@@ -40,7 +40,7 @@ package net.imglib2.algorithm.componenttree;
  * @param <C>
  *            component type
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  * @author Florian Jug
  */
 public interface ComponentTree< C extends Component< ?, C > > extends ComponentForest< C >

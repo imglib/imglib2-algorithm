@@ -60,7 +60,7 @@ import net.imglib2.view.Views;
 /**
  * Label all connected components of a binary image.
  *
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public final class ConnectedComponents
 {

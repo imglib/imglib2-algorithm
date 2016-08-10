@@ -58,7 +58,7 @@ import net.imglib2.view.Views;
  * {@link #findLocalExtrema(RandomAccessibleInterval, LocalNeighborhoodCheck, int)}
  * to find pixels that are extrema in their local neighborhood.
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public class LocalExtrema
 {
@@ -177,7 +177,7 @@ public class LocalExtrema
 	 * @param <T>
 	 *            pixel type.
 	 * 
-	 * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+	 * @author Tobias Pietzsch
 	 */
 	public static class MaximumCheck< T extends Comparable< T > > implements LocalNeighborhoodCheck< Point, T >
 	{
@@ -213,7 +213,7 @@ public class LocalExtrema
 	 * @param <T>
 	 *            pixel type.
 	 * 
-	 * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+	 * @author Tobias Pietzsch
 	 */
 	public static class MinimumCheck< T extends Comparable< T > > implements LocalNeighborhoodCheck< Point, T >
 	{

@@ -42,7 +42,7 @@ import java.util.Set;
  * @param <C>
  *            component type
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  * @author Florian Jug
  */
 public interface ComponentForest< C extends Component< ?, C > >

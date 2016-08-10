@@ -37,7 +37,7 @@ package net.imglib2.algorithm.neighborhood;
  * Test {@link HyperSphereShape}.
  *
  * @author Jonathan Hale (University of Konstanz)
- * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
+ * @author Tobias Pietzsch
  */
 public class HypersphereShapeTest extends AbstractShapeTest
 {

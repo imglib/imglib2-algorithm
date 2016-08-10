@@ -56,8 +56,8 @@ import net.imglib2.util.Util;
  * This factory exists because {@link RectangleShape} which is based on the same
  * components, only allows for square neighborhoods.
  *
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
- * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>
+ * @author Tobias Pietzsch
+ * @author Jean-Yves Tinevez
  * @author Jonathan Hale (University of Konstanz)
  */
 public class CenteredRectangleShape implements Shape

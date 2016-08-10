@@ -43,7 +43,7 @@ import net.imglib2.type.numeric.NumericType;
  * A 1-dimensional line convolver that operates on all {@link NumericType}. It
  * implemented using a shifting window buffer that is stored in a T[] array.
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  * @see ConvolverFactory
  * 
  * @param <T>

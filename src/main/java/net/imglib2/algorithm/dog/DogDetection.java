@@ -53,7 +53,7 @@ import net.imglib2.view.Views;
 
 /**
  * @author Stephan Preibisch
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public class DogDetection< T extends RealType< T > & NativeType< T > >
 {

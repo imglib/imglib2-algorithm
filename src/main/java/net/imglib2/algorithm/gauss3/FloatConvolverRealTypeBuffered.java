@@ -44,7 +44,7 @@ import net.imglib2.type.numeric.RealType;
  * single line has no more than {@link Integer#MAX_VALUE} elements. For larger
  * images {@link DoubleConvolverRealType} can be used.
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  * @see ConvolverFactory
  * 
  * @param <S>

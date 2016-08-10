@@ -44,7 +44,7 @@ import net.imglib2.Sampler;
 /**
  * A factory for Accessibles on {@link Neighborhood Neighborhoods}.
  *
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  */
 public interface Shape
 {

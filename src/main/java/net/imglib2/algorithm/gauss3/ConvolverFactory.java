@@ -40,7 +40,7 @@ import net.imglib2.RandomAccess;
  * {@link ConvolverFactory} creates 1-dimensional line convolvers. See
  * {@link #create(double[], RandomAccess, RandomAccess, int, long)}.
  * 
- * @author Tobias Pietzsch <tobias.pietzsch@gmail.com>
+ * @author Tobias Pietzsch
  * 
  * @param <S>
  * @param <T>
