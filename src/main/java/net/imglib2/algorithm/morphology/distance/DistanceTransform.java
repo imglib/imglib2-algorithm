@@ -296,6 +296,46 @@ public class DistanceTransform
 
 	}
 
+	public static < T extends RealType< T > > void transformL1(
+			final RandomAccessibleInterval< T > source,
+			final int nThreads,
+			final double... weights ) throws InterruptedException, ExecutionException
+	{
+		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
+		transformL1( source, source, es, nThreads, weights );
+		es.shutdown();
+	}
+
+	public static < T extends RealType< T > > void transformL1(
+			final RandomAccessibleInterval< T > source,
+			final ExecutorService es,
+			final int nTasks,
+			final double... weights ) throws InterruptedException, ExecutionException
+	{
+		transformL1( source, source, es, nTasks, weights );
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void transformL1(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > target,
+			final int nThreads,
+			final double... weights ) throws InterruptedException, ExecutionException
+	{
+		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
+		transformL1( source, target, target, es, nThreads, weights );
+		es.shutdown();
+	}
+
+	public static < T extends RealType< T >, U extends RealType< U > > void transformL1(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > target,
+			final ExecutorService es,
+			final int nTasks,
+			final double... weights ) throws InterruptedException, ExecutionException
+	{
+		transformL1( source, target, target, es, nTasks, weights );
+	}
+
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transformL1(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > tmp,
