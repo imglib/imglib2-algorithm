@@ -13,8 +13,10 @@ import net.imglib2.Cursor;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
@@ -26,8 +28,9 @@ import net.imglib2.view.composite.RealComposite;
 
 /**
  *
- * ImgLib2 implementation of distance transform D of sampled functions f with
- * distance measure d: http://www.theoryofcomputing.org/articles/v008a019/ DOI:
+ * ImgLib2 implementation of n-dimensional distance transform D of sampled
+ * functions f with distance measure d:
+ * http://www.theoryofcomputing.org/articles/v008a019/ DOI:
  * 10.4086/toc.2012.v008a019
  *
  * D( p ) = min_q f(q) + d(p,q) where p,q are points on a grid/image.
@@ -55,6 +58,25 @@ public class DistanceTransform
 		L1_ANISOTROPIC
 	}
 
+	/**
+	 * Create distance transform of source using Euclidian (L2) or L1 distance.
+	 * Intermediate and final results will be stored in source (@{link
+	 * DoubleType} recommended). The distance can be weighted (individually for
+	 * each dimension, if desired) against the image values via the weights
+	 * parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param distanceType
+	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 * @param nThreads
+	 *            Number of threads/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and Euclidian distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
 			final DISTANCE_TYPE distanceType,
@@ -66,6 +88,27 @@ public class DistanceTransform
 		es.shutdown();
 	}
 
+	/**
+	 * Create distance transform of source using Euclidian (L2) or L1 distance.
+	 * Intermediate and final results will be stored in source (@{link
+	 * DoubleType} recommended). The distance can be weighted (individually for
+	 * each dimension, if desired) against the image values via the weights
+	 * parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param distanceType
+	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and Euclidian distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
 			final DISTANCE_TYPE distanceType,
@@ -76,6 +119,27 @@ public class DistanceTransform
 		transform( source, source, distanceType, es, nTasks, weights );
 	}
 
+	/**
+	 * Create distance transform of source using Euclidian (L2) or L1 distance.
+	 * Intermediate results will be stored in target (@{link DoubleType}
+	 * recommended). The distance can be weighted (individually for each
+	 * dimension, if desired) against the image values via the weights
+	 * parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Intermediate and final results of distance transform.
+	 * @param distanceType
+	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 * @param nThreads
+	 *            Number of threads/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and Euclidian distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > target,
@@ -88,6 +152,29 @@ public class DistanceTransform
 		es.shutdown();
 	}
 
+	/**
+	 * Create distance transform of source using Euclidian (L2) or L1 distance.
+	 * Intermediate results will be stored in target (@{link DoubleType}
+	 * recommended). The distance can be weighted (individually for each
+	 * dimension, if desired) against the image values via the weights
+	 * parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Intermediate and final results of distance transform.
+	 * @param distanceType
+	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and Euclidian distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > target,
@@ -100,22 +187,27 @@ public class DistanceTransform
 	}
 
 	/**
-	 *
-	 * Write distance transform of source into target. This method will create
-	 * an {@link ExecutorService} with nThreads through
-	 * {@link Executors#newFixedThreadPool(int)}.
-	 *
+	 * Create distance transform of source using Euclidian (L2) or L1 distance.
+	 * Intermediate results will be stored in tmp (@{link DoubleType}
+	 * recommended). The output will be written into target. The distance can be
+	 * weighted (individually for each dimension, if desired) against the image
+	 * values via the weights parameter.
 	 *
 	 * @param source
-	 *            {@link RandomAccessibleInterval} on which distance transform
-	 *            should be computed.
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
 	 * @param target
-	 *            Distance transform will be stored in this
-	 *            {@link RandomAccessibleInterval}.
+	 *            Final result of distance transform.
 	 * @param distanceType
-	 *            Distance measure measure to be used, euclidian or L1
+	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 * @param nThreads
+	 *            Number of threads/parallelism
 	 * @param weights
-	 *
+	 *            Individual weights for each dimension, balancing image values
+	 *            and Euclidian distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
@@ -130,6 +222,31 @@ public class DistanceTransform
 		es.shutdown();
 	}
 
+	/**
+	 * Create distance transform of source using Euclidian (L2) or L1 distance.
+	 * Intermediate results will be stored in tmp (@{link DoubleType}
+	 * recommended). The output will be written into target. The distance can be
+	 * weighted (individually for each dimension, if desired) against the image
+	 * values via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param distanceType
+	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and Euclidian distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > tmp,
@@ -158,6 +275,20 @@ public class DistanceTransform
 		}
 	}
 
+	/**
+	 * Create distance transform of source using arbitrary {@link Distance} d.
+	 * Intermediate and final results will be stored in source (@{link
+	 * DoubleType} recommended).
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param nThreads
+	 *            Number of threads/parallelism
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
 			final Distance d,
@@ -168,6 +299,22 @@ public class DistanceTransform
 		es.shutdown();
 	}
 
+	/**
+	 * Create distance transform of source using arbitrary {@link Distance} d.
+	 * Intermediate and final results will be stored in source (@{link
+	 * DoubleType} recommended).
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
 			final Distance d,
@@ -177,6 +324,22 @@ public class DistanceTransform
 		transform( source, source, d, es, nTasks );
 	}
 
+	/**
+	 * Create distance transform of source using arbitrary {@link Distance} d.
+	 * Intermediate and final results will be stored in target (@{link
+	 * DoubleType} recommended).
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param nThreads
+	 *            Number of threads/parallelism
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > target,
@@ -188,6 +351,24 @@ public class DistanceTransform
 		es.shutdown();
 	}
 
+	/**
+	 * Create distance transform of source using arbitrary {@link Distance} d.
+	 * Intermediate and final results will be stored in target (@{link
+	 * DoubleType} recommended).
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > target,
@@ -198,6 +379,24 @@ public class DistanceTransform
 		transform( source, target, target, d, es, nTasks );
 	}
 
+	/**
+	 * Create distance transform of source using arbitrary {@link Distance} d.
+	 * Intermediate results will be stored in tmp (@{link DoubleType}
+	 * recommended). The output will be written into target.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param nThreads
+	 *            Number of threads/parallelism
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > tmp,
@@ -210,6 +409,26 @@ public class DistanceTransform
 		es.shutdown();
 	}
 
+	/**
+	 * Create distance transform of source using arbitrary {@link Distance} d.
+	 * Intermediate results will be stored in tmp (@{link DoubleType}
+	 * recommended). The output will be written into target.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > tmp,
@@ -253,6 +472,25 @@ public class DistanceTransform
 
 	}
 
+	/**
+	 * Create distance transform of source using L1 distance. Both intermediate
+	 * results and the final distance transform will be written into the source
+	 * image ({@link DoubleType recommended}). The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param nThreads
+	 *            Number of threads/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and L1 distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T > > void transformL1(
 			final RandomAccessibleInterval< T > source,
 			final int nThreads,
@@ -263,6 +501,27 @@ public class DistanceTransform
 		es.shutdown();
 	}
 
+	/**
+	 * Create distance transform of source using L1 distance. Both intermediate
+	 * results and the final distance transform will be written into the source
+	 * image ({@link DoubleType recommended}). The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and L1 distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T > > void transformL1(
 			final RandomAccessibleInterval< T > source,
 			final ExecutorService es,
@@ -272,6 +531,25 @@ public class DistanceTransform
 		transformL1( source, source, es, nTasks, weights );
 	}
 
+	/**
+	 * Create distance transform of source using L1 distance. Intermediate
+	 * results will be stored in target (@{link DoubleType} recommended). The
+	 * output will be written into target. The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param nThreads
+	 *            Number of threads/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and L1 distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transformL1(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > target,
@@ -283,6 +561,27 @@ public class DistanceTransform
 		es.shutdown();
 	}
 
+	/**
+	 * Create distance transform of source using L1 distance. Intermediate
+	 * results will be stored in target (@{link DoubleType} recommended). The
+	 * output will be written into target. The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and L1 distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transformL1(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > target,
@@ -293,6 +592,27 @@ public class DistanceTransform
 		transformL1( source, target, target, es, nTasks, weights );
 	}
 
+	/**
+	 * Create distance transform of source using L1 distance. Intermediate
+	 * results will be stored in tmp (@{link DoubleType} recommended). The
+	 * output will be written into target. The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param nThreads
+	 *            Number of threads/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and L1 distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transformL1(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > tmp,
@@ -305,6 +625,29 @@ public class DistanceTransform
 		es.shutdown();
 	}
 
+	/**
+	 * Create distance transform of source using L1 distance. Intermediate
+	 * results will be stored in tmp (@{link DoubleType} recommended). The
+	 * output will be written into target. The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and L1 distance.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transformL1(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > tmp,
@@ -388,7 +731,6 @@ public class DistanceTransform
 		invokeAllAndWait( es, tasks );
 	}
 
-	// source and target may not be the same?
 	private static < T extends RealType< T >, U extends RealType< U > > void transform1D(
 			final RealComposite< T > source,
 			final RealComposite< U > target,
@@ -501,6 +843,10 @@ public class DistanceTransform
 
 	}
 
+	/**
+	 * Convenience method to invoke all tasks with a given
+	 * {@link ExecutorService}.
+	 */
 	public static < T > void invokeAllAndWait( final ExecutorService es, final Collection< Callable< T > > tasks ) throws InterruptedException, ExecutionException
 	{
 		final List< Future< T > > futures = es.invokeAll( tasks );
@@ -508,6 +854,11 @@ public class DistanceTransform
 			f.get();
 	}
 
+	/**
+	 * Convenience method for creating an appropriate storage img:
+	 * {@link ArrayImg} if size is less than {@link Integer#MAX_VALUE},
+	 * {@link CellImg} otherwise.
+	 */
 	public static < T extends NativeType< T > & RealType< T > > Img< T > createAppropriateOneDimensionalImage( final long size, final T t )
 	{
 		return size > Integer.MAX_VALUE ? new CellImgFactory< T >( Integer.MAX_VALUE ).create( new long[] { size }, t ) : new ArrayImgFactory< T >().create( new long[] { size }, t );
