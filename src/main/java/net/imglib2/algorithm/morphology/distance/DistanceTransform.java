@@ -251,73 +251,6 @@ public class DistanceTransform
 					p.getB().setReal( p.getA().getRealDouble() );
 		}
 
-//		final ExecutorService es = Executors.newFixedThreadPool( nTasks );
-
-		// transform along first dimension
-//		{
-//			final ArrayList< Callable< Void > > tasks = new ArrayList<>();
-//			final long size = target.dimension( 0 );
-//			final long nComposites = Views.flatIterable( Views.collapseReal( Views.permute( source, 0, lastDim ) ) ).size();
-//			final long nCompositesPerChunk = nComposites / nTasks;
-//			for ( long lower = 0; lower < nComposites; lower += nCompositesPerChunk )
-//			{
-//				final long fLower = lower;
-//				tasks.add( () -> {
-//					final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( Views.permute( source, 0, lastDim ) ) ).cursor();
-//					final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( Views.permute( target, 0, lastDim ) ) ).cursor();
-//					final RealComposite< LongType > lowerBoundDistanceIndex = Views.collapseReal( ArrayImgs.longs( 1, size ) ).randomAccess().get();
-//					final RealComposite< DoubleType > envelopeIntersectLocation = Views.collapseReal( ArrayImgs.doubles( 1, size + 1 ) ).randomAccess().get();
-//					s.jumpFwd( fLower );
-//					t.jumpFwd( fLower );
-//					for ( long count = 0; count < nCompositesPerChunk && s.hasNext(); ++count )
-//						transform1D( s.next(), t.next(), lowerBoundDistanceIndex, envelopeIntersectLocation, d, 0, size );
-//					return null;
-//				} );
-//
-//			}
-//
-//			invokeAllAndWait( es, tasks );
-//		}
-
-		// transform along subsequent dimensions
-//		for ( int dim = 1; dim < nDim; ++dim )
-//		{
-//
-//			// would like to avoid copy to tmp but seems unavoidable
-//			final long size = target.dimension( dim );
-//			final long nComposites = Views.flatIterable( Views.collapseReal( Views.permute( target, dim, lastDim ) ) ).size();
-//			final long nCompositesPerChunk = nComposites / nTasks;
-//			final int fDim = dim;
-//
-//			final ArrayList< Callable< Void > > tasks = new ArrayList<>();
-//			for ( long lower = 0; lower < nComposites; lower += nCompositesPerChunk )
-//			{
-//
-//				final long fLower = lower;
-//				tasks.add( () -> {
-//					final RealComposite< DoubleType > tmp = Views.collapseReal( ArrayImgs.doubles( 1, size ) ).randomAccess().get();
-//					final Cursor< RealComposite< V > > v = Views.flatIterable( Views.collapseReal( Views.permute( target, fDim, lastDim ) ) ).cursor();
-//					final RealComposite< LongType > lowerBoundDistanceIndex = Views.collapseReal( ArrayImgs.longs( 1, size ) ).randomAccess().get();
-//					final RealComposite< DoubleType > envelopeIntersectLocation = Views.collapseReal( ArrayImgs.doubles( 1, size + 1 ) ).randomAccess().get();
-//					v.jumpFwd( fLower );
-//
-//					for ( long count = 0; count < nCompositesPerChunk && v.hasNext(); ++count )
-//					{
-//						final RealComposite< V > composite = v.next();
-//						for ( long i = 0; i < size; ++i )
-//							tmp.get( i ).set( composite.get( i ).getRealDouble() );
-//
-//						transform1D( tmp, composite, lowerBoundDistanceIndex, envelopeIntersectLocation, d, fDim, size );
-//
-//					}
-//					return null;
-//				} );
-//			}
-//			invokeAllAndWait( es, tasks );
-//		}
-
-//		es.shutdown();
-
 	}
 
 	public static < T extends RealType< T > > void transformL1(
@@ -409,61 +342,6 @@ public class DistanceTransform
 				transformL1Dimension( tmp, tmp, lastDim, weights.length > 1 ? weights[ dim ] : weights[ 0 ], es, nTasks );
 			}
 		}
-
-//		// transform along first dimension
-//		{
-//			final ArrayList< Callable< Void > > tasks = new ArrayList<>();
-//			final long size = target.dimension( 0 );
-//			final long nComposites = Views.flatIterable( Views.collapseReal( Views.permute( source, 0, lastDim ) ) ).size();
-//			final long nCompositesPerChunk = nComposites / nTasks;
-//			for ( long lower = 0; lower < nComposites; lower += nCompositesPerChunk )
-//			{
-//				final long fLower = lower;
-//				tasks.add( () -> {
-//					final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( Views.permute( source, 0, lastDim ) ) ).cursor();
-//					final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( Views.permute( target, 0, lastDim ) ) ).cursor();
-//					s.jumpFwd( fLower );
-//					t.jumpFwd( fLower );
-//					for ( long count = 0; count < nCompositesPerChunk && s.hasNext(); ++count )
-//						transformL1_1D( s.next(), t.next(), weights[ 0 ], size );
-//					return null;
-//				} );
-//			}
-//			invokeAllAndWait( es, tasks );
-//		}
-//
-//		// transform along subsequent dimensions
-//		for ( int dim = 1; dim < nDim; ++dim )
-//		{
-//			final int fDim = dim;
-//
-//			// would like to avoid copy to tmp but seems unavoidable
-//			final long size = target.dimension( dim );
-//			final ArrayList< Callable< Void > > tasks = new ArrayList<>();
-//			final long nComposites = Views.flatIterable( Views.collapseReal( Views.permute( source, fDim, lastDim ) ) ).size();
-//			final long nCompositesPerChunk = nComposites / nTasks;
-//
-//			for ( long lower = 0; lower < nComposites; lower += nCompositesPerChunk )
-//			{
-//				final long fLower = lower;
-//				tasks.add( () -> {
-//					final RealComposite< DoubleType > tmp = Views.collapseReal( ArrayImgs.doubles( 1, size ) ).randomAccess().get();
-//					final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( Views.permute( target, fDim, lastDim ) ) ).cursor();
-//					t.jumpFwd( fLower );
-//					for ( long count = 0; count < nCompositesPerChunk && t.hasNext(); ++count )
-//					{
-//						final RealComposite< U > composite = t.next();
-//						for ( long i = 0; i < size; ++i )
-//							tmp.get( i ).set( composite.get( i ).getRealDouble() );
-//
-//						transformL1_1D( tmp, composite, weights.length > 1 ? weights[ fDim ] : weights[ 0 ], size );
-//
-//					}
-//					return null;
-//				} );
-//			}
-//			invokeAllAndWait( es, tasks );
-//		}
 
 	}
 
