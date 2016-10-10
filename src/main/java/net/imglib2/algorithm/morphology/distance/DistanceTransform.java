@@ -12,7 +12,11 @@ import java.util.concurrent.Future;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.real.DoubleType;
@@ -218,14 +222,34 @@ public class DistanceTransform
 		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
 		final int nDim = source.numDimensions();
 
-		transformDimension( source, tmp, d, 0, es, nTasks );
-
-		for ( int dim = 1; dim < nDim; ++dim )
-			transformDimension( tmp, tmp, d, dim, es, nTasks );
-
-		if ( tmp != target )
-			for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), tmp ) )
+		if ( nDim == 1 )
+		{
+			final long size = target.dimension( 0 );
+			final Img< DoubleType > store = createAppropriateOneDimensionalImage( size, new DoubleType() );
+			transform1D(
+					Views.collapseReal( Views.interval( source, target ) ).randomAccess().get(),
+					Views.collapseReal( store ).randomAccess().get(),
+					Views.collapseReal( createAppropriateOneDimensionalImage( size, new LongType() ) ).randomAccess().get(),
+					Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get(),
+					d,
+					0,
+					size );
+			for ( final Pair< DoubleType, V > p : Views.interval( Views.pair( store, target ), target ) )
+			{
 				p.getB().setReal( p.getA().getRealDouble() );
+			}
+		}
+		else
+		{
+			transformDimension( source, tmp, d, 0, es, nTasks );
+
+			for ( int dim = 1; dim < nDim; ++dim )
+				transformDimension( tmp, tmp, d, dim, es, nTasks );
+
+			if ( tmp != target )
+				for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), tmp ) )
+					p.getB().setReal( p.getA().getRealDouble() );
+		}
 
 //		final ExecutorService es = Executors.newFixedThreadPool( nTasks );
 
@@ -361,11 +385,29 @@ public class DistanceTransform
 		final int nDim = source.numDimensions();
 		final int lastDim = nDim - 1;
 
-		transformL1Dimension( source, tmp, 0, weights[ 0 ], es, nTasks );
-
-		for ( int dim = 0; dim < nDim; ++dim )
+		if ( nDim == 1 )
 		{
-			transformL1Dimension( tmp, tmp, lastDim, weights.length > 1 ? weights[ dim ] : weights[ 0 ], es, nTasks );
+			final long size = target.dimension( 0 );
+			final Img< DoubleType > store = createAppropriateOneDimensionalImage( size, new DoubleType() );
+			transformL1_1D(
+					Views.collapseReal( Views.interval( source, target ) ).randomAccess().get(),
+					Views.collapseReal( store ).randomAccess().get(),
+					1.0,
+					size );
+			for ( final Pair< DoubleType, V > p : Views.interval( Views.pair( store, target ), target ) )
+			{
+				p.getB().setReal( p.getA().getRealDouble() );
+			}
+		}
+		else
+		{
+
+			transformL1Dimension( source, tmp, 0, weights[ 0 ], es, nTasks );
+
+			for ( int dim = 0; dim < nDim; ++dim )
+			{
+				transformL1Dimension( tmp, tmp, lastDim, weights.length > 1 ? weights[ dim ] : weights[ 0 ], es, nTasks );
+			}
 		}
 
 //		// transform along first dimension
@@ -469,7 +511,7 @@ public class DistanceTransform
 	}
 
 	// source and target may not be the same?
-	public static < T extends RealType< T >, U extends RealType< U > > void transform1D(
+	private static < T extends RealType< T >, U extends RealType< U > > void transform1D(
 			final RealComposite< T > source,
 			final RealComposite< U > target,
 			final RealComposite< LongType > lowerBoundDistanceIndex,
@@ -557,7 +599,7 @@ public class DistanceTransform
 		invokeAllAndWait( es, tasks );
 	}
 
-	public static < T extends RealType< T >, U extends RealType< U > > void transformL1_1D(
+	private static < T extends RealType< T >, U extends RealType< U > > void transformL1_1D(
 			final RealComposite< T > source,
 			final RealComposite< U > target,
 			final double weight,
@@ -586,6 +628,11 @@ public class DistanceTransform
 		final List< Future< T > > futures = es.invokeAll( tasks );
 		for ( final Future< T > f : futures )
 			f.get();
+	}
+
+	public static < T extends NativeType< T > & RealType< T > > Img< T > createAppropriateOneDimensionalImage( final long size, final T t )
+	{
+		return size > Integer.MAX_VALUE ? new CellImgFactory< T >( Integer.MAX_VALUE ).create( new long[] { size }, t ) : new ArrayImgFactory< T >().create( new long[] { size }, t );
 	}
 
 }
