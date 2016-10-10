@@ -671,9 +671,7 @@ public class DistanceTransform
 					1.0,
 					size );
 			for ( final Pair< DoubleType, V > p : Views.interval( Views.pair( store, target ), target ) )
-			{
 				p.getB().setReal( p.getA().getRealDouble() );
-			}
 		}
 		else
 		{
@@ -684,8 +682,10 @@ public class DistanceTransform
 			{
 				transformL1Dimension( tmp, tmp, lastDim, weights.length > 1 ? weights[ dim ] : weights[ 0 ], es, nTasks );
 			}
+			if ( tmp != target )
+				for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), target ) )
+					p.getB().setReal( p.getA().getRealDouble() );
 		}
-
 	}
 
 	private static < T extends RealType< T >, U extends RealType< U > > void transformDimension(
