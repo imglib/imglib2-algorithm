@@ -1,5 +1,14 @@
 package net.imglib2.algorithm.morphology.distance;
 
+/**
+ *
+ * Implementation of weighted isotropic Euclidian distance:
+ *
+ * D( p ) = min_q f(q) + w * sum_i (p_i - q_i)*(p_i - q_i).
+ *
+ * @author Philipp Hanslovsky
+ *
+ */
 public class EuclidianDistanceIsotropic implements Distance
 {
 

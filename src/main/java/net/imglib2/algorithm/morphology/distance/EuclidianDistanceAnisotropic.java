@@ -2,6 +2,15 @@ package net.imglib2.algorithm.morphology.distance;
 
 import java.util.Arrays;
 
+/**
+ *
+ * Implementation of weighted anisotropic Euclidian distance:
+ *
+ * D( p ) = min_q f(q) + sum_i w_i*(p_i - q_i)*(p_i - q_i).
+ *
+ * @author Philipp Hanslovsky
+ *
+ */
 public class EuclidianDistanceAnisotropic implements Distance
 {
 
@@ -10,8 +19,10 @@ public class EuclidianDistanceAnisotropic implements Distance
 	private final double[] oneOverTwoTimesWeights;
 
 	/**
-	 * Weights equals weight * square of pixel size (TODO formulate more
-	 * nicely!)
+	 * When accounting for anisotropic image data, the ratios of the weights
+	 * should be equal to the squared ratios of the voxel sizes, e.g. if voxel
+	 * is twice as long along the y-axis, the weight for the y-axis should be
+	 * four times as big as the weight for the x-axis.
 	 *
 	 */
 	public EuclidianDistanceAnisotropic( final double... weights )
