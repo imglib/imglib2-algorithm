@@ -693,7 +693,6 @@ public class DistanceTransform
 	{
 		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
 		final int nDim = source.numDimensions();
-		final int lastDim = nDim - 1;
 
 		if ( nDim == 1 )
 		{
@@ -714,10 +713,9 @@ public class DistanceTransform
 
 			transformL1Dimension( source, tmp, 0, weights[ 0 ], es, nTasks );
 
-			for ( int dim = 0; dim < nDim; ++dim )
-			{
-				transformL1Dimension( tmp, tmp, lastDim, weights.length > 1 ? weights[ dim ] : weights[ 0 ], es, nTasks );
-			}
+			for ( int dim = 1; dim < nDim; ++dim )
+				transformL1Dimension( tmp, tmp, dim, weights.length > 1 ? weights[ dim ] : weights[ 0 ], es, nTasks );
+
 			if ( tmp != target )
 				for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), target ) )
 					p.getB().setReal( p.getA().getRealDouble() );
