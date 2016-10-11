@@ -477,33 +477,22 @@ public class DistanceTransform
 		final int nDim = source.numDimensions();
 
 		if ( nDim == 1 )
-		{
-			final long size = target.dimension( 0 );
-			final Img< DoubleType > store = createAppropriateOneDimensionalImage( size, new DoubleType() );
 			transformDimension(
 					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( store ), new FinalInterval( size, 1 ) ),
+					Views.interval( Views.addDimension( tmp ), new FinalInterval( target.dimension( 0 ), 1 ) ),
 					d,
 					0,
 					es,
 					nTasks );
-
-			for ( final Pair< DoubleType, V > p : Views.interval( Views.pair( store, target ), target ) )
-			{
-				p.getB().setReal( p.getA().getRealDouble() );
-			}
-		}
 		else
-		{
 			transformDimension( source, tmp, d, 0, es, nTasks );
 
-			for ( int dim = 1; dim < nDim; ++dim )
-				transformDimension( tmp, tmp, d, dim, es, nTasks );
+		for ( int dim = 1; dim < nDim; ++dim )
+			transformDimension( tmp, tmp, d, dim, es, nTasks );
 
-			if ( tmp != target )
-				for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), tmp ) )
-					p.getB().setReal( p.getA().getRealDouble() );
-		}
+		if ( tmp != target )
+			for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), tmp ) )
+				p.getB().setReal( p.getA().getRealDouble() );
 
 	}
 
@@ -695,31 +684,22 @@ public class DistanceTransform
 		final int nDim = source.numDimensions();
 
 		if ( nDim == 1 )
-		{
-			final long size = target.dimension( 0 );
-			final Img< DoubleType > store = createAppropriateOneDimensionalImage( size, new DoubleType() );
 			transformL1Dimension(
 					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( store ), new FinalInterval( size, 1 ) ),
+					Views.interval( Views.addDimension( tmp ), new FinalInterval( target.dimension( 0 ), 1 ) ),
 					0,
 					weights[ 0 ],
 					es,
 					nTasks );
-			for ( final Pair< DoubleType, V > p : Views.interval( Views.pair( store, target ), target ) )
-				p.getB().setReal( p.getA().getRealDouble() );
-		}
 		else
-		{
-
 			transformL1Dimension( source, tmp, 0, weights[ 0 ], es, nTasks );
 
-			for ( int dim = 1; dim < nDim; ++dim )
-				transformL1Dimension( tmp, tmp, dim, weights.length > 1 ? weights[ dim ] : weights[ 0 ], es, nTasks );
+		for ( int dim = 1; dim < nDim; ++dim )
+			transformL1Dimension( tmp, tmp, dim, weights.length > 1 ? weights[ dim ] : weights[ 0 ], es, nTasks );
 
-			if ( tmp != target )
-				for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), target ) )
-					p.getB().setReal( p.getA().getRealDouble() );
-		}
+		if ( tmp != target )
+			for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), target ) )
+				p.getB().setReal( p.getA().getRealDouble() );
 	}
 
 	private static < T extends RealType< T >, U extends RealType< U > > void transformDimension(
