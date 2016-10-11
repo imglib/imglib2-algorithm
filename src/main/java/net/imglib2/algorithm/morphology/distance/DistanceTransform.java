@@ -50,7 +50,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.type.NativeType;
@@ -721,11 +720,11 @@ public class DistanceTransform
 
 			final long fLower = lower;
 			tasks.add( () -> {
-				final RealComposite< DoubleType > tmp = Views.collapseReal( ArrayImgs.doubles( 1, size ) ).randomAccess().get();
+				final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
 				final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
 				final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( Views.permute( target, dim, lastDim ) ) ).cursor();
-				final RealComposite< LongType > lowerBoundDistanceIndex = Views.collapseReal( ArrayImgs.longs( 1, size ) ).randomAccess().get();
-				final RealComposite< DoubleType > envelopeIntersectLocation = Views.collapseReal( ArrayImgs.doubles( 1, size + 1 ) ).randomAccess().get();
+				final RealComposite< LongType > lowerBoundDistanceIndex = Views.collapseReal( createAppropriateOneDimensionalImage( size, new LongType() ) ).randomAccess().get();
+				final RealComposite< DoubleType > envelopeIntersectLocation = Views.collapseReal( createAppropriateOneDimensionalImage( size + 1, new DoubleType() ) ).randomAccess().get();
 				s.jumpFwd( fLower );
 				t.jumpFwd( fLower );
 
@@ -811,7 +810,7 @@ public class DistanceTransform
 
 			final long fLower = lower;
 			tasks.add( () -> {
-				final RealComposite< DoubleType > tmp = Views.collapseReal( ArrayImgs.doubles( 1, size ) ).randomAccess().get();
+				final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
 				final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( Views.permute( Views.interval( source, target ), fDim, lastDim ) ) ).cursor();
 				final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( Views.permute( target, fDim, lastDim ) ) ).cursor();
 				s.jumpFwd( fLower );
@@ -875,7 +874,8 @@ public class DistanceTransform
 	 */
 	public static < T extends NativeType< T > & RealType< T > > Img< T > createAppropriateOneDimensionalImage( final long size, final T t )
 	{
-		return size > Integer.MAX_VALUE ? new CellImgFactory< T >( Integer.MAX_VALUE ).create( new long[] { size }, t ) : new ArrayImgFactory< T >().create( new long[] { size }, t );
+		final long[] dim = new long[] { 1, size };
+		return size > Integer.MAX_VALUE ? new CellImgFactory< T >( Integer.MAX_VALUE ).create( dim, t ) : new ArrayImgFactory< T >().create( dim, t );
 	}
 
 }
