@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
@@ -479,14 +480,14 @@ public class DistanceTransform
 		{
 			final long size = target.dimension( 0 );
 			final Img< DoubleType > store = createAppropriateOneDimensionalImage( size, new DoubleType() );
-			transform1D(
-					Views.collapseReal( Views.interval( source, target ) ).randomAccess().get(),
-					Views.collapseReal( store ).randomAccess().get(),
-					Views.collapseReal( createAppropriateOneDimensionalImage( size, new LongType() ) ).randomAccess().get(),
-					Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get(),
+			transformDimension(
+					( RandomAccessible< T > ) Views.addDimension( source ),
+					Views.interval( Views.addDimension( store ), new FinalInterval( size, 1 ) ),
 					d,
 					0,
-					size );
+					es,
+					nTasks );
+
 			for ( final Pair< DoubleType, V > p : Views.interval( Views.pair( store, target ), target ) )
 			{
 				p.getB().setReal( p.getA().getRealDouble() );
@@ -690,7 +691,6 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-
 		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
 		final int nDim = source.numDimensions();
 		final int lastDim = nDim - 1;
@@ -699,11 +699,13 @@ public class DistanceTransform
 		{
 			final long size = target.dimension( 0 );
 			final Img< DoubleType > store = createAppropriateOneDimensionalImage( size, new DoubleType() );
-			transformL1_1D(
-					Views.collapseReal( Views.interval( source, target ) ).randomAccess().get(),
-					Views.collapseReal( store ).randomAccess().get(),
-					1.0,
-					size );
+			transformL1Dimension(
+					( RandomAccessible< T > ) Views.addDimension( source ),
+					Views.interval( Views.addDimension( store ), new FinalInterval( size, 1 ) ),
+					0,
+					weights[ 0 ],
+					es,
+					nTasks );
 			for ( final Pair< DoubleType, V > p : Views.interval( Views.pair( store, target ), target ) )
 				p.getB().setReal( p.getA().getRealDouble() );
 		}
