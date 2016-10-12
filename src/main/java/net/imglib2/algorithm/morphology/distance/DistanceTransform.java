@@ -518,7 +518,7 @@ public class DistanceTransform
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
-	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transformL1(
+	private static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transformL1(
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< U > tmp,
 			final RandomAccessibleInterval< V > target,
@@ -707,7 +707,7 @@ public class DistanceTransform
 	 * Convenience method to invoke all tasks with a given
 	 * {@link ExecutorService}.
 	 */
-	public static < T > void invokeAllAndWait( final ExecutorService es, final Collection< Callable< T > > tasks ) throws InterruptedException, ExecutionException
+	private static < T > void invokeAllAndWait( final ExecutorService es, final Collection< Callable< T > > tasks ) throws InterruptedException, ExecutionException
 	{
 		final List< Future< T > > futures = es.invokeAll( tasks );
 		for ( final Future< T > f : futures )
@@ -719,7 +719,7 @@ public class DistanceTransform
 	 * {@link ArrayImg} if size is less than {@link Integer#MAX_VALUE},
 	 * {@link CellImg} otherwise.
 	 */
-	public static < T extends NativeType< T > & RealType< T > > Img< T > createAppropriateOneDimensionalImage( final long size, final T t )
+	private static < T extends NativeType< T > & RealType< T > > Img< T > createAppropriateOneDimensionalImage( final long size, final T t )
 	{
 		final long[] dim = new long[] { 1, size };
 		return size > Integer.MAX_VALUE ? new CellImgFactory< T >( Integer.MAX_VALUE ).create( dim, t ) : new ArrayImgFactory< T >().create( dim, t );
