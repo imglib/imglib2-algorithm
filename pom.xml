@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>imglib2-algorithm</artifactId>
-	<version>0.6.2-SNAPSHOT</version>
+	<version>0.6.2</version>
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>
@@ -77,4 +77,8 @@
 			</plugin>
 		</plugins>
 	</build>
+
+  <scm>
+    <tag>imglib2-algorithm-0.6.2</tag>
+  </scm>
 </project>
