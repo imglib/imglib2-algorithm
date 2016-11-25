@@ -48,6 +48,8 @@ import net.imglib2.algorithm.localextrema.RefinedPeak;
 import net.imglib2.algorithm.localextrema.SubpixelLocalization;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
@@ -59,7 +61,15 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 {
 	public static enum ExtremaType
 	{
-		MINIMA, MAXIMA
+		/**
+		 * Bright blobs on dark background.
+		 */
+		MINIMA,
+
+		/**
+		 * Dark blobs on bright background.
+		 */
+		MAXIMA
 	}
 
 	/**
@@ -70,29 +80,31 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 
 	public < I extends RandomAccessibleInterval< T > & LinearSpace< ? > > DogDetection(
 			final I input,
-			final double sigma1,
-			final double sigma2,
+			final double sigmaSmaller,
+			final double sigmaLarger,
 			final ExtremaType extremaType,
 			final double minPeakValue )
 	{
-		this( Views.extendMirrorSingle( input ), input, getcalib( input ), sigma1, sigma2, extremaType, minPeakValue, true );
+		this( Views.extendMirrorSingle( input ), input, getcalib( input ), sigmaSmaller, sigmaLarger, extremaType, minPeakValue, true );
 	}
 
 	public DogDetection(
 			final RandomAccessibleInterval< T > input,
 			final double[] calibration,
-			final double sigma1,
-			final double sigma2,
+			final double sigmaSmaller,
+			final double sigmaLarger,
 			final ExtremaType extremaType,
 			final double minPeakValue,
 			final boolean normalizeMinPeakValue )
 	{
-		this( Views.extendMirrorSingle( input ), input, calibration, sigma1, sigma2, extremaType, minPeakValue, true );
+		this( Views.extendMirrorSingle( input ), input, calibration, sigmaSmaller, sigmaLarger, extremaType, minPeakValue, true );
 	}
 
 	/**
 	 * Sets up a {@link DogDetection} with the specified parameters (does not do
-	 * any computation yet).
+	 * any computation yet). If the input image is of type {@link DoubleType},
+	 * {@link DoubleType} will be used for computing the Difference-of-Gaussian.
+	 * In all other cases, {@link FloatType} will be used).
 	 *
 	 * @param input
 	 *            the input image.
@@ -101,9 +113,9 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 	 * @param calibration
 	 *            The calibration, i.e., the voxel sizes in some unit for the
 	 *            input image.
-	 * @param sigma1
+	 * @param sigmaSmaller
 	 *            sigma for the smaller scale in the same units as calibration.
-	 * @param sigma2
+	 * @param sigmaLarger
 	 *            sigma for the larger scale in the same units as calibration.
 	 * @param extremaType
 	 *            which type of extrema (minima, maxima) to detect. Note that
@@ -118,7 +130,7 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 	 *            Whether the peak value should be normalized. The
 	 *            Difference-of-Gaussian is an approximation of the
 	 *            scale-normalized Laplacian-of-Gaussian, with a factor of
-	 *            <em>f = sigma1 / (sigma2 - sigma1)</em>. If
+	 *            <em>f = sigmaSmaller / (sigmaLarger - sigmaSmaller)</em>. If
 	 *            {@code normalizeMinPeakValue=true}, the {@code minPeakValue}
 	 *            will be divided by <em>f</em> (which is equivalent to scaling
 	 *            the DoG by <em>f</em>).
@@ -127,17 +139,67 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 			final RandomAccessible< T > input,
 			final Interval interval,
 			final double[] calibration,
-			final double sigma1,
-			final double sigma2,
+			final double sigmaSmaller,
+			final double sigmaLarger,
 			final ExtremaType extremaType,
 			final double minPeakValue,
 			final boolean normalizeMinPeakValue )
 	{
+		this( input, interval, calibration, sigmaSmaller, sigmaLarger, extremaType, minPeakValue, normalizeMinPeakValue, new DogComputationType<>( input, interval ).getType() );
+	}
+
+	/**
+	 * Sets up a {@link DogDetection} with the specified parameters (does not do
+	 * any computation yet).
+	 *
+	 * @param input
+	 *            the input image.
+	 * @param interval
+	 *            which interval of the input image to process
+	 * @param calibration
+	 *            The calibration, i.e., the voxel sizes in some unit for the
+	 *            input image.
+	 * @param sigmaSmaller
+	 *            sigma for the smaller scale in the same units as calibration.
+	 * @param sigmaLarger
+	 *            sigma for the larger scale in the same units as calibration.
+	 * @param extremaType
+	 *            which type of extrema (minima, maxima) to detect. Note that
+	 *            minima in the Difference-of-Gaussian correspond to bright
+	 *            blobs on dark background. Maxima correspond to dark blobs on
+	 *            bright background.
+	 * @param minPeakValue
+	 *            threshold value for detected extrema. Maxima below
+	 *            {@code minPeakValue} or minima above {@code -minPeakValue}
+	 *            will be disregarded.
+	 * @param normalizeMinPeakValue
+	 *            Whether the peak value should be normalized. The
+	 *            Difference-of-Gaussian is an approximation of the
+	 *            scale-normalized Laplacian-of-Gaussian, with a factor of
+	 *            <em>f = sigmaSmaller / (sigmaLarger - sigmaSmaller)</em>. If
+	 *            {@code normalizeMinPeakValue=true}, the {@code minPeakValue}
+	 *            will be divided by <em>f</em> (which is equivalent to scaling
+	 *            the DoG by <em>f</em>).
+	 * @param computationType
+	 *            The type to use for computing the Difference-of-Gaussian.
+	 */
+	public < F extends RealType< F > & NativeType< F > > DogDetection(
+			final RandomAccessible< T > input,
+			final Interval interval,
+			final double[] calibration,
+			final double sigmaSmaller,
+			final double sigmaLarger,
+			final ExtremaType extremaType,
+			final double minPeakValue,
+			final boolean normalizeMinPeakValue,
+			final F computationType )
+	{
 		this.input = input;
 		this.interval = interval;
-		this.sigma1 = sigma1;
-		this.sigma2 = sigma2;
+		this.sigmaSmaller = sigmaSmaller;
+		this.sigmaLarger = sigmaLarger;
 		this.pixelSize = calibration;
+		this.typedDogDetection = new TypedDogDetection<>( computationType );
 		this.imageSigma = 0.5;
 		this.minf = 2;
 		this.extremaType = extremaType;
@@ -153,72 +215,25 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 	 */
 	public ArrayList< Point > getPeaks()
 	{
-		final ExecutorService service;
-		if ( executorService == null )
-			service = Executors.newFixedThreadPool( numThreads );
-		else
-			service = executorService;
-
-		final T type = Util.getTypeFromInterval( Views.interval( input, interval ) );
-		dogImg = Util.getArrayOrCellImgFactory( interval, type ).create( interval, type );
-		final long[] translation = new long[ interval.numDimensions() ];
-		interval.min( translation );
-		dogImg = Views.translate( dogImg, translation );
-
-		final double[][] sigmas = DifferenceOfGaussian.computeSigmas( imageSigma, minf, pixelSize, sigma1, sigma2 );
-		DifferenceOfGaussian.DoG( sigmas[ 0 ], sigmas[ 1 ], input, dogImg, service );
-		final T val = type.createVariable();
-		final double minValueT = type.getMinValue();
-		final double maxValueT = type.getMaxValue();
-		final LocalNeighborhoodCheck< Point, T > localNeighborhoodCheck;
-		final double normalization = normalizeMinPeakValue ? ( sigma2 / sigma1 - 1.0 ) : 1.0;
-		switch ( extremaType )
-		{
-		case MINIMA:
-			val.setReal( Math.max( Math.min( -minPeakValue * normalization, maxValueT ), minValueT ) );
-			localNeighborhoodCheck = new LocalExtrema.MinimumCheck< T >( val );
-			break;
-		case MAXIMA:
-		default:
-			val.setReal( Math.max( Math.min( minPeakValue * normalization, maxValueT ), minValueT ) );
-			localNeighborhoodCheck = new LocalExtrema.MaximumCheck< T >( val );
-		}
-		final ArrayList< Point > peaks = LocalExtrema.findLocalExtrema( dogImg, localNeighborhoodCheck, service );
-		if ( !keepDoGImg )
-			dogImg = null;
-
-		if ( executorService == null )
-			service.shutdown();
-
-		return peaks;
+		return typedDogDetection.getPeaks();
 	}
 
 	public ArrayList< RefinedPeak< Point > > getSubpixelPeaks()
 	{
-		final boolean savedKeepDoGImg = keepDoGImg;
-		keepDoGImg = true;
-		final ArrayList< Point > peaks = getPeaks();
-		final SubpixelLocalization< Point, T > spl = new SubpixelLocalization< Point, T >( dogImg.numDimensions() );
-		spl.setAllowMaximaTolerance( true );
-		spl.setMaxNumMoves( 10 );
-		final ArrayList< RefinedPeak< Point > > refined = spl.process( peaks, dogImg, dogImg );
-		keepDoGImg = savedKeepDoGImg;
-		if ( !keepDoGImg )
-			dogImg = null;
-		return refined;
+		return typedDogDetection.getSubpixelPeaks();
 	}
 
 	protected final RandomAccessible< T > input;
 
 	protected final Interval interval;
 
-	protected final double sigma1;
+	protected final double sigmaSmaller;
 
-	protected final double sigma2;
+	protected final double sigmaLarger;
 
 	protected final double[] pixelSize;
 
-	protected RandomAccessibleInterval< T > dogImg;
+	protected final TypedDogDetection< ? > typedDogDetection;
 
 	protected double imageSigma;
 
@@ -305,5 +320,95 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 		for ( int d = 0; d < c.length; ++d )
 			c[ d ] = calib.axis( d ).scale();
 		return c;
+	}
+
+	private static class DogComputationType< F extends RealType< F > & NativeType< F > >
+	{
+		private final F type;
+
+		@SuppressWarnings( "unchecked" )
+		public DogComputationType(
+				final RandomAccessible< ? > input,
+				final Interval interval )
+		{
+			final Object t = Util.getTypeFromInterval( Views.interval( input, interval ) );
+			if ( t instanceof DoubleType )
+				type = ( F ) new DoubleType();
+			else
+				type = ( F ) new FloatType();
+		}
+
+		public F getType()
+		{
+			return type;
+		}
+	}
+
+	protected class TypedDogDetection< F extends RealType< F > & NativeType< F > >
+	{
+		protected final F type;
+
+		protected RandomAccessibleInterval< F > dogImg;
+
+		public TypedDogDetection( final F type )
+		{
+			this.type = type;
+		}
+
+		public ArrayList< Point > getPeaks()
+		{
+			final ExecutorService service;
+			if ( executorService == null )
+				service = Executors.newFixedThreadPool( numThreads );
+			else
+				service = executorService;
+
+			dogImg = Util.getArrayOrCellImgFactory( interval, type ).create( interval, type );
+			final long[] translation = new long[ interval.numDimensions() ];
+			interval.min( translation );
+			dogImg = Views.translate( dogImg, translation );
+
+			final double[][] sigmas = DifferenceOfGaussian.computeSigmas( imageSigma, minf, pixelSize, sigmaSmaller, sigmaLarger );
+			DifferenceOfGaussian.DoG( sigmas[ 0 ], sigmas[ 1 ], input, dogImg, service );
+			final F val = type.createVariable();
+			final double minValueT = type.getMinValue();
+			final double maxValueT = type.getMaxValue();
+			final LocalNeighborhoodCheck< Point, F > localNeighborhoodCheck;
+			final double normalization = normalizeMinPeakValue ? ( sigmaLarger / sigmaSmaller - 1.0 ) : 1.0;
+			switch ( extremaType )
+			{
+			case MINIMA:
+				val.setReal( Math.max( Math.min( -minPeakValue * normalization, maxValueT ), minValueT ) );
+				localNeighborhoodCheck = new LocalExtrema.MinimumCheck<>( val );
+				break;
+			case MAXIMA:
+			default:
+				val.setReal( Math.max( Math.min( minPeakValue * normalization, maxValueT ), minValueT ) );
+				localNeighborhoodCheck = new LocalExtrema.MaximumCheck<>( val );
+			}
+			final ArrayList< Point > peaks = LocalExtrema.findLocalExtrema( dogImg, localNeighborhoodCheck, service );
+			if ( !keepDoGImg )
+				dogImg = null;
+
+			if ( executorService == null )
+				service.shutdown();
+
+			return peaks;
+		}
+
+		public ArrayList< RefinedPeak< Point > > getSubpixelPeaks()
+		{
+			final boolean savedKeepDoGImg = keepDoGImg;
+			keepDoGImg = true;
+			final ArrayList< Point > peaks = getPeaks();
+			final SubpixelLocalization< Point, F > spl = new SubpixelLocalization<>( dogImg.numDimensions() );
+			spl.setAllowMaximaTolerance( true );
+			spl.setMaxNumMoves( 10 );
+			final ArrayList< RefinedPeak< Point > > refined = spl.process( peaks, dogImg, dogImg );
+			keepDoGImg = savedKeepDoGImg;
+			if ( !keepDoGImg )
+				dogImg = null;
+			return refined;
+		}
 	}
 }
