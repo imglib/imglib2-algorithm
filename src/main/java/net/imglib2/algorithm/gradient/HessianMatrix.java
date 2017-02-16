@@ -2,9 +2,11 @@ package net.imglib2.algorithm.gradient;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.IntStream;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.outofbounds.OutOfBoundsFactory;
 import net.imglib2.type.numeric.RealType;
@@ -21,6 +23,46 @@ import net.imglib2.view.Views;
  */
 public class HessianMatrix
 {
+
+	/**
+	 * @param source
+	 *            n-dimensional input {@link RandomAccessibleInterval}
+	 * @param gaussian
+	 *            n-dimensional output parameter
+	 *            {@link RandomAccessibleInterval}
+	 * @param gradient
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            the gradients along all axes of the smoothed source (size of
+	 *            last dimension is n)
+	 * @param hessianMatrix
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            all second partial derivatives (size of last dimension is n *
+	 *            ( n + 1 ) / 2)
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param sigma
+	 *            Scale for Gaussian smoothing.
+	 *
+	 * @return Hessian matrix that was passed as output parameter.
+	 * @throws IncompatibleTypeException
+	 */
+	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateMatrix(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > gaussian,
+			final RandomAccessibleInterval< U > gradient,
+			final RandomAccessibleInterval< U > hessianMatrix,
+			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
+					final double... sigma ) throws IncompatibleTypeException
+	{
+
+		if ( sigma.length == 1 )
+			Gauss3.gauss( sigma[ 0 ], source, gaussian );
+		else
+			Gauss3.gauss( sigma, source, gaussian );
+		return calculateMatrix( Views.extend( gaussian, outOfBounds ), gradient, hessianMatrix, outOfBounds );
+	}
 
 	/**
 	 * @param source
@@ -89,6 +131,58 @@ public class HessianMatrix
 			}
 		}
 		return hessianMatrix;
+	}
+
+	// parallel
+
+	/**
+	 * @param source
+	 *            n-dimensional input {@link RandomAccessibleInterval}
+	 * @param gaussian
+	 *            n-dimensional output parameter
+	 *            {@link RandomAccessibleInterval}
+	 * @param gradient
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            the gradients along all axes of the smoothed source (size of
+	 *            last dimension is n)
+	 * @param hessianMatrix
+	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
+	 *            all second partial derivatives (size of last dimension is n *
+	 *            ( n + 1 ) / 2)
+	 * @param outOfBounds
+	 *            {@link OutOfBoundsFactory} that specifies how out of bound
+	 *            pixels of intermediate results should be handled (necessary
+	 *            for gradient computation).
+	 * @param nTasks
+	 *            Number of threads/workers used for parallel computation of
+	 *            eigenvalues.
+	 * @param es
+	 *            {@link ExecutorService} providing workers for parallel
+	 *            computation. Service is managed (created, shutdown) by caller.
+	 * @param sigma
+	 *            Scale for Gaussian smoothing.
+	 *
+	 * @return Hessian matrix that was passed as output parameter.
+	 * @throws IncompatibleTypeException
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 */
+	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateMatrix(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > gaussian,
+			final RandomAccessibleInterval< U > gradient,
+			final RandomAccessibleInterval< U > hessianMatrix,
+			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
+					final int nTasks,
+					final ExecutorService es,
+			final double... sigma ) throws IncompatibleTypeException, InterruptedException, ExecutionException
+	{
+
+		if ( sigma.length == 1 )
+			Gauss3.gauss( IntStream.range( 0, source.numDimensions() ).mapToDouble( i -> sigma[ 0 ] ).toArray(), source, gaussian, es );
+		else
+			Gauss3.gauss( sigma, source, gaussian, es );
+		return calculateMatrix( Views.extend( gaussian, outOfBounds ), gradient, hessianMatrix, outOfBounds, nTasks, es );
 	}
 
 	/**
