@@ -94,8 +94,8 @@ public class PartialDerivative
 	 *            output image
 	 * @param dimension
 	 *            along which dimension the partial derivatives are computed
-	 * @param nThreads
-	 *            Number of threads/workers to be used for gradient computation.
+	 * @param nTasks
+	 *            Number of tasks for gradient computation.
 	 * @param es
 	 *            {@link ExecutorService} providing workers for gradient
 	 *            computation. Service is managed (created, shutdown) by caller.
@@ -104,7 +104,7 @@ public class PartialDerivative
 			final RandomAccessible< T > source,
 			final RandomAccessibleInterval< T > gradient,
 			final int dimension,
-			final int nThreads,
+			final int nTasks,
 			final ExecutorService es ) throws InterruptedException, ExecutionException
 	{
 		final int nDim = source.numDimensions();
@@ -127,7 +127,7 @@ public class PartialDerivative
 			}
 		}
 
-		final long stepSize = Math.max( dimensionMax / nThreads, 1 );
+		final long stepSize = Math.max( dimensionMax / nTasks, 1 );
 		final long stepSizeMinusOne = stepSize - 1;
 		final long min = gradient.min( dimensionArgMax );
 		final long max = gradient.max( dimensionArgMax );
@@ -152,9 +152,7 @@ public class PartialDerivative
 		final List< Future< Void > > futures = es.invokeAll( tasks );
 
 		for ( final Future< Void > f : futures )
-		{
 			f.get();
-		}
 	}
 
 	// fast version
@@ -179,9 +177,7 @@ public class PartialDerivative
 		gradient.max( max );
 		final long[] shiftback = new long[ n ];
 		for ( int d = 0; d < n; ++d )
-		{
 			shiftback[ d ] = min[ d ] - max[ d ];
-		}
 
 		final RandomAccess< T > result = gradient.randomAccess();
 		final RandomAccess< T > back = source.randomAccess( Intervals.translate( gradient, 1, dimension ) );
@@ -207,23 +203,20 @@ public class PartialDerivative
 			// iterations
 			if ( result.getLongPosition( 0 ) == max0 )
 			{
-				if ( n == 1 ) {
+				if ( n == 1 )
 					return;
-				}
 				result.move( shiftback[ 0 ], 0 );
 				back.move( shiftback[ 0 ], 0 );
 				front.move( shiftback[ 0 ], 0 );
 				// now check the remaining dimensions
 				for ( int d = 1; d < n; ++d )
-				{
 					if ( result.getLongPosition( d ) == max[ d ] )
 					{
 						result.move( shiftback[ d ], d );
 						back.move( shiftback[ d ], d );
 						front.move( shiftback[ d ], d );
-						if ( d == n - 1 ) {
+						if ( d == n - 1 )
 							return;
-						}
 					}
 					else
 					{
@@ -232,7 +225,6 @@ public class PartialDerivative
 						front.fwd( d );
 						break;
 					}
-				}
 			}
 			else
 			{
