@@ -154,8 +154,7 @@ public class HessianMatrix
 	 *            pixels of intermediate results should be handled (necessary
 	 *            for gradient computation).
 	 * @param nTasks
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
+	 *            Number of tasks used for parallel computation of eigenvalues.
 	 * @param es
 	 *            {@link ExecutorService} providing workers for parallel
 	 *            computation. Service is managed (created, shutdown) by caller.
@@ -175,7 +174,7 @@ public class HessianMatrix
 			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
 					final int nTasks,
 					final ExecutorService es,
-			final double... sigma ) throws IncompatibleTypeException, InterruptedException, ExecutionException
+					final double... sigma ) throws IncompatibleTypeException, InterruptedException, ExecutionException
 	{
 
 		if ( sigma.length == 1 )
@@ -203,8 +202,7 @@ public class HessianMatrix
 	 *            pixels of intermediate results should be handled (necessary
 	 *            for gradient computation).
 	 * @param nTasks
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
+	 *            Number of tasks used for parallel computation of eigenvalues.
 	 * @param es
 	 *            {@link ExecutorService} providing workers for parallel
 	 *            computation. Service is managed (created, shutdown) by caller.
@@ -242,8 +240,7 @@ public class HessianMatrix
 	 *            all second partial derivatives (size of last dimension is n *
 	 *            ( n + 1 ) / 2)
 	 * @param nTasks
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
+	 *            Number of tasks used for parallel computation of eigenvalues.
 	 * @param es
 	 *            {@link ExecutorService} providing workers for parallel
 	 *            computation. Service is managed (created, shutdown) by caller.
