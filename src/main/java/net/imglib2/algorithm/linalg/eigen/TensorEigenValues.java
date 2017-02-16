@@ -52,15 +52,15 @@ public class TensorEigenValues
 			final RandomAccessibleInterval< U > eigenvalues )
 	{
 
-		final int nDim = tensor.numDimensions();
-		assert eigenvalues.dimension( nDim - 1 ) * ( eigenvalues.dimension( nDim - 1 ) + 1 ) / 2 == tensor.dimension( nDim - 1 );
+		final int nDim = tensor.numDimensions() - 1;
+		assert eigenvalues.dimension( nDim ) * ( eigenvalues.dimension( nDim ) + 1 ) / 2 == tensor.dimension( nDim );
 
 		final EigenValues< T, U > ev;
-		if ( nDim == 2 )
+		if ( nDim == 1 )
 			ev = EigenValues.oneDimensional();
-		else if ( nDim == 3 )
+		else if ( nDim == 2 )
 			ev = EigenValues.symmetric2D();
-		else if ( nDim > 3 )
+		else if ( nDim > 2 )
 			ev = EigenValues.symmetric( nDim );
 		else
 			ev = EigenValues.invalid();
@@ -96,15 +96,15 @@ public class TensorEigenValues
 			final ExecutorService es )
 	{
 
-		final int nDim = tensor.numDimensions();
-		assert eigenvalues.dimension( nDim - 1 ) * ( eigenvalues.dimension( nDim - 1 ) + 1 ) / 2 == tensor.dimension( nDim - 1 );
+		final int nDim = tensor.numDimensions() - 1;
+		assert eigenvalues.dimension( nDim ) * ( eigenvalues.dimension( nDim ) + 1 ) / 2 == tensor.dimension( nDim );
 
 		final EigenValues< T, U > ev;
-		if ( nDim == 2 )
+		if ( nDim == 1 )
 			ev = EigenValues.oneDimensional();
-		else if ( nDim == 3 )
+		else if ( nDim == 2 )
 			ev = EigenValues.symmetric2D();
-		else if ( nDim > 3 )
+		else if ( nDim > 2 )
 			ev = EigenValues.symmetric( nDim );
 		else
 			ev = EigenValues.invalid();
@@ -134,15 +134,15 @@ public class TensorEigenValues
 			final RandomAccessibleInterval< U > eigenvalues )
 	{
 
-		final int nDim = tensor.numDimensions();
-		assert eigenvalues.dimension( nDim - 1 ) * ( eigenvalues.dimension( nDim - 1 ) + 1 ) / 2 == tensor.dimension( nDim - 1 );
+		final int nDim = tensor.numDimensions() - 1;
+		assert eigenvalues.dimension( nDim ) * ( eigenvalues.dimension( nDim ) + 1 ) / 2 == tensor.dimension( nDim );
 
 		final EigenValues< T, U > ev;
-		if ( nDim == 2 )
+		if ( nDim == 1 )
 			ev = EigenValues.oneDimensional();
-		else if ( nDim == 3 )
+		else if ( nDim == 2 )
 			ev = EigenValues.square2D();
-		else if ( nDim > 3 )
+		else if ( nDim > 2 )
 			ev = EigenValues.square( nDim );
 		else
 			ev = EigenValues.invalid();
@@ -178,15 +178,15 @@ public class TensorEigenValues
 			final int nTasks,
 			final ExecutorService es )
 	{
-		final int nDim = tensor.numDimensions();
-		assert eigenvalues.dimension( nDim - 1 ) * eigenvalues.dimension( nDim - 1 ) == tensor.dimension( nDim - 1 );
+		final int nDim = tensor.numDimensions() - 1;
+		assert eigenvalues.dimension( nDim ) * eigenvalues.dimension( nDim ) == tensor.dimension( nDim );
 
 		final EigenValues< T, U > ev;
-		if ( nDim == 2 )
+		if ( nDim == 1 )
 			ev = EigenValues.oneDimensional();
-		else if ( nDim == 3 )
+		else if ( nDim == 2 )
 			ev = EigenValues.square2D();
-		else if ( nDim > 3 )
+		else if ( nDim > 2 )
 			ev = EigenValues.square( nDim );
 		else
 			ev = EigenValues.invalid();
@@ -252,12 +252,12 @@ public class TensorEigenValues
 
 		assert nTasks > 0: "Passed nTasks < 1";
 
-		final int nDim = tensor.numDimensions();
+		final int tensorDims = tensor.numDimensions();
 
 		long dimensionMax = Long.MIN_VALUE;
 		int dimensionArgMax = -1;
 
-		for ( int d = 0; d < nDim - 1; ++d )
+		for ( int d = 0; d < tensorDims - 1; ++d )
 		{
 			final long size = tensor.dimension( d );
 			if ( size > dimensionMax )
@@ -275,10 +275,10 @@ public class TensorEigenValues
 		for ( long currentMin = 0; currentMin < dimensionMax; currentMin += stepSize )
 		{
 			final long currentMax = Math.min( currentMin + stepSizeMinusOne, max );
-			final long[] minT = new long[ nDim ];
-			final long[] maxT = new long[ nDim ];
-			final long[] minE = new long[ nDim ];
-			final long[] maxE = new long[ nDim ];
+			final long[] minT = new long[ tensorDims ];
+			final long[] maxT = new long[ tensorDims ];
+			final long[] minE = new long[ tensorDims ];
+			final long[] maxE = new long[ tensorDims ];
 			tensor.min( minT );
 			tensor.max( maxT );
 			eigenvalues.min( minE );

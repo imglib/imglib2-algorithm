@@ -19,13 +19,9 @@ public class EigenValuesSquare< T extends RealType< T >, U extends RealType< U >
 	@Override
 	public void compute( final RealComposite< T > tensor, final RealComposite< U > evs )
 	{
-		final int nImageDim = nDim - 1;
-		final RealCompositeSquareMatrix< T > m = new RealCompositeSquareMatrix<>( tensor, nImageDim );
+		final RealCompositeSquareMatrix< T > m = new RealCompositeSquareMatrix<>( tensor, nDim );
 		final EigenDecomposition ed = new EigenDecomposition( m );
-		final double[] evArray = ed.getRealEigenvalues();
-		for ( int z = 0; z < evArray.length; ++z )
-		{
-			evs.get( z ).setReal( evArray[ z ] );
-		}
+		for ( int z = 0; z < nDim; ++z )
+			evs.get( z ).setReal( ed.getRealEigenvalue( z ) );
 	}
 }
