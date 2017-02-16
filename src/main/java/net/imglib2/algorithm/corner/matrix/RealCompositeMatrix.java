@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.corner;
+package net.imglib2.algorithm.corner.matrix;
 
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.OutOfRangeException;
@@ -54,7 +54,7 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 	{
 		// Supposed to be a deep copy, cf apache docs:
 		// http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/linear/RealMatrix.html#copy()
-		final RealCompositeMatrix< T > result = ( RealCompositeMatrix< T > ) createMatrix( nRows, nCols );
+		final RealCompositeMatrix< T > result = (net.imglib2.algorithm.corner.matrix.RealCompositeMatrix< T > ) createMatrix( nRows, nCols );
 		for ( int i = 0; i < length; ++i )
 		{
 			result.data.get( i ).set( this.data.get( i ) );

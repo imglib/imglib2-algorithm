@@ -5,10 +5,9 @@ import org.junit.Test;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.exception.IncompatibleTypeException;
-import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
-import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.DoubleArray;
 import net.imglib2.outofbounds.OutOfBoundsBorderFactory;
@@ -20,25 +19,19 @@ public class HessianMatrixTest
 
 	public void test(
 			final RandomAccessibleInterval< DoubleType > img,
-			final Img< DoubleType > hessian,
+			final RandomAccessibleInterval< DoubleType > hessian,
 			final double[][] refs,
 			final int size )
 	{
 		Assert.assertEquals( img.numDimensions() + 1, hessian.numDimensions() );
 		for ( int d = 0; d < img.numDimensions(); ++d )
-		{
 			Assert.assertEquals( img.dimension( d ), hessian.dimension( d ) );
-		}
 
 		Assert.assertEquals( img.numDimensions() * ( img.numDimensions() + 1 ) / 2, hessian.dimension( img.numDimensions() ) );
 
 		for ( int i = 0; i < hessian.dimension( img.numDimensions() ); ++i )
-		{
 			for ( Cursor< DoubleType > r = ArrayImgs.doubles( refs[ i ], size, size ).cursor(), c = Views.hyperSlice( hessian, img.numDimensions(), i ).cursor(); r.hasNext(); )
-			{
 				Assert.assertEquals( r.next().get(), c.next().get(), 1e-20 );
-			}
-		}
 	}
 
 	@Test
@@ -88,8 +81,11 @@ public class HessianMatrixTest
 
 		final double sigma = 0.1;
 
-		final Img< DoubleType > hessian =
-				HessianMatrix.calculateMatrix( Views.extendBorder( img ), img, sigma, new OutOfBoundsBorderFactory<>(), new ArrayImgFactory<>(), new DoubleType(), 1 );
+		final ArrayImg< DoubleType, DoubleArray > gaussian = ArrayImgs.doubles( size, size );
+		Gauss3.gauss( sigma, Views.extendBorder( img ), gaussian );
+
+		final RandomAccessibleInterval< DoubleType > hessian =
+				HessianMatrix.calculateMatrix( Views.extendBorder( gaussian ), ArrayImgs.doubles( size, size, 2 ), ArrayImgs.doubles( size, size, 3 ), new OutOfBoundsBorderFactory<>() );
 
 		test( img, hessian, refs, size );
 
@@ -211,8 +207,11 @@ public class HessianMatrixTest
 
 		final double sigma = 0.1;
 
-		final Img< DoubleType > hessian =
-				HessianMatrix.calculateMatrix( Views.extendBorder( img ), img, sigma, new OutOfBoundsBorderFactory<>(), new ArrayImgFactory<>(), new DoubleType(), 1 );
+		final ArrayImg< DoubleType, DoubleArray > gaussian = ArrayImgs.doubles( size, size, size );
+		Gauss3.gauss( sigma, Views.extendBorder( img ), gaussian );
+
+		final RandomAccessibleInterval< DoubleType > hessian =
+				HessianMatrix.calculateMatrix( Views.extendBorder( gaussian ), ArrayImgs.doubles( size, size, size, 3 ), ArrayImgs.doubles( size, size, size, 6 ), new OutOfBoundsBorderFactory<>() );
 
 		test( img, hessian, refs, size );
 

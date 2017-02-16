@@ -4,8 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import net.imglib2.Cursor;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.exception.IncompatibleTypeException;
-import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
@@ -50,29 +51,28 @@ public class HessianMatrixEigenValuesTest
 
 		final double sigma = 0.1;
 
-		final Img< DoubleType > hessian =
-				HessianMatrix.calculateMatrix( Views.extendBorder( img ), img, sigma, new OutOfBoundsBorderFactory<>(), new ArrayImgFactory<>(), new DoubleType(), 1 );
+		final ArrayImg< DoubleType, DoubleArray > gaussian = ArrayImgs.doubles( size, size );
+		Gauss3.gauss( sigma, Views.extendBorder( img ), gaussian );
 
-		final Img< DoubleType > eigenvalues = TensorEigenValues.calculateEigenValuesSymmetric( hessian, new ArrayImgFactory<>(), new DoubleType(), 1 );
+		final RandomAccessibleInterval< DoubleType > hessian =
+				HessianMatrix.calculateMatrix( Views.extendBorder( gaussian ), ArrayImgs.doubles( size, size, 2 ), ArrayImgs.doubles( size, size, 3 ), new OutOfBoundsBorderFactory<>() );
+
+		final RandomAccessibleInterval< DoubleType > eigenvalues = TensorEigenValues.calculateEigenValuesSymmetric(
+				hessian,
+				TensorEigenValues.createAppropriateResultImg( hessian, new ArrayImgFactory<>(), new DoubleType() ) );
 
 		Assert.assertEquals( img.numDimensions() + 1, eigenvalues.numDimensions() );
 		for ( int d = 0; d < img.numDimensions(); ++d )
-		{
 			Assert.assertEquals( img.dimension( d ), eigenvalues.dimension( d ) );
-		}
 
 		Assert.assertEquals( img.numDimensions(), eigenvalues.dimension( img.numDimensions() ) );
 
 
 		for ( Cursor< DoubleType > r = ArrayImgs.doubles( eigenvaluesRef1, size, size ).cursor(), c = Views.hyperSlice( eigenvalues, img.numDimensions(), 0 ).cursor(); r.hasNext(); )
-		{
 			Assert.assertEquals( r.next().get(), c.next().get(), 1.0e-20 );
-		}
 
 		for ( Cursor< DoubleType > r = ArrayImgs.doubles( eigenvaluesRef2, size, size ).cursor(), c = Views.hyperSlice( eigenvalues, img.numDimensions(), 1 ).cursor(); r.hasNext(); )
-		{
 			Assert.assertEquals( r.next().get(), c.next().get(), 1.0e-20 );
-		}
 
 
 	}

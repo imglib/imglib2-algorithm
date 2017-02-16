@@ -5,14 +5,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import org.apache.commons.math3.linear.EigenDecomposition;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.corner.eigen.EigenValues;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgFactory;
 import net.imglib2.type.numeric.RealType;
@@ -30,111 +28,6 @@ import net.imglib2.view.composite.RealComposite;
 public class TensorEigenValues
 {
 
-	/**
-	 *
-	 * Interface for handling different cases, e.g. square, symmetric, or 2
-	 * dimensional tensors.
-	 *
-	 */
-	public interface EigenValues
-	{
-		default public < T extends RealType< T >, U extends RealType< U > > void compute( final RealComposite< T > matrix, final RealComposite< U > evs )
-		{
-			throw new UnsupportedOperationException( "EigenValues not implemented yet!" );
-		}
-	}
-
-	public static class EigenValuesScalar implements EigenValues
-	{
-		@Override
-		public < T extends RealType< T >, U extends RealType< U > > void compute( final RealComposite< T > tensor, final RealComposite< U > evs )
-		{
-			evs.get( 0 ).setReal( tensor.get( 0 ).getRealDouble() );
-		}
-	}
-
-	public static class EigenValuesSquare2D implements EigenValues
-	{
-		@Override
-		public < K extends RealType< K >, L extends RealType< L > > void compute( final RealComposite< K > tensor, final RealComposite< L > evs )
-		{
-			final double x11 = tensor.get( 0 ).getRealDouble();
-			final double x12 = tensor.get( 1 ).getRealDouble();
-			final double x21 = tensor.get( 2 ).getRealDouble();
-			final double x22 = tensor.get( 3 ).getRealDouble();
-			final double sum = x11 + x22;
-			final double diff = x11 - x22;
-			final double sqrt = Math.sqrt( 4 * x12 * x21 + diff * diff );
-			evs.get( 0 ).setReal( 0.5 * ( sum + sqrt ) );
-			evs.get( 1 ).setReal( 0.5 * ( sum - sqrt ) );
-		}
-	}
-
-	public static class EigenValuesSymmetric2D implements EigenValues
-	{
-		@Override
-		public < K extends RealType< K >, L extends RealType< L > > void compute( final RealComposite< K > tensor, final RealComposite< L > evs )
-		{
-			final double x11 = tensor.get( 0 ).getRealDouble();
-			final double x12 = tensor.get( 1 ).getRealDouble();
-			final double x22 = tensor.get( 2 ).getRealDouble();
-			final double sum = x11 + x22;
-			final double diff = x11 - x22;
-			final double sqrt = Math.sqrt( 4 * x12 * x12 + diff * diff );
-			evs.get( 0 ).setReal( 0.5 * ( sum + sqrt ) );
-			evs.get( 1 ).setReal( 0.5 * ( sum - sqrt ) );
-		}
-	}
-
-	public static class EigenValuesSquare implements EigenValues
-	{
-		private final int nDim;
-
-		public EigenValuesSquare( final int nDim )
-		{
-			super();
-			this.nDim = nDim;
-		}
-
-		@Override
-		public < K extends RealType< K >, L extends RealType< L > > void compute( final RealComposite< K > tensor, final RealComposite< L > evs )
-		{
-			final int nImageDim = nDim - 1;
-			final RealCompositeSquareMatrix< K > m = new RealCompositeSquareMatrix<>( tensor, nImageDim );
-			final EigenDecomposition ed = new EigenDecomposition( m );
-			final double[] evArray = ed.getRealEigenvalues();
-			for ( int z = 0; z < evArray.length; ++z )
-			{
-				evs.get( z ).setReal( evArray[ z ] );
-			}
-		}
-	}
-
-	public static class EigenValuesSymmetric implements EigenValues
-	{
-		private final int nDim;
-
-		public EigenValuesSymmetric( final int nDim )
-		{
-			super();
-			this.nDim = nDim;
-		}
-
-
-		@Override
-		public < K extends RealType< K >, L extends RealType< L > > void compute( final RealComposite< K > tensor, final RealComposite< L > evs )
-		{
-			final int nImageDim = nDim - 1;
-			final RealCompositeSymmetricMatrix< K > m = new RealCompositeSymmetricMatrix<>( tensor, nImageDim );
-			final EigenDecomposition ed = new EigenDecomposition( m );
-			final double[] evArray = ed.getRealEigenvalues();
-			for ( int z = 0; z < evArray.length; ++z )
-			{
-				evs.get( z ).setReal( evArray[ z ] );
-			}
-		}
-	}
-
 	// static methods
 
 	// symmetric
@@ -148,286 +41,6 @@ public class TensorEigenValues
 	 *            2, and the entries in the last dimension are arranged like
 	 *            this: [t11, t12, ... , t1n, t22, t23, ... , tnn]
 	 *
-	 * @param factory
-	 *            {@link ImgFactory} used for creating the result image.
-	 * @param u
-	 *            Variable necessary for creation of result image.
-	 * @return {@link Img} containing sorted eigenvalues.
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSymmetric(
-			final RandomAccessibleInterval< T > tensor,
-			final ImgFactory< U > factory,
-			final U u )
-	{
-		final int nThreads = Runtime.getRuntime().availableProcessors();
-		return calculateEigenValuesSymmetric( tensor, factory, u, nThreads );
-	}
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of upper triangular
-	 *            tensor in last dimension, i.e. if tensor (t) has n+1
-	 *            dimensions, the last dimension must be of size n * ( n + 1 ) /
-	 *            2, and the entries in the last dimension are arranged like
-	 *            this: [t11, t12, ... , t1n, t22, t23, ... , tnn]
-	 *
-	 * @param factory
-	 *            {@link ImgFactory} used for creating the result image.
-	 * @param u
-	 *            Variable necessary for creation of result image.
-	 * @param nThreads
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
-	 * @return {@link Img} containing sorted eigenvalues.
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSymmetric(
-			final RandomAccessibleInterval< T > tensor,
-			final ImgFactory< U > factory,
-			final U u,
-			final int nThreads )
-	{
-		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
-		return calculateEigenValuesSymmetric( tensor, factory, u, nThreads, es );
-	}
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of upper triangular
-	 *            tensor in last dimension, i.e. if tensor (t) has n+1
-	 *            dimensions, the last dimension must be of size n * ( n + 1 ) /
-	 *            2, and the entries in the last dimension are arranged like
-	 *            this: [t11, t12, ... , t1n, t22, t23, ... , tnn]
-	 *
-	 * @param factory
-	 *            {@link ImgFactory} used for creating the result image.
-	 * @param u
-	 *            Variable necessary for creation of result image.
-	 * @param nThreads
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
-	 * @param es
-	 *            {@link ExecutorService} providing workers for parallel
-	 *            computation. Service is managed (created, shutdown) by caller.
-	 * @return {@link Img} containing sorted eigenvalues.
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSymmetric(
-			final RandomAccessibleInterval< T > tensor,
-			final ImgFactory< U > factory,
-			final U u,
-			final int nThreads,
-			final ExecutorService es )
-	{
-
-		final Img< U > eigenvalues = createAppropriateResultImg( tensor, factory, u );
-
-		calculateEigenValuesSymmetric( tensor, eigenvalues, nThreads, es );
-
-		return eigenvalues;
-
-	}
-
-	// square
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of tensor in last
-	 *            dimension, i.e. if tensor (t) has n+1 dimensions, the last
-	 *            dimension must be of size n * n, and the entries in the last
-	 *            dimension are arranged like this: [t11, t12, ... , t1n, t21,
-	 *            t22, t23, ... , tn1, ... , tnn]
-	 *
-	 * @param factory
-	 *            {@link ImgFactory} used for creating the result image.
-	 * @param u
-	 *            Variable necessary for creation of result image.
-	 * @return {@link Img} containing sorted eigenvalues.
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSquare(
-			final RandomAccessibleInterval< T > tensor,
-			final ImgFactory< U > factory,
-			final U u )
-	{
-		final int nThreads = Runtime.getRuntime().availableProcessors();
-		return calculateEigenValuesSquare( tensor, factory, u, nThreads );
-	}
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of tensor in last
-	 *            dimension, i.e. if tensor (t) has n+1 dimensions, the last
-	 *            dimension must be of size n * n and the entries in the last
-	 *            dimension are arranged like this: [t11, t12, ... , t1n, t21,
-	 *            t22, t23, ... , tn1, ... , tnn]
-	 *
-	 * @param factory
-	 *            {@link ImgFactory} used for creating the result image.
-	 * @param u
-	 *            Variable necessary for creation of result image.
-	 * @param nThreads
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
-	 * @return {@link Img} containing sorted eigenvalues.
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSquare(
-			final RandomAccessibleInterval< T > tensor,
-			final ImgFactory< U > factory,
-			final U u,
-			final int nThreads )
-	{
-		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
-		return calculateEigenValuesSquare( tensor, factory, u, nThreads, es );
-	}
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of tensor in last
-	 *            dimension, i.e. if tensor (t) has n+1 dimensions, the last
-	 *            dimension must be of size n * n, and the entries in the last
-	 *            dimension are arranged like this: [t11, t12, ... , t1n, t21,
-	 *            t22, t23, ... , tn1, ... , tnn]
-	 *
-	 * @param factory
-	 *            {@link ImgFactory} used for creating the result image.
-	 * @param u
-	 *            Variable necessary for creation of result image.
-	 * @param nThreads
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
-	 * @param es
-	 *            {@link ExecutorService} providing workers for parallel
-	 *            computation. Service is managed (created, shutdown) by caller.
-	 * @return {@link Img} containing sorted eigenvalues.
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValuesSquare(
-			final RandomAccessibleInterval< T > tensor,
-			final ImgFactory< U > factory,
-			final U u,
-			final int nThreads,
-			final ExecutorService es )
-	{
-
-		final Img< U > eigenvalues = createAppropriateResultImg( tensor, factory, u );
-
-		calculateEigenValuesSquare( tensor, eigenvalues, nThreads, es );
-
-		return eigenvalues;
-
-	}
-
-	// general
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of tensor in last
-	 *            dimension. Parameter ev specifies representation.
-	 *
-	 * @param factory
-	 *            {@link ImgFactory} used for creating the result image.
-	 * @param ev
-	 *            Implementation that specifies how to calculate eigenvalues
-	 *            from last dimension of input.
-	 * @param u
-	 *            Variable necessary for creation of result image.
-	 * @return {@link Img} containing sorted eigenvalues.
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValues(
-			final RandomAccessibleInterval< T > tensor,
-			final ImgFactory< U > factory,
-			final EigenValues ev,
-			final U u )
-	{
-
-		final int nThreads = Runtime.getRuntime().availableProcessors();
-		return calculateEigenValues( tensor, factory, ev, u, nThreads );
-
-	}
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of tensor in last
-	 *            dimension. Parameter ev specifies representation.
-	 *
-	 * @param factory
-	 *            {@link ImgFactory} used for creating the result image.
-	 * @param ev
-	 *            Implementation that specifies how to calculate eigenvalues
-	 *            from last dimension of input.
-	 * @param u
-	 *            Variable necessary for creation of result image.
-	 * @param nThreads
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
-	 * @return {@link Img} containing sorted eigenvalues.
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValues(
-			final RandomAccessibleInterval< T > tensor,
-			final ImgFactory< U > factory,
-			final EigenValues ev,
-			final U u,
-			final int nThreads )
-	{
-
-		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
-		return calculateEigenValues( tensor, factory, ev, u, nThreads, es );
-
-	}
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of tensor in last
-	 *            dimension. Parameter ev specifies representation.
-	 *
-	 * @param factory
-	 *            {@link ImgFactory} used for creating the result image.
-	 * @param ev
-	 *            Implementation that specifies how to calculate eigenvalues
-	 *            from last dimension of input.
-	 * @param u
-	 *            Variable necessary for creation of result image.
-	 * @param nThreads
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
-	 * @param es
-	 *            {@link ExecutorService} providing workers for parallel
-	 *            computation. Service is managed (created, shutdown) by caller.
-	 * @return {@link Img} containing sorted eigenvalues.
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > Img< U > calculateEigenValues(
-			final RandomAccessibleInterval< T > tensor,
-			final ImgFactory< U > factory,
-			final EigenValues ev,
-			final U u,
-			final int nThreads,
-			final ExecutorService es )
-	{
-		final Img< U > eigenvalues = createAppropriateResultImg( tensor, factory, u );
-
-		calculateEigenValues( tensor, eigenvalues, ev, nThreads, es );
-
-		return eigenvalues;
-	}
-
-	// passing result arrays
-
-	// symmetric
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of upper triangular
-	 *            tensor in last dimension, i.e. if tensor (t) has n+1
-	 *            dimensions, the last dimension must be of size n * ( n + 1 ) /
-	 *            2, and the entries in the last dimension are arranged like
-	 *            this: [t11, t12, ... , t1n, t22, t23, ... , tnn]
-	 *
 	 * @param eigenvalues
 	 *            Target {@link RandomAccessibleInterval} for storing the
 	 *            resulting tensor eigenvalues. Number of dimensions must be the
@@ -435,12 +48,25 @@ public class TensorEigenValues
 	 *            the last dimension must be n.
 	 *
 	 */
-	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSymmetric(
+	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValuesSymmetric(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues )
 	{
-		final int nThreads = Runtime.getRuntime().availableProcessors();
-		calculateEigenValuesSymmetric( tensor, eigenvalues, nThreads );
+
+		final int nDim = tensor.numDimensions();
+		assert eigenvalues.dimension( nDim - 1 ) * ( eigenvalues.dimension( nDim - 1 ) + 1 ) / 2 == tensor.dimension( nDim - 1 );
+
+		final EigenValues< T, U > ev;
+		if ( nDim == 2 )
+			ev = EigenValues.oneDimensional();
+		else if ( nDim == 3 )
+			ev = EigenValues.symmetric2D();
+		else if ( nDim > 3 )
+			ev = EigenValues.symmetric( nDim );
+		else
+			ev = EigenValues.invalid();
+
+		return calculateEigenValuesImpl( tensor, eigenvalues, ev );
 	}
 
 	/**
@@ -457,71 +83,34 @@ public class TensorEigenValues
 	 *            resulting tensor eigenvalues. Number of dimensions must be the
 	 *            same as for input. For an n+1 dimensional input, the size of
 	 *            the last dimension must be n.
-	 * @param nThreads
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
-	 *
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSymmetric(
-			final RandomAccessibleInterval< T > tensor,
-			final RandomAccessibleInterval< U > eigenvalues,
-			final int nThreads )
-	{
-		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
-		calculateEigenValuesSymmetric( tensor, eigenvalues, nThreads, es );
-	}
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of upper triangular
-	 *            tensor in last dimension, i.e. if tensor (t) has n+1
-	 *            dimensions, the last dimension must be of size n * ( n + 1 ) /
-	 *            2, and the entries in the last dimension are arranged like
-	 *            this: [t11, t12, ... , t1n, t22, t23, ... , tnn]
-	 *
-	 * @param eigenvalues
-	 *            Target {@link RandomAccessibleInterval} for storing the
-	 *            resulting tensor eigenvalues. Number of dimensions must be the
-	 *            same as for input. For an n+1 dimensional input, the size of
-	 *            the last dimension must be n.
-	 * @param nThreads
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
+	 * @param nTasks
+	 *            Number of tasks used for parallel computation of eigenvalues.
 	 * @param es
 	 *            {@link ExecutorService} providing workers for parallel
 	 *            computation. Service is managed (created, shutdown) by caller.
 	 *
 	 */
-	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSymmetric(
+	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValuesSymmetric(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues,
-			final int nThreads,
+			final int nTasks,
 			final ExecutorService es )
 	{
 
 		final int nDim = tensor.numDimensions();
 		assert eigenvalues.dimension( nDim - 1 ) * ( eigenvalues.dimension( nDim - 1 ) + 1 ) / 2 == tensor.dimension( nDim - 1 );
 
-		final EigenValues ev;
+		final EigenValues< T, U > ev;
 		if ( nDim == 2 )
-		{
-			ev = new EigenValuesScalar();
-		}
+			ev = EigenValues.oneDimensional();
 		else if ( nDim == 3 )
-		{
-			ev = new EigenValuesSymmetric2D();
-		}
+			ev = EigenValues.symmetric2D();
 		else if ( nDim > 3 )
-		{
-			ev = new EigenValuesSymmetric( nDim );
-		}
+			ev = EigenValues.symmetric( nDim );
 		else
-		{
-			ev = new EigenValues()
-			{};
-		}
-		calculateEigenValues( tensor, eigenvalues, ev, nThreads, es );
+			ev = EigenValues.invalid();
+
+		return calculateEigenValues( tensor, eigenvalues, ev, nTasks, es );
 	}
 
 	// square
@@ -541,12 +130,25 @@ public class TensorEigenValues
 	 *            same as for input. For an n+1 dimensional input, the size of
 	 *
 	 */
-	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSquare(
+	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValuesSquare(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues )
 	{
-		final int nThreads = Runtime.getRuntime().availableProcessors();
-		calculateEigenValuesSquare( tensor, eigenvalues, nThreads );
+
+		final int nDim = tensor.numDimensions();
+		assert eigenvalues.dimension( nDim - 1 ) * ( eigenvalues.dimension( nDim - 1 ) + 1 ) / 2 == tensor.dimension( nDim - 1 );
+
+		final EigenValues< T, U > ev;
+		if ( nDim == 2 )
+			ev = EigenValues.oneDimensional();
+		else if ( nDim == 3 )
+			ev = EigenValues.square2D();
+		else if ( nDim > 3 )
+			ev = EigenValues.square( nDim );
+		else
+			ev = EigenValues.invalid();
+
+		return calculateEigenValuesImpl( tensor, eigenvalues, ev );
 	}
 
 	/**
@@ -563,34 +165,7 @@ public class TensorEigenValues
 	 *            resulting tensor eigenvalues. Number of dimensions must be the
 	 *            same as for input. For an n+1 dimensional input, the size of
 	 *            the last dimension must be n.
-	 * @param nThreads
-	 *            Number of threads/workers used for parallel computation of
-	 *
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSquare(
-			final RandomAccessibleInterval< T > tensor,
-			final RandomAccessibleInterval< U > eigenvalues,
-			final int nThreads )
-	{
-		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
-		calculateEigenValuesSquare( tensor, eigenvalues, nThreads, es );
-	}
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of tensor in last
-	 *            dimension, i.e. if tensor (t) has n+1 dimensions, the last
-	 *            dimension must be of size n * n, and the entries in the last
-	 *            dimension are arranged like this: [t11, t12, ... , t1n, t21,
-	 *            t22, t23, ... , tn1, ... , tnn]
-	 *
-	 * @param eigenvalues
-	 *            Target {@link RandomAccessibleInterval} for storing the
-	 *            resulting tensor eigenvalues. Number of dimensions must be the
-	 *            same as for input. For an n+1 dimensional input, the size of
-	 *            the last dimension must be n.
-	 * @param nThreads
+	 * @param nTasks
 	 *            Number of threads/workers used for parallel computation of
 	 *            eigenvalues.
 	 * @param es
@@ -598,34 +173,26 @@ public class TensorEigenValues
 	 *            computation. Service is managed (created, shutdown) by caller.
 	 *
 	 */
-	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesSquare(
+	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValuesSquare(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues,
-			final int nThreads,
+			final int nTasks,
 			final ExecutorService es )
 	{
 		final int nDim = tensor.numDimensions();
 		assert eigenvalues.dimension( nDim - 1 ) * eigenvalues.dimension( nDim - 1 ) == tensor.dimension( nDim - 1 );
 
-		final EigenValues ev;
+		final EigenValues< T, U > ev;
 		if ( nDim == 2 )
-		{
-			ev = new EigenValuesScalar();
-		}
+			ev = EigenValues.oneDimensional();
 		else if ( nDim == 3 )
-		{
-			ev = new EigenValuesSquare2D();
-		}
+			ev = EigenValues.square2D();
 		else if ( nDim > 3 )
-		{
-			ev = new EigenValuesSquare( nDim );
-		}
+			ev = EigenValues.square( nDim );
 		else
-		{
-			ev = new EigenValues()
-			{};
-		}
-		calculateEigenValues( tensor, eigenvalues, ev, nThreads, es );
+			ev = EigenValues.invalid();
+
+		return calculateEigenValues( tensor, eigenvalues, ev, nTasks, es );
 	}
 
 	// general
@@ -646,13 +213,12 @@ public class TensorEigenValues
 	 *            from last dimension of input.
 	 *
 	 */
-	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValues(
+	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValues(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues,
-			final EigenValues ev )
+			final EigenValues< T, U > ev )
 	{
-		final int nThreads = Runtime.getRuntime().availableProcessors();
-		calculateEigenValues( tensor, eigenvalues, ev, nThreads );
+		return calculateEigenValuesImpl( tensor, eigenvalues, ev );
 	}
 
 	/**
@@ -669,36 +235,7 @@ public class TensorEigenValues
 	 * @param ev
 	 *            Implementation that specifies how to calculate eigenvalues
 	 *            from last dimension of input.
-	 * @param nThreads
-	 *            Number of threads/workers used for parallel computation of
-	 *            eigenvalues.
-	 *
-	 */
-	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValues(
-			final RandomAccessibleInterval< T > tensor,
-			final RandomAccessibleInterval< U > eigenvalues,
-			final EigenValues ev,
-			final int nThreads )
-	{
-		final ExecutorService es = Executors.newFixedThreadPool( nThreads );
-		calculateEigenValues( tensor, eigenvalues, ev, nThreads, es );
-	}
-
-	/**
-	 *
-	 * @param tensor
-	 *            Input that holds linear representation of tensor in last
-	 *            dimension. Parameter ev specifies representation.
-	 *
-	 * @param eigenvalues
-	 *            Target {@link RandomAccessibleInterval} for storing the
-	 *            resulting tensor eigenvalues. Number of dimensions must be the
-	 *            same as for input. For an n+1 dimensional input, the size of
-	 *            the last dimension must be n.
-	 * @param ev
-	 *            Implementation that specifies how to calculate eigenvalues
-	 *            from last dimension of input.
-	 * @param nThreads
+	 * @param nTasks
 	 *            Number of threads/workers used for parallel computation of
 	 *            eigenvalues.
 	 * @param es
@@ -706,19 +243,15 @@ public class TensorEigenValues
 	 *            computation. Service is managed (created, shutdown) by caller.
 	 *
 	 */
-	public static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValues(
+	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValues(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues,
-			final EigenValues ev,
-			final int nThreads,
+			final EigenValues< T, U > ev,
+			final int nTasks,
 			final ExecutorService es )
 	{
-		final int nTasks = Math.max( nThreads, 1 );
-		if ( nTasks < 2 )
-		{
-			calculateEigenValuesImpl( tensor, eigenvalues, ev );
-			return;
-		}
+
+		assert nTasks > 0: "Passed nTasks < 1";
 
 		final int nDim = tensor.numDimensions();
 
@@ -739,7 +272,7 @@ public class TensorEigenValues
 		final long stepSizeMinusOne = stepSize - 1;
 		final long max = dimensionMax - 1;
 
-		final ArrayList< Callable< Void > > tasks = new ArrayList<>();
+		final ArrayList< Callable< RandomAccessibleInterval< U > > > tasks = new ArrayList<>();
 		for ( long currentMin = 0; currentMin < dimensionMax; currentMin += stepSize )
 		{
 			final long currentMax = Math.min( currentMin + stepSizeMinusOne, max );
@@ -755,27 +288,22 @@ public class TensorEigenValues
 			maxE[ dimensionArgMax ] = maxT[ dimensionArgMax ] = currentMax;
 			final IntervalView< T > currentTensor = Views.interval( tensor, new FinalInterval( minT, maxT ) );
 			final IntervalView< U > currentEigenvalues = Views.interval( eigenvalues, new FinalInterval( minE, maxE ) );
-			tasks.add( () -> {
-				calculateEigenValuesImpl( currentTensor, currentEigenvalues, ev );
-				return null;
-			} );
+			tasks.add( () -> calculateEigenValuesImpl( currentTensor, currentEigenvalues, ev ) );
 		}
 
 
 		try
 		{
-			final List< Future< Void > > futures = es.invokeAll( tasks );
-			for ( final Future< Void > f : futures )
-			{
+			final List< Future< RandomAccessibleInterval< U > > > futures = es.invokeAll( tasks );
+			for ( final Future< RandomAccessibleInterval< U > > f : futures )
 				try
-				{
+			{
 					f.get();
-				}
-				catch ( final ExecutionException e )
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			}
+			catch ( final ExecutionException e )
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		catch ( final InterruptedException e )
@@ -784,21 +312,22 @@ public class TensorEigenValues
 			e.printStackTrace();
 		}
 
+		return eigenvalues;
+
 
 
 	}
 
-	private static < T extends RealType< T >, U extends RealType< U > > void calculateEigenValuesImpl(
+	private static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValuesImpl(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues,
-			final EigenValues ev )
+			final EigenValues< T, U > ev )
 	{
 		final Cursor< RealComposite< T > > m = Views.iterable( Views.collapseReal( tensor ) ).cursor();
 		final Cursor< RealComposite< U > > e = Views.iterable( Views.collapseReal( eigenvalues ) ).cursor();
 		while ( m.hasNext() )
-		{
 			ev.compute( m.next(), e.next() );
-		}
+		return eigenvalues;
 	}
 
 	/**
