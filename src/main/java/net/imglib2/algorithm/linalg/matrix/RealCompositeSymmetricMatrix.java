@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.corner.matrix;
+package net.imglib2.algorithm.linalg.matrix;
 
 import org.apache.commons.math3.linear.RealMatrix;
 

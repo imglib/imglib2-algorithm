@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.corner.eigen;
+package net.imglib2.algorithm.linalg.eigen;
 
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.composite.RealComposite;

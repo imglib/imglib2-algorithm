@@ -1,8 +1,8 @@
-package net.imglib2.algorithm.corner.eigen;
+package net.imglib2.algorithm.linalg.eigen;
 
 import org.apache.commons.math3.linear.EigenDecomposition;
 
-import net.imglib2.algorithm.corner.matrix.RealCompositeSymmetricMatrix;
+import net.imglib2.algorithm.linalg.matrix.RealCompositeSymmetricMatrix;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.composite.RealComposite;
 

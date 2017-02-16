@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.corner;
+package net.imglib2.algorithm.linalg.eigen;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,6 @@ import java.util.concurrent.Future;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.corner.eigen.EigenValues;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgFactory;
 import net.imglib2.type.numeric.RealType;

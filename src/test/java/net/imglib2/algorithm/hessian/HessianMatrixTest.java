@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.corner;
+package net.imglib2.algorithm.hessian;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -6,6 +6,7 @@ import org.junit.Test;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.gauss3.Gauss3;
+import net.imglib2.algorithm.gradient.HessianMatrix;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;

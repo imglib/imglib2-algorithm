@@ -1,11 +1,10 @@
-package net.imglib2.algorithm.corner;
+package net.imglib2.algorithm.gradient;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.gradient.PartialDerivative;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.outofbounds.OutOfBoundsFactory;
 import net.imglib2.type.numeric.RealType;
