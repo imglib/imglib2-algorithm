@@ -54,13 +54,16 @@ public abstract class DiamondTipsNeighborhoodLocalizableSampler< T > extends Abs
 
 	protected final Neighborhood< T > currentNeighborhood;
 
-	public DiamondTipsNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final long radius, final DiamondTipsNeighborhoodFactory< T > factory, final Interval accessInterval )
+	public DiamondTipsNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final long radius, final DiamondTipsNeighborhoodFactory< T > factory, Interval accessInterval )
 	{
 		super( source.numDimensions() );
 		this.source = source;
 		this.radius = radius;
 		this.factory = factory;
 		this.currentPos = new long[ n ];
+
+		if ( accessInterval == null && source instanceof Interval )
+			accessInterval = ( Interval ) source;
 
 		if ( accessInterval == null )
 		{

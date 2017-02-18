@@ -58,7 +58,7 @@ public abstract class HorizontalLineNeighborhoodLocalizableSampler< T > extends 
 
 	private final boolean skipCenter;
 
-	public HorizontalLineNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final long span, final int dim, final boolean skipCenter, final HorizontalLineNeighborhoodFactory< T > factory, final Interval accessInterval )
+	public HorizontalLineNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final long span, final int dim, final boolean skipCenter, final HorizontalLineNeighborhoodFactory< T > factory, Interval accessInterval )
 	{
 		super( source.numDimensions() );
 		this.source = source;
@@ -67,6 +67,9 @@ public abstract class HorizontalLineNeighborhoodLocalizableSampler< T > extends 
 		this.skipCenter = skipCenter;
 		this.currentPos = new long[ n ];
 		this.neighborhoodFactory = factory;
+
+		if ( accessInterval == null && source instanceof Interval )
+			accessInterval = ( Interval ) source;
 
 		if ( accessInterval == null )
 		{
