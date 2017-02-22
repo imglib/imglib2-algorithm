@@ -12,9 +12,11 @@ import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgFactory;
+import net.imglib2.type.numeric.ComplexType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
+import net.imglib2.view.composite.NumericComposite;
 import net.imglib2.view.composite.RealComposite;
 
 /**
@@ -129,7 +131,7 @@ public class TensorEigenValues
 	 *            same as for input. For an n+1 dimensional input, the size of
 	 *
 	 */
-	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValuesSquare(
+	public static < T extends RealType< T >, U extends ComplexType< U > > RandomAccessibleInterval< U > calculateEigenValuesSquare(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues )
 	{
@@ -172,7 +174,7 @@ public class TensorEigenValues
 	 *            computation. Service is managed (created, shutdown) by caller.
 	 *
 	 */
-	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValuesSquare(
+	public static < T extends RealType< T >, U extends ComplexType< U > > RandomAccessibleInterval< U > calculateEigenValuesSquare(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues,
 			final int nTasks,
@@ -212,7 +214,7 @@ public class TensorEigenValues
 	 *            from last dimension of input.
 	 *
 	 */
-	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValues(
+	public static < T extends RealType< T >, U extends ComplexType< U > > RandomAccessibleInterval< U > calculateEigenValues(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues,
 			final EigenValues< T, U > ev )
@@ -242,7 +244,7 @@ public class TensorEigenValues
 	 *            computation. Service is managed (created, shutdown) by caller.
 	 *
 	 */
-	public static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValues(
+	public static < T extends RealType< T >, U extends ComplexType< U > > RandomAccessibleInterval< U > calculateEigenValues(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues,
 			final EigenValues< T, U > ev,
@@ -317,13 +319,13 @@ public class TensorEigenValues
 
 	}
 
-	private static < T extends RealType< T >, U extends RealType< U > > RandomAccessibleInterval< U > calculateEigenValuesImpl(
+	private static < T extends RealType< T >, U extends ComplexType< U > > RandomAccessibleInterval< U > calculateEigenValuesImpl(
 			final RandomAccessibleInterval< T > tensor,
 			final RandomAccessibleInterval< U > eigenvalues,
 			final EigenValues< T, U > ev )
 	{
 		final Cursor< RealComposite< T > > m = Views.iterable( Views.collapseReal( tensor ) ).cursor();
-		final Cursor< RealComposite< U > > e = Views.iterable( Views.collapseReal( eigenvalues ) ).cursor();
+		final Cursor< NumericComposite< U > > e = Views.iterable( Views.collapseNumeric( eigenvalues ) ).cursor();
 		while ( m.hasNext() )
 			ev.compute( m.next(), e.next() );
 		return eigenvalues;
