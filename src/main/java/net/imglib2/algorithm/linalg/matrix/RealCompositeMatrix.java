@@ -92,12 +92,11 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 	}
 
 	@Override
-	public double getEntry( final int row, final int col ) throws OutOfRangeException
+	public double getEntry( final int row, final int col )
 	{
-		if ( row < 0 || row >= this.nRows )
-			throw new OutOfRangeException( row, 0, this.nRows );
-		else if ( col < 0 || col >= this.nCols )
-			throw new OutOfRangeException( col, 0, this.nCols );
+		assert row >= 0 && row < this.nRows;
+		assert col >= 0 && col < this.nCols;
+
 		final double val = data.get( rowAndColumnToLinear( row, col ) ).getRealDouble();
 
 		return val;
