@@ -15,6 +15,11 @@ public interface EigenValues< T extends RealType< T >, U extends ComplexType< U 
 {
 	public void compute( final RealComposite< T > matrix, final Composite< U > evs );
 
+	public default EigenValues< T, U > copy()
+	{
+		return this;
+	}
+
 	public static < T extends RealType< T >, U extends ComplexType< U > > EigenValues1D< T, U > oneDimensional()
 	{
 		return new EigenValues1D<>();

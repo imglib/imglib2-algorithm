@@ -289,7 +289,7 @@ public class TensorEigenValues
 			maxE[ dimensionArgMax ] = maxT[ dimensionArgMax ] = currentMax;
 			final IntervalView< T > currentTensor = Views.interval( tensor, new FinalInterval( minT, maxT ) );
 			final IntervalView< U > currentEigenvalues = Views.interval( eigenvalues, new FinalInterval( minE, maxE ) );
-			tasks.add( () -> calculateEigenValuesImpl( currentTensor, currentEigenvalues, ev ) );
+			tasks.add( () -> calculateEigenValuesImpl( currentTensor, currentEigenvalues, ev.copy() ) );
 		}
 
 

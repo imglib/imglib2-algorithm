@@ -12,18 +12,27 @@ public class EigenValuesSquare< T extends RealType< T >, U extends ComplexType< 
 {
 	private final int nDim;
 
+	private final RealCompositeSquareMatrix< T > m;
+
 	public EigenValuesSquare( final int nDim )
 	{
 		super();
 		this.nDim = nDim;
+		this.m = new RealCompositeSquareMatrix<>( null, nDim );
 	}
 
 	@Override
 	public void compute( final RealComposite< T > tensor, final Composite< U > evs )
 	{
-		final RealCompositeSquareMatrix< T > m = new RealCompositeSquareMatrix<>( tensor, nDim );
+		m.setData( tensor );
 		final EigenDecomposition ed = new EigenDecomposition( m );
 		for ( int z = 0; z < nDim; ++z )
 			evs.get( z ).setComplexNumber( ed.getRealEigenvalue( z ), ed.getImagEigenvalue( z ) );
+	}
+
+	@Override
+	public EigenValuesSquare< T, U > copy()
+	{
+		return new EigenValuesSquare<>( nDim );
 	}
 }

@@ -1,6 +1,5 @@
 package net.imglib2.algorithm.linalg.matrix;
 
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import net.imglib2.type.numeric.RealType;
@@ -29,16 +28,9 @@ public class RealCompositeSquareMatrix< T extends RealType< T > > extends RealCo
 	}
 
 	@Override
-	public RealMatrix createMatrix( final int nRows, final int nCols ) throws NotStrictlyPositiveException
+	public < U extends RealType< U > > RealCompositeSquareMatrix< U > createMatrix( final RealComposite< U > data, final int nRows, final int nCols, final int length )
 	{
-		if ( nRows != nCols ) { throw new UnsupportedOperationException( "Number of colums and number of rows must be the same!" ); }
-		return super.createMatrix( nRows, nCols );
-	}
-
-	@Override
-	public < U extends RealType< U > > RealCompositeMatrix< U > createMatrix( final RealComposite< U > data, final int nRows, final int nCols, final int length )
-	{
-		return new RealCompositeSymmetricMatrix<>( data, nRows, length );
+		return new RealCompositeSquareMatrix<>( data, nRows, length );
 	}
 
 }

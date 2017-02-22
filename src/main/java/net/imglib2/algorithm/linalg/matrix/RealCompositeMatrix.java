@@ -24,7 +24,7 @@ import net.imglib2.view.composite.RealComposite;
 public class RealCompositeMatrix< T extends RealType< T > > extends AbstractRealMatrix
 {
 
-	protected final RealComposite< T > data;
+	protected RealComposite< T > data;
 
 	protected final int nRows;
 
@@ -49,6 +49,11 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 		this.length = length;
 	}
 
+	public void setData( final RealComposite< T > data )
+	{
+		this.data = data;
+	}
+
 	@Override
 	public RealMatrix copy()
 	{
@@ -56,9 +61,7 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 		// http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/linear/RealMatrix.html#copy()
 		final RealCompositeMatrix< T > result = (net.imglib2.algorithm.linalg.matrix.RealCompositeMatrix< T > ) createMatrix( nRows, nCols );
 		for ( int i = 0; i < length; ++i )
-		{
 			result.data.get( i ).set( this.data.get( i ) );
-		}
 		return result;
 	}
 
@@ -69,14 +72,10 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 		final Img< T > img;
 		final int length = expectedLength( nRows, nCols );
 		if ( NativeType.class.isInstance( t ) )
-		{
 			img = ( ( NativeType ) t ).createSuitableNativeImg( new ArrayImgFactory<>(), new long[] { length } );
-		}
 		else
-		{
 			img = new ListImgFactory< T >().create( new long[] { length }, t );
-		}
-		final RealComposite< T > data = new RealComposite< T >( img.randomAccess(), length );
+		final RealComposite< T > data = new RealComposite< >( img.randomAccess(), length );
 
 		return createMatrix( data, nRows, nCols, length );
 	}
@@ -96,12 +95,9 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 	public double getEntry( final int row, final int col ) throws OutOfRangeException
 	{
 		if ( row < 0 || row >= this.nRows )
-		{
 			throw new OutOfRangeException( row, 0, this.nRows );
-		}
-		else if ( col < 0 || col >= this.nCols ) {
+		else if ( col < 0 || col >= this.nCols )
 			throw new OutOfRangeException( col, 0, this.nCols );
-		}
 		final double val = data.get( rowAndColumnToLinear( row, col ) ).getRealDouble();
 
 		return val;
@@ -117,10 +113,9 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 	public void setEntry( final int row, final int col, final double val ) throws OutOfRangeException
 	{
 		if ( row < 0 || row >= this.nRows )
-		{
 			throw new OutOfRangeException( row, 0, this.nRows );
-		}
-		else if ( col < 0 || col >= this.nCols ) { throw new OutOfRangeException( col, 0, this.nCols ); }
+		else if ( col < 0 || col >= this.nCols )
+			throw new OutOfRangeException( col, 0, this.nCols );
 
 		data.get( rowAndColumnToLinear( row, col ) ).setReal( val );
 

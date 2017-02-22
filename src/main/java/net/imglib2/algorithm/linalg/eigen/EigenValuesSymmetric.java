@@ -12,18 +12,27 @@ public class EigenValuesSymmetric< T extends RealType< T >, U extends ComplexTyp
 {
 	private final int nDim;
 
+	private final RealCompositeSymmetricMatrix< T > m;
+
 	public EigenValuesSymmetric( final int nDim )
 	{
 		super();
 		this.nDim = nDim;
+		this.m = new RealCompositeSymmetricMatrix<>( null, nDim );
 	}
 
 	@Override
 	public void compute( final RealComposite< T > tensor, final Composite< U > evs )
 	{
-		final RealCompositeSymmetricMatrix< T > m = new RealCompositeSymmetricMatrix<>( tensor, nDim );
+		m.setData( tensor );
 		final EigenDecomposition ed = new EigenDecomposition( m );
 		for ( int z = 0; z < nDim; ++z )
 			evs.get( z ).setReal( ed.getRealEigenvalue( z ) );
+	}
+
+	@Override
+	public EigenValuesSymmetric< T, U > copy()
+	{
+		return new EigenValuesSymmetric<>( nDim );
 	}
 }

@@ -36,11 +36,12 @@ public class RealCompositeSymmetricMatrix< T extends RealType< T > > extends Rea
 	@Override
 	public int expectedLength( final int nRows, final int nCols )
 	{
+		assert nRows == nCols;
 		return nRows * ( nRows + 1 ) / 2;
 	}
 
 	@Override
-	public < U extends RealType< U > > RealCompositeMatrix< U > createMatrix( final RealComposite< U > data, final int nRows, final int nCols, final int length )
+	public < U extends RealType< U > > RealCompositeSymmetricMatrix< U > createMatrix( final RealComposite< U > data, final int nRows, final int nCols, final int length )
 	{
 		return new RealCompositeSymmetricMatrix<>( data, nRows );
 	}
