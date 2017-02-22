@@ -3,26 +3,26 @@ package net.imglib2.algorithm.linalg.matrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.composite.RealComposite;
+import net.imglib2.view.composite.Composite;
 
 /**
  *
  * @author Philipp Hanslovsky
  *
- *         Symmetric {@link RealMatrix} that reads data from
- *         {@link RealComposite} (non-copy).
+ *         Symmetric {@link RealMatrix} that reads data from {@link Composite}
+ *         (non-copy).
  *
  * @param <T>
  */
 public class RealCompositeSymmetricMatrix< T extends RealType< T > > extends RealCompositeSquareMatrix< T >
 {
 
-	public RealCompositeSymmetricMatrix( final RealComposite< T > data, final int nRowsOrCols )
+	public RealCompositeSymmetricMatrix( final Composite< T > data, final int nRowsOrCols )
 	{
 		this( data, nRowsOrCols, nRowsOrCols * ( nRowsOrCols + 1 ) / 2 );
 	}
 
-	public RealCompositeSymmetricMatrix( final RealComposite< T > data, final int nRowsOrCols, final int length )
+	public RealCompositeSymmetricMatrix( final Composite< T > data, final int nRowsOrCols, final int length )
 	{
 		super( data, nRowsOrCols, length );
 	}
@@ -41,7 +41,7 @@ public class RealCompositeSymmetricMatrix< T extends RealType< T > > extends Rea
 	}
 
 	@Override
-	public < U extends RealType< U > > RealCompositeSymmetricMatrix< U > createMatrix( final RealComposite< U > data, final int nRows, final int nCols, final int length )
+	public < U extends RealType< U > > RealCompositeSymmetricMatrix< U > createMatrix( final Composite< U > data, final int nRows, final int nCols, final int length )
 	{
 		return new RealCompositeSymmetricMatrix<>( data, nRows );
 	}

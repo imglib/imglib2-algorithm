@@ -3,7 +3,6 @@ package net.imglib2.algorithm.linalg.eigen;
 import net.imglib2.type.numeric.ComplexType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.composite.Composite;
-import net.imglib2.view.composite.RealComposite;
 
 /**
  *
@@ -13,7 +12,7 @@ import net.imglib2.view.composite.RealComposite;
  */
 public interface EigenValues< T extends RealType< T >, U extends ComplexType< U > >
 {
-	public void compute( final RealComposite< T > matrix, final Composite< U > evs );
+	public void compute( final Composite< T > matrix, final Composite< U > evs );
 
 	public default EigenValues< T, U > copy()
 	{

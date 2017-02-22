@@ -6,7 +6,6 @@ import net.imglib2.algorithm.linalg.matrix.RealCompositeSymmetricMatrix;
 import net.imglib2.type.numeric.ComplexType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.composite.Composite;
-import net.imglib2.view.composite.RealComposite;
 
 public class EigenValuesSymmetric< T extends RealType< T >, U extends ComplexType< U > > implements EigenValues< T, U >
 {
@@ -22,7 +21,7 @@ public class EigenValuesSymmetric< T extends RealType< T >, U extends ComplexTyp
 	}
 
 	@Override
-	public void compute( final RealComposite< T > tensor, final Composite< U > evs )
+	public void compute( final Composite< T > tensor, final Composite< U > evs )
 	{
 		m.setData( tensor );
 		final EigenDecomposition ed = new EigenDecomposition( m );

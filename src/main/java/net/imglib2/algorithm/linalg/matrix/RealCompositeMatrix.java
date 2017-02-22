@@ -10,21 +10,21 @@ import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.list.ListImgFactory;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.composite.RealComposite;
+import net.imglib2.view.Views;
+import net.imglib2.view.composite.Composite;
 
 /**
  *
  * @author Philipp Hanslovsky
  *
- *         {@link RealMatrix} that reads data from {@link RealComposite}
- *         (non-copy).
+ *         {@link RealMatrix} that reads data from {@link Composite} (non-copy).
  *
  * @param <T>
  */
 public class RealCompositeMatrix< T extends RealType< T > > extends AbstractRealMatrix
 {
 
-	protected RealComposite< T > data;
+	protected Composite< T > data;
 
 	protected final int nRows;
 
@@ -32,12 +32,12 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 
 	protected final int length;
 
-	public RealCompositeMatrix( final RealComposite< T > data, final int nRows, final int nCols )
+	public RealCompositeMatrix( final Composite< T > data, final int nRows, final int nCols )
 	{
 		this( data, nRows, nCols, nRows * nCols );
 	}
 
-	public RealCompositeMatrix( final RealComposite< T > data, final int nRows, final int nCols, final int length )
+	public RealCompositeMatrix( final Composite< T > data, final int nRows, final int nCols, final int length )
 	{
 		super();
 
@@ -49,7 +49,7 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 		this.length = length;
 	}
 
-	public void setData( final RealComposite< T > data )
+	public void setData( final Composite< T > data )
 	{
 		this.data = data;
 	}
@@ -59,7 +59,7 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 	{
 		// Supposed to be a deep copy, cf apache docs:
 		// http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/linear/RealMatrix.html#copy()
-		final RealCompositeMatrix< T > result = (net.imglib2.algorithm.linalg.matrix.RealCompositeMatrix< T > ) createMatrix( nRows, nCols );
+		final RealCompositeMatrix< T > result = ( RealCompositeMatrix< T > ) createMatrix( nRows, nCols );
 		for ( int i = 0; i < length; ++i )
 			result.data.get( i ).set( this.data.get( i ) );
 		return result;
@@ -72,15 +72,14 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 		final Img< T > img;
 		final int length = expectedLength( nRows, nCols );
 		if ( NativeType.class.isInstance( t ) )
-			img = ( ( NativeType ) t ).createSuitableNativeImg( new ArrayImgFactory<>(), new long[] { length } );
+			img = ( ( NativeType ) t ).createSuitableNativeImg( new ArrayImgFactory<>(), new long[] { 1, length } );
 		else
-			img = new ListImgFactory< T >().create( new long[] { length }, t );
-		final RealComposite< T > data = new RealComposite< >( img.randomAccess(), length );
+			img = new ListImgFactory< T >().create( new long[] { 1, length }, t );
 
-		return createMatrix( data, nRows, nCols, length );
+		return createMatrix( Views.collapseReal( img ).randomAccess().get(), nRows, nCols, length );
 	}
 
-	public < U extends RealType< U > > RealCompositeMatrix< U > createMatrix( final RealComposite< U > data, final int nRows, final int nCols, final int length )
+	public < U extends RealType< U > > RealCompositeMatrix< U > createMatrix( final Composite< U > data, final int nRows, final int nCols, final int length )
 	{
 		return new RealCompositeMatrix<>( data, nRows, nCols, length );
 	}
