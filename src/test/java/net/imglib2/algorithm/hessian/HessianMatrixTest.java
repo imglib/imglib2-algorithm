@@ -34,6 +34,9 @@
 
 package net.imglib2.algorithm.hessian;
 
+import java.util.Arrays;
+import java.util.stream.IntStream;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,6 +50,8 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.DoubleArray;
 import net.imglib2.outofbounds.OutOfBoundsBorderFactory;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.util.Pair;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 public class HessianMatrixTest
@@ -249,6 +254,19 @@ public class HessianMatrixTest
 				HessianMatrix.calculateMatrix( Views.extendBorder( gaussian ), ArrayImgs.doubles( size, size, size, 3 ), ArrayImgs.doubles( size, size, size, 6 ), new OutOfBoundsBorderFactory<>() );
 
 		test( img, hessian, refs, size );
+	}
+
+	@Test
+	public void testScaling()
+	{
+		final int nDim = 3;
+		final double[] data = Arrays.stream( new double[ nDim * ( nDim + 1 ) / 2 ] ).map( d -> 1.0d ).toArray();
+		final double[] sigma = IntStream.range( 0, nDim ).mapToDouble( i -> i + 1 ).toArray();
+		final ArrayImg< DoubleType, DoubleArray > hessian = ArrayImgs.doubles( data, 1, 1, 1, data.length );
+		final ArrayImg< DoubleType, DoubleArray > ref = ArrayImgs.doubles( new double[] { 1.0, 2.0, 3.0, 4.0, 6.0, 9.0 }, 1, 1, 1, data.length );
+		final IntervalView< DoubleType > scaled = HessianMatrix.scaleHessianMatrix( hessian, sigma );
+		for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, scaled ), ref ) )
+			Assert.assertEquals( p.getA().get(), p.getB().get(), 0.0d );
 
 	}
 

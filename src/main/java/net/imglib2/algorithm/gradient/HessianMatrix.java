@@ -34,6 +34,7 @@
 
 package net.imglib2.algorithm.gradient;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.IntStream;
@@ -306,5 +307,27 @@ public class HessianMatrix
 		}
 		return hessianMatrix;
 	}
+
+	public static < T extends RealType< T > > IntervalView< T > scaleHessianMatrix( final RandomAccessibleInterval< T > hessian, final double[] sigma )
+	{
+
+		assert sigma.length == hessian.numDimensions() - 1;
+		assert sigma.length * ( sigma.length + 1 ) / 2 == hessian.dimension( sigma.length );
+		final int maxD = sigma.length;
+
+		final double minSigma = Arrays.stream( sigma ).reduce( Double.MAX_VALUE, ( d1, d2 ) -> Math.min( d1, d2 ) );
+		final double minSigmaSq = minSigma * minSigma;
+		final double[] sigmaSquared = new double[ sigma.length * ( sigma.length + 1 ) / 2 ];
+		for ( int i1 = 0, k = 0; i1 < sigma.length; ++i1 )
+			for ( int i2 = i1; i2 < sigma.length; ++i2, ++k )
+				sigmaSquared[ k ] = sigma[ i1 ] * sigma[ i2 ] / minSigmaSq;
+
+		final ScaleAsFunctionOfPosition< T > scaledMatrix = new ScaleAsFunctionOfPosition<>( hessian, l -> {
+			return sigmaSquared[ l.getIntPosition( maxD ) ];
+		} );
+
+		return Views.interval( scaledMatrix, hessian );
+	}
+
 
 }
