@@ -62,16 +62,16 @@ public class DifferenceOfGaussian
 {
 	/**
 	 * Compute the difference of Gaussian for the input. Input convolved with
-	 * Gaussian of sigma1 is subtracted from input convolved with Gaussian of
-	 * sigma2 (where sigma2 > sigma1).
-	 * 
+	 * Gaussian of sigmaSmaller is subtracted from input convolved with Gaussian
+	 * of sigmaLarger (where sigmaLarger > sigmaSmaller).
+	 *
 	 * <p>
 	 * Creates an appropriate temporary image and calls
 	 * {@link #DoG(double[], double[], RandomAccessible, RandomAccessible, RandomAccessibleInterval, int)}.
-	 * 
-	 * @param sigma1
+	 *
+	 * @param sigmaSmaller
 	 *            stddev (in every dimension) of smaller Gaussian.
-	 * @param sigma2
+	 * @param sigmaLarger
 	 *            stddev (in every dimension) of larger Gaussian.
 	 * @param input
 	 *            the input image extended to infinity (or at least covering the
@@ -82,23 +82,28 @@ public class DifferenceOfGaussian
 	 * @param service
 	 *            service providing threads for multi-threading
 	 */
-	public static < T extends NumericType< T > & NativeType< T > > void DoG( final double[] sigma1, final double[] sigma2, final RandomAccessible< T > input, final RandomAccessibleInterval< T > dog, final ExecutorService service )
+	public static < I extends NumericType< I >, T extends NumericType< T > & NativeType< T > > void DoG(
+			final double[] sigmaSmaller,
+			final double[] sigmaLarger,
+			final RandomAccessible< I > input,
+			final RandomAccessibleInterval< T > dog,
+			final ExecutorService service )
 	{
 		final T type = Util.getTypeFromInterval( dog );
 		final Img< T > g1 = Util.getArrayOrCellImgFactory( dog, type ).create( dog, type );
 		final long[] translation = new long[ dog.numDimensions() ];
 		dog.min( translation );
-		DoG( sigma1, sigma2, input, Views.translate( g1, translation ), dog, service );
+		DoG( sigmaSmaller, sigmaLarger, input, Views.translate( g1, translation ), dog, service );
 	}
 
 	/**
 	 * Compute the difference of Gaussian for the input. Input convolved with
-	 * Gaussian of sigma1 is subtracted from input convolved with Gaussian of
-	 * sigma2 (where sigma2 > sigma1).
-	 * 
-	 * @param sigma1
+	 * Gaussian of sigmaSmaller is subtracted from input convolved with Gaussian
+	 * of sigmaLarger (where sigmaLarger > sigmaSmaller).
+	 *
+	 * @param sigmaSmaller
 	 *            stddev (in every dimension) of smaller Gaussian.
-	 * @param sigma2
+	 * @param sigmaLarger
 	 *            stddev (in every dimension) of larger Gaussian.
 	 * @param input
 	 *            the input image extended to infinity (or at least covering the
@@ -112,13 +117,19 @@ public class DifferenceOfGaussian
 	 * @param service
 	 *            how many threads to use for the computation.
 	 */
-	public static < T extends NumericType< T > > void DoG( final double[] sigma1, final double[] sigma2, final RandomAccessible< T > input, final RandomAccessible< T > tmp, final RandomAccessibleInterval< T > dog, final ExecutorService service )
+	public static < I extends NumericType< I >, T extends NumericType< T > & NativeType< T > > void DoG(
+			final double[] sigmaSmaller,
+			final double[] sigmaLarger,
+			final RandomAccessible< I > input,
+			final RandomAccessible< T > tmp,
+			final RandomAccessibleInterval< T > dog,
+			final ExecutorService service )
 	{
 		final IntervalView< T > tmpInterval = Views.interval( tmp, dog );
 		try
 		{
-			Gauss3.gauss( sigma1, input, tmpInterval, service );
-			Gauss3.gauss( sigma2, input, dog, service );
+			Gauss3.gauss( sigmaSmaller, input, tmpInterval, service );
+			Gauss3.gauss( sigmaLarger, input, dog, service );
 		}
 		catch ( final IncompatibleTypeException e )
 		{
@@ -131,7 +142,7 @@ public class DifferenceOfGaussian
 		final int numThreads = Runtime.getRuntime().availableProcessors();
 		final int numTasks = numThreads <= 1 ? 1 : numThreads * 20;
 		final long taskSize = size / numTasks;
-		final ArrayList< Future< Void > > futures = new ArrayList< Future< Void > >();
+		final ArrayList< Future< Void > > futures = new ArrayList<>();
 		for ( int taskNum = 0; taskNum < numTasks; ++taskNum )
 		{
 			final long fromIndex = taskNum * taskSize;
