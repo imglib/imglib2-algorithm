@@ -35,6 +35,7 @@
 package net.imglib2.algorithm.morphology.distance;
 
 import java.util.Arrays;
+import java.util.stream.DoubleStream;
 
 /**
  *
@@ -63,27 +64,12 @@ public class EuclidianDistanceAnisotropic implements Distance
 	{
 		super();
 		this.weights = weights;
-		this.oneOverTwoTimesWeights = createOneOverTwoTimesWeights( weights );
+		this.oneOverTwoTimesWeights = Arrays.stream( weights ).map( w -> 0.5 / w ).toArray();
 	}
 
 	public EuclidianDistanceAnisotropic( final int nDim, final double weight )
 	{
-		this( create( nDim, weight ) );
-	}
-
-	private static double[] createOneOverTwoTimesWeights( final double[] weights )
-	{
-		final double[] result = new double[ weights.length ];
-		for ( int i = 0; i < result.length; ++i )
-			result[ i ] = 0.5 / weights[ i ];
-		return result;
-	}
-
-	private static final double[] create( final int n, final double val )
-	{
-		final double[] arr = new double[ n ];
-		Arrays.fill( arr, val );
-		return arr;
+		this( DoubleStream.generate( () -> weight ).toArray() );
 	}
 
 	@Override

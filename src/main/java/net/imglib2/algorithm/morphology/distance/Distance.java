@@ -38,11 +38,13 @@ package net.imglib2.algorithm.morphology.distance;
  * Family of strictly convex, real valued functions that are separable in all
  * dimension. The interface thus specifies just a one-dimensional function that
  * is parameterized by an offset along both the x- and the y-axis. These
- * parameters are passed at evaluation along with the dimension.
+ * parameters are passed at evaluation along with the dimension in which the
+ * function is to be evaluated.
  *
  * Two distinct members of the same family, d = f(x) and d' = f(x - x0) + y0,
- * must have exactly one intersection point (for each dimension): |{ x : f(x) =
- * f(x -x0) + y0 }| = 1
+ * must have exactly one intersection point (for each dimension):
+ *
+ * |{ x : f(x) = f(x -x0) + y0 }| = 1
  *
  * This interface is used in {@link DistanceTransform}:
  *
@@ -55,7 +57,7 @@ public interface Distance
 {
 
 	/**
-	 * Evaluate function with family parametrs xShift and yShift at position x
+	 * Evaluate function with family parameters xShift and yShift at position x
 	 * in dimension dim.
 	 */
 	double evaluate( double x, double xShift, double yShift, int dim );
