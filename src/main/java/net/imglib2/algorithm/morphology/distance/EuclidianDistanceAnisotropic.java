@@ -69,7 +69,7 @@ public class EuclidianDistanceAnisotropic implements Distance
 
 	public EuclidianDistanceAnisotropic( final int nDim, final double weight )
 	{
-		this( DoubleStream.generate( () -> weight ).toArray() );
+		this( DoubleStream.generate( () -> weight ).limit( nDim ).toArray() );
 	}
 
 	@Override
