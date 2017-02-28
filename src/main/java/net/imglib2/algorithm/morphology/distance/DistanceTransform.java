@@ -556,7 +556,7 @@ public class DistanceTransform
 		final int lastDim = target.numDimensions() - 1;
 		final long size = target.dimension( dim );
 		final long nComposites = Views.flatIterable( Views.collapseReal( Views.permute( target, dim, lastDim ) ) ).size();
-		final long nCompositesPerChunk = nComposites / nTasks;
+		final long nCompositesPerChunk = Math.max( nComposites / nTasks, 1 );
 
 		final ArrayList< Callable< Void > > tasks = new ArrayList<>();
 		for ( long lower = 0; lower < nComposites; lower += nCompositesPerChunk )
@@ -645,7 +645,7 @@ public class DistanceTransform
 		final int lastDim = target.numDimensions() - 1;
 		final long size = target.dimension( dim );
 		final long nComposites = Views.flatIterable( Views.collapseReal( Views.permute( target, dim, lastDim ) ) ).size();
-		final long nCompositesPerChunk = nComposites / nTasks;
+		final long nCompositesPerChunk = Math.max( nComposites / nTasks, 1 );
 		final int fDim = dim;
 
 		final ArrayList< Callable< Void > > tasks = new ArrayList<>();
