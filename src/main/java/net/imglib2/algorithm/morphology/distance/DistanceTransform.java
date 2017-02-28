@@ -42,6 +42,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.DoubleStream;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
@@ -64,7 +65,7 @@ import net.imglib2.view.composite.RealComposite;
  *
  * ImgLib2 implementation of n-dimensional distance transform D of sampled
  * functions f with distance measure d:
- * http://www.theoryofcomputing.org/articles/v008a019/ DOI:
+ * http://www.theoryofcomputing.org/articles/v008a019/ DOI:ch
  * 10.4086/toc.2012.v008a019
  *
  * D( p ) = min_q f(q) + d(p,q) where p,q are points on a grid/image.
@@ -291,19 +292,21 @@ public class DistanceTransform
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
 
+		final double[] w = weights.length == source.numDimensions() ? weights : DoubleStream.generate( () -> weights.length == 0 ? 1.0 : weights[ 0 ] ).limit( source.numDimensions() ).toArray();
+
 		switch ( distanceType )
 		{
 		case EUCLIDIAN:
-			transform( source, tmp, target, new EuclidianDistanceIsotropic( weights.length > 0 ? weights[ 0 ] : 1.0 ), es, nTasks );
+			transform( source, tmp, target, new EuclidianDistanceIsotropic( w[ 0 ] ), es, nTasks );
 			break;
 		case EUCLIDIAN_ANISOTROPIC:
-			transform( source, tmp, target, new EuclidianDistanceAnisotropic( weights.length > 0 ? weights : new double[] { 1.0 } ), es, nTasks );
+			transform( source, tmp, target, new EuclidianDistanceAnisotropic( w ), es, nTasks );
 			break;
 		case L1:
-			transformL1( source, tmp, target, es, nTasks, weights.length > 0 ? new double[] { weights[ 0 ] } : new double[] { 1.0 } );
+			transformL1( source, tmp, target, es, nTasks, w );
 			break;
 		case L1_ANISOTROPIC:
-			transformL1( source, tmp, target, es, nTasks, weights.length > 0 ? weights : new double[] { 1.0 } );
+			transformL1( source, tmp, target, es, nTasks, w );
 		default:
 			break;
 		}
@@ -541,7 +544,7 @@ public class DistanceTransform
 			transformL1Dimension( source, tmp, 0, weights[ 0 ], es, nTasks );
 
 		for ( int dim = 1; dim < nDim; ++dim )
-			transformL1Dimension( tmp, tmp, dim, weights.length > 1 ? weights[ dim ] : weights[ 0 ], es, nTasks );
+			transformL1Dimension( tmp, tmp, dim, weights[ dim ], es, nTasks );
 
 		if ( tmp != target )
 			for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), target ) )
