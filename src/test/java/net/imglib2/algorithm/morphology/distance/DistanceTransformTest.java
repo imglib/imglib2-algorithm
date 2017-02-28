@@ -160,7 +160,7 @@ public class DistanceTransformTest
 				return result;
 			};
 
-			DistanceTransform.transform( source, target, DISTANCE_TYPE.EUCLIDIAN_ANISOTROPIC, 1, w );
+			DistanceTransform.transform( source, target, DISTANCE_TYPE.EUCLIDIAN, 1, w );
 			distanceTransform( source, ref, functorAnisotropic );
 
 			for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, target ), ref ) )
@@ -213,7 +213,7 @@ public class DistanceTransformTest
 				return result;
 			};
 
-			DistanceTransform.transform( source, target, DISTANCE_TYPE.L1_ANISOTROPIC, 1, w );
+			DistanceTransform.transform( source, target, DISTANCE_TYPE.L1, 1, w );
 			distanceTransform( source, ref, functorAnisotropic );
 
 			for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, target ), ref ) )
