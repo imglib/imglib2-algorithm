@@ -88,9 +88,7 @@ public class DistanceTransform
 	public static enum DISTANCE_TYPE
 	{
 		EUCLIDIAN,
-		EUCLIDIAN_ANISOTROPIC,
-		L1,
-		L1_ANISOTROPIC
+		L1
 	}
 
 	/**
@@ -103,7 +101,7 @@ public class DistanceTransform
 	 * @param source
 	 *            Input function on which distance transform should be computed.
 	 * @param distanceType
-	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 *            Defines distance to be used: Euclidian or L1
 	 * @param nThreads
 	 *            Number of threads/parallelism
 	 * @param weights
@@ -133,7 +131,7 @@ public class DistanceTransform
 	 * @param source
 	 *            Input function on which distance transform should be computed.
 	 * @param distanceType
-	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 *            Defines distance to be used: Euclidian or L1
 	 * @param es
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
@@ -166,7 +164,7 @@ public class DistanceTransform
 	 * @param target
 	 *            Intermediate and final results of distance transform.
 	 * @param distanceType
-	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 *            Defines distance to be used: Euclidian or L1
 	 * @param nThreads
 	 *            Number of threads/parallelism
 	 * @param weights
@@ -199,7 +197,7 @@ public class DistanceTransform
 	 * @param target
 	 *            Intermediate and final results of distance transform.
 	 * @param distanceType
-	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 *            Defines distance to be used: Euclidian or L1
 	 * @param es
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
@@ -235,7 +233,7 @@ public class DistanceTransform
 	 * @param target
 	 *            Final result of distance transform.
 	 * @param distanceType
-	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 *            Defines distance to be used: Euclidian or L1
 	 * @param nThreads
 	 *            Number of threads/parallelism
 	 * @param weights
@@ -271,7 +269,7 @@ public class DistanceTransform
 	 * @param target
 	 *            Final result of distance transform.
 	 * @param distanceType
-	 *            Defines distance to be used: (an-)isotropic Euclidian or L1
+	 *            Defines distance to be used: Euclidian or L1
 	 * @param es
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
@@ -292,21 +290,17 @@ public class DistanceTransform
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
 
+		final boolean isIsotropic = weights.length <= 1;
 		final double[] w = weights.length == source.numDimensions() ? weights : DoubleStream.generate( () -> weights.length == 0 ? 1.0 : weights[ 0 ] ).limit( source.numDimensions() ).toArray();
 
 		switch ( distanceType )
 		{
 		case EUCLIDIAN:
-			transform( source, tmp, target, new EuclidianDistanceIsotropic( w[ 0 ] ), es, nTasks );
-			break;
-		case EUCLIDIAN_ANISOTROPIC:
-			transform( source, tmp, target, new EuclidianDistanceAnisotropic( w ), es, nTasks );
+			transform( source, tmp, target, isIsotropic ? new EuclidianDistanceIsotropic( w[ 0 ] ) : new EuclidianDistanceAnisotropic( w ), es, nTasks );
 			break;
 		case L1:
 			transformL1( source, tmp, target, es, nTasks, w );
 			break;
-		case L1_ANISOTROPIC:
-			transformL1( source, tmp, target, es, nTasks, w );
 		default:
 			break;
 		}
