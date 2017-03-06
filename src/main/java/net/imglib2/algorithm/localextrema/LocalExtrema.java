@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,37 +34,44 @@
 package net.imglib2.algorithm.localextrema;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.Sampler;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
-import net.imglib2.util.Intervals;
+import net.imglib2.algorithm.neighborhood.Shape;
+import net.imglib2.util.ConstantUtils;
+import net.imglib2.util.ValuePair;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 /**
  * Provides
  * {@link #findLocalExtrema(RandomAccessibleInterval, LocalNeighborhoodCheck, int)}
  * to find pixels that are extrema in their local neighborhood.
- * 
+ *
  * @author Tobias Pietzsch
+ * @author Philipp Hanslovsky
  */
 public class LocalExtrema
 {
 	/**
 	 * A local extremum check.
-	 * 
+	 *
 	 * @param <P>
 	 *            A representation of the extremum. For example, this could be
 	 *            just a {@link Point} describing the location of the extremum.
@@ -73,13 +80,13 @@ public class LocalExtrema
 	 * @param <T>
 	 *            pixel type.
 	 */
-	public interface LocalNeighborhoodCheck< P, T extends Comparable< T > >
+	public interface LocalNeighborhoodCheck< P, T >
 	{
 		/**
 		 * Determine whether a pixel is a local extremum. If so, return a
 		 * <code>P</code> that represents the maximum. Otherwise return
 		 * <code>null</code>.
-		 * 
+		 *
 		 * @param center
 		 *            an access located on the pixel to test
 		 * @param neighborhood
@@ -92,79 +99,286 @@ public class LocalExtrema
 
 	/**
 	 * Find pixels that are extrema in their local neighborhood. The specific
-	 * test for being an extremum can is specified as an implementation of the
+	 * test for being an extremum can be specified as an implementation of the
 	 * {@link LocalNeighborhoodCheck} interface.
-	 * 
-	 * TODO: Make neighborhood shape configurable. This will require that Shape
-	 * can give a bounding box.
-	 * 
-	 * @param img
+	 *
+	 * The task is parallelized along the longest dimension of <code>img</code>
+	 * after adjusting for size based on <code>shape</code>.
+	 *
+	 * The number of tasks for parallelization is determined as:
+	 * <code>Math.max( Math.min( maxSizeDim, numThreads * 20 ), 1 )</code>
+	 *
+	 * where <code>maxSizeDim</code> is the longest dimension of
+	 * <code>img</code> after adjusting for the bounding box of a
+	 * {@link RectangleShape} with span 1, and numThreads is
+	 * <code>Runtime.getRuntime().availableProcessors()</code>
+	 *
+	 * {@link RectangleShape} is used as local neighborhood.
+	 *
+	 * Note: Pixels within 1 point of the <code>source</code> border will be
+	 * ignored as local extrema candidates because the complete neighborhood
+	 * would not be included in <code>source</code>. To include those pixel,
+	 * expand <code>source</code> accordingly. The returned coordinate list is
+	 * valid for the original <code>source</code>.
+	 *
+	 * @param source
+	 *            Find local extrema within this
+	 *            {@link RandomAccessibleInterval}
 	 * @param localNeighborhoodCheck
+	 *            Check if current pixel qualifies as local maximum.
 	 * @param service
-	 * @return
+	 *            {@link ExecutorService} handles parallel tasks
+	 * @return {@link ArrayList} of extrema
 	 */
-	public static < P, T extends Comparable< T > > ArrayList< P > findLocalExtrema( final RandomAccessibleInterval< T > img, final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck, final ExecutorService service )
+	public static < P, T > ArrayList< P > findLocalExtrema( final RandomAccessibleInterval< T > source, final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck, final ExecutorService service )
 	{
-		final ArrayList< P > allExtrema = new ArrayList< P >();
-
-		final Interval full = Intervals.expand( img, -1 );
-		final int n = img.numDimensions();
-		final int splitd = n - 1;
-		// FIXME is there a better way to determine number of threads
-		final int numThreads = Runtime.getRuntime().availableProcessors();
-		final int numTasks = Math.max( Math.min( ( int ) full.dimension( splitd ), numThreads * 20 ), 1 );
-		final long dsize = full.dimension( splitd ) / numTasks;
-		final long[] min = new long[ n ];
-		final long[] max = new long[ n ];
-		full.min( min );
-		full.max( max );
-
 		final RectangleShape shape = new RectangleShape( 1, true );
+		final long[] borderSize = getRequiredBorderSize( shape, source.numDimensions() );
+		final int nDim = source.numDimensions();
+		// Get biggest dimension after border subtraction. Parallelize along
+		// this dimension.
+		final int maxSizeDim = IntStream.range( 0, nDim ).mapToObj( d -> new ValuePair<>( d, source.dimension( d ) - 2 * borderSize[ d ] ) ).min( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
+		final int numThreads = Runtime.getRuntime().availableProcessors();
+		final int numTasks = Math.max( Math.min( maxSizeDim, numThreads * 20 ), 1 );
 
-		final ArrayList< Future< Void > > futures = new ArrayList< Future< Void > >();
-		final List< P > synchronizedAllExtrema = Collections.synchronizedList( allExtrema );
-		for ( int taskNum = 0; taskNum < numTasks; ++taskNum )
+		return findLocalExtrema( source, localNeighborhoodCheck, shape, service, numTasks );
+	}
+
+	/**
+	 * Find pixels that are extrema in their local neighborhood. The specific
+	 * test for being an extremum can be specified as an implementation of the
+	 * {@link LocalNeighborhoodCheck} interface.
+	 *
+	 * The task is parallelized along the longest dimension of <code>img</code>
+	 * after adjusting for size based on <code>shape</code>.
+	 *
+	 * Note: Pixels within a margin of <code>source</code> border as determined
+	 * by {@link #getRequiredBorderSize(Shape, int)} will be ignored as local
+	 * extrema candidates because the complete neighborhood would not be
+	 * included in <code>source</code>. To include those pixel, expand
+	 * <code>source</code> accordingly. The returned coordinate list is valid
+	 * for the original <code>source</code>.
+	 *
+	 * @param source
+	 *            Find local extrema within this
+	 *            {@link RandomAccessibleInterval}
+	 * @param localNeighborhoodCheck
+	 *            Check if current pixel qualifies as local maximum. It is the
+	 *            callers responsibility to pass a
+	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
+	 *            <code>shape</code> does not skip the center pixel.
+	 * @param shape
+	 *            Defines the local neighborhood.
+	 * @param service
+	 *            {@link ExecutorService} handles parallel tasks
+	 * @param numTasks
+	 *            Number of tasks for parallel execution
+	 * @return {@link ArrayList} of extrema
+	 */
+	public static < P, T > ArrayList< P > findLocalExtrema(
+			final RandomAccessibleInterval< T > source,
+			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
+			final Shape shape,
+			final ExecutorService service,
+			final int numTasks )
+	{
+
+		final int nDim = source.numDimensions();
+		final long[] borderSize = getRequiredBorderSize( shape, source.numDimensions() );
+
+		final long[] shrinkMin = IntStream.range( 0, nDim ).mapToLong( d -> source.min( d ) + borderSize[ d ] ).toArray();
+		final long[] shrinkMax = IntStream.range( 0, nDim ).mapToLong( d -> source.max( d ) - borderSize[ d ] ).toArray();
+
+		final int maxSizeDim = IntStream.range( 0, nDim ).mapToObj( d -> new ValuePair<>( d, source.dimension( d ) - 2 * borderSize[ d ] ) ).min( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
+		final long maxDimSize = source.dimension( maxSizeDim ) - 2 * borderSize[ maxSizeDim ];
+		final long maxDimMax = source.max( maxSizeDim ) - borderSize[ maxSizeDim ];
+		final long taskSize = Math.max( maxDimSize / numTasks, 1 );
+
+		final ArrayList< Callable< ArrayList< P > > > tasks = new ArrayList<>();
+
+		for ( long start = borderSize[ maxSizeDim ]; start <= maxDimMax; start += taskSize )
 		{
-			min[ splitd ] = full.min( splitd ) + taskNum * dsize;
-			max[ splitd ] = ( taskNum == numTasks - 1 ) ? full.max( splitd ) : min[ splitd ] + dsize - 1;
-			final RandomAccessibleInterval< T > source = Views.interval( img, new FinalInterval( min, max ) );
-			final ArrayList< P > extrema = new ArrayList< P >( 128 );
-			final Callable< Void > r = new Callable< Void >()
-			{
-				@Override
-				public Void call()
-				{
-					final Cursor< T > center = Views.flatIterable( source ).cursor();
-					for ( final Neighborhood< T > neighborhood : shape.neighborhoods( source ) )
-					{
-						center.fwd();
-						final P p = localNeighborhoodCheck.check( center, neighborhood );
-						if ( p != null )
-							extrema.add( p );
-					}
-					synchronizedAllExtrema.addAll( extrema );
-					return null;
-				}
-			};
-			futures.add( service.submit( r ) );
+			final long s = Math.max( start, borderSize[ maxSizeDim ] );
+			// need max here instead of dimension for constructor of
+			// FinalInterval
+			final long S = Math.min( start + taskSize - 1, maxDimMax );
+			tasks.add( () -> {
+				final long[] min = shrinkMin.clone();
+				final long[] max = shrinkMax.clone();
+				min[ maxSizeDim ] = s;
+				max[ maxSizeDim ] = S;
+				return findLocalExtrema( source, new FinalInterval( min, max ), localNeighborhoodCheck, shape );
+			} );
 		}
-		for ( final Future< Void > f : futures )
+
+		final ArrayList< P > extrema = new ArrayList<>();
+		// TODO It is probably better to throw exception than to use try/catch
+		// block and return potentially incomplete/inconsistent list of extrema.
+		// Returning an empty list on exception could be a compromise without
+		// changing the interface.
+		try
 		{
-			try
+			final List< Future< ArrayList< P > > > futures = service.invokeAll( tasks );
+			for ( final Future< ArrayList< P > > f : futures )
+				try
 			{
-				f.get();
-			}
-			catch ( final InterruptedException e )
-			{
-				e.printStackTrace();
+					extrema.addAll( f.get() );
 			}
 			catch ( final ExecutionException e )
 			{
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		catch ( final InterruptedException e )
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return extrema;
 
-		return allExtrema;
+	}
+
+	/**
+	 * Find pixels that are extrema in their local neighborhood. The specific
+	 * test for being an extremum can be specified as an implementation of the
+	 * {@link LocalNeighborhoodCheck} interface.
+	 *
+	 * {@link RectangleShape} is used as local neighborhood.
+	 *
+	 * Note: Pixels within 1 point of the <code>source</code> border will be
+	 * ignored as local extrema candidates because the complete neighborhood
+	 * would not be included in <code>source</code>. To include those pixel,
+	 * expand <code>source</code> accordingly. The returned coordinate list is
+	 * valid for the original <code>source</code>.
+	 *
+	 * @param source
+	 *            Find local extrema within this
+	 *            {@link RandomAccessibleInterval}
+	 * @param localNeighborhoodCheck
+	 *            Check if current pixel qualifies as local maximum.
+	 * @return {@link ArrayList} of extrema
+	 */
+	public static < P, T > ArrayList< P > findLocalExtrema(
+			final RandomAccessibleInterval< T > source,
+			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck )
+	{
+		return findLocalExtrema( source, localNeighborhoodCheck, new RectangleShape( 1, true ) );
+	}
+
+	/**
+	 * Find pixels that are extrema in their local neighborhood. The specific
+	 * test for being an extremum can be specified as an implementation of the
+	 * {@link LocalNeighborhoodCheck} interface.
+	 *
+	 * Note: Pixels within a margin of <code>source</code> border as determined
+	 * by {@link #getRequiredBorderSize(Shape, int)} will be ignored as local
+	 * extrema candidates because the complete neighborhood would not be
+	 * included in <code>source</code>. To include those pixel, expand
+	 * <code>source</code> accordingly. The returned coordinate list is valid
+	 * for the original <code>source</code>.
+	 *
+	 * @param source
+	 *            Find local extrema within this
+	 *            {@link RandomAccessibleInterval}
+	 * @param localNeighborhoodCheck
+	 *            Check if current pixel qualifies as local maximum. It is the
+	 *            callers responsibility to pass a
+	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
+	 *            <code>shape</code> does not skip the center pixel.
+	 * @param shape
+	 *            Defines the local neighborhood
+	 * @return {@link ArrayList} of extrema
+	 */
+	public static < P, T > ArrayList< P > findLocalExtrema(
+			final RandomAccessibleInterval< T > source,
+			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
+			final Shape shape )
+	{
+
+		final long[] borderSize = getRequiredBorderSize( shape, source.numDimensions() );
+
+		assert Arrays.stream( borderSize ).min().getAsLong() >= 0: "Border size cannot be smaller than zero.";
+
+		// TODO use Intervals.expand once it is available in non-SNAPSHOT
+		// version
+		final int nDim = source.numDimensions();
+		final long[] min = IntStream.range( 0, nDim ).mapToLong( d -> source.min( d ) + borderSize[ d ] ).toArray();
+		final long[] max = IntStream.range( 0, nDim ).mapToLong( d -> source.max( d ) - borderSize[ d ] ).toArray();
+		return findLocalExtrema( source, new FinalInterval( min, max ), localNeighborhoodCheck, shape );
+	}
+
+	/**
+	 * Find pixels that are extrema in their local neighborhood. The specific
+	 * test for being an extremum can be specified as an implementation of the
+	 * {@link LocalNeighborhoodCheck} interface.
+	 *
+	 * @param source
+	 *            Find local extrema within this {@link RandomAccessible}
+	 * @param interval
+	 *            Specifies the domain within which to look for extrema
+	 * @param localNeighborhoodCheck
+	 *            Check if current pixel qualifies as local maximum. It is the
+	 *            callers responsibility to pass a
+	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
+	 *            <code>shape</code> does not skip the center pixel.
+	 * @param shape
+	 *            Defines the local neighborhood
+	 * @return {@link ArrayList} of extrema
+	 */
+	public static < P, T > ArrayList< P > findLocalExtrema(
+			final RandomAccessible< T > source,
+			final Interval interval,
+			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
+			final Shape shape )
+	{
+
+		final IntervalView< T > sourceInterval = Views.interval( source, interval );
+
+		final ArrayList< P > extrema = new ArrayList<>();
+
+		final Cursor< T > center = Views.flatIterable( sourceInterval ).cursor();
+		for ( final Neighborhood< T > neighborhood : shape.neighborhoods( sourceInterval ) )
+		{
+			center.fwd();
+			final P p = localNeighborhoodCheck.check( center, neighborhood );
+			if ( p != null )
+				extrema.add( p );
+		}
+
+		return extrema;
+
+	}
+
+	/**
+	 *
+	 * Get the required border size based on the bounding box of the
+	 * neighborhood specified by <code>shape</code>. This is useful for
+	 * determining by how much a {@link RandomAccessibleInterval} should be
+	 * expanded to include min and max positions in the local extrema search.
+	 *
+	 * @param shape
+	 *            Defines the local neighborhood
+	 * @param nDim
+	 *            Number of dimensions.
+	 * @return The required border size for the local neighborhood specified by
+	 *         <code>shape</code>
+	 */
+	public static long[] getRequiredBorderSize( final Shape shape, final int nDim )
+	{
+		final RandomAccessible< Neighborhood< Object > > neighborhood = shape.neighborhoodsRandomAccessible( ConstantUtils.constantRandomAccessible( new Object(), nDim ) );
+		final long[] min = LongStream.generate( () -> Long.MAX_VALUE ).limit( nDim ).toArray();
+		final long[] max = LongStream.generate( () -> Long.MIN_VALUE ).limit( nDim ).toArray();
+		final Interval bb = neighborhood.randomAccess().get().getStructuringElementBoundingBox();
+
+		for ( int d = 0; d < nDim; ++d ) {
+			min[ d ] = Math.min( bb.min( d ), min[ d ] );
+			max[ d ] = Math.max( bb.max( d ), max[ d ] );
+		}
+
+		final long[] borderSize = IntStream.range( 0, nDim ).mapToLong( d -> Math.max( max[ d ], -min[ d ] ) ).toArray();
+
+		return borderSize;
 	}
 
 	/**
@@ -173,10 +387,10 @@ public class LocalExtrema
 	 * equal to a specified minimum allowed value, and no pixel in the
 	 * neighborhood has a greater value. That means that maxima are non-strict.
 	 * Intensity plateaus may result in multiple maxima.
-	 * 
+	 *
 	 * @param <T>
 	 *            pixel type.
-	 * 
+	 *
 	 * @author Tobias Pietzsch
 	 */
 	public static class MaximumCheck< T extends Comparable< T > > implements LocalNeighborhoodCheck< Point, T >
@@ -209,10 +423,10 @@ public class LocalExtrema
 	 * equal to a specified maximum allowed value, and no pixel in the
 	 * neighborhood has a smaller value. That means that minima are non-strict.
 	 * Intensity plateaus may result in multiple minima.
-	 * 
+	 *
 	 * @param <T>
 	 *            pixel type.
-	 * 
+	 *
 	 * @author Tobias Pietzsch
 	 */
 	public static class MinimumCheck< T extends Comparable< T > > implements LocalNeighborhoodCheck< Point, T >
