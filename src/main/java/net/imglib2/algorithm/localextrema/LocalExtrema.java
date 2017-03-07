@@ -55,6 +55,7 @@ import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.algorithm.neighborhood.Shape;
 import net.imglib2.util.ConstantUtils;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -102,8 +103,8 @@ public class LocalExtrema
 	 * test for being an extremum can be specified as an implementation of the
 	 * {@link LocalNeighborhoodCheck} interface.
 	 *
-	 * The task is parallelized along the longest dimension of <code>img</code>
-	 * after adjusting for size based on <code>shape</code>.
+	 * The task is parallelized along the longest dimension of
+	 * <code>source</code> after adjusting for size based on <code>shape</code>.
 	 *
 	 * The number of tasks for parallelization is determined as:
 	 * <code>Math.max( Math.min( maxSizeDim, numThreads * 20 ), 1 )</code>
@@ -141,7 +142,7 @@ public class LocalExtrema
 		final int numThreads = Runtime.getRuntime().availableProcessors();
 		final int numTasks = Math.max( Math.min( maxSizeDim, numThreads * 20 ), 1 );
 
-		return findLocalExtrema( source, localNeighborhoodCheck, shape, service, numTasks );
+		return findLocalExtrema( source, shrink( source, borderSize ), localNeighborhoodCheck, shape, service, numTasks );
 	}
 
 	/**
@@ -149,8 +150,8 @@ public class LocalExtrema
 	 * test for being an extremum can be specified as an implementation of the
 	 * {@link LocalNeighborhoodCheck} interface.
 	 *
-	 * The task is parallelized along the longest dimension of <code>img</code>
-	 * after adjusting for size based on <code>shape</code>.
+	 * The task is parallelized along the longest dimension of
+	 * <code>source</code> after adjusting for size based on <code>shape</code>.
 	 *
 	 * Note: Pixels within a margin of <code>source</code> border as determined
 	 * by {@link #getRequiredBorderSize(Shape, int)} will be ignored as local
@@ -182,32 +183,72 @@ public class LocalExtrema
 			final ExecutorService service,
 			final int numTasks )
 	{
+		final long[] borderSize = getRequiredBorderSize( shape, source.numDimensions() );
+		return findLocalExtrema( source, shrink( source, borderSize ), localNeighborhoodCheck, shape, service, numTasks );
+	}
+
+	/**
+	 * Find pixels that are extrema in their local neighborhood. The specific
+	 * test for being an extremum can be specified as an implementation of the
+	 * {@link LocalNeighborhoodCheck} interface.
+	 *
+	 * The task is parallelized along the longest dimension of
+	 * <code>interval</code>
+	 *
+	 * @param source
+	 *            Find local extrema of the function defined by this
+	 *            {@link RandomAccessible}
+	 * @param interval
+	 *            Domain in which to look for local extrema. It is the callers
+	 *            responsibility to ensure that <code>source</code> is defined
+	 *            in all neighborhoods of <code>interval</code>.
+	 * @param localNeighborhoodCheck
+	 *            Check if current pixel qualifies as local maximum. It is the
+	 *            callers responsibility to pass a
+	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
+	 *            <code>shape</code> does not skip the center pixel.
+	 * @param shape
+	 *            Defines the local neighborhood.
+	 * @param service
+	 *            {@link ExecutorService} handles parallel tasks
+	 * @param numTasks
+	 *            Number of tasks for parallel execution
+	 * @return {@link ArrayList} of extrema
+	 */
+	public static < P, T > ArrayList< P > findLocalExtrema(
+			final RandomAccessible< T > source,
+			final Interval interval,
+			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
+			final Shape shape,
+			final ExecutorService service,
+			final int numTasks )
+	{
 
 		final int nDim = source.numDimensions();
-		final long[] borderSize = getRequiredBorderSize( shape, source.numDimensions() );
 
-		final long[] shrinkMin = IntStream.range( 0, nDim ).mapToLong( d -> source.min( d ) + borderSize[ d ] ).toArray();
-		final long[] shrinkMax = IntStream.range( 0, nDim ).mapToLong( d -> source.max( d ) - borderSize[ d ] ).toArray();
+		final long[] min = Intervals.minAsLongArray( interval );
+		final long[] max = Intervals.maxAsLongArray( interval );
 
-		final int maxSizeDim = IntStream.range( 0, nDim ).mapToObj( d -> new ValuePair<>( d, source.dimension( d ) - 2 * borderSize[ d ] ) ).min( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
-		final long maxDimSize = source.dimension( maxSizeDim ) - 2 * borderSize[ maxSizeDim ];
-		final long maxDimMax = source.max( maxSizeDim ) - borderSize[ maxSizeDim ];
+		final int maxSizeDim = IntStream.range( 0, nDim ).mapToObj( d -> new ValuePair<>( d, interval.dimension( d ) ) ).max( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
+		final long maxDimSize = interval.dimension( maxSizeDim );
+		final long maxDimMax = max[ maxSizeDim ];
+		final long maxDimMin = min[ maxSizeDim ];
 		final long taskSize = Math.max( maxDimSize / numTasks, 1 );
 
 		final ArrayList< Callable< ArrayList< P > > > tasks = new ArrayList<>();
 
-		for ( long start = borderSize[ maxSizeDim ]; start <= maxDimMax; start += taskSize )
+		for ( long start = maxDimMin, stop = maxDimMin + taskSize - 1; start <= maxDimMax; start += taskSize, stop += taskSize )
 		{
-			final long s = Math.max( start, borderSize[ maxSizeDim ] );
+			final long s = start;
 			// need max here instead of dimension for constructor of
 			// FinalInterval
-			final long S = Math.min( start + taskSize - 1, maxDimMax );
+			final long S = Math.min( stop, maxDimMax );
 			tasks.add( () -> {
-				final long[] min = shrinkMin.clone();
-				final long[] max = shrinkMax.clone();
-				min[ maxSizeDim ] = s;
-				max[ maxSizeDim ] = S;
-				return findLocalExtrema( source, new FinalInterval( min, max ), localNeighborhoodCheck, shape );
+				final long[] localMin = min.clone();
+				final long[] localMax = max.clone();
+				localMin[ maxSizeDim ] = s;
+				localMax[ maxSizeDim ] = S;
+				return findLocalExtrema( source, new FinalInterval( localMin, localMax ), localNeighborhoodCheck, shape );
 			} );
 		}
 
@@ -302,10 +343,33 @@ public class LocalExtrema
 
 		// TODO use Intervals.expand once it is available in non-SNAPSHOT
 		// version
-		final int nDim = source.numDimensions();
-		final long[] min = IntStream.range( 0, nDim ).mapToLong( d -> source.min( d ) + borderSize[ d ] ).toArray();
-		final long[] max = IntStream.range( 0, nDim ).mapToLong( d -> source.max( d ) - borderSize[ d ] ).toArray();
-		return findLocalExtrema( source, new FinalInterval( min, max ), localNeighborhoodCheck, shape );
+		return findLocalExtrema( source, shrink( source, borderSize ), localNeighborhoodCheck, shape );
+	}
+
+	/**
+	 * Find pixels that are extrema in their local neighborhood. The specific
+	 * test for being an extremum can be specified as an implementation of the
+	 * {@link LocalNeighborhoodCheck} interface.
+	 *
+	 * The local neighborhood is defined as {@link RectangleShape} with span 1.
+	 *
+	 * @param source
+	 *            Find local extrema within this {@link RandomAccessible}
+	 * @param interval
+	 *            Specifies the domain within which to look for extrema
+	 * @param localNeighborhoodCheck
+	 *            Check if current pixel qualifies as local maximum. It is the
+	 *            callers responsibility to pass a
+	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
+	 *            <code>shape</code> does not skip the center pixel.
+	 * @return {@link ArrayList} of extrema
+	 */
+	public static < P, T > ArrayList< P > findLocalExtrema(
+			final RandomAccessible< T > source,
+			final Interval interval,
+			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck )
+	{
+		return findLocalExtrema( source, interval, localNeighborhoodCheck, new RectangleShape( 1, true ) );
 	}
 
 	/**
@@ -379,6 +443,27 @@ public class LocalExtrema
 		final long[] borderSize = IntStream.range( 0, nDim ).mapToLong( d -> Math.max( max[ d ], -min[ d ] ) ).toArray();
 
 		return borderSize;
+	}
+
+	/**
+	 * Shrink a {@link RandomAccessibleInterval} symmetrically, i.e. the margin
+	 * is applied both to min and max.
+	 *
+	 * @param source
+	 * @param margin
+	 * @return
+	 */
+	public static < T > IntervalView< T > shrink( final RandomAccessibleInterval< T > source, final long[] margin )
+	{
+		assert margin.length == source.numDimensions(): "Dimensionality mismatch.";
+		assert Arrays.stream( margin ).min().getAsLong() >= 0: "Margin cannot be negative";
+		assert IntStream.range( 0, margin.length ).mapToLong( d -> source.dimension( d ) - 2 * margin[ d ] ).min().getAsLong() >= 0: "Margin bigger than input";
+
+		final long[] min = IntStream.range( 0, margin.length ).mapToLong( d -> source.min( d ) + margin[ d ] ).toArray();
+		final long[] max = IntStream.range( 0, margin.length ).mapToLong( d -> source.max( d ) - margin[ d ] ).toArray();
+
+		return Views.interval( source, new FinalInterval( min, max ) );
+
 	}
 
 	/**
