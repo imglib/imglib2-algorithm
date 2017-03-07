@@ -138,7 +138,7 @@ public class LocalExtrema
 		final int nDim = source.numDimensions();
 		// Get biggest dimension after border subtraction. Parallelize along
 		// this dimension.
-		final int maxSizeDim = IntStream.range( 0, nDim ).mapToObj( d -> new ValuePair<>( d, source.dimension( d ) - 2 * borderSize[ d ] ) ).min( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
+		final int maxSizeDim = IntStream.range( 0, nDim ).mapToObj( d -> new ValuePair<>( d, source.dimension( d ) - 2 * borderSize[ d ] ) ).max( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
 		final int numThreads = Runtime.getRuntime().availableProcessors();
 		final int numTasks = Math.max( Math.min( maxSizeDim, numThreads * 20 ), 1 );
 
