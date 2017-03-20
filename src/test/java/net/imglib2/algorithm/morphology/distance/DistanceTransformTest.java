@@ -135,8 +135,8 @@ public class DistanceTransformTest
 				return w * result;
 			};
 
-			DistanceTransform.transform( source, target, DISTANCE_TYPE.EUCLIDIAN, 1, w );
 			distanceTransform( source, ref, functorIsotropic );
+			DistanceTransform.transform( source, target, DISTANCE_TYPE.EUCLIDIAN, w );
 
 			for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, target ), ref ) )
 				Assert.assertEquals( p.getA().get(), p.getB().get(), 1e-15 );
@@ -160,7 +160,7 @@ public class DistanceTransformTest
 				return result;
 			};
 
-			DistanceTransform.transform( source, target, DISTANCE_TYPE.EUCLIDIAN, 1, w );
+			DistanceTransform.transform( source, target, DISTANCE_TYPE.EUCLIDIAN, w );
 			distanceTransform( source, ref, functorAnisotropic );
 
 			for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, target ), ref ) )
@@ -189,7 +189,7 @@ public class DistanceTransformTest
 				return w * result;
 			};
 
-			DistanceTransform.transform( source, target, DISTANCE_TYPE.L1, 1, w );
+			DistanceTransform.transform( source, target, DISTANCE_TYPE.L1, w );
 			distanceTransform( source, ref, functorIsotropic );
 
 			for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, target ), ref ) )
@@ -213,7 +213,7 @@ public class DistanceTransformTest
 				return result;
 			};
 
-			DistanceTransform.transform( source, target, DISTANCE_TYPE.L1, 1, w );
+			DistanceTransform.transform( source, target, DISTANCE_TYPE.L1, w );
 			distanceTransform( source, ref, functorAnisotropic );
 
 			for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, target ), ref ) )
