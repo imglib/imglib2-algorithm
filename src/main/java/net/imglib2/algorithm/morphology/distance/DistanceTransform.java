@@ -591,8 +591,9 @@ public class DistanceTransform
 		final int lastDim = target.numDimensions() - 1;
 		final long size = target.dimension( dim );
 		final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
-		final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
-		final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( Views.permute( target, dim, lastDim ) ) ).cursor();
+		// do not permute if we already work on last dimension
+		final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( dim == lastDim ? Views.interval( source, target ) : Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
+		final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( dim == lastDim ? target : Views.permute( target, dim, lastDim ) ) ).cursor();
 		final RealComposite< LongType > lowerBoundDistanceIndex = Views.collapseReal( createAppropriateOneDimensionalImage( size, new LongType() ) ).randomAccess().get();
 		final RealComposite< DoubleType > envelopeIntersectLocation = Views.collapseReal( createAppropriateOneDimensionalImage( size + 1, new DoubleType() ) ).randomAccess().get();
 
@@ -699,8 +700,9 @@ public class DistanceTransform
 		final int lastDim = target.numDimensions() - 1;
 		final long size = target.dimension( dim );
 		final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
-		final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
-		final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( Views.permute( target, dim, lastDim ) ) ).cursor();
+		// do not permute if we already work on last dimension
+		final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( dim == lastDim ? Views.interval( source, target ) : Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
+		final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( dim == lastDim ? target : Views.permute( target, dim, lastDim ) ) ).cursor();
 
 		while ( s.hasNext() )
 		{
