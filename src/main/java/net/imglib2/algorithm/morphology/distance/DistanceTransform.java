@@ -59,7 +59,6 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.util.Intervals;
-import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.RealComposite;
@@ -415,6 +414,7 @@ public class DistanceTransform
 
 		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
 		final int nDim = source.numDimensions();
+		final int lastDim = nDim - 1;
 
 		if ( nDim == 1 )
 			transformAlongDimension(
@@ -426,12 +426,12 @@ public class DistanceTransform
 			transformAlongDimension( source, tmp, d, 0 );
 
 		for ( int dim = 1; dim < nDim; ++dim )
-			transformAlongDimension( tmp, tmp, d, dim );
-
-		if ( tmp != target )
-			for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), tmp ) )
-				p.getB().setReal( p.getA().getRealDouble() );
-
+		{
+			if ( dim == lastDim )
+				transformAlongDimension( tmp, target, d, dim );
+			else
+				transformAlongDimension( tmp, tmp, d, dim );
+		}
 	}
 
 	/**
@@ -465,6 +465,7 @@ public class DistanceTransform
 
 		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
 		final int nDim = source.numDimensions();
+		final int lastDim = nDim - 1;
 
 		if ( nDim == 1 )
 			transformAlongDimensionParallel(
@@ -478,12 +479,12 @@ public class DistanceTransform
 			transformAlongDimensionParallel( source, tmp, d, 0, es, nTasks );
 
 		for ( int dim = 1; dim < nDim; ++dim )
-			transformAlongDimensionParallel( tmp, tmp, d, dim, es, nTasks );
-
-		if ( tmp != target )
-			for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), tmp ) )
-				p.getB().setReal( p.getA().getRealDouble() );
-
+		{
+			if ( dim == lastDim )
+				transformAlongDimensionParallel( tmp, target, d, dim, es, nTasks );
+			else
+				transformAlongDimensionParallel( tmp, tmp, d, dim, es, nTasks );
+		}
 	}
 
 	/**
@@ -511,6 +512,7 @@ public class DistanceTransform
 	{
 		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
 		final int nDim = source.numDimensions();
+		final int lastDim = nDim - 1;
 
 		if ( nDim == 1 )
 			transformL1AlongDimension(
@@ -522,11 +524,12 @@ public class DistanceTransform
 			transformL1AlongDimension( source, tmp, 0, weights[ 0 ] );
 
 		for ( int dim = 1; dim < nDim; ++dim )
-			transformL1AlongDimension( tmp, tmp, dim, weights[ dim ] );
-
-		if ( tmp != target )
-			for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), target ) )
-				p.getB().setReal( p.getA().getRealDouble() );
+		{
+			if ( dim == lastDim )
+				transformL1AlongDimension( tmp, target, dim, weights[ dim ] );
+			else
+				transformL1AlongDimension( tmp, tmp, dim, weights[ dim ] );
+		}
 	}
 
 	/**
@@ -562,6 +565,7 @@ public class DistanceTransform
 	{
 		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
 		final int nDim = source.numDimensions();
+		final int lastDim = nDim - 1;
 
 		if ( nDim == 1 )
 			transformL1AlongDimensionParallel(
@@ -575,11 +579,12 @@ public class DistanceTransform
 			transformL1AlongDimensionParallel( source, tmp, 0, weights[ 0 ], es, nTasks );
 
 		for ( int dim = 1; dim < nDim; ++dim )
-			transformL1AlongDimensionParallel( tmp, tmp, dim, weights[ dim ], es, nTasks );
-
-		if ( tmp != target )
-			for ( final Pair< U, V > p : Views.interval( Views.pair( tmp, target ), target ) )
-				p.getB().setReal( p.getA().getRealDouble() );
+		{
+			if ( dim == lastDim )
+				transformL1AlongDimensionParallel( tmp, target, dim, weights[ dim ], es, nTasks );
+			else
+				transformL1AlongDimensionParallel( tmp, tmp, dim, weights[ dim ], es, nTasks );
+		}
 	}
 
 	private static < T extends RealType< T >, U extends RealType< U > > void transformAlongDimension(
