@@ -616,7 +616,10 @@ public class DistanceTransform
 			final ExecutorService es,
 			final int nTasks ) throws InterruptedException, ExecutionException
 	{
-		final int largestDim = getLargestDimension( Views.hyperSlice( target, dim, target.min( dim ) ) );
+		int largestDim = getLargestDimension( Views.hyperSlice( target, dim, target.min( dim ) ) );
+		// ignore dimension along which we calculate transform
+		if ( largestDim >= dim )
+			largestDim += 1;
 		final long size = target.dimension( dim );
 		final long stepPerChunk = Math.max( size / nTasks, 1 );
 
@@ -719,7 +722,10 @@ public class DistanceTransform
 			final ExecutorService es,
 			final int nTasks ) throws InterruptedException, ExecutionException
 	{
-		final int largestDim = getLargestDimension( Views.hyperSlice( target, dim, target.min( dim ) ) );
+		int largestDim = getLargestDimension( Views.hyperSlice( target, dim, target.min( dim ) ) );
+		// ignore dimension along which we calculate transform
+		if ( largestDim >= dim )
+			largestDim += 1;
 		final long size = target.dimension( dim );
 		final long stepPerChunk = Math.max( size / nTasks, 1 );
 
