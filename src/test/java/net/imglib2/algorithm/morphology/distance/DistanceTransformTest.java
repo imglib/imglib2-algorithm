@@ -36,12 +36,16 @@ package net.imglib2.algorithm.morphology.distance;
 
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import net.imglib2.Cursor;
 import net.imglib2.Localizable;
+import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.morphology.distance.DistanceTransform.DISTANCE_TYPE;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
@@ -61,13 +65,17 @@ import net.imglib2.view.Views;
 public class DistanceTransformTest
 {
 
-	private final int minNumDimensions = 1;
+	private final int minNumDimensions = 2;
 
-	private final int maxNumDimensions = 5;
+	private final int maxNumDimensions = 4;
 
 	private final int dimensionSize = 6;
 
 	private final Random rng = new Random( 100 );
+
+	private final int nThreads = Runtime.getRuntime().availableProcessors();
+
+	private final ExecutorService es = Executors.newFixedThreadPool( nThreads );
 
 	@Test
 	public void test() throws InterruptedException, ExecutionException
@@ -84,9 +92,45 @@ public class DistanceTransformTest
 				s.set( rng.nextDouble() );
 
 			testEuclidian( source, rng );
+			testEuclidian( source, rng, 3 * nThreads );
 
 			testL1( source, rng );
+			testL1( source, rng, 3 * nThreads );
 
+		}
+	}
+
+	private static void compareRAIofRealType( final RandomAccessibleInterval< ? extends RealType< ? > > ref, final RandomAccessibleInterval< ? extends RealType< ? > > comp, final double tolerance )
+	{
+		Assert.assertArrayEquals( Intervals.dimensionsAsLongArray( ref ), Intervals.dimensionsAsLongArray( comp ) );
+		Assert.assertArrayEquals( Intervals.minAsLongArray( ref ), Intervals.minAsLongArray( comp ) );
+		Assert.assertArrayEquals( Intervals.maxAsLongArray( ref ), Intervals.maxAsLongArray( comp ) );
+		for ( final Pair< ? extends RealType< ? >, ? extends RealType< ? > > p : Views.flatIterable( Views.interval( Views.pair( ref, comp ), ref ) ) )
+			Assert.assertEquals( p.getA().getRealDouble(), p.getB().getRealDouble(), tolerance );
+	}
+
+	private < S extends RealType< S >, I extends RealType< I >, TMP extends RealType< TMP >, T extends RealType< T > > void runDistanceTransform(
+			final RandomAccessible< S > source,
+			final RandomAccessibleInterval< I > inPlace,
+			final RandomAccessibleInterval< TMP > tmp,
+			final RandomAccessibleInterval< T > target1,
+			final RandomAccessibleInterval< T > target2,
+			final DISTANCE_TYPE DT,
+			final int nTasks,
+			final double... w ) throws InterruptedException, ExecutionException
+	{
+
+		if ( nTasks > 1 )
+		{
+			DistanceTransform.transform( inPlace, DT, es, nTasks, w );
+			DistanceTransform.transform( source, target1, DT, es, nTasks, w );
+			DistanceTransform.transform( source, tmp, target2, DT, es, nTasks, w );
+		}
+		else
+		{
+			DistanceTransform.transform( inPlace, DT, w );
+			DistanceTransform.transform( source, target1, DT, w );
+			DistanceTransform.transform( source, tmp, target2, DT, w );
 		}
 	}
 
@@ -100,7 +144,7 @@ public class DistanceTransformTest
 			final Img< T > source,
 			final Img< U > target,
 			final DistanceFunctor d
-	)
+			)
 	{
 		for ( final Cursor< U > targetCursor = target.cursor(); targetCursor.hasNext(); )
 		{
@@ -115,15 +159,25 @@ public class DistanceTransformTest
 		}
 	}
 
-	private static < T extends RealType< T > > void testEuclidian(
-			final Img< T > source,
-			final Random rng ) throws InterruptedException, ExecutionException
+	private < T extends RealType< T > > void testEuclidian( final Img< T > source, final Random rng ) throws InterruptedException, ExecutionException
 	{
-		final ArrayImg< DoubleType, DoubleArray > target = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( source ) );
+		testEuclidian( source, rng, 1 );
+	}
+
+	private < T extends RealType< T > > void testEuclidian( final Img< T > source, final Random rng, final int nTasks ) throws InterruptedException, ExecutionException
+	{
+		final ArrayImg< DoubleType, DoubleArray > target1 = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( source ) );
+		final ArrayImg< DoubleType, DoubleArray > target2 = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( source ) );
 		final ArrayImg< DoubleType, DoubleArray > ref = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( source ) );
+		final ArrayImg< DoubleType, DoubleArray > tmp = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( source ) );
+
 		final int nDim = source.numDimensions();
+		final DISTANCE_TYPE DT = DISTANCE_TYPE.EUCLIDIAN;
 
 		{
+			final Img< T > inPlace = source.factory().create( source, source.firstElement() );
+			for ( final Pair< T, T > p : Views.interval( Views.pair( source, inPlace ), source ) )
+				p.getB().set( p.getA() );
 			final double w = rng.nextDouble() * 1e-4;
 			final DistanceFunctor functorIsotropic = ( l1, l2 ) -> {
 				double result = 0.0;
@@ -136,20 +190,24 @@ public class DistanceTransformTest
 			};
 
 			distanceTransform( source, ref, functorIsotropic );
-			DistanceTransform.transform( source, target, DISTANCE_TYPE.EUCLIDIAN, w );
+			runDistanceTransform( source, inPlace, tmp, target1, target2, DT, nTasks, w );
 
-			for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, target ), ref ) )
-				Assert.assertEquals( p.getA().get(), p.getB().get(), 1e-15 );
+			final double tolerance = 1e-15;
+			compareRAIofRealType( ref, inPlace, tolerance );
+			compareRAIofRealType( ref, target1, tolerance );
+			compareRAIofRealType( ref, target2, tolerance );
+
 
 		}
 
 
 		{
+			final Img< T > inPlace = source.factory().create( source, source.firstElement() );
+			for ( final Pair< T, T > p : Views.interval( Views.pair( source, inPlace ), source ) )
+				p.getB().set( p.getA() );
 			final double[] w = new double[ nDim ];
 			for ( int d = 0; d < w.length; ++d )
-			{
 				w[ d ] = rng.nextDouble() * 1e-4;
-			}
 			final DistanceFunctor functorAnisotropic = ( l1, l2 ) -> {
 				double result = 0.0;
 				for ( int d = 0; d < nDim; ++d )
@@ -160,24 +218,40 @@ public class DistanceTransformTest
 				return result;
 			};
 
-			DistanceTransform.transform( source, target, DISTANCE_TYPE.EUCLIDIAN, w );
 			distanceTransform( source, ref, functorAnisotropic );
+			runDistanceTransform( source, inPlace, tmp, target1, target2, DT, nTasks, w );
 
-			for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, target ), ref ) )
-				Assert.assertEquals( p.getA().get(), p.getB().get(), 1e-15 );
+			final double tolerance = 1e-15;
+			compareRAIofRealType( ref, inPlace, tolerance );
+			compareRAIofRealType( ref, target1, tolerance );
+			compareRAIofRealType( ref, target2, tolerance );
 		}
 
 	}
 
-	private static < T extends RealType< T > > void testL1(
-			final Img< T > source,
-			final Random rng ) throws InterruptedException, ExecutionException
+	private < T extends RealType< T > > void testL1( final Img< T > source, final Random rng ) throws InterruptedException, ExecutionException
 	{
-		final ArrayImg< DoubleType, DoubleArray > target = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( source ) );
+		testL1( source, rng, 1 );
+	}
+
+	private < T extends RealType< T > > void testL1(
+			final Img< T > source,
+			final Random rng,
+			final int nTasks ) throws InterruptedException, ExecutionException
+	{
+		final ArrayImg< DoubleType, DoubleArray > target1 = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( source ) );
+		final ArrayImg< DoubleType, DoubleArray > target2 = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( source ) );
 		final ArrayImg< DoubleType, DoubleArray > ref = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( source ) );
+		final ArrayImg< DoubleType, DoubleArray > tmp = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( source ) );
+
 		final int nDim = source.numDimensions();
+		final DISTANCE_TYPE DT = DISTANCE_TYPE.L1;
 
 		{
+			final Img< T > inPlace = source.factory().create( source, source.firstElement() );
+			for ( final Pair< T, T > p : Views.interval( Views.pair( source, inPlace ), source ) )
+				p.getB().set( p.getA() );
+
 			final double w = rng.nextDouble() * 1e-4;
 			final DistanceFunctor functorIsotropic = ( l1, l2 ) -> {
 				double result = 0.0;
@@ -189,20 +263,24 @@ public class DistanceTransformTest
 				return w * result;
 			};
 
-			DistanceTransform.transform( source, target, DISTANCE_TYPE.L1, w );
 			distanceTransform( source, ref, functorIsotropic );
+			runDistanceTransform( source, inPlace, tmp, target1, target2, DT, nTasks, w );
 
-			for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, target ), ref ) )
-				Assert.assertEquals( p.getA().get(), p.getB().get(), 1e-15 );
+			final double tolerance = 1e-15;
+			compareRAIofRealType( ref, inPlace, tolerance );
+			compareRAIofRealType( ref, target1, tolerance );
+			compareRAIofRealType( ref, target2, tolerance );
 
 		}
 
 		{
+			final Img< T > inPlace = source.factory().create( source, source.firstElement() );
+			for ( final Pair< T, T > p : Views.interval( Views.pair( source, inPlace ), source ) )
+				p.getB().set( p.getA() );
+
 			final double[] w = new double[ nDim ];
 			for ( int d = 0; d < w.length; ++d )
-			{
 				w[ d ] = rng.nextDouble() * 1e-4;
-			}
 			final DistanceFunctor functorAnisotropic = ( l1, l2 ) -> {
 				double result = 0.0;
 				for ( int d = 0; d < nDim; ++d )
@@ -213,11 +291,13 @@ public class DistanceTransformTest
 				return result;
 			};
 
-			DistanceTransform.transform( source, target, DISTANCE_TYPE.L1, w );
 			distanceTransform( source, ref, functorAnisotropic );
+			runDistanceTransform( source, inPlace, tmp, target1, target2, DT, nTasks, w );
 
-			for ( final Pair< DoubleType, DoubleType > p : Views.interval( Views.pair( ref, target ), ref ) )
-				Assert.assertEquals( p.getA().get(), p.getB().get(), 1e-15 );
+			final double tolerance = 1e-15;
+			compareRAIofRealType( ref, inPlace, tolerance );
+			compareRAIofRealType( ref, target1, tolerance );
+			compareRAIofRealType( ref, target2, tolerance );
 		}
 
 	}
