@@ -65,7 +65,7 @@ import net.imglib2.view.Views;
 public class DistanceTransformTest
 {
 
-	private final int minNumDimensions = 2;
+	private final int minNumDimensions = 1;
 
 	private final int maxNumDimensions = 4;
 

@@ -419,19 +419,17 @@ public class DistanceTransform
 		if ( nDim == 1 )
 			transformAlongDimension(
 					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( tmp ), new FinalInterval( target.dimension( 0 ), 1 ) ),
+					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
 					d,
 					0 );
 		else
 			transformAlongDimension( source, tmp, d, 0 );
 
 		for ( int dim = 1; dim < nDim; ++dim )
-		{
 			if ( dim == lastDim )
 				transformAlongDimension( tmp, target, d, dim );
 			else
 				transformAlongDimension( tmp, tmp, d, dim );
-		}
 	}
 
 	/**
@@ -470,7 +468,7 @@ public class DistanceTransform
 		if ( nDim == 1 )
 			transformAlongDimensionParallel(
 					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( tmp ), new FinalInterval( target.dimension( 0 ), 1 ) ),
+					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
 					d,
 					0,
 					es,
@@ -479,12 +477,10 @@ public class DistanceTransform
 			transformAlongDimensionParallel( source, tmp, d, 0, es, nTasks );
 
 		for ( int dim = 1; dim < nDim; ++dim )
-		{
 			if ( dim == lastDim )
 				transformAlongDimensionParallel( tmp, target, d, dim, es, nTasks );
 			else
 				transformAlongDimensionParallel( tmp, tmp, d, dim, es, nTasks );
-		}
 	}
 
 	/**
@@ -517,19 +513,17 @@ public class DistanceTransform
 		if ( nDim == 1 )
 			transformL1AlongDimension(
 					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( tmp ), new FinalInterval( target.dimension( 0 ), 1 ) ),
+					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
 					0,
 					weights[ 0 ] );
 		else
 			transformL1AlongDimension( source, tmp, 0, weights[ 0 ] );
 
 		for ( int dim = 1; dim < nDim; ++dim )
-		{
 			if ( dim == lastDim )
 				transformL1AlongDimension( tmp, target, dim, weights[ dim ] );
 			else
 				transformL1AlongDimension( tmp, tmp, dim, weights[ dim ] );
-		}
 	}
 
 	/**
@@ -570,7 +564,7 @@ public class DistanceTransform
 		if ( nDim == 1 )
 			transformL1AlongDimensionParallel(
 					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( tmp ), new FinalInterval( target.dimension( 0 ), 1 ) ),
+					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
 					0,
 					weights[ 0 ],
 					es,
@@ -579,12 +573,10 @@ public class DistanceTransform
 			transformL1AlongDimensionParallel( source, tmp, 0, weights[ 0 ], es, nTasks );
 
 		for ( int dim = 1; dim < nDim; ++dim )
-		{
 			if ( dim == lastDim )
 				transformL1AlongDimensionParallel( tmp, target, dim, weights[ dim ], es, nTasks );
 			else
 				transformL1AlongDimensionParallel( tmp, tmp, dim, weights[ dim ], es, nTasks );
-		}
 	}
 
 	private static < T extends RealType< T >, U extends RealType< U > > void transformAlongDimension(
