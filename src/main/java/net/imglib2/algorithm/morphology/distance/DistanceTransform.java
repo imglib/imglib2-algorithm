@@ -607,9 +607,7 @@ public class DistanceTransform
 			final RealComposite< T > sourceComp = s.next();
 			final RealComposite< U > targetComp = t.next();
 			for ( long i = 0; i < size; ++i )
-			{
 				tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
-			}
 			transformSingleColumn( tmp, targetComp, lowerBoundDistanceIndex, envelopeIntersectLocation, d, dim, size );
 		}
 	}
@@ -714,9 +712,7 @@ public class DistanceTransform
 			final RealComposite< T > sourceComp = s.next();
 			final RealComposite< U > targetComp = t.next();
 			for ( long i = 0; i < size; ++i )
-			{
 				tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
-			}
 			transformL1SingleColumn( tmp, targetComp, weight, size );
 		}
 	}
