@@ -167,7 +167,12 @@ public class LocalExtremaTest
 		final RectangleShape shape = new RectangleShape( 1, true );
 
 		compare( Arrays.asList( pointsNoBorder ), LocalExtrema.findLocalExtrema( cb, check, shape ), POINT_COMPARATOR );
+		compare( Arrays.asList( pointsNoBorder ), LocalExtrema.findLocalExtrema( cb, LocalExtrema.shrink( cb, new long[] { 1, 1 } ), check ), POINT_COMPARATOR );
+		compare( Arrays.asList( pointsNoBorder ), LocalExtrema.findLocalExtrema( cb, check, ES ), POINT_COMPARATOR );
+
 		compare( Arrays.asList( points ), LocalExtrema.findLocalExtrema( Views.extendValue( cb, new IntType( 0 ) ), cb, check, shape ), POINT_COMPARATOR );
+		compare( Arrays.asList( points ), LocalExtrema.findLocalExtrema( Views.extendValue( cb, new IntType( 0 ) ), cb, check ), POINT_COMPARATOR );
+		compare( Arrays.asList( points ), LocalExtrema.findLocalExtrema( Views.interval( Views.extendValue( cb, new IntType( 0 ) ), Intervals.expand( cb, 1 ) ), check, ES ), POINT_COMPARATOR );
 
 		final List< Point > pointsOnBorder = Arrays.stream( points ).filter( p -> p.getLongPosition( 0 ) == 0 || p.getLongPosition( 1 ) == 0 || p.getLongPosition( 0 ) == size - 1 || p.getLongPosition( 1 ) == size - 1 ).collect( Collectors.toList() );
 
