@@ -9,7 +9,6 @@
 		<relativePath />
 	</parent>
 
-	<groupId>net.imglib2</groupId>
 	<artifactId>imglib2-algorithm</artifactId>
 	<version>0.6.4-SNAPSHOT</version>
 
