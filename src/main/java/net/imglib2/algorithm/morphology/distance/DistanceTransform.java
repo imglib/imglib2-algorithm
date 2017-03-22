@@ -652,8 +652,8 @@ public class DistanceTransform
 		long k = 0;
 
 		lowerBoundDistanceIndex.get( 0 ).set( 0 );
-		envelopeIntersectLocation.get( 0 ).set( -1e20 );
-		envelopeIntersectLocation.get( 1 ).set( +1e20 );
+		envelopeIntersectLocation.get( 0 ).set( Double.NEGATIVE_INFINITY );
+		envelopeIntersectLocation.get( 1 ).set( Double.POSITIVE_INFINITY );
 		for ( long position = 1; position < size; ++position )
 		{
 			long envelopeIndexAtK = lowerBoundDistanceIndex.get( k ).get();
@@ -669,7 +669,7 @@ public class DistanceTransform
 			++k;
 			lowerBoundDistanceIndex.get( k ).set( position );
 			envelopeIntersectLocation.get( k ).set( s );
-			envelopeIntersectLocation.get( k + 1 ).set( 1e20 );
+			envelopeIntersectLocation.get( k + 1 ).set( Double.POSITIVE_INFINITY );
 		}
 
 		k = 0;
