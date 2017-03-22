@@ -103,8 +103,7 @@ public class LocalExtrema
 	 * test for being an extremum can be specified as an implementation of the
 	 * {@link LocalNeighborhoodCheck} interface.
 	 *
-	 * The task is parallelized along the longest dimension of
-	 * <code>source</code> after adjusting for size based on <code>shape</code>.
+	 * The task is parallelized along the last dimension of <code>source</code>.
 	 *
 	 * The number of tasks for parallelization is determined as:
 	 * <code>Math.max( Math.min( maxSizeDim, numThreads * 20 ), 1 )</code>
@@ -131,18 +130,27 @@ public class LocalExtrema
 	 *            {@link ExecutorService} handles parallel tasks
 	 * @return {@link ArrayList} of extrema
 	 */
+	@Deprecated
 	public static < P, T > ArrayList< P > findLocalExtrema( final RandomAccessibleInterval< T > source, final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck, final ExecutorService service )
 	{
 		final RectangleShape shape = new RectangleShape( 1, true );
 		final long[] borderSize = getRequiredBorderSize( shape, source.numDimensions() );
 		final int nDim = source.numDimensions();
+		final int splitDim = nDim - 1;
 		// Get biggest dimension after border subtraction. Parallelize along
 		// this dimension.
-		final int maxSizeDim = IntStream.range( 0, nDim ).mapToObj( d -> new ValuePair<>( d, source.dimension( d ) - 2 * borderSize[ d ] ) ).max( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
 		final int numThreads = Runtime.getRuntime().availableProcessors();
-		final int numTasks = Math.max( Math.min( maxSizeDim, numThreads * 20 ), 1 );
+		final int numTasks = Math.max( Math.min( ( int ) shrink( source, borderSize ).dimension( splitDim ), numThreads * 20 ), 1 );
 
-		return findLocalExtrema( source, shrink( source, borderSize ), localNeighborhoodCheck, shape, service, numTasks );
+		try
+		{
+			return ( ArrayList< P > ) findLocalExtrema( source, shrink( source, borderSize ), localNeighborhoodCheck, shape, service, numTasks, splitDim );
+		}
+		catch ( InterruptedException | ExecutionException e )
+		{
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
@@ -174,17 +182,63 @@ public class LocalExtrema
 	 *            {@link ExecutorService} handles parallel tasks
 	 * @param numTasks
 	 *            Number of tasks for parallel execution
-	 * @return {@link ArrayList} of extrema
+	 * @return {@link List} of extrema
+	 * @throws ExecutionException
+	 * @throws InterruptedException
 	 */
-	public static < P, T > ArrayList< P > findLocalExtrema(
+	public static < P, T > List< P > findLocalExtrema(
 			final RandomAccessibleInterval< T > source,
 			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
 			final Shape shape,
 			final ExecutorService service,
-			final int numTasks )
+			final int numTasks ) throws InterruptedException, ExecutionException
+	{
+		final int splitDim = getBiggestDimension( shrink( source, getRequiredBorderSize( shape, source.numDimensions() ) ) );
+		return findLocalExtrema( source, localNeighborhoodCheck, shape, service, numTasks, splitDim );
+	}
+
+	/**
+	 * Find pixels that are extrema in their local neighborhood. The specific
+	 * test for being an extremum can be specified as an implementation of the
+	 * {@link LocalNeighborhoodCheck} interface.
+	 *
+	 * Note: Pixels within a margin of <code>source</code> border as determined
+	 * by {@link #getRequiredBorderSize(Shape, int)} will be ignored as local
+	 * extrema candidates because the complete neighborhood would not be
+	 * included in <code>source</code>. To include those pixel, expand
+	 * <code>source</code> accordingly. The returned coordinate list is valid
+	 * for the original <code>source</code>.
+	 *
+	 * @param source
+	 *            Find local extrema within this
+	 *            {@link RandomAccessibleInterval}
+	 * @param localNeighborhoodCheck
+	 *            Check if current pixel qualifies as local maximum. It is the
+	 *            callers responsibility to pass a
+	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
+	 *            <code>shape</code> does not skip the center pixel.
+	 * @param shape
+	 *            Defines the local neighborhood.
+	 * @param service
+	 *            {@link ExecutorService} handles parallel tasks
+	 * @param numTasks
+	 *            Number of tasks for parallel execution
+	 * @param splitDim
+	 *            Dimension along which input should be split for parallization
+	 * @return {@link List} of extrema
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 */
+	public static < P, T > List< P > findLocalExtrema(
+			final RandomAccessibleInterval< T > source,
+			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
+			final Shape shape,
+			final ExecutorService service,
+			final int numTasks,
+			final int splitDim ) throws InterruptedException, ExecutionException
 	{
 		final long[] borderSize = getRequiredBorderSize( shape, source.numDimensions() );
-		return findLocalExtrema( source, shrink( source, borderSize ), localNeighborhoodCheck, shape, service, numTasks );
+		return findLocalExtrema( source, shrink( source, borderSize ), localNeighborhoodCheck, shape, service, numTasks, splitDim );
 	}
 
 	/**
@@ -213,69 +267,90 @@ public class LocalExtrema
 	 *            {@link ExecutorService} handles parallel tasks
 	 * @param numTasks
 	 *            Number of tasks for parallel execution
-	 * @return {@link ArrayList} of extrema
+	 * @return {@link List} of extrema
+	 * @throws ExecutionException
+	 * @throws InterruptedException
 	 */
-	public static < P, T > ArrayList< P > findLocalExtrema(
+	public static < P, T > List< P > findLocalExtrema(
 			final RandomAccessible< T > source,
 			final Interval interval,
 			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
 			final Shape shape,
 			final ExecutorService service,
-			final int numTasks )
+			final int numTasks ) throws InterruptedException, ExecutionException
 	{
+		final int splitDim = getBiggestDimension( interval );
+		return findLocalExtrema( source, interval, localNeighborhoodCheck, shape, service, numTasks, splitDim );
+	}
 
-		final int nDim = source.numDimensions();
+	/**
+	 * Find pixels that are extrema in their local neighborhood. The specific
+	 * test for being an extremum can be specified as an implementation of the
+	 * {@link LocalNeighborhoodCheck} interface.
+	 *
+	 * @param source
+	 *            Find local extrema of the function defined by this
+	 *            {@link RandomAccessible}
+	 * @param interval
+	 *            Domain in which to look for local extrema. It is the callers
+	 *            responsibility to ensure that <code>source</code> is defined
+	 *            in all neighborhoods of <code>interval</code>.
+	 * @param localNeighborhoodCheck
+	 *            Check if current pixel qualifies as local maximum. It is the
+	 *            callers responsibility to pass a
+	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
+	 *            <code>shape</code> does not skip the center pixel.
+	 * @param shape
+	 *            Defines the local neighborhood.
+	 * @param service
+	 *            {@link ExecutorService} handles parallel tasks
+	 * @param numTasks
+	 *            Number of tasks for parallel execution
+	 * @param splitDim
+	 *            Dimension along which input should be split for parallization
+	 * @return {@link List} of extrema
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 */
+	public static < P, T > List< P > findLocalExtrema(
+			final RandomAccessible< T > source,
+			final Interval interval,
+			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
+			final Shape shape,
+			final ExecutorService service,
+			final int numTasks,
+			final int splitDim ) throws InterruptedException, ExecutionException
+	{
 
 		final long[] min = Intervals.minAsLongArray( interval );
 		final long[] max = Intervals.maxAsLongArray( interval );
 
-		final int maxSizeDim = IntStream.range( 0, nDim ).mapToObj( d -> new ValuePair<>( d, interval.dimension( d ) ) ).max( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
-		final long maxDimSize = interval.dimension( maxSizeDim );
-		final long maxDimMax = max[ maxSizeDim ];
-		final long maxDimMin = min[ maxSizeDim ];
-		final long taskSize = Math.max( maxDimSize / numTasks, 1 );
+		final long splitDimSize = interval.dimension( splitDim );
+		final long splitDimMax = max[ splitDim ];
+		final long splitDimMin = min[ splitDim ];
+		final long taskSize = Math.max( splitDimSize / numTasks, 1 );
 
-		final ArrayList< Callable< ArrayList< P > > > tasks = new ArrayList<>();
+		final ArrayList< Callable< List< P > > > tasks = new ArrayList<>();
 
-		for ( long start = maxDimMin, stop = maxDimMin + taskSize - 1; start <= maxDimMax; start += taskSize, stop += taskSize )
+		for ( long start = splitDimMin, stop = splitDimMin + taskSize - 1; start <= splitDimMax; start += taskSize, stop += taskSize )
 		{
 			final long s = start;
 			// need max here instead of dimension for constructor of
 			// FinalInterval
-			final long S = Math.min( stop, maxDimMax );
+			final long S = Math.min( stop, splitDimMax );
 			tasks.add( () -> {
 				final long[] localMin = min.clone();
 				final long[] localMax = max.clone();
-				localMin[ maxSizeDim ] = s;
-				localMax[ maxSizeDim ] = S;
+				localMin[ splitDim ] = s;
+				localMax[ splitDim ] = S;
 				return findLocalExtrema( source, new FinalInterval( localMin, localMax ), localNeighborhoodCheck, shape );
 			} );
 		}
 
 		final ArrayList< P > extrema = new ArrayList<>();
-		// TODO It is probably better to throw exception than to use try/catch
-		// block and return potentially incomplete/inconsistent list of extrema.
-		// Returning an empty list on exception could be a compromise without
-		// changing the interface.
-		try
-		{
-			final List< Future< ArrayList< P > > > futures = service.invokeAll( tasks );
-			for ( final Future< ArrayList< P > > f : futures )
-				try
-			{
-					extrema.addAll( f.get() );
-			}
-			catch ( final ExecutionException e )
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		catch ( final InterruptedException e )
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		final List< Future< List< P > > > futures = service.invokeAll( tasks );
+		for ( final Future< List< P > > f : futures )
+			extrema.addAll( f.get() );
 		return extrema;
 
 	}
@@ -298,9 +373,9 @@ public class LocalExtrema
 	 *            {@link RandomAccessibleInterval}
 	 * @param localNeighborhoodCheck
 	 *            Check if current pixel qualifies as local maximum.
-	 * @return {@link ArrayList} of extrema
+	 * @return {@link List} of extrema
 	 */
-	public static < P, T > ArrayList< P > findLocalExtrema(
+	public static < P, T > List< P > findLocalExtrema(
 			final RandomAccessibleInterval< T > source,
 			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck )
 	{
@@ -329,9 +404,9 @@ public class LocalExtrema
 	 *            <code>shape</code> does not skip the center pixel.
 	 * @param shape
 	 *            Defines the local neighborhood
-	 * @return {@link ArrayList} of extrema
+	 * @return {@link List} of extrema
 	 */
-	public static < P, T > ArrayList< P > findLocalExtrema(
+	public static < P, T > List< P > findLocalExtrema(
 			final RandomAccessibleInterval< T > source,
 			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
 			final Shape shape )
@@ -362,9 +437,9 @@ public class LocalExtrema
 	 *            callers responsibility to pass a
 	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
 	 *            <code>shape</code> does not skip the center pixel.
-	 * @return {@link ArrayList} of extrema
+	 * @return {@link List} of extrema
 	 */
-	public static < P, T > ArrayList< P > findLocalExtrema(
+	public static < P, T > List< P > findLocalExtrema(
 			final RandomAccessible< T > source,
 			final Interval interval,
 			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck )
@@ -388,9 +463,9 @@ public class LocalExtrema
 	 *            <code>shape</code> does not skip the center pixel.
 	 * @param shape
 	 *            Defines the local neighborhood
-	 * @return {@link ArrayList} of extrema
+	 * @return {@link List} of extrema
 	 */
-	public static < P, T > ArrayList< P > findLocalExtrema(
+	public static < P, T > List< P > findLocalExtrema(
 			final RandomAccessible< T > source,
 			final Interval interval,
 			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
@@ -464,6 +539,18 @@ public class LocalExtrema
 
 		return Views.interval( source, new FinalInterval( min, max ) );
 
+	}
+
+	/**
+	 *
+	 * @param interval
+	 * @return The biggest dimension of interval.
+	 */
+	public static int getBiggestDimension( final Interval interval )
+	{
+		final int nDim = interval.numDimensions();
+		final int splitDim = IntStream.range( 0, nDim ).mapToObj( d -> new ValuePair<>( d, interval.dimension( d ) ) ).max( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
+		return splitDim;
 	}
 
 	/**

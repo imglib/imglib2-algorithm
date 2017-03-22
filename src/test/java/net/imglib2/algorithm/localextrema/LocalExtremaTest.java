@@ -38,14 +38,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessible;
@@ -53,6 +56,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.localextrema.LocalExtrema.MaximumCheck;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.algorithm.neighborhood.Shape;
+import net.imglib2.converter.Converters;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
@@ -129,7 +133,7 @@ public class LocalExtremaTest
 			final List< P > reference,
 			final Comparator< P > comp )
 	{
-		final ArrayList< P > extrema = LocalExtrema.findLocalExtrema( img, check, shape );
+		final List< P > extrema = LocalExtrema.findLocalExtrema( img, check, shape );
 		Assert.assertEquals( reference.size(), extrema.size() );
 		Collections.sort( extrema, comp );
 		Assert.assertEquals( reference, extrema );
@@ -143,7 +147,7 @@ public class LocalExtremaTest
 			final List< P > reference,
 			final Comparator< P > comp )
 	{
-		final ArrayList< P > extrema = LocalExtrema.findLocalExtrema( img, interval, check, shape );
+		final List< P > extrema = LocalExtrema.findLocalExtrema( img, interval, check, shape );
 		Assert.assertEquals( reference.size(), extrema.size() );
 		Collections.sort( extrema, comp );
 		Assert.assertEquals( reference, extrema );
@@ -166,13 +170,15 @@ public class LocalExtremaTest
 		final MaximumCheck< IntType > check = new LocalExtrema.MaximumCheck<>( new IntType( 0 ) );
 		final RectangleShape shape = new RectangleShape( 1, true );
 
+		final RandomAccessibleInterval< IntType > inverted = Converters.convert( cb, ( s, t ) -> {
+			t.set( -s.get() );
+		}, new IntType() );
 		compare( Arrays.asList( pointsNoBorder ), LocalExtrema.findLocalExtrema( cb, check, shape ), POINT_COMPARATOR );
+		compare( Arrays.asList( pointsNoBorder ), LocalExtrema.findLocalExtrema( inverted, new LocalExtrema.MinimumCheck<>( new IntType( 0 ) ), shape ), POINT_COMPARATOR );
 		compare( Arrays.asList( pointsNoBorder ), LocalExtrema.findLocalExtrema( cb, LocalExtrema.shrink( cb, new long[] { 1, 1 } ), check ), POINT_COMPARATOR );
-		compare( Arrays.asList( pointsNoBorder ), LocalExtrema.findLocalExtrema( cb, check, ES ), POINT_COMPARATOR );
 
 		compare( Arrays.asList( points ), LocalExtrema.findLocalExtrema( Views.extendValue( cb, new IntType( 0 ) ), cb, check, shape ), POINT_COMPARATOR );
 		compare( Arrays.asList( points ), LocalExtrema.findLocalExtrema( Views.extendValue( cb, new IntType( 0 ) ), cb, check ), POINT_COMPARATOR );
-		compare( Arrays.asList( points ), LocalExtrema.findLocalExtrema( Views.interval( Views.extendValue( cb, new IntType( 0 ) ), Intervals.expand( cb, 1 ) ), check, ES ), POINT_COMPARATOR );
 
 		final List< Point > pointsOnBorder = Arrays.stream( points ).filter( p -> p.getLongPosition( 0 ) == 0 || p.getLongPosition( 1 ) == 0 || p.getLongPosition( 0 ) == size - 1 || p.getLongPosition( 1 ) == size - 1 ).collect( Collectors.toList() );
 
@@ -184,6 +190,8 @@ public class LocalExtremaTest
 		compare( Arrays.asList( pointsNoBorder ), LocalExtrema.findLocalExtrema( cb, check ), POINT_COMPARATOR );
 		compare( Arrays.asList( pointsNoBorder ), LocalExtrema.findLocalExtrema( cb, check, new RectangleShape( 1, true ) ), POINT_COMPARATOR );
 
+		compare( new ArrayList<>(), LocalExtrema.findLocalExtrema( inverted, new LocalExtrema.MinimumCheck<>( new IntType( Integer.MIN_VALUE ) ), shape ), POINT_COMPARATOR );
+		compare( new ArrayList<>(), LocalExtrema.findLocalExtrema( cb, new LocalExtrema.MaximumCheck<>( new IntType( Integer.MAX_VALUE ) ), shape ), POINT_COMPARATOR );
 	}
 
 	public static < P > void compare( final List< P > reference, final List< P > comparison, final Comparator< P > comp )
@@ -195,7 +203,7 @@ public class LocalExtremaTest
 	}
 
 	@Test
-	public void testMultiThreaded()
+	public void testMultiThreaded() throws InterruptedException, ExecutionException
 	{
 		final int size = 10;
 
@@ -205,24 +213,29 @@ public class LocalExtremaTest
 
 		final long nExtrema = Arrays.stream( Intervals.dimensionsAsLongArray( cb ) ).map( v -> ( v - 2 ) ).reduce( 1, ( i, j ) -> i * j ) / 2;
 
-		final ArrayList< Point > extremas1 = LocalExtrema.findLocalExtrema( cb, check, shape );
-		final ArrayList< Point > extremas2 = LocalExtrema.findLocalExtrema( cb, check, shape, ES, N_TASKS );
-		final ArrayList< Point > extremas3 = LocalExtrema.findLocalExtrema( cb, check, shape, ES, 1 );
-		final ArrayList< Point > extremas4 = LocalExtrema.findLocalExtrema( cb, check, shape );
+		final List< Point > extrema1 = LocalExtrema.findLocalExtrema( cb, LocalExtrema.shrink( cb, LocalExtrema.getRequiredBorderSize( shape, cb.numDimensions() ) ), check, shape, ES, N_TASKS );
+		final List< Point > extrema2 = LocalExtrema.findLocalExtrema( cb, check, shape, ES, N_TASKS );
+		final List< Point > extrema3 = LocalExtrema.findLocalExtrema( cb, check, shape, ES, 1 );
+		@SuppressWarnings( "deprecation" )
+		final List< Point > extrema4 = LocalExtrema.findLocalExtrema( cb, check, ES );
+		final List< Point > reference = LocalExtrema.findLocalExtrema( cb, check, shape );
 
-		Assert.assertEquals( nExtrema, extremas1.size() );
-		Assert.assertEquals( extremas1.size(), extremas2.size() );
-		Assert.assertEquals( extremas1.size(), extremas3.size() );
-		Assert.assertEquals( extremas1.size(), extremas4.size() );
+		Assert.assertEquals( nExtrema, reference.size() );
+		Assert.assertEquals( reference.size(), extrema1.size() );
+		Assert.assertEquals( reference.size(), extrema2.size() );
+		Assert.assertEquals( reference.size(), extrema3.size() );
+		Assert.assertEquals( reference.size(), extrema4.size() );
 
-		Collections.sort( extremas1, POINT_COMPARATOR );
-		Collections.sort( extremas2, POINT_COMPARATOR );
-		Collections.sort( extremas3, POINT_COMPARATOR );
-		Collections.sort( extremas4, POINT_COMPARATOR );
+		Collections.sort( extrema1, POINT_COMPARATOR );
+		Collections.sort( extrema2, POINT_COMPARATOR );
+		Collections.sort( extrema3, POINT_COMPARATOR );
+		Collections.sort( extrema4, POINT_COMPARATOR );
+		Collections.sort( reference, POINT_COMPARATOR );
 
-		Assert.assertEquals( extremas1, extremas2 );
-		Assert.assertEquals( extremas1, extremas3 );
-		Assert.assertEquals( extremas1, extremas4 );
+		Assert.assertEquals( reference, extrema1 );
+		Assert.assertEquals( reference, extrema2 );
+		Assert.assertEquals( reference, extrema3 );
+		Assert.assertEquals( reference, extrema4 );
 
 	}
 
@@ -246,6 +259,14 @@ public class LocalExtremaTest
 		for ( final T i : Views.interval( cb, Intervals.expand( cb, -1 ) ) )
 			i.setZero();
 		return cb;
+	}
+
+	@Test
+	public void testGetBiggestDimension()
+	{
+		final int nDimensions = 5;
+		for ( final int d : IntStream.range( 0, nDimensions ).toArray() )
+			Assert.assertEquals( d, LocalExtrema.getBiggestDimension( new FinalInterval( IntStream.range( 0, nDimensions ).mapToLong( i -> i == d ? 2 : 1 ).toArray() ) ) );
 	}
 
 }
