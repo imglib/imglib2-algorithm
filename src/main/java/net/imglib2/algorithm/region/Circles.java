@@ -14,9 +14,9 @@ import net.imglib2.type.operators.Add;
  * @see <a href=
  *      "https://en.wikipedia.org/wiki/Midpoint_circle_algorithm">Midpoint
  *      circle algorithm on Wikipedia.</a>
- * @see Circle2DCursor {@link Circle2DCursor}
+ * @see CircleCursor {@link CircleCursor}
  */
-public class Circle2Ds
+public class Circles
 {
 
 	/**
@@ -63,7 +63,7 @@ public class Circle2Ds
 	 */
 	public static < T extends RealType< T > > void inc( final RandomAccessible< T > rai, final Localizable center, final long radius, final int dimX, final int dimY )
 	{
-		final Cursor< T > cursor = new Circle2DCursor< T >( rai, center, radius, dimX, dimY );
+		final Cursor< T > cursor = new CircleCursor< T >( rai, center, radius, dimX, dimY );
 		while ( cursor.hasNext() )
 		{
 			cursor.fwd();
@@ -119,7 +119,7 @@ public class Circle2Ds
 	 */
 	public static < T extends Type< T > > void set( final RandomAccessible< T > rai, final Localizable center, final long radius, final int dimX, final int dimY, final T value )
 	{
-		final Cursor< T > cursor = new Circle2DCursor< T >( rai, center, radius, dimX, dimY );
+		final Cursor< T > cursor = new CircleCursor< T >( rai, center, radius, dimX, dimY );
 		while ( cursor.hasNext() )
 		{
 			cursor.fwd();
@@ -177,7 +177,7 @@ public class Circle2Ds
 	 */
 	public static < T extends Add< T > > void add( final RandomAccessible< T > rai, final Localizable center, final long radius, final int dimX, final int dimY, final T value )
 	{
-		final Cursor< T > cursor = new Circle2DCursor< T >( rai, center, radius, dimX, dimY );
+		final Cursor< T > cursor = new CircleCursor< T >( rai, center, radius, dimX, dimY );
 		while ( cursor.hasNext() )
 		{
 			cursor.fwd();
@@ -185,6 +185,6 @@ public class Circle2Ds
 		}
 	}
 	
-	private Circle2Ds()
+	private Circles()
 	{}
 }

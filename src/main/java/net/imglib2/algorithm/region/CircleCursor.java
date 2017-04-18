@@ -31,7 +31,7 @@ import net.imglib2.Sampler;
  *      circle algorithm on Wikipedia.</a>
  *
  */
-public class Circle2DCursor< T > implements Cursor< T >
+public class CircleCursor< T > implements Cursor< T >
 {
 	private final RandomAccessible< T > rai;
 
@@ -80,7 +80,7 @@ public class Circle2DCursor< T > implements Cursor< T >
 	 *            the circle radius. The circle is written in a plane in
 	 *            dimensions 0 and 1.
 	 */
-	public Circle2DCursor( final RandomAccessible< T > rai, final Localizable center, final long radius )
+	public CircleCursor( final RandomAccessible< T > rai, final Localizable center, final long radius )
 	{
 		this( rai, center, radius, 0, 1 );
 	}
@@ -95,17 +95,16 @@ public class Circle2DCursor< T > implements Cursor< T >
 	 *            ensure it can be accessed everywhere the circle will be
 	 *            iterated.
 	 * @param center
-	 *            the circle center. Must be at least of dimension 2. Dimensions
-	 *            0 and 1 are used to specify the circle center.
+	 *            the circle center. Must at least contain dimensions specified
+	 *            <code>dimX</code> and <code>dimY</code>.
 	 * @param radius
-	 *            the circle radius. The circle is written in a plane in
-	 *            dimensions 0 and 1.
+	 *            the circle radius.
 	 * @param dimX
 	 *            the first dimension of the plane in which to draw the circle.
 	 * @param dimY
 	 *            the second dimension of the plane in which to draw the circle.
 	 */
-	public Circle2DCursor( final RandomAccessible< T > rai, final Localizable center, final long radius, final int dimX, final int dimY )
+	public CircleCursor( final RandomAccessible< T > rai, final Localizable center, final long radius, final int dimX, final int dimY )
 	{
 		this.rai = rai;
 		this.center = center;
@@ -331,6 +330,6 @@ public class Circle2DCursor< T > implements Cursor< T >
 	@Override
 	public Cursor< T > copyCursor()
 	{
-		return new Circle2DCursor<>( rai, center, radius, dimX, dimY );
+		return new CircleCursor<>( rai, center, radius, dimX, dimY );
 	}
 }

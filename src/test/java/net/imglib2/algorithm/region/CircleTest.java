@@ -11,7 +11,7 @@ import net.imglib2.img.basictypeaccess.array.ShortArray;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.Util;
 
-public class Circle2DTest
+public class CircleTest
 {
 
 	@Test
@@ -22,9 +22,9 @@ public class Circle2DTest
 		final Point center = new Point( 255l, 255l );
 		for ( long r = 1l; r < 256l; r++ )
 		{
-			Circle2Ds.inc( img, center, r );
+			Circles.inc( img, center, r );
 			
-			final Circle2DCursor< UnsignedShortType > cursor = new Circle2DCursor<>( img, center, r );
+			final CircleCursor< UnsignedShortType > cursor = new CircleCursor<>( img, center, r );
 			while ( cursor.hasNext() )
 			{
 				cursor.fwd();
@@ -43,7 +43,7 @@ public class Circle2DTest
 
 		for ( long r = 1l; r < 256l; r++ )
 		{
-			final Circle2DCursor< UnsignedShortType > cursor = new Circle2DCursor<>( img, center, r );
+			final CircleCursor< UnsignedShortType > cursor = new CircleCursor<>( img, center, r );
 			while ( cursor.hasNext() )
 			{
 				cursor.fwd();
