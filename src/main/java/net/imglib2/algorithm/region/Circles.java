@@ -22,6 +22,7 @@ public class Circles
 	/**
 	 * Writes a circle in the target {@link RandomAccessible}. The circle is
 	 * written by <b>incrementing</b> the pixel values by 1 along the circle.
+	 * The circle is written in a plane in dimensions 0 and 1.
 	 * 
 	 * @param rai
 	 *            the random accessible. It is the caller responsibility to
@@ -31,8 +32,7 @@ public class Circles
 	 *            the circle center. Must be at least of dimension 2. Dimensions
 	 *            0 and 1 are used to specify the circle center.
 	 * @param radius
-	 *            the circle radius. The circle is written in a plane in
-	 *            dimensions 0 and 1.
+	 *            the circle radius.
 	 * @param <T>
 	 *            the type of the target image.
 	 */
@@ -50,8 +50,9 @@ public class Circles
 	 *            ensure it can be accessed everywhere the circle will be
 	 *            iterated.
 	 * @param center
-	 *            the circle center. Must be at least of dimension 2. Dimensions
-	 *            0 and 1 are used to specify the circle center.
+	 *            the circle center. Must contain at least of dimensions
+	 *            <code>dimX</code> and <code>dimY</code>, used to specify the
+	 *            circle center.
 	 * @param radius
 	 *            the circle radius.
 	 * @param dimX
@@ -61,7 +62,8 @@ public class Circles
 	 * @param <T>
 	 *            the type of the target image.
 	 */
-	public static < T extends RealType< T > > void inc( final RandomAccessible< T > rai, final Localizable center, final long radius, final int dimX, final int dimY )
+	public static < T extends RealType< T > > void inc( final RandomAccessible< T > rai, final Localizable center,
+			final long radius, final int dimX, final int dimY )
 	{
 		final Cursor< T > cursor = new CircleCursor< T >( rai, center, radius, dimX, dimY );
 		while ( cursor.hasNext() )
@@ -73,7 +75,8 @@ public class Circles
 
 	/**
 	 * Writes a circle in the target {@link RandomAccessible}. The circle is
-	 * written by <b>setting</b> the pixel values with the specified value.
+	 * written by <b>setting</b> the pixel values with the specified value. The
+	 * circle is written in a plane in dimensions 0 and 1.
 	 * 
 	 * @param rai
 	 *            the target random accessible. It is the caller responsibility
@@ -83,8 +86,7 @@ public class Circles
 	 *            the circle center. Must be at least of dimension 2. Dimensions
 	 *            0 and 1 are used to specify the circle center.
 	 * @param radius
-	 *            the circle radius. The circle is written in a plane in
-	 *            dimensions 0 and 1.
+	 *            the circle radius.
 	 * @param value
 	 *            the value to write along the circle.
 	 * @param <T>
@@ -104,8 +106,9 @@ public class Circles
 	 *            to ensure it can be accessed everywhere the circle will be
 	 *            iterated.
 	 * @param center
-	 *            the circle center. Must be at least of dimension 2. Dimensions
-	 *            0 and 1 are used to specify the circle center.
+	 *            the circle center. Must contain at least of dimensions
+	 *            <code>dimX</code> and <code>dimY</code>, used to specify the
+	 *            circle center.
 	 * @param radius
 	 *            the circle radius.
 	 * @param dimX
@@ -130,7 +133,7 @@ public class Circles
 	/**
 	 * Writes a circle in the target {@link RandomAccessible}. The circle is
 	 * written by <b>adding</b> the specified value to the pixel values already
-	 * in the image.
+	 * in the image. The circle is written in a plane in dimensions 0 and 1.
 	 * 
 	 * @param rai
 	 *            the random accessible. It is the caller responsibility to
@@ -140,8 +143,7 @@ public class Circles
 	 *            the circle center. Must be at least of dimension 2. Dimensions
 	 *            0 and 1 are used to specify the circle center.
 	 * @param radius
-	 *            the circle radius. The circle is written in a plane in
-	 *            dimensions 0 and 1.
+	 *            the circle radius.
 	 * @param value
 	 *            the value to add along the circle.
 	 * @param <T>
@@ -162,8 +164,9 @@ public class Circles
 	 *            ensure it can be accessed everywhere the circle will be
 	 *            iterated.
 	 * @param center
-	 *            the circle center. Must be at least of dimension 2. Dimensions
-	 *            0 and 1 are used to specify the circle center.
+	 *            the circle center. Must contain at least of dimensions
+	 *            <code>dimX</code> and <code>dimY</code>, used to specify the
+	 *            circle center.
 	 * @param radius
 	 *            the circle radius.
 	 * @param dimX
