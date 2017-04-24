@@ -89,7 +89,7 @@ public class HessianMatrix
 			final RandomAccessibleInterval< U > gradient,
 			final RandomAccessibleInterval< U > hessianMatrix,
 			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
-					final double... sigma ) throws IncompatibleTypeException
+			final double... sigma ) throws IncompatibleTypeException
 	{
 
 		if ( sigma.length == 1 )
@@ -207,9 +207,9 @@ public class HessianMatrix
 			final RandomAccessibleInterval< U > gradient,
 			final RandomAccessibleInterval< U > hessianMatrix,
 			final OutOfBoundsFactory< U, ? super RandomAccessibleInterval< U > > outOfBounds,
-					final int nTasks,
-					final ExecutorService es,
-					final double... sigma ) throws IncompatibleTypeException, InterruptedException, ExecutionException
+			final int nTasks,
+			final ExecutorService es,
+			final double... sigma ) throws IncompatibleTypeException, InterruptedException, ExecutionException
 	{
 
 		if ( sigma.length == 1 )
@@ -252,8 +252,8 @@ public class HessianMatrix
 			final RandomAccessibleInterval< T > gradient,
 			final RandomAccessibleInterval< T > hessianMatrix,
 			final OutOfBoundsFactory< T, ? super RandomAccessibleInterval< T > > outOfBounds,
-					final int nTasks,
-					final ExecutorService es ) throws IncompatibleTypeException, InterruptedException, ExecutionException
+			final int nTasks,
+			final ExecutorService es ) throws IncompatibleTypeException, InterruptedException, ExecutionException
 	{
 
 		final int nDim = gradient.numDimensions() - 1;
