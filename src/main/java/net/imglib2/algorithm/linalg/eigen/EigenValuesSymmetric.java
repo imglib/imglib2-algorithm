@@ -34,7 +34,9 @@
 
 package net.imglib2.algorithm.linalg.eigen;
 
-import org.apache.commons.math3.linear.EigenDecomposition;
+import java.util.Optional;
+
+import org.ojalgo.matrix.decomposition.Eigenvalue;
 
 import net.imglib2.algorithm.linalg.matrix.RealCompositeSymmetricMatrix;
 import net.imglib2.type.numeric.ComplexType;
@@ -45,22 +47,31 @@ public class EigenValuesSymmetric< T extends RealType< T >, U extends ComplexTyp
 {
 	private final int nDim;
 
+	private final double[] evs;
+
 	private final RealCompositeSymmetricMatrix< T > m;
+
+	private final Eigenvalue< Double > ed;
+
+	private final Optional< double[] > emptyOptional = Optional.empty();
 
 	public EigenValuesSymmetric( final int nDim )
 	{
 		super();
 		this.nDim = nDim;
+		this.evs = new double[ nDim ];
 		this.m = new RealCompositeSymmetricMatrix<>( null, nDim );
+		this.ed = Eigenvalue.PRIMITIVE.make( this.m, true );
 	}
 
 	@Override
 	public void compute( final Composite< T > tensor, final Composite< U > evs )
 	{
 		m.setData( tensor );
-		final EigenDecomposition ed = new EigenDecomposition( m );
-		for ( int z = 0; z < nDim; ++z )
-			evs.get( z ).setReal( ed.getRealEigenvalue( z ) );
+		ed.computeValuesOnly( m );
+		ed.getEigenvalues( this.evs, emptyOptional );
+		for ( int d = 0; d < this.evs.length; ++d )
+			evs.get( d ).setReal( this.evs[ d ] );
 	}
 
 	@Override

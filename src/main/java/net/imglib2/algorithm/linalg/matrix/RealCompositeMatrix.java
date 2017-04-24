@@ -34,17 +34,10 @@
 
 package net.imglib2.algorithm.linalg.matrix;
 
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
-import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.linear.AbstractRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.ojalgo.access.Access2D;
+import org.ojalgo.matrix.store.PhysicalStore;
 
-import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.list.ListImgFactory;
-import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 
 /**
@@ -55,7 +48,7 @@ import net.imglib2.view.composite.Composite;
  *
  * @param <T>
  */
-public class RealCompositeMatrix< T extends RealType< T > > extends AbstractRealMatrix
+public class RealCompositeMatrix< T extends RealType< T > > implements Access2D< Double >, Access2D.Collectable< Double, PhysicalStore< Double > >
 {
 
 	protected Composite< T > data;
@@ -88,44 +81,41 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 		this.data = data;
 	}
 
-	@Override
-	public RealMatrix copy()
+	public long rowAndColumnToLinear( final long row, final long col )
 	{
-		// Supposed to be a deep copy, cf apache docs:
-		// http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/linear/RealMatrix.html#copy()
-		final RealCompositeMatrix< T > result = ( RealCompositeMatrix< T > ) createMatrix( nRows, nCols );
-		for ( int i = 0; i < length; ++i )
-			result.data.get( i ).set( this.data.get( i ) );
-		return result;
+		return row * nCols + col;
+	}
+
+	public int expectedLength( final int nRows, final int nCols )
+	{
+		return nRows * nCols;
 	}
 
 	@Override
-	public RealMatrix createMatrix( final int nRows, final int nCols ) throws NotStrictlyPositiveException
+	public long countColumns()
 	{
-		final T t = this.data.get( 0 );
-		final Img< T > img;
-		final int length = expectedLength( nRows, nCols );
-		if ( NativeType.class.isInstance( t ) )
-			img = ( ( NativeType ) t ).createSuitableNativeImg( new ArrayImgFactory<>(), new long[] { 1, length } );
-		else
-			img = new ListImgFactory< T >().create( new long[] { 1, length }, t );
-
-		return createMatrix( Views.collapseReal( img ).randomAccess().get(), nRows, nCols, length );
-	}
-
-	public < U extends RealType< U > > RealCompositeMatrix< U > createMatrix( final Composite< U > data, final int nRows, final int nCols, final int length )
-	{
-		return new RealCompositeMatrix<>( data, nRows, nCols, length );
+		return nCols;
 	}
 
 	@Override
-	public int getColumnDimension()
+	public long countRows()
 	{
-		return this.nCols;
+		return nRows;
 	}
 
 	@Override
-	public double getEntry( final int row, final int col )
+	public void supplyTo( final PhysicalStore< Double > receiver )
+	{
+		final long tmpLimRows = Math.min( this.countRows(), receiver.countRows() );
+		final long tmpLimCols = Math.min( this.countColumns(), receiver.countColumns() );
+
+		for ( long j = 0L; j < tmpLimCols; j++ )
+			for (long i = 0L; i < tmpLimRows; i++)
+				receiver.set(i, j, this.doubleValue(i, j));
+	}
+
+	@Override
+	public double doubleValue( final long row, final long col )
 	{
 		assert row >= 0 && row < this.nRows;
 		assert col >= 0 && col < this.nCols;
@@ -136,32 +126,9 @@ public class RealCompositeMatrix< T extends RealType< T > > extends AbstractReal
 	}
 
 	@Override
-	public int getRowDimension()
+	public Double get( final long row, final long col )
 	{
-		return this.nRows;
+		return doubleValue( row, col );
 	}
-
-	@Override
-	public void setEntry( final int row, final int col, final double val ) throws OutOfRangeException
-	{
-		if ( row < 0 || row >= this.nRows )
-			throw new OutOfRangeException( row, 0, this.nRows );
-		else if ( col < 0 || col >= this.nCols )
-			throw new OutOfRangeException( col, 0, this.nCols );
-
-		data.get( rowAndColumnToLinear( row, col ) ).setReal( val );
-
-	}
-
-	public int rowAndColumnToLinear( final int row, final int col )
-	{
-		return row * nCols + col;
-	}
-
-	public int expectedLength( final int nRows, final int nCols )
-	{
-		return nRows * nCols;
-	}
-
 
 }
