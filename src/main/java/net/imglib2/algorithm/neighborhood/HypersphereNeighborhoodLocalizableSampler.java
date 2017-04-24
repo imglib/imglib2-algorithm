@@ -55,15 +55,21 @@ public abstract class HypersphereNeighborhoodLocalizableSampler< T > extends Abs
 
 	protected final long[] currentPos;
 
-	public HypersphereNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final long radius, final HyperSphereNeighborhoodFactory< T > factory, final Interval accessInterval )
+	public HypersphereNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final long radius, final HyperSphereNeighborhoodFactory< T > factory, Interval accessInterval )
 	{
 		super( source.numDimensions() );
 		this.source = source;
 		this.radius = radius;
 		neighborhoodFactory = factory;
 		currentPos = new long[ n ];
+
+		if ( accessInterval == null && source instanceof Interval )
+			accessInterval = ( Interval ) source;
+
 		if ( accessInterval == null )
+		{
 			sourceInterval = null;
+		}
 		else
 		{
 			final long[] accessMin = new long[ n ];

@@ -32,51 +32,42 @@
  * #L%
  */
 
-package net.imglib2.algorithm.linalg.eigen;
+package net.imglib2.algorithm.morphology.distance;
 
-import java.util.Optional;
-
-import org.ojalgo.matrix.decomposition.Eigenvalue;
-
-import net.imglib2.algorithm.linalg.matrix.RealCompositeSymmetricMatrix;
-import net.imglib2.type.numeric.ComplexType;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.composite.Composite;
-
-public class EigenValuesSymmetric< T extends RealType< T >, U extends ComplexType< U > > implements EigenValues< T, U >
+/**
+ *
+ * Implementation of weighted isotropic Euclidian distance:
+ *
+ * D( p ) = min_q f(q) + w * sum_i (p_i - q_i)*(p_i - q_i).
+ *
+ * @author Philipp Hanslovsky
+ *
+ */
+public class EuclidianDistanceIsotropic implements Distance
 {
-	private final int nDim;
 
-	private final double[] evs;
+	private final double weight;
 
-	private final RealCompositeSymmetricMatrix< T > m;
+	private final double oneOverTwoTimesWeight;
 
-	private final Eigenvalue< Double > ed;
-
-	private final Optional< double[] > emptyOptional = Optional.empty();
-
-	public EigenValuesSymmetric( final int nDim )
+	public EuclidianDistanceIsotropic( final double weight )
 	{
 		super();
-		this.nDim = nDim;
-		this.evs = new double[ nDim ];
-		this.m = new RealCompositeSymmetricMatrix<>( null, nDim );
-		this.ed = Eigenvalue.PRIMITIVE.make( this.m, true );
+		this.weight = weight;
+		this.oneOverTwoTimesWeight = 0.5 / weight;
 	}
 
 	@Override
-	public void compute( final Composite< T > tensor, final Composite< U > evs )
+	public double evaluate( final double x, final double xShift, final double yShift, final int dim )
 	{
-		m.setData( tensor );
-		ed.computeValuesOnly( m );
-		ed.getEigenvalues( this.evs, emptyOptional );
-		for ( int d = 0; d < this.evs.length; ++d )
-			evs.get( d ).setReal( this.evs[ d ] );
+		final double diff = x - xShift;
+		return weight * diff * diff + yShift;
 	}
 
 	@Override
-	public EigenValuesSymmetric< T, U > copy()
+	public double intersect( final double xShift1, final double yShift1, final double xShift2, final double yShift2, final int dim )
 	{
-		return new EigenValuesSymmetric<>( nDim );
+		return oneOverTwoTimesWeight * ( weight * xShift2 * xShift2 + yShift2 - ( weight * xShift1 * xShift1 + yShift1 ) ) / ( xShift2 - xShift1 );
 	}
+
 }

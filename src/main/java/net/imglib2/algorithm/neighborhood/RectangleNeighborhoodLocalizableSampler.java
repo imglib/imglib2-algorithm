@@ -59,7 +59,7 @@ public abstract class RectangleNeighborhoodLocalizableSampler< T > extends Abstr
 
 	protected final long[] currentMax;
 
-	public RectangleNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final Interval span, final RectangleNeighborhoodFactory< T > factory, final Interval accessInterval )
+	public RectangleNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final Interval span, final RectangleNeighborhoodFactory< T > factory, Interval accessInterval )
 	{
 		super( source.numDimensions() );
 		this.source = source;
@@ -68,8 +68,14 @@ public abstract class RectangleNeighborhoodLocalizableSampler< T > extends Abstr
 		currentPos = new long[ n ];
 		currentMin = new long[ n ];
 		currentMax = new long[ n ];
+
+		if ( accessInterval == null && source instanceof Interval )
+			accessInterval = ( Interval ) source;
+
 		if ( accessInterval == null )
+		{
 			sourceInterval = null;
+		}
 		else
 		{
 			final long[] accessMin = new long[ n ];

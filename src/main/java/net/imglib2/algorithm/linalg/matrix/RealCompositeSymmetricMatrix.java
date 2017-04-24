@@ -34,8 +34,6 @@
 
 package net.imglib2.algorithm.linalg.matrix;
 
-import org.apache.commons.math3.linear.RealMatrix;
-
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.composite.Composite;
 
@@ -62,12 +60,6 @@ public class RealCompositeSymmetricMatrix< T extends RealType< T > > extends Rea
 	}
 
 	@Override
-	public int getRowDimension()
-	{
-		return this.nRows;
-	}
-
-	@Override
 	public int expectedLength( final int nRows, final int nCols )
 	{
 		assert nRows == nCols;
@@ -75,13 +67,7 @@ public class RealCompositeSymmetricMatrix< T extends RealType< T > > extends Rea
 	}
 
 	@Override
-	public < U extends RealType< U > > RealCompositeSymmetricMatrix< U > createMatrix( final Composite< U > data, final int nRows, final int nCols, final int length )
-	{
-		return new RealCompositeSymmetricMatrix<>( data, nRows );
-	}
-
-	@Override
-	public int rowAndColumnToLinear( final int row, final int col )
+	public long rowAndColumnToLinear( final long row, final long col )
 	{
 
 		// total number of elements: length = nRows * ( nRows + 1 ) / 2
@@ -92,14 +78,14 @@ public class RealCompositeSymmetricMatrix< T extends RealType< T > > extends Rea
 
 		if ( row < col )
 		{
-			final int rowDiff = nRows - row;
-			final int n = rowDiff * ( rowDiff + 1 ) / 2;
+			final long rowDiff = nRows - row;
+			final long n = rowDiff * ( rowDiff + 1 ) / 2;
 			return length - n + col - row;
 		}
 		else
 		{
-			final int rowDiff = nRows - col;
-			final int n = rowDiff * ( rowDiff + 1 ) / 2;
+			final long rowDiff = nRows - col;
+			final long n = rowDiff * ( rowDiff + 1 ) / 2;
 			return length - n + row - col;
 		}
 	}

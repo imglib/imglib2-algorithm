@@ -54,14 +54,17 @@ public abstract class PairOfPointsNeighborhoodLocalizableSampler< T > extends Ab
 
 	protected final Neighborhood< T > currentNeighborhood;
 
-	public PairOfPointsNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final long[] offset, final PairOfPointsNeighborhoodFactory< T > factory, final Interval accessInterval )
+	public PairOfPointsNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final long[] offset, final PairOfPointsNeighborhoodFactory< T > factory, Interval accessInterval )
 	{
 		super( source.numDimensions() );
 		this.source = source;
 		this.offset = offset;
 		this.currentPos = new long[ n ];
 		neighborhoodFactory = factory;
-		
+
+		if ( accessInterval == null && source instanceof Interval )
+			accessInterval = ( Interval ) source;
+
 		if ( accessInterval == null )
 		{
 			sourceInterval = null;
