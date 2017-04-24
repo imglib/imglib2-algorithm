@@ -56,7 +56,7 @@ public abstract class PeriodicLineNeighborhoodLocalizableSampler< T > extends Ab
 
 	private final int[] increments;
 
-	public PeriodicLineNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final long span, final int[] increments, final PeriodicLineNeighborhoodFactory< T > factory, final Interval accessInterval )
+	public PeriodicLineNeighborhoodLocalizableSampler( final RandomAccessible< T > source, final long span, final int[] increments, final PeriodicLineNeighborhoodFactory< T > factory, Interval accessInterval )
 	{
 		super( source.numDimensions() );
 		this.source = source;
@@ -64,6 +64,9 @@ public abstract class PeriodicLineNeighborhoodLocalizableSampler< T > extends Ab
 		this.increments = increments;
 		this.currentPos = new long[ n ];
 		neighborhoodFactory = factory;
+
+		if ( accessInterval == null && source instanceof Interval )
+			accessInterval = ( Interval ) source;
 
 		if ( accessInterval == null )
 		{
