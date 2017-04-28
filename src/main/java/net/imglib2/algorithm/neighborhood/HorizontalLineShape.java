@@ -65,11 +65,11 @@ public class HorizontalLineShape implements Shape
 	 * 
 	 * @param span
 	 *            the span of the line in both directions, so that its total
-	 *            extend is given by <code>2 x span + 1</code>.
+	 *            extend is given by {@code 2 x span + 1}.
 	 * @param dim
 	 *            the dimension along which to lay this line.
 	 * @param skipCenter
-	 *            if <code>true</code>, the shape will skip the center point of
+	 *            if {@code true}, the shape will skip the center point of
 	 *            the line.
 	 */
 	public HorizontalLineShape( final long span, final int dim, final boolean skipCenter )
@@ -106,8 +106,8 @@ public class HorizontalLineShape implements Shape
 	}
 
 	/**
-	 * @return <code>true</code> if <code>skipCenter</code> was set to true
-	 *         during construction, <code>false</code> otherwise.
+	 * @return {@code true} if {@code skipCenter} was set to true
+	 *         during construction, {@code false} otherwise.
 	 * @see CenteredRectangleShape#CenteredRectangleShape(int[], boolean)
 	 */
 	public boolean isSkippingCenter()

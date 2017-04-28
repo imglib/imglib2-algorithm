@@ -329,8 +329,8 @@ public class Gauss
 	 * @param sigma
 	 *            - the sigma for the convolution
 	 * @param img
-	 *            - the img {@link RandomAccessible} (infinite -> Views.extend(
-	 *            ... ) )
+	 *            - the img {@link RandomAccessible}
+	 *            ({@code infinite -> Views.extend( ... )})
 	 * @param interval
 	 *            - the interval which should be convolved
 	 * @param output
@@ -355,8 +355,8 @@ public class Gauss
 	 * @param sigma
 	 *            - the sigma for the convolution
 	 * @param img
-	 *            - the img {@link RandomAccessible} (infinite -> Views.extend(
-	 *            ... ) )
+	 *            - the img {@link RandomAccessible}
+	 *            ({@code infinite -> Views.extend( ... )})
 	 * @param interval
 	 *            - the interval which should be convolved
 	 * @param output
@@ -658,8 +658,8 @@ public class Gauss
 	 * @param sigma
 	 *            - the sigma for the convolution
 	 * @param img
-	 *            - the img {@link RandomAccessible} (infinite -> Views.extend(
-	 *            ... ) )
+	 *            - the img {@link RandomAccessible}
+	 *            ({@code infinite -> Views.extend( ... )})
 	 * @param interval
 	 *            - the interval which should be convolved
 	 * @param output
@@ -684,8 +684,8 @@ public class Gauss
 	 * @param sigma
 	 *            - the sigma for the convolution
 	 * @param img
-	 *            - the img {@link RandomAccessible} (infinite -> Views.extend(
-	 *            ... ) )
+	 *            - the img {@link RandomAccessible}
+	 *            ({@code infinite -> Views.extend( ... )})
 	 * @param interval
 	 *            - the interval which should be convolved
 	 * @param output
@@ -863,8 +863,8 @@ public class Gauss
 	 * @param sigma
 	 *            - the sigma for the convolution
 	 * @param img
-	 *            - the img {@link RandomAccessible} (infinite -> Views.extend(
-	 *            ... ) )
+	 *            - the img {@link RandomAccessible}
+	 *            ({@code infinite -> Views.extend( ... )})
 	 * @param interval
 	 *            - the interval which should be convolved
 	 * @param output
@@ -889,8 +889,8 @@ public class Gauss
 	 * @param sigma
 	 *            - the sigma for the convolution
 	 * @param img
-	 *            - the img {@link RandomAccessible} (infinite -> Views.extend(
-	 *            ... ) )
+	 *            - the img {@link RandomAccessible}
+	 *            ({@code infinite -> Views.extend( ... )})
 	 * @param interval
 	 *            - the interval which should be convolved
 	 * @param output

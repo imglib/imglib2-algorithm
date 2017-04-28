@@ -68,9 +68,9 @@ public class BlackTopHat
 	 * transform</a>.
 	 * <p>
 	 * The result image has the same dimensions that of the source image. It is
-	 * limited to flat structuring elements, only having <code>on/off</code>
-	 * pixels, contrary to grayscale structuring elements. This allows to simply
-	 * use a {@link Shape} as a type for these structuring elements.
+	 * limited to flat structuring elements, only having {@code on/off} pixels,
+	 * contrary to grayscale structuring elements. This allows to simply use a
+	 * {@link Shape} as a type for these structuring elements.
 	 * <p>
 	 * The structuring element is specified through a list of {@link Shape}s, to
 	 * allow for performance optimization through structuring element
@@ -85,7 +85,7 @@ public class BlackTopHat
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the top-hat result. Must be a
-	 *            sub-type of <code>T extends {@link RealType}</code>.
+	 *            sub-type of {@code T extends RealType}.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
 	public static < T extends RealType< T >> Img< T > blackTopHat( final Img< T > source, final List< Shape > strels, final int numThreads )
@@ -103,9 +103,9 @@ public class BlackTopHat
 	 * transform</a>.
 	 * <p>
 	 * The result image has the same dimensions that of the source image. It is
-	 * limited to flat structuring elements, only having <code>on/off</code>
-	 * pixels, contrary to grayscale structuring elements. This allows to simply
-	 * use a {@link Shape} as a type for these structuring elements.
+	 * limited to flat structuring elements, only having {@code on/off} pixels,
+	 * contrary to grayscale structuring elements. This allows to simply use a
+	 * {@link Shape} as a type for these structuring elements.
 	 * <p>
 	 * The structuring element is specified through a list of {@link Shape}s, to
 	 * allow for performance optimization through structuring element
@@ -118,7 +118,7 @@ public class BlackTopHat
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 * 
 	 * @param source
 	 *            the source image.
@@ -134,9 +134,9 @@ public class BlackTopHat
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the top-hat result. Must be a
-	 *            sub-type of <code>T extends {@link Comparable} & {@link Sub}
-	 *            </code>, because we want to be able to compare pixels between
-	 *            themselves and to subtract them.
+	 *            sub-type of {@code T extends Comparable & Sub}, because we
+	 *            want to be able to compare pixels between themselves and to
+	 *            subtract them.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T > > Img< T > blackTopHat( final Img< T > source, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
@@ -155,9 +155,9 @@ public class BlackTopHat
 	 * transform</a>.
 	 * <p>
 	 * The result image has the same dimensions that of the source image. It is
-	 * limited to flat structuring elements, only having <code>on/off</code>
-	 * pixels, contrary to grayscale structuring elements. This allows to simply
-	 * use a {@link Shape} as a type for these structuring elements.
+	 * limited to flat structuring elements, only having {@code on/off} pixels,
+	 * contrary to grayscale structuring elements. This allows to simply use a
+	 * {@link Shape} as a type for these structuring elements.
 	 * 
 	 * @param source
 	 *            the source image.
@@ -167,7 +167,7 @@ public class BlackTopHat
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the top-hat result. Must be a
-	 *            sub-type of <code>T extends {@link RealType}</code>.
+	 *            sub-type of {@code T extends RealType}.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
 	public static < T extends RealType< T >> Img< T > blackTopHat( final Img< T > source, final Shape strel, final int numThreads )
@@ -185,17 +185,16 @@ public class BlackTopHat
 	 * transform</a>.
 	 * <p>
 	 * The result image has the same dimensions that of the source image. It is
-	 * limited to flat structuring elements, only having <code>on/off</code>
-	 * pixels, contrary to grayscale structuring elements. This allows to simply
-	 * use a {@link Shape} as a type for these structuring elements.
+	 * limited to flat structuring elements, only having {@code on/off} pixels,
+	 * contrary to grayscale structuring elements. This allows to simply use a
+	 * {@link Shape} as a type for these structuring elements.
 	 * <p>
 	 * This method relies on a specified minimal and maximal value to start
 	 * comparing to other pixels in the neighborhood. For this code to perform
 	 * properly, it is sufficient that the specified min value is smaller
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and the converse for the max value. These normally unseen
-	 * parameters are required to operate on
-	 * <code>T extends {@link Comparable} & {@link Sub}</code>.
+	 * parameters are required to operate on {@code T extends Comparable & Sub}.
 	 * 
 	 * @param source
 	 *            the source image.
@@ -211,9 +210,9 @@ public class BlackTopHat
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the top-hat result. Must be a
-	 *            sub-type of <code>T extends {@link Comparable} & {@link Sub}
-	 *            </code>, because we want to be able to compare pixels between
-	 *            themselves and to subtract them.
+	 *            sub-type of {@code T extends Comparable & Sub}, because we
+	 *            want to be able to compare pixels between themselves and to
+	 *            subtract them.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T > > Img< T > blackTopHat( final Img< T > source, final Shape strel, final T minVal, final T maxVal, final int numThreads )
@@ -240,7 +239,7 @@ public class BlackTopHat
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
 	 * This allows to simply use a {@link Shape} as a type for these structuring
 	 * elements.
 	 * <p>
@@ -260,7 +259,7 @@ public class BlackTopHat
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
-	 *            <code>RealType</code>.
+	 *            {@link RealType}.
 	 */
 	public static < T extends RealType< T > > void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final int numThreads )
 	{
@@ -284,10 +283,9 @@ public class BlackTopHat
 	 * padded to properly cover the target range plus the shape size. See
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
-	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
-	 * This allows to simply use a {@link Shape} as a type for these structuring
-	 * elements.
+	 * It is limited to flat structuring elements, only having {@code on/off}
+	 * pixels, contrary to grayscale structuring elements. This allows to simply
+	 * use a {@link Shape} as a type for these structuring elements.
 	 * <p>
 	 * The structuring element is specified through a list of {@link Shape}s, to
 	 * allow for performance optimization through structuring element
@@ -299,8 +297,7 @@ public class BlackTopHat
 	 * perform, it is sufficient that the specified max value is larger (against
 	 * {@link Comparable}) than any of the value found in the source image, and
 	 * conversely for the min value. These normally unseen parameters are
-	 * required to operate on
-	 * <code>T extends {@link Comparable} & {@link Sub}</code>.
+	 * required to operate on {@code T extends Comparable & Sub}.
 	 * 
 	 * @param source
 	 *            the {@link RandomAccessible} to operate on.
@@ -319,9 +316,9 @@ public class BlackTopHat
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source image and the top-hat result. Must be a
-	 *            sub-type of <code>T extends {@link Comparable} & {@link Sub}
-	 *            </code>, because we want to be able to compare pixels between
-	 *            themselves and to subtract them.
+	 *            sub-type of {@code T extends Comparable & Sub}, because we
+	 *            want to be able to compare pixels between themselves and to
+	 *            subtract them.
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -345,10 +342,9 @@ public class BlackTopHat
 	 * padded to properly cover the target range plus the shape size. See
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
-	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
-	 * This allows to simply use a {@link Shape} as a type for these structuring
-	 * elements.
+	 * It is limited to flat structuring elements, only having {@code on/off}
+	 * pixels, contrary to grayscale structuring elements. This allows to simply
+	 * use a {@link Shape} as a type for these structuring elements.
 	 * 
 	 * @param source
 	 *            the {@link RandomAccessible} to operate on.
@@ -360,7 +356,7 @@ public class BlackTopHat
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
-	 *            <code>RealType</code>.
+	 *            {@link RealType}.
 	 */
 	public static < T extends RealType< T > > void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final int numThreads )
 	{
@@ -384,18 +380,16 @@ public class BlackTopHat
 	 * padded to properly cover the target range plus the shape size. See
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
-	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
-	 * This allows to simply use a {@link Shape} as a type for these structuring
-	 * elements.
+	 * It is limited to flat structuring elements, only having {@code on/off}
+	 * pixels, contrary to grayscale structuring elements. This allows to simply
+	 * use a {@link Shape} as a type for these structuring elements.
 	 * <p>
 	 * This method relies on specified minimal and maximal values to start
 	 * comparing to other pixels in the neighborhood. For this code to properly
 	 * perform, it is sufficient that the specified max value is larger (against
 	 * {@link Comparable}) than any of the value found in the source image, and
 	 * conversely for the min value. These normally unseen parameters are
-	 * required to operate on
-	 * <code>T extends {@link Comparable} & {@link Sub}</code>.
+	 * required to operate on {@code T extends Comparable & Sub}.
 	 * 
 	 * @param source
 	 *            the {@link RandomAccessible} to operate on.
@@ -413,9 +407,9 @@ public class BlackTopHat
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source image and the top-hat result. Must be a
-	 *            sub-type of <code>T extends {@link Comparable} & {@link Sub}
-	 *            </code>, because we want to be able to compare pixels between
-	 *            themselves and to subtract them.
+	 *            sub-type of {@code T extends Comparable & Sub}, because we
+	 *            want to be able to compare pixels between themselves and to
+	 *            subtract them.
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -432,7 +426,7 @@ public class BlackTopHat
 	 * transform</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -455,7 +449,7 @@ public class BlackTopHat
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
-	 *            <code>T extends {@link RealType}</code>.
+	 *            {@code T extends RealType}.
 	 */
 	public static < T extends RealType< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
 	{
@@ -479,7 +473,7 @@ public class BlackTopHat
 	 * transform</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -497,8 +491,7 @@ public class BlackTopHat
 	 * perform, it is sufficient that the specified max value is larger (against
 	 * {@link Comparable}) than any of the value found in the source image, and
 	 * conversely for the min value. These normally unseen parameters are
-	 * required to operate on
-	 * <code>T extends {@link Comparable} & {@link Sub}</code>.
+	 * required to operate on {@code T extends Comparable & Sub}.
 	 * 
 	 * @param source
 	 *            the source image.
@@ -516,9 +509,9 @@ public class BlackTopHat
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the top-hat result. Must be a
-	 *            sub-type of <code>T extends {@link Comparable} & {@link Sub}
-	 *            </code>, because we want to be able to compare pixels between
-	 *            themselves and to subtract them.
+	 *            sub-type of {@code T extends Comparable & Sub}, because we
+	 *            want to be able to compare pixels between themselves and to
+	 *            subtract them.
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -542,7 +535,7 @@ public class BlackTopHat
 	 * transform</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -560,7 +553,7 @@ public class BlackTopHat
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
-	 *            <code>T extends {@link RealType}</code>.
+	 *            {@code T extends RealType}.
 	 */
 	public static < T extends RealType< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final Shape strel, final int numThreads )
 	{
@@ -584,7 +577,7 @@ public class BlackTopHat
 	 * transform</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -597,8 +590,7 @@ public class BlackTopHat
 	 * perform, it is sufficient that the specified max value is larger (against
 	 * {@link Comparable}) than any of the value found in the source image, and
 	 * conversely for the min value. These normally unseen parameters are
-	 * required to operate on
-	 * <code>T extends {@link Comparable} & {@link Sub}</code>.
+	 * required to operate on {@code T extends Comparable & Sub}.
 	 * 
 	 * @param source
 	 *            the source image.
@@ -616,9 +608,9 @@ public class BlackTopHat
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the top-hat result. Must be a
-	 *            sub-type of <code>T extends {@link Comparable} & {@link Sub}
-	 *            </code>, because we want to be able to compare pixels between
-	 *            themselves and to subtract them.
+	 *            sub-type of {@code T extends Comparable & Sub}, because we
+	 *            want to be able to compare pixels between themselves and to
+	 *            subtract them.
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{

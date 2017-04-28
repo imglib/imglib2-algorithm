@@ -65,14 +65,14 @@ public class Closing
 	 * 
 	 * @param source
 	 *            the {@link Img} to operate on.
-	 * @param strel
+	 * @param strels
 	 *            the list of {@link Shape}s that serves as a structuring
 	 *            element.
 	 * @param numThreads
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source image and the result image. Must
-	 *            extends <code>RealType</code>.
+	 *            extends {@link RealType}.
 	 * @return an {@link Img} of the same type and same dimensions that of the
 	 *         source.
 	 */
@@ -102,11 +102,11 @@ public class Closing
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 * 
 	 * @param source
 	 *            the {@link Img} to operate on.
-	 * @param strel
+	 * @param strels
 	 *            the list of {@link Shape}s that serves as a structuring
 	 *            element.
 	 * @param minVal
@@ -119,8 +119,7 @@ public class Closing
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source image and the result. Must be a
-	 *            sub-type of <code>T extends {@link Comparable} & {@link Type}
-	 *            </code>.
+	 *            sub-type of {@code T extends Comparable & Type}.
 	 * @return an {@link Img} of the same type and same dimensions that of the
 	 *         source.
 	 */
@@ -147,7 +146,7 @@ public class Closing
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source image and the result image. Must
-	 *            extends <code>RealType</code>.
+	 *            extends {@link RealType}.
 	 * @return an {@link Img} of the same type and same dimensions that of the
 	 *         source.
 	 */
@@ -173,7 +172,7 @@ public class Closing
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 * 
 	 * @param source
 	 *            the {@link Img} to operate on.
@@ -189,8 +188,7 @@ public class Closing
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source image and the result. Must be a
-	 *            sub-type of <code>T extends {@link Comparable} & {@link Type}
-	 *            </code>.
+	 *            sub-type of {@code T extends Comparable & Type}.
 	 * @return an {@link Img} of the same type and same dimensions that of the
 	 *         source.
 	 */
@@ -219,7 +217,7 @@ public class Closing
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
 	 * This allows to simply use a {@link Shape} as a type for these structuring
 	 * elements.
 	 * <p>
@@ -238,7 +236,7 @@ public class Closing
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
-	 *            <code>RealType</code>.
+	 *            {@link RealType}.
 	 */
 	public static < T extends RealType< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final int numThreads )
 	{
@@ -267,7 +265,7 @@ public class Closing
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
 	 * This allows to simply use a {@link Shape} as a type for these structuring
 	 * elements.
 	 * <p>
@@ -282,7 +280,7 @@ public class Closing
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 * 
 	 * @param source
 	 *            the {@link RandomAccessible} to operate on.
@@ -300,7 +298,7 @@ public class Closing
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
-	 *            <code>Compparable</code>.
+	 *            {@code Compparable}.
 	 */
 	public static < T extends Type< T > & Comparable< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -335,7 +333,7 @@ public class Closing
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
 	 * This allows to simply use a {@link Shape} as a type for these structuring
 	 * elements.
 	 * 
@@ -349,7 +347,7 @@ public class Closing
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
-	 *            <code>RealType</code>.
+	 *            {@link RealType}.
 	 */
 	public static < T extends RealType< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final int numThreads )
 	{
@@ -378,7 +376,7 @@ public class Closing
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
 	 * This allows to simply use a {@link Shape} as a type for these structuring
 	 * elements.
 	 * <p>
@@ -388,7 +386,7 @@ public class Closing
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 * 
 	 * @param source
 	 *            the {@link RandomAccessible} to operate on.
@@ -406,7 +404,7 @@ public class Closing
 	 *            the number of threads to use for calculation.
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
-	 *            <code>Comparable</code>.
+	 *            {@code Comparable}.
 	 */
 	public static < T extends Type< T > & Comparable< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -432,7 +430,7 @@ public class Closing
 	 * Closing_(morphology)</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -455,7 +453,7 @@ public class Closing
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
-	 *            <code>T extends {@link RealType}</code>.
+	 *            {@code T extends RealType}.
 	 */
 	public static < T extends RealType< T > > void closeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
 	{
@@ -476,7 +474,7 @@ public class Closing
 	 * Closing_(morphology)</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -495,7 +493,7 @@ public class Closing
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 * 
 	 * @param source
 	 *            the source image.
@@ -513,7 +511,7 @@ public class Closing
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
-	 *            <code>T extends {@link Comparable}</code>.
+	 *            {@code T extends Comparable}.
 	 */
 	public static < T extends Type< T > & Comparable< T >> void closeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -532,7 +530,7 @@ public class Closing
 	 * Closing_(morphology)</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -546,7 +544,7 @@ public class Closing
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 * 
 	 * @param source
 	 *            the source image.
@@ -558,7 +556,7 @@ public class Closing
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
-	 *            <code>T extends {@link RealType}</code>.
+	 *            {@code T extends RealType}.
 	 */
 	public static < T extends RealType< T > > void closeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final Shape strel, final int numThreads )
 	{
@@ -579,7 +577,7 @@ public class Closing
 	 * Closing_(morphology)</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -598,7 +596,7 @@ public class Closing
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 * 
 	 * @param source
 	 *            the source image.
@@ -616,7 +614,7 @@ public class Closing
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
-	 *            <code>T extends {@link Comparable}</code>.
+	 *            {@code T extends Comparable}.
 	 */
 	public static < T extends Type< T > & Comparable< T >> void closeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{

@@ -77,11 +77,11 @@ public class MorphologyUtils
 	 *            the source image.
 	 * @param strel
 	 *            the strel to use for dilation.
-	 * @return a 2-elements <code>long[][]</code>:
+	 * @return a 2-elements {@code long[][]}:
 	 *         <ol start="0">
-	 *         <li>a <code>long[]</code> array with the final image target
+	 *         <li>a {@code long[]} array with the final image target
 	 *         dimensions.
-	 *         <li>a <code>long[]</code> array with the offset to apply to the
+	 *         <li>a {@code long[]} array with the offset to apply to the
 	 *         source image.
 	 *         </ol>
 	 */

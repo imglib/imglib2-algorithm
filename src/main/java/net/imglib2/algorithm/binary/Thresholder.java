@@ -64,8 +64,8 @@ public class Thresholder
 	 * @param threshold
 	 *            the threshold.
 	 * @param above
-	 *            if <code>true</code>, the target value will be true for source
-	 *            values above the threshold, <code>false</code> otherwise.
+	 *            if {@code true}, the target value will be true for source
+	 *            values above the threshold, {@code false} otherwise.
 	 * @param numThreads
 	 *            the number of threads to use for thresholding.
 	 * @return a new {@link Img} of type {@link BitType} and of same dimension

@@ -45,17 +45,17 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 
 /**
- * n-dimensional integral image that stores sums using type {@param <T>}. Care
- * must be taken that sums do not overflow the capacity of type {@param <T>}.
+ * n-dimensional integral image that stores sums using type {@code <T>}. Care
+ * must be taken that sums do not overflow the capacity of type {@code <T>}.
  * 
  * The integral image will be one pixel larger in each dimension as for easy
  * computation of sums it has to contain "zeros" at the beginning of each
  * dimension
  * 
- * The {@link Converter} defines howto convert from Type {@param <R>} to {@param
+ * The {@link Converter} defines howto convert from Type {@code <R>} to {@code
  * <T>}.
  * 
- * Sums are done with the precision of {@param <T>} and then set to the integral
+ * Sums are done with the precision of {@code <T>} and then set to the integral
  * image type, which may crop the values according to the type's capabilities.
  * 
  * @param <R>
