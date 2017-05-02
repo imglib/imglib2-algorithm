@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>imglib2-algorithm</artifactId>
-	<version>0.7.0-SNAPSHOT</version>
+	<version>0.7.0</version>
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>
@@ -164,7 +164,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/imglib/imglib2-algorithm</connection>
 		<developerConnection>scm:git:git@github.com:imglib/imglib2-algorithm</developerConnection>
-		<tag>HEAD</tag>
+		<tag>imglib2-algorithm-0.7.0</tag>
 		<url>https://github.com/imglib/imglib2-algorithm</url>
 	</scm>
 	<issueManagement>
@@ -243,7 +243,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
-					<additionalparam>-header &apos;&lt;script type=&quot;text/javascript&quot; src=&quot;http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML&quot;&gt;&lt;/script&gt;&apos;</additionalparam>
+					<additionalparam>-header '&lt;script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"&gt;&lt;/script&gt;'</additionalparam>
 				</configuration>
 			</plugin>
 		</plugins>
