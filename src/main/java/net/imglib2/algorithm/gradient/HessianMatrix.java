@@ -71,8 +71,12 @@ public class HessianMatrix
 	 *            last dimension is n)
 	 * @param hessianMatrix
 	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
-	 *            all second partial derivatives (size of last dimension is n *
-	 *            ( n + 1 ) / 2)
+	 *            all second partial derivatives as a linear representation
+	 *            (size of last dimension is n * ( n + 1 ) / 2) of upper
+	 *            triangular Hessian matrix: For n-dimensional input,
+	 *            <code>hessianMatrix</code> (m) will be populated along the nth
+	 *            dimension like this: [m11, m12, ... , m1n, m22, m23, ... ,
+	 *            mnn]
 	 * @param outOfBounds
 	 *            {@link OutOfBoundsFactory} that specifies how out of bound
 	 *            pixels of intermediate results should be handled (necessary
@@ -110,8 +114,13 @@ public class HessianMatrix
 	 *            last dimension is n)
 	 * @param hessianMatrix
 	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
-	 *            all second partial derivatives (size of last dimension is n *
-	 *            ( n + 1 ) / 2)
+	 *            all second partial derivatives as a linear representation
+	 *            (size of last dimension is n * ( n + 1 ) / 2) of upper
+	 *            triangular Hessian matrix: For n-dimensional input,
+	 *            <code>hessianMatrix</code> (m) will be populated along the nth
+	 *            dimension like this: [m11, m12, ... , m1n, m22, m23, ... ,
+	 *            mnn]
+	 *
 	 * @param outOfBounds
 	 *            {@link OutOfBoundsFactory} that specifies how out of bound
 	 *            pixels of intermediate results should be handled (necessary
@@ -142,8 +151,12 @@ public class HessianMatrix
 	 *            dimension is n)
 	 * @param hessianMatrix
 	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
-	 *            all second partial derivatives (size of last dimension is n *
-	 *            ( n + 1 ) / 2)
+	 *            all second partial derivatives as a linear representation
+	 *            (size of last dimension is n * ( n + 1 ) / 2) of upper
+	 *            triangular Hessian matrix: For n-dimensional input,
+	 *            <code>hessianMatrix</code> (m) will be populated along the nth
+	 *            dimension like this: [m11, m12, ... , m1n, m22, m23, ... ,
+	 *            mnn]
 	 *
 	 * @return Hessian matrix that was passed as output parameter.
 	 */
@@ -182,8 +195,12 @@ public class HessianMatrix
 	 *            last dimension is n)
 	 * @param hessianMatrix
 	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
-	 *            all second partial derivatives (size of last dimension is n *
-	 *            ( n + 1 ) / 2)
+	 *            all second partial derivatives as a linear representation
+	 *            (size of last dimension is n * ( n + 1 ) / 2) of upper
+	 *            triangular Hessian matrix: For n-dimensional input,
+	 *            <code>hessianMatrix</code> (m) will be populated along the nth
+	 *            dimension like this: [m11, m12, ... , m1n, m22, m23, ... ,
+	 *            mnn]
 	 * @param outOfBounds
 	 *            {@link OutOfBoundsFactory} that specifies how out of bound
 	 *            pixels of intermediate results should be handled (necessary
@@ -230,8 +247,12 @@ public class HessianMatrix
 	 *            last dimension is n)
 	 * @param hessianMatrix
 	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
-	 *            all second partial derivatives (size of last dimension is n *
-	 *            ( n + 1 ) / 2)
+	 *            all second partial derivatives as a linear representation
+	 *            (size of last dimension is n * ( n + 1 ) / 2) of upper
+	 *            triangular Hessian matrix: For n-dimensional input,
+	 *            <code>hessianMatrix</code> (m) will be populated along the nth
+	 *            dimension like this: [m11, m12, ... , m1n, m22, m23, ... ,
+	 *            mnn]
 	 * @param outOfBounds
 	 *            {@link OutOfBoundsFactory} that specifies how out of bound
 	 *            pixels of intermediate results should be handled (necessary
@@ -272,8 +293,12 @@ public class HessianMatrix
 	 *            dimension is n)
 	 * @param hessianMatrix
 	 *            n+1-dimensional {@link RandomAccessibleInterval} for storing
-	 *            all second partial derivatives (size of last dimension is n *
-	 *            ( n + 1 ) / 2)
+	 *            all second partial derivatives as a linear representation
+	 *            (size of last dimension is n * ( n + 1 ) / 2) of upper
+	 *            triangular Hessian matrix: For n-dimensional input,
+	 *            <code>hessianMatrix</code> (m) will be populated along the nth
+	 *            dimension like this: [m11, m12, ... , m1n, m22, m23, ... ,
+	 *            mnn]
 	 * @param nTasks
 	 *            Number of tasks used for parallel computation of eigenvalues.
 	 * @param es
