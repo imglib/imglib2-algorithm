@@ -40,6 +40,7 @@ import java.util.stream.IntStream;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.View;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.outofbounds.OutOfBoundsFactory;
@@ -333,6 +334,36 @@ public class HessianMatrix
 		return hessianMatrix;
 	}
 
+
+
+	/**
+	 *
+	 * The {@link HessianMatrix#calculateMatrix} methods assume that the voxels
+	 * of the input data are isotropic. This is not always the case and the
+	 * finite differences would need to be normalized accordingly. As the
+	 * derivative is a linear transformation re-normalization (scaling) of the
+	 * Hessian matrix produces the desired result. In general, the normalization
+	 * is arbitrary and we choose to normalize such that the second derivative
+	 * remains unchanged along the dimension for which the extent of a voxel is
+	 * the smallest.
+	 *
+	 * Note that the returned object is a {@link View} on the Hessian matrix and
+	 * values are re-normalized as they are queried. For repeated use of the
+	 * re-normalized Hessian matrix, it might be beneficial to persist the
+	 * re-normalized values by copying into a {@link RandomAccessibleInterval}.
+	 *
+	 * @param hessian
+	 *            Hessian matrix to be re-normalized (scaled).
+	 *            <code>hessian</code> is an n+1 dimensional
+	 *            {@link RandomAccessibleInterval} that stores a linear
+	 *            representation of the upper triangular n-dimensional Hessian
+	 *            matrix along the last dimension as specified in
+	 *            {@link HessianMatrix#calculateMatrix(RandomAccessible, RandomAccessibleInterval)}.
+	 * @param sigma
+	 *            Specify the voxel size for each dimension.
+	 * @return Scaled {@link View} of the hessian matrix stored in
+	 *         <code>hessian</code>
+	 */
 	public static < T extends RealType< T > > IntervalView< T > scaleHessianMatrix( final RandomAccessibleInterval< T > hessian, final double[] sigma )
 	{
 
