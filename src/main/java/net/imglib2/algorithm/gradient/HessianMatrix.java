@@ -34,7 +34,6 @@
 
 package net.imglib2.algorithm.gradient;
 
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.IntStream;
