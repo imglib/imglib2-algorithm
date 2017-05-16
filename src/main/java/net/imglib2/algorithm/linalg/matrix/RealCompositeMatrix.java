@@ -64,11 +64,9 @@ public class RealCompositeMatrix< T extends RealType< T > > implements Access2D<
 		this( data, nRows, nCols, nRows * nCols );
 	}
 
-	public RealCompositeMatrix( final Composite< T > data, final int nRows, final int nCols, final int length )
+	protected RealCompositeMatrix( final Composite< T > data, final int nRows, final int nCols, final int length )
 	{
 		super();
-
-		assert length == expectedLength( nRows, nCols );
 
 		this.data = data;
 		this.nRows = nRows;
@@ -84,11 +82,6 @@ public class RealCompositeMatrix< T extends RealType< T > > implements Access2D<
 	public long rowAndColumnToLinear( final long row, final long col )
 	{
 		return row * nCols + col;
-	}
-
-	public int expectedLength( final int nRows, final int nCols )
-	{
-		return nRows * nCols;
 	}
 
 	@Override

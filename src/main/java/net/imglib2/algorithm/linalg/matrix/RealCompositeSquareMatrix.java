@@ -54,7 +54,7 @@ public class RealCompositeSquareMatrix< T extends RealType< T > > extends RealCo
 		this( data, nRowsOrCols, nRowsOrCols * nRowsOrCols );
 	}
 
-	public RealCompositeSquareMatrix( final Composite< T > data, final int nRowsOrCols, final int length )
+	protected RealCompositeSquareMatrix( final Composite< T > data, final int nRowsOrCols, final int length )
 	{
 		super( data, nRowsOrCols, nRowsOrCols, length );
 	}

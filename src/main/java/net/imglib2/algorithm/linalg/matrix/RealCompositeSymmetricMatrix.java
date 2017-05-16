@@ -54,16 +54,9 @@ public class RealCompositeSymmetricMatrix< T extends RealType< T > > extends Rea
 		this( data, nRowsOrCols, nRowsOrCols * ( nRowsOrCols + 1 ) / 2 );
 	}
 
-	public RealCompositeSymmetricMatrix( final Composite< T > data, final int nRowsOrCols, final int length )
+	protected RealCompositeSymmetricMatrix( final Composite< T > data, final int nRowsOrCols, final int length )
 	{
 		super( data, nRowsOrCols, length );
-	}
-
-	@Override
-	public int expectedLength( final int nRows, final int nCols )
-	{
-		assert nRows == nCols;
-		return nRows * ( nRows + 1 ) / 2;
 	}
 
 	@Override
