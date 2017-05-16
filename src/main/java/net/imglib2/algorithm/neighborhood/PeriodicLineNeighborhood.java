@@ -72,7 +72,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 
 	/**
 	 * The span of the line. The neighborhood will have
-	 * <code>2 x span + 1 </code> elements iterated. Careful: because of the
+	 * {@code 2 x span + 1 } elements iterated. Careful: because of the
 	 * increments, the <b>extent</b> of the neighborhood might be much larger.
 	 */
 	private final long span;
@@ -102,8 +102,8 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	private final long maxIndex;
 
 	/**
-	 * Creates a new periodic line, centered on <code>position</code>, and that
-	 * will iterate over <code>2 × span + 1</code> pixels as follow:
+	 * Creates a new periodic line, centered on {@code position}, and that
+	 * will iterate over {@code 2 × span + 1} pixels as follow:
 	 * 
 	 * <pre>
 	 * position - span x increments,
@@ -121,7 +121,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	 *            the center of the neighborhood.
 	 * @param span
 	 *            the span of the neighborhood, so that it will iterate over
-	 *            <code>2 × span + 1</code> pixels.
+	 *            {@code 2 × span + 1} pixels.
 	 * @param increments
 	 *            the values by which each element of the position vector is to
 	 *            be incremented when iterating.

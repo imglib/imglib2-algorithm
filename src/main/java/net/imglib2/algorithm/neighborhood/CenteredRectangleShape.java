@@ -49,9 +49,9 @@ import net.imglib2.util.Util;
  * non-isotropic rectangular shapes. However, it constrains the the neighborhood
  * to be symmetric by its origin.
  * <p>
- * The size of the neighborhood is specified by an <code>int[]</code> span
- * array, so that in every dimension <code>d</code>, the extent of the
- * neighborhood is given by <code>2 × span[d] + 1</code>.
+ * The size of the neighborhood is specified by an {@code int[]} span
+ * array, so that in every dimension {@code d}, the extent of the
+ * neighborhood is given by {@code 2 × span[d] + 1}.
  * <p>
  * This factory exists because {@link RectangleShape} which is based on the same
  * components, only allows for square neighborhoods.
@@ -70,9 +70,9 @@ public class CenteredRectangleShape implements Shape
 	 * Constructs a factory for symmetric, non-isotropic rectangle
 	 * neighborhoods.
 	 * <p>
-	 * The size of the neighborhood is specified by an <code>int[]</code> span
-	 * array, so that in every dimension <code>d</code>, the extent of the
-	 * neighborhood is given by <code>2 × span[d] + 1</code>.
+	 * The size of the neighborhood is specified by an {@code int[]} span
+	 * array, so that in every dimension {@code d}, the extent of the
+	 * neighborhood is given by {@code 2 × span[d] + 1}.
 	 *
 	 * @param span
 	 *            the span of the neighborhood.
@@ -118,8 +118,8 @@ public class CenteredRectangleShape implements Shape
 	}
 
 	/**
-	 * @return <code>true</code> if <code>skipCenter</code> was set to true
-	 *         during construction, <code>false</code> otherwise.
+	 * @return {@code true} if {@code skipCenter} was set to true
+	 *         during construction, {@code false} otherwise.
 	 * @see CenteredRectangleShape#CenteredRectangleShape(int[], boolean)
 	 */
 	public boolean isSkippingCenter()

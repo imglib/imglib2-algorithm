@@ -70,7 +70,7 @@ public class Dilation
 	 * the list is empty, the source image is returned.
 	 * <p>
 	 * The result image has the same dimensions that of the source image. It is
-	 * limited to flat structuring elements, only having <code>on/off</code>
+	 * limited to flat structuring elements, only having {@code on/off}
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
 	 *
@@ -82,7 +82,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
-	 *            a sub-type of <code>T extends {@link RealType}</code>.
+	 *            a sub-type of {@code T extends RealType}.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
 	public static < T extends RealType< T > > Img< T > dilate( final Img< T > source, final List< Shape > strels, final int numThreads )
@@ -103,7 +103,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * The result image has the same dimensions that of the source image. It is
-	 * limited to flat structuring elements, only having <code>on/off</code>
+	 * limited to flat structuring elements, only having {@code on/off}
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
 	 * <p>
@@ -117,7 +117,7 @@ public class Dilation
 	 * dilation, it is sufficient that the specified min value is smaller
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 *
 	 * @param source
 	 *            the source image.
@@ -133,8 +133,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
-	 *            a sub-type of <code>T extends {@link Comparable} &
-	 *            {@link Type}</code>.
+	 *            a sub-type of {@code T extends Comparable & Type}.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
 	public static < T extends Type< T > & Comparable< T > > Img< T > dilate( final Img< T > source, final List< Shape > strels, final T minVal, final int numThreads )
@@ -155,7 +154,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * The result image has the same dimensions that of the source image. It is
-	 * limited to flat structuring elements, only having <code>on/off</code>
+	 * limited to flat structuring elements, only having {@code on/off}
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
 	 *
@@ -167,7 +166,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
-	 *            a sub-type of <code>T extends {@link RealType}</code>.
+	 *            a sub-type of {@code T extends RealType}.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
 	public static < T extends RealType< T >> Img< T > dilate( final Img< T > source, final Shape strel, final int numThreads )
@@ -188,7 +187,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * The result image has the same dimensions that of the source image. It is
-	 * limited to flat structuring elements, only having <code>on/off</code>
+	 * limited to flat structuring elements, only having {@code on/off}
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
 	 * <p>
@@ -197,7 +196,7 @@ public class Dilation
 	 * dilation, it is sufficient that the specified min value is smaller
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 *
 	 * @param source
 	 *            the source image.
@@ -213,8 +212,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
-	 *            a sub-type of <code>T extends {@link Comparable} &
-	 *            {@link Type}</code>.
+	 *            a sub-type of {@code T extends Comparable & Type}.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
 	public static < T extends Type< T > & Comparable< T > > Img< T > dilate( final Img< T > source, final Shape strel, final T minVal, final int numThreads )
@@ -241,7 +239,7 @@ public class Dilation
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
 	 * This allows to simply use a {@link Shape} as a type for these structuring
 	 * elements.
 	 * <p>
@@ -283,7 +281,7 @@ public class Dilation
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
 	 * This allows to simply use a {@link Shape} as a type for these structuring
 	 * elements.
 	 * <p>
@@ -297,7 +295,7 @@ public class Dilation
 	 * dilation, it is sufficient that the specified min value is smaller
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 *
 	 * @param source
 	 *            the source {@link RandomAccessible}, must be sufficiently
@@ -315,8 +313,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
-	 *            a sub-type of <code>T extends {@link Comparable} &
-	 *            {@link Type}</code>.
+	 *            a sub-type of {@code T extends Comparable & Type}.
 	 */
 	public static < T extends Type< T > & Comparable< T > > void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T minVal, final int numThreads )
 	{
@@ -382,7 +379,7 @@ public class Dilation
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
 	 * This allows to simply use a {@link Shape} as a type for these structuring
 	 * elements.
 	 *
@@ -419,7 +416,7 @@ public class Dilation
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 * It is limited to flat structuring elements, only having
-	 * <code>on/off</code> pixels, contrary to grayscale structuring elements.
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
 	 * This allows to simply use a {@link Shape} as a type for these structuring
 	 * elements.
 	 * <p>
@@ -428,7 +425,7 @@ public class Dilation
 	 * dilation, it is sufficient that the specified min value is smaller
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 *
 	 * @param source
 	 *            the source {@link RandomAccessible}, must be sufficiently
@@ -446,8 +443,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
-	 *            a sub-type of <code>T extends {@link Comparable} &
-	 *            {@link Type}</code>.
+	 *            a sub-type of {@code T extends Comparable & Type}.
 	 */
 	public static < T extends Type< T > & Comparable< T > > void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final T minVal, int numThreads )
 	{
@@ -579,7 +575,7 @@ public class Dilation
 	 * This method performs what is called the 'full' dilation. That is: the
 	 * result image has its dimension enlarged by the structuring element, with
 	 * respect to the source image. It is limited to flat structuring elements,
-	 * only having <code>on/off</code> pixels, contrary to grayscale structuring
+	 * only having {@code on/off} pixels, contrary to grayscale structuring
 	 * elements. This allows to simply use a {@link Shape} as a type for these
 	 * structuring elements.
 	 * <p>
@@ -607,7 +603,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
-	 *            a sub-type of <code>T extends {@link RealType}</code>.
+	 *            a sub-type of {@code T extends RealType}.
 	 * @return a new {@link Img}, possibly of larger dimensions than the source.
 	 */
 	public static < T extends RealType< T > > Img< T > dilateFull( final Img< T > source, final List< Shape > strels, final int numThreads )
@@ -630,7 +626,7 @@ public class Dilation
 	 * This method performs what is called the 'full' dilation. That is: the
 	 * result image has its dimension enlarged by the structuring element, with
 	 * respect to the source image. It is limited to flat structuring elements,
-	 * only having <code>on/off</code> pixels, contrary to grayscale structuring
+	 * only having {@code on/off} pixels, contrary to grayscale structuring
 	 * elements. This allows to simply use a {@link Shape} as a type for these
 	 * structuring elements.
 	 * <p>
@@ -644,7 +640,7 @@ public class Dilation
 	 * dilation, it is sufficient that the specified min value is smaller
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 * <p>
 	 * <b>Warning:</b> Current implementation does not do <i>stricto sensu</i>
 	 * the full dilation. Indeed, if the structuring element has more dimensions
@@ -671,8 +667,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
-	 *            a sub-type of <code>T extends {@link Comparable} &
-	 *            {@link Type}</code>.
+	 *            a sub-type of {@code T extends Comparable & Type}.
 	 * @return a new {@link Img}, possibly of larger dimensions than the source.
 	 */
 	public static < T extends Type< T > & Comparable< T > > Img< T > dilateFull( final Img< T > source, final List< Shape > strels, final T minVal, final int numThreads )
@@ -695,7 +690,7 @@ public class Dilation
 	 * This method performs what is called the 'full' dilation. That is: the
 	 * result image has its dimension enlarged by the structuring element, with
 	 * respect to the source image. It is limited to flat structuring elements,
-	 * only having <code>on/off</code> pixels, contrary to grayscale structuring
+	 * only having {@code on/off} pixels, contrary to grayscale structuring
 	 * elements. This allows to simply use a {@link Shape} as a type for these
 	 * structuring elements.
 	 * <p>
@@ -718,7 +713,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
-	 *            a sub-type of <code>T extends {@link RealType}</code>.
+	 *            a sub-type of {@code T extends RealType}.
 	 * @return a new {@link Img}, possibly of larger dimensions than the source.
 	 */
 	public static < T extends RealType< T >> Img< T > dilateFull( final Img< T > source, final Shape strel, final int numThreads )
@@ -748,7 +743,7 @@ public class Dilation
 	 * This method performs what is called the 'full' dilation. That is: the
 	 * result image has its dimension enlarged by the structuring element, with
 	 * respect to the source image. It is limited to flat structuring elements,
-	 * only having <code>on/off</code> pixels, contrary to grayscale structuring
+	 * only having {@code on/off} pixels, contrary to grayscale structuring
 	 * elements. This allows to simply use a {@link Shape} as a type for these
 	 * structuring elements.
 	 * <p>
@@ -757,7 +752,7 @@ public class Dilation
 	 * dilation, it is sufficient that the specified min value is smaller
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 * <p>
 	 * <b>Warning:</b> Current implementation does not do <i>stricto sensu</i>
 	 * the full dilation. Indeed, if the structuring element has more dimensions
@@ -784,8 +779,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
-	 *            a sub-type of <code>T extends {@link Comparable} &
-	 *            {@link Type}</code>.
+	 *            a sub-type of {@code T extends Comparable & Type}.
 	 * @return a new {@link Img}, possibly of larger dimensions than the source.
 	 */
 	public static < T extends Type< T > & Comparable< T > > Img< T > dilateFull( final Img< T > source, final Shape strel, final T minVal, final int numThreads )
@@ -812,7 +806,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -835,7 +829,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
-	 *            <code>T extends {@link RealType}</code>.
+	 *            {@code T extends RealType}.
 	 */
 	public static < T extends RealType< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
 	{
@@ -854,7 +848,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -872,7 +866,7 @@ public class Dilation
 	 * dilation, it is sufficient that the specified min value is smaller
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 *
 	 * @param source
 	 *            the source image.
@@ -889,7 +883,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
-	 *            <code>T extends {@link Comparable} & {@link Type}</code>.
+	 *            {@code T extends Comparable & Type}.
 	 */
 	public static < T extends Type< T > & Comparable< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final T minVal, final int numThreads )
 	{
@@ -908,7 +902,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -927,7 +921,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
-	 *            <code>T extends {@link RealType}</code>.
+	 *            {@code T extends RealType}.
 	 */
 	public static < T extends RealType< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final Shape strel, final int numThreads )
 	{
@@ -954,7 +948,7 @@ public class Dilation
 	 * Dilation_(morphology)</a>.
 	 * <p>
 	 * The result is written in the source image. This method is limited to flat
-	 * structuring elements, only having <code>on/off</code> pixels, contrary to
+	 * structuring elements, only having {@code on/off} pixels, contrary to
 	 * grayscale structuring elements. This allows to simply use a {@link Shape}
 	 * as a type for these structuring elements.
 	 * <p>
@@ -967,7 +961,7 @@ public class Dilation
 	 * dilation, it is sufficient that the specified min value is smaller
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image. This normally unseen parameter is required to operate on
-	 * <code>T extends {@link Comparable} & {@link Type}</code>.
+	 * {@code T extends Comparable & Type}.
 	 *
 	 * @param source
 	 *            the source image.
@@ -984,7 +978,7 @@ public class Dilation
 	 *            the number of threads to use for the calculation.
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
-	 *            <code>T extends {@link Comparable} & {@link Type}</code>.
+	 *            {@code T extends Comparable & Type}.
 	 */
 	public static < T extends Type< T > & Comparable< T > > void dilateInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final Shape strel, final T minVal, final int numThreads )
 	{

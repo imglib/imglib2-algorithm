@@ -84,9 +84,9 @@ public class FloodFill
 	 *            written into. Returns false if target pixel has been visited
 	 *            or source pixel is not part of the same connected component.
 	 * @param <T>
-	 *            T implements {@link Type<U>}.
+	 *            T implements {@code Type<U>}.
 	 * @param <U>
-	 *            U implements {@link Type<U>}.
+	 *            U implements {@code Type<U>}.
 	 */
 	public static < T extends Type< T >, U extends Type< U > > void fill( final RandomAccessible< T > source, final RandomAccessible< U > target, final Localizable seed, final U fillLabel, final Shape shape, final Filter< Pair< T, U >, Pair< T, U > > filter )
 	{
@@ -125,7 +125,7 @@ public class FloodFill
 	 * @param <T>
 	 *            No restrictions on {@link T}.
 	 * @param <U>
-	 *            {@link U} implements {@link Type<U>}.
+	 *            {@link U} implements {@code Type<U>}.
 	 */
 	public static < T, U extends Type< U > > void fill( final RandomAccessible< T > source, final RandomAccessible< U > target, final Localizable seed, final T seedLabel, final U fillLabel, final Shape shape, final Filter< Pair< T, U >, Pair< T, U > > filter )
 	{

@@ -114,8 +114,8 @@ public class RectangleShape implements Shape
 	}
 	
 	/**
-	 * @return <code>true</code> if <code>skipCenter</code> was set to true
-	 *         during construction, <code>false</code> otherwise.
+	 * @return {@code true} if {@code skipCenter} was set to true
+	 *         during construction, {@code false} otherwise.
 	 * @see CenteredRectangleShape#CenteredRectangleShape(int[], boolean)
 	 */
 	public boolean isSkippingCenter()

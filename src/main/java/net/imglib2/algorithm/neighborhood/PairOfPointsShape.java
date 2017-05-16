@@ -50,7 +50,7 @@ import net.imglib2.util.Util;
  * A {@link Shape} representing a pair of points.
  * <p>
  * The Shape as its origin at the first point, and the second one is simply
- * found by adding the value of the <code>offset</code> array to its position.
+ * found by adding the value of the {@code offset} array to its position.
  *
  * @author Jean-Yves Tinevez, 2013
  */
@@ -64,7 +64,7 @@ public class PairOfPointsShape implements Shape
 	 *
 	 * @param offset
 	 *            the offset of the second point with respect to the origin, as
-	 *            a <code>long[]</code> array.
+	 *            a {@code long[]} array.
 	 */
 	public PairOfPointsShape( final long[] offset )
 	{

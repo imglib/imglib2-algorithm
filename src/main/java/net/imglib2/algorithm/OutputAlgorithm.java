@@ -35,7 +35,8 @@
 package net.imglib2.algorithm;
 
 /**
- * TODO This interface should be empty and extend Callable<F>, Algorithm.
+ * TODO This interface should be empty and extend {@code Callable<F>},
+ * {@link Algorithm}.
  * 
  * @author Stephan Preibisch
  * @author Stephan Saalfeld

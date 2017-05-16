@@ -61,7 +61,7 @@ public class HorizontalLineNeighborhood< T > extends AbstractLocalizable impleme
 
 	/**
 	 * The span of the line. The iterated interval will be of size
-	 * <code>2 x span + 1 </code>.
+	 * {@code 2 x span + 1 }.
 	 */
 	private final long span;
 
@@ -76,7 +76,7 @@ public class HorizontalLineNeighborhood< T > extends AbstractLocalizable impleme
 
 	private final long maxIndex;
 
-	/** If <code>true</code>, the central pixel will be skipped. */
+	/** If {@code true}, the central pixel will be skipped. */
 	private final boolean skipCenter;
 
 	HorizontalLineNeighborhood( final long[] position, final long span, final int dim, final boolean skipCenter, final RandomAccess< T > sourceRandomAccess )

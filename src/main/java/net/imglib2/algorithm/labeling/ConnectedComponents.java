@@ -88,7 +88,7 @@ public final class ConnectedComponents
 	 * components labeled as {1}, {2}, {3}, etc. where 1, 2, 3 are labels
 	 * returned by {@code labelGenerator.next()}. {@code labelGenerator.next()}
 	 * is called exactly <em>n</em> times if the input contains
-	 * <em>n</m> connected components.
+	 * <em>n</em> connected components.
 	 *
 	 * @param input
 	 *            input image with pixels != 0 belonging to foreground.
@@ -119,7 +119,7 @@ public final class ConnectedComponents
 	 * components labeled as {1}, {2}, {3}, etc. where 1, 2, 3 are labels
 	 * returned by {@code labelGenerator.next()}. {@code labelGenerator.next()}
 	 * is called exactly <em>n</em> times if the input contains
-	 * <em>n</m> connected components.
+	 * <em>n</em> connected components.
 	 *
 	 * @param input
 	 *            input image with pixels != 0 belonging to foreground.
@@ -169,10 +169,11 @@ public final class ConnectedComponents
 	 * set to 1, 2, 3, etc.
 	 *
 	 * <p>
-	 * <em>Note, that the {@code output} image must be cleared to 0!<em>
+	 * <em>Note, that the {@code output} image must be cleared to 0!</em>
+	 * </p>
 	 *
 	 * @param input
-	 *            input image with pixels > 0 belonging to foreground.
+	 *            input image with pixels &gt; 0 belonging to foreground.
 	 * @param output
 	 *            output image, must be filled with 0.
 	 * @param se
@@ -199,10 +200,10 @@ public final class ConnectedComponents
 	 * set to 1, 2, 3, etc.
 	 *
 	 * <p>
-	 * <em>Note, that the {@code output} image must be cleared to 0!<em>
+	 * <em>Note, that the {@code output} image must be cleared to 0!</em>
 	 *
 	 * @param input
-	 *            input image with pixels > 0 belonging to foreground.
+	 *            input image with pixels &gt; 0 belonging to foreground.
 	 * @param output
 	 *            output image, must be filled with 0.
 	 * @param se
