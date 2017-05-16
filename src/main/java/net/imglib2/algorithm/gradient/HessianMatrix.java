@@ -45,6 +45,7 @@ import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.outofbounds.OutOfBoundsFactory;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.MixedTransformView;
 import net.imglib2.view.Views;
@@ -315,7 +316,7 @@ public class HessianMatrix
 		assert sigma.length * ( sigma.length + 1 ) / 2 == hessian.dimension( sigma.length );
 		final int maxD = sigma.length;
 
-		final double minSigma = Arrays.stream( sigma ).reduce( Double.MAX_VALUE, ( d1, d2 ) -> Math.min( d1, d2 ) );
+		final double minSigma = Util.min(  sigma );
 		final double minSigmaSq = minSigma * minSigma;
 		final double[] sigmaSquared = new double[ sigma.length * ( sigma.length + 1 ) / 2 ];
 		for ( int i1 = 0, k = 0; i1 < sigma.length; ++i1 )
