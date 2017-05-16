@@ -110,7 +110,7 @@ public class PartialDerivative
 		final int nDim = source.numDimensions();
 		if ( nDim < 2 )
 		{
-			gradientCentralDifference2( source, gradient, dimension );
+			gradientCentralDifference( source, gradient, dimension );
 			return;
 		}
 
