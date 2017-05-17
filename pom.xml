@@ -248,7 +248,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
-					<additionalparam>-header '&lt;script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"&gt;&lt;/script&gt;'</additionalparam>
+					<additionalparam>--allow-script-in-comments -header '&lt;script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"&gt;&lt;/script&gt;'</additionalparam>
 				</configuration>
 			</plugin>
 		</plugins>
