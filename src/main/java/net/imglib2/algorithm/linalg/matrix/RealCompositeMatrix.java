@@ -44,7 +44,7 @@ import net.imglib2.view.composite.Composite;
  *
  * @author Philipp Hanslovsky
  *
- *         {@link RealMatrix} that reads data from {@link Composite} (non-copy).
+ *         {@link Access2D} that reads data from {@link Composite} (non-copy).
  *
  * @param <T>
  */

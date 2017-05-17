@@ -41,8 +41,7 @@ import net.imglib2.view.composite.Composite;
  *
  * @author Philipp Hanslovsky
  *
- *         Square {@link RealMatrix} that reads data from {@link Composite}
- *         (non-copy).
+ *         Square {@link RealCompositeMatrix}.
  *
  * @param <T>
  */

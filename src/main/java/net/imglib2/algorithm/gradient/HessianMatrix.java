@@ -146,7 +146,7 @@ public class HessianMatrix
 
 	/**
 	 *
-	 * @param gradient
+	 * @param gradients
 	 *            n+1-dimensional {@link RandomAccessible} containing the
 	 *            gradients along all axes of the smoothed source (size of last
 	 *            dimension is n)
