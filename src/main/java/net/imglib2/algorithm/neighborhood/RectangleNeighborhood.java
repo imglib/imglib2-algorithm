@@ -375,4 +375,5 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 			return copy();
 		}
 	}
+
 }
