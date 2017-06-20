@@ -36,7 +36,9 @@ package net.imglib2.algorithm.binary;
 import java.util.Vector;
 
 import net.imglib2.Cursor;
+import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
@@ -85,64 +87,76 @@ public class Thresholder
 			final ImgFactory< U > targetFactory = factory.imgFactory( convertedType );
 			final Img< U > target = targetFactory.create( source, convertedType );
 
-			final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
-			final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-
 			if ( target.iterationOrder().equals( source.iterationOrder() ) )
 			{
-				for ( int i = 0; i < threads.length; i++ )
-				{
-					final Chunk chunk = chunks.get( i );
-					threads[ i ] = new Thread( "Thresholder thread " + i )
-					{
-						@Override
-						public void run()
-						{
-							final Cursor< U > cursorTarget = target.cursor();
-							cursorTarget.jumpFwd( chunk.getStartPosition() );
-							final Cursor< T > cursorSource = source.cursor();
-							cursorSource.jumpFwd( chunk.getStartPosition() );
-							for ( long steps = 0; steps < chunk.getLoopSize(); steps++ )
-							{
-								cursorTarget.fwd();
-								cursorSource.fwd();
-								converter.convert( cursorSource.get(), cursorTarget.get() );
-							}
-						}
-					};
-				}
+				convertII( source, target, converter, numThreads );
 			}
 			else
 			{
-				for ( int i = 0; i < threads.length; i++ )
-				{
-					final Chunk chunk = chunks.get( i );
-					threads[ i ] = new Thread( "Thresholder thread " + i )
-					{
-						@Override
-						public void run()
-						{
-							final Cursor< U > cursorTarget = target.cursor();
-							cursorTarget.jumpFwd( chunk.getStartPosition() );
-							final RandomAccess< T > ra = source.randomAccess( target );
-							for ( long steps = 0; steps < chunk.getLoopSize(); steps++ )
-							{
-								cursorTarget.fwd();
-								ra.setPosition( cursorTarget );
-								converter.convert( ra.get(), cursorTarget.get() );
-							}
-						}
-					};
-				}
+				convertRAI( source, target, converter, numThreads );
 			}
 
-			SimpleMultiThreading.startAndJoin( threads );
 			return target;
 		}
 		catch ( final IncompatibleTypeException e )
 		{
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	private static < U extends Type< U >, T extends Type< T > & Comparable< T > > void convertII( final IterableInterval< T > source, final IterableInterval< U > target, final Converter< T, U > converter, final int numThreads )
+	{
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Thresholder thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final Cursor< U > cursorTarget = target.cursor();
+					cursorTarget.jumpFwd( chunk.getStartPosition() );
+					final Cursor< T > cursorSource = source.cursor();
+					cursorSource.jumpFwd( chunk.getStartPosition() );
+					for ( long steps = 0; steps < chunk.getLoopSize(); steps++ )
+					{
+						cursorTarget.fwd();
+						cursorSource.fwd();
+						converter.convert( cursorSource.get(), cursorTarget.get() );
+					}
+				}
+			};
+		}
+	}
+
+	private static final < T extends Type< T > & Comparable< T >, U extends Type< U > > void convertRAI( final RandomAccessibleInterval< T > source, final IterableInterval< U > target, final Converter< T, U > converter, final int numThreads )
+	{
+		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
+		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+
+		for ( int i = 0; i < threads.length; i++ )
+		{
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "Thresholder thread " + i )
+			{
+				@Override
+				public void run()
+				{
+					final Cursor< U > cursorTarget = target.cursor();
+					cursorTarget.jumpFwd( chunk.getStartPosition() );
+					final RandomAccess< T > ra = source.randomAccess( target );
+					for ( long steps = 0; steps < chunk.getLoopSize(); steps++ )
+					{
+						cursorTarget.fwd();
+						ra.setPosition( cursorTarget );
+						converter.convert( ra.get(), cursorTarget.get() );
+					}
+				}
+			};
 		}
 	}
 
