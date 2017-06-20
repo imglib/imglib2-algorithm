@@ -47,6 +47,8 @@ import net.imglib2.multithreading.Chunk;
 import net.imglib2.multithreading.SimpleMultiThreading;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.util.Intervals;
+import net.imglib2.util.Util;
 
 /**
  * Collection of static utilities meant to generate {@link BitType} images from
@@ -73,10 +75,38 @@ public class Thresholder
 	 * @return a new {@link Img} of type {@link BitType} and of same dimension
 	 *         that the source image.
 	 */
-	public static final < T extends Type< T > & Comparable< T >> Img< BitType > threshold( final Img< T > source, final T threshold, final boolean above, final int numThreads )
+	public static final < T extends Type< T > & Comparable< T > > Img< BitType > threshold( final Img< T > source, final T threshold, final boolean above, final int numThreads )
 	{
 		final Converter< T, BitType > converter = thresholdConverter( threshold, above );
 		return convertParallel( source, converter, new BitType(), numThreads );
+	}
+
+	/**
+	 * Thresholding the values of the source image, storing the result into the
+	 * target image.
+	 *
+	 * @param source
+	 *            the image to threshold.
+	 * @param target
+	 *            destination image.
+	 * @param threshold
+	 *            the threshold.
+	 * @param above
+	 *            if {@code true}, the target value will be true for source
+	 *            values above the threshold, {@code false} otherwise.
+	 * @param numThreads
+	 *            the number of threads to use for thresholding.
+	 * @throws IllegalArgumentException
+	 *             if target image does not have the same dimensions and
+	 *             iteration order as the source image
+	 */
+	public static final < T extends Type< T > & Comparable< T >> void threshold( final IterableInterval< T > source, final IterableInterval< BitType > target, final T threshold, final boolean above, final int numThreads )
+	{
+		if (!Util.equalIterationOrder( source, target ))
+			throw new IllegalArgumentException( "source and target iteration orders do not match" );
+		if (!Intervals.equalDimensions( source, target ))
+			throw new IllegalArgumentException("source and target dimension do not match");
+		convertII( source, target, thresholdConverter( threshold, above ), numThreads );
 	}
 
 	private static final < T extends Type< T > & Comparable< T >, U extends Type< U > > Img< U > convertParallel( final Img< T > source, final Converter< T, U > converter, final U convertedType, final int numThreads )
