@@ -109,6 +109,32 @@ public class Thresholder
 		convertII( source, target, thresholdConverter( threshold, above ), numThreads );
 	}
 
+	/**
+	 * Thresholding the values of the source image, storing the result into the
+	 * target image.
+	 *
+	 * @param source
+	 *            the image to threshold.
+	 * @param target
+	 *            destination image.
+	 * @param threshold
+	 *            the threshold.
+	 * @param above
+	 *            if {@code true}, the target value will be true for source
+	 *            values above the threshold, {@code false} otherwise.
+	 * @param numThreads
+	 *            the number of threads to use for thresholding.
+	 * @throws IllegalArgumentException
+	 *             if target image does not have the same dimensions as the
+	 *             source image
+	 */
+	public static final < T extends Type< T > & Comparable< T >> void threshold( final RandomAccessibleInterval< T > source, final IterableInterval< BitType > target, final T threshold, final boolean above, final int numThreads )
+	{
+		if (!Intervals.equalDimensions( source, target ))
+			throw new IllegalArgumentException("source and target dimension do not match");
+		convertRAI( source, target, thresholdConverter( threshold, above ), numThreads );
+	}
+
 	private static final < T extends Type< T > & Comparable< T >, U extends Type< U > > Img< U > convertParallel( final Img< T > source, final Converter< T, U > converter, final U convertedType, final int numThreads )
 	{
 		final ImgFactory< T > factory = source.factory();
