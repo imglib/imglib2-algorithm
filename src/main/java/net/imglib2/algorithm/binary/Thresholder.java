@@ -73,13 +73,17 @@ public class Thresholder
 	 */
 	public static final < T extends Type< T > & Comparable< T >> Img< BitType > threshold( final Img< T > source, final T threshold, final boolean above, final int numThreads )
 	{
+		final Converter< T, BitType > converter = thresholdConverter( threshold, above );
+		return convertParallel( source, converter, new BitType(), numThreads );
+	}
+
+	private static final < T extends Type< T > & Comparable< T >, U extends Type< U > > Img< U > convertParallel( final Img< T > source, final Converter< T, U > converter, final U convertedType, final int numThreads )
+	{
 		final ImgFactory< T > factory = source.factory();
 		try
 		{
-			final ImgFactory< BitType > bitFactory = factory.imgFactory( new BitType() );
-			final Img< BitType > target = bitFactory.create( source, new BitType() );
-
-			final Converter< T, BitType > converter = thresholdConverter( threshold, above );
+			final ImgFactory< U > targetFactory = factory.imgFactory( convertedType );
+			final Img< U > target = targetFactory.create( source, convertedType );
 
 			final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
 			final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
@@ -94,7 +98,7 @@ public class Thresholder
 						@Override
 						public void run()
 						{
-							final Cursor< BitType > cursorTarget = target.cursor();
+							final Cursor< U > cursorTarget = target.cursor();
 							cursorTarget.jumpFwd( chunk.getStartPosition() );
 							final Cursor< T > cursorSource = source.cursor();
 							cursorSource.jumpFwd( chunk.getStartPosition() );
@@ -118,7 +122,7 @@ public class Thresholder
 						@Override
 						public void run()
 						{
-							final Cursor< BitType > cursorTarget = target.cursor();
+							final Cursor< U > cursorTarget = target.cursor();
 							cursorTarget.jumpFwd( chunk.getStartPosition() );
 							final RandomAccess< T > ra = source.randomAccess( target );
 							for ( long steps = 0; steps < chunk.getLoopSize(); steps++ )
