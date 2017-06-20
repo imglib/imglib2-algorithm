@@ -221,25 +221,11 @@ public class Thresholder
 		final Converter< T, BitType > converter;
 		if ( above )
 		{
-			converter = new Converter< T, BitType >()
-			{
-				@Override
-				public void convert( final T input, final BitType output )
-				{
-					output.set( input.compareTo( threshold ) > 0 );
-				}
-			};
+			converter = ( input, output ) -> output.set( input.compareTo( threshold ) > 0 );
 		}
 		else
 		{
-			converter = new Converter< T, BitType >()
-			{
-				@Override
-				public void convert( final T input, final BitType output )
-				{
-					output.set( input.compareTo( threshold ) < 0 );
-				}
-			};
+			converter = ( input, output ) -> output.set( input.compareTo( threshold ) < 0 );
 		}
 		return converter;
 	}
