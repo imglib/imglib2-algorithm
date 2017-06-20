@@ -79,29 +79,7 @@ public class Thresholder
 			final ImgFactory< BitType > bitFactory = factory.imgFactory( new BitType() );
 			final Img< BitType > target = bitFactory.create( source, new BitType() );
 
-			final Converter< T, BitType > converter;
-			if ( above )
-			{
-				converter = new Converter< T, BitType >()
-				{
-					@Override
-					public void convert( final T input, final BitType output )
-					{
-						output.set( input.compareTo( threshold ) > 0 );
-					}
-				};
-			}
-			else
-			{
-				converter = new Converter< T, BitType >()
-				{
-					@Override
-					public void convert( final T input, final BitType output )
-					{
-						output.set( input.compareTo( threshold ) < 0 );
-					}
-				};
-			}
+			final Converter< T, BitType > converter = thresholdConverter( threshold, above );
 
 			final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
 			final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
@@ -162,6 +140,34 @@ public class Thresholder
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	private static < T extends Type< T > & Comparable< T > > Converter< T, BitType > thresholdConverter( final T threshold, final boolean above )
+	{
+		final Converter< T, BitType > converter;
+		if ( above )
+		{
+			converter = new Converter< T, BitType >()
+			{
+				@Override
+				public void convert( final T input, final BitType output )
+				{
+					output.set( input.compareTo( threshold ) > 0 );
+				}
+			};
+		}
+		else
+		{
+			converter = new Converter< T, BitType >()
+			{
+				@Override
+				public void convert( final T input, final BitType output )
+				{
+					output.set( input.compareTo( threshold ) < 0 );
+				}
+			};
+		}
+		return converter;
 	}
 
 }
