@@ -143,7 +143,7 @@ public class Thresholder
 			final ImgFactory< U > targetFactory = factory.imgFactory( convertedType );
 			final Img< U > target = targetFactory.create( source, convertedType );
 
-			if ( target.iterationOrder().equals( source.iterationOrder() ) )
+			if ( Util.equalIterationOrder( source, target ) )
 			{
 				convertII( source, target, converter, numThreads );
 			}
