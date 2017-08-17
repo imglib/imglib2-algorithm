@@ -188,6 +188,9 @@ Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
 Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
 Mark Longair, Brian Northan, Nick Perry, Curtis Rueden, Johannes Schindelin,
 Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
+
+		<imglib2-realtransform.version>2.0.0-beta-38</imglib2-realtransform.version>
+		<jitk-tps.version>3.0.0</jitk-tps.version>
 	</properties>
 
 	<repositories>
