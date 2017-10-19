@@ -65,23 +65,10 @@ import net.imglib2.util.Util;
  * Maximally Stable Extremal Regions (MSER) are selected from the component tree
  * as follows. For each component, an instability score is computed as
  * <!-- |R_i - R_{i-\Delta}| / |R_i| -->
- * <math style="display:block">
- * <mi>s</mi><mfenced><msub><mi>R</mi><mi>i</mi></msub></mfenced>
- * <mo>=</mo>
- * <mfrac>
- *   <mfenced open="|" close="|">
- *     <mrow><msub><mi>R</mi><mi>i</mi></msub>
- *   	   <mo lspace=mediummathspace rspace=mediummathspace>\</mo>
- *         <msub><mi>R</mi><mrow><mi>i</mi><mo>-</mo><mi>&Delta;</mi></mrow></msub>
- *     </mrow>
- *   </mfenced>
- *   <mfenced open="|" close="|">
- *     <msub><mi>R</mi><mi>i</mi></msub>
- *   </mfenced>
- * </mfrac>
- * </math>
  * </p>
- * 
+ * <blockquote>
+ * \[\frac{|R_i - R_{i-\Delta}|}{|R_i|}\]
+ * </blockquote>
  * <p>
  * Regions whose score is a local minimum are selected as MSER candidates.
  * </p>
@@ -96,20 +83,10 @@ import net.imglib2.util.Util;
  * A tree is build of the remaining candidates. Finally, candidates are pruned
  * from the tree, if they are too similar to their parent: Let <em>A</em>,
  * <em>B</em> be a region and its parent. Then <em>A</em> is discarded if
- * <!-- |B - A| / |B| <= minDiversity -->
- * <math style="display:block">
- * <mfrac>
- *   <mfenced open="|" close="|"><mrow>
- *     <mi>B</mi>
- *     <mo lspace=mediummathspace rspace=mediummathspace>\</mo>
- *     <mi>A</mi>
- *   </mrow></mfenced>
- *   <mfenced open="|" close="|"><mi>B</mi></mfenced>
- * </mfrac>
- * <mo>&le;</mo><mi>minDiversity</mi>
- * </math>
  * </p>
- * 
+ * <blockquote>
+ * \[\frac{|B - A|}{|B|} \leq minDiversity\]
+ * </blockquote>
  * <p>
  * <strong>TODO</strong> Add support for non-zero-min RandomAccessibleIntervals.
  * (Currently, we assume that the input image is a <em>zero-min</em> interval.)

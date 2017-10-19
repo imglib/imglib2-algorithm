@@ -64,20 +64,19 @@ import net.imglib2.view.Views;
 import net.imglib2.view.composite.RealComposite;
 
 /**
- *
  * ImgLib2 implementation of n-dimensional distance transform D of sampled
  * functions f with distance measure d:
- * http://www.theoryofcomputing.org/articles/v008a019/ DOI:ch
- * 10.4086/toc.2012.v008a019
- *
- * D( p ) = min_q f(q) + d(p,q) where p,q are points on a grid/image.
- *
+ * <a href="http://www.theoryofcomputing.org/articles/v008a019/">Distance
+ * Transforms of Sampled Functions</a> (DOI:ch 10.4086/toc.2012.v008a019).
+ * <p>
+ * {@code D( p ) = min_q f(q) + d(p,q)} where p,q are points on a grid/image.
+ * </p>
+ * <p>
  * The implemented algorithm has complexity O(dn) where d is the number of
  * dimensions of the image, and n is the total number of pixels/voxels.
- *
+ * </p>
  *
  * @author Philipp Hanslovsky
- *
  */
 public class DistanceTransform
 {
@@ -352,10 +351,8 @@ public class DistanceTransform
 	 *            Input function on which distance transform should be computed.
 	 * @param target
 	 *            Final result of distance transform.
-	 * @param nTasks
-	 *            Number of tasks/parallelism
-	 * @throws InterruptedException
-	 * @throws ExecutionException
+	 * @param d
+	 *            {@link Distance} between two points.
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,

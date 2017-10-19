@@ -52,20 +52,21 @@ import net.imglib2.type.logic.BitType;
 
 /**
  * Build the component tree of an image. This is an implementation of the
- * algorithm described by D. Nister and H. Stewenius in
- * "Linear Time Maximally Stable Extremal Regions" (ECCV 2008).
- * 
- * The input to the algorithm is a RandomAccessibleInterval< T >. Further, a
- * Comparator<T> and a {@link PartialComponent.Generator} to instantiate new
- * components are required. Pixel locations are aggregated in
+ * algorithm described by D. Nister and H. Stewenius in "Linear Time Maximally
+ * Stable Extremal Regions" (ECCV 2008).
+ * <p>
+ * The input to the algorithm is a {@code RandomAccessibleInterval< T >}.
+ * Further, a {@code Comparator<T>} and a {@link PartialComponent.Generator} to
+ * instantiate new components are required. Pixel locations are aggregated in
  * {@link PartialComponent}s which are passed to a
  * {@link PartialComponent.Handler} whenever a connected component for a
  * specific threshold is completed.
- * 
+ * </p>
+ * <p>
  * Building up a tree structure out of the completed components should happen in
  * the {@link PartialComponent.Handler} implementation. See
  * {@link PixelListComponentTree} for an example.
- * 
+ * </p>
  * <p>
  * <strong>TODO</strong> Add support for non-zero-min RandomAccessibleIntervals.
  * (Currently, we assume that the input image is a <em>zero-min</em> interval.)

@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>imglib2-algorithm</artifactId>
-	<version>0.6.4-SNAPSHOT</version>
+	<version>0.8.2-SNAPSHOT</version>
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>
@@ -188,13 +188,16 @@ Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
 Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
 Mark Longair, Brian Northan, Nick Perry, Curtis Rueden, Johannes Schindelin,
 Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
+
+		<imglib2-realtransform.version>2.0.0-beta-38</imglib2-realtransform.version>
+		<jitk-tps.version>3.0.0</jitk-tps.version>
 	</properties>
 
 	<repositories>
 		<!-- NB: for SciJava dependencies -->
 		<repository>
 			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
+			<url>https://maven.imagej.net/content/groups/public</url>
 		</repository>
 	</repositories>
 
@@ -229,6 +232,11 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<artifactId>trove4j</artifactId>
 			<version>3.0.3</version>
 		</dependency>
+		<dependency>
+			<groupId>org.ojalgo</groupId>
+			<artifactId>ojalgo</artifactId>
+			<version>43.0</version>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
@@ -237,4 +245,15 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<additionalparam>--allow-script-in-comments -header '&lt;script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"&gt;&lt;/script&gt;'</additionalparam>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

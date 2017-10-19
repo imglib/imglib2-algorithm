@@ -54,9 +54,8 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
 /**
- * Provides
- * {@link #findLocalExtrema(RandomAccessibleInterval, LocalNeighborhoodCheck, int)}
- * to find pixels that are extrema in their local neighborhood.
+ * Provides {@link #findLocalExtrema} to find pixels that are extrema in their
+ * local neighborhood.
  * 
  * @author Tobias Pietzsch
  */
@@ -77,8 +76,8 @@ public class LocalExtrema
 	{
 		/**
 		 * Determine whether a pixel is a local extremum. If so, return a
-		 * <code>P</code> that represents the maximum. Otherwise return
-		 * <code>null</code>.
+		 * {@code P} that represents the maximum. Otherwise return
+		 * {@code null}.
 		 * 
 		 * @param center
 		 *            an access located on the pixel to test

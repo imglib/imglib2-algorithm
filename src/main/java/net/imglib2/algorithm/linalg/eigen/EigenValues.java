@@ -32,48 +32,57 @@
  * #L%
  */
 
-package net.imglib2.algorithm.morphology.distance;
+package net.imglib2.algorithm.linalg.eigen;
+
+import net.imglib2.type.numeric.ComplexType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.composite.Composite;
 
 /**
- * Family of strictly convex, real valued functions that are separable in all
- * dimension. The interface thus specifies just a one-dimensional function that
- * is parameterized by an offset along both the x- and the y-axis. These
- * parameters are passed at evaluation along with the dimension in which the
- * function is to be evaluated.
- * <p>
- * Two distinct members of the same family, {@code d = f(x)} and
- * {@code d' = f(x - x0) + y0}, must have exactly one intersection point (for
- * each dimension):
- * </p>
- * 
- * <pre>
- * |{ x : f(x) = f(x -x0) + y0 }| = 1
- * </pre>
- * <p>
- * This interface is used in {@link DistanceTransform}:
- * </p>
- * <p>
- * {@code D( p ) = min_q f(q) + d(p,q)} where p,q are points on a grid/image.
- * </p>
- * 
- * @author Philipp Hanslovsky
+ *
+ * Interface for handling different cases, e.g. square, symmetric, or 2
+ * dimensional tensors.
  *
  */
-public interface Distance
+public interface EigenValues< T extends RealType< T >, U extends ComplexType< U > >
 {
+	public void compute( final Composite< T > matrix, final Composite< U > evs );
 
-	/**
-	 * Evaluate function with family parameters xShift and yShift at position x
-	 * in dimension dim.
-	 */
-	double evaluate( double x, double xShift, double yShift, int dim );
+	public default EigenValues< T, U > copy()
+	{
+		return this;
+	}
 
-	/**
-	 *
-	 * Determine the intersection point in dimension dim of two members of the
-	 * function family. The members are parameterized by xShift1, yShift1,
-	 * xShift2, yShift2, with xShift1 &lt; xShift2.
-	 */
-	double intersect( double xShift1, double yShift1, double xShift2, double yShift2, int dim );
+	public static < T extends RealType< T >, U extends ComplexType< U > > EigenValues1D< T, U > oneDimensional()
+	{
+		return new EigenValues1D<>();
+	}
+
+	public static < T extends RealType< T >, U extends ComplexType< U > > EigenValues2DSquare< T, U > square2D()
+	{
+		return new EigenValues2DSquare<>();
+	}
+
+	public static < T extends RealType< T >, U extends ComplexType< U > > EigenValues2DSymmetric< T, U > symmetric2D()
+	{
+		return new EigenValues2DSymmetric<>();
+	}
+
+	public static < T extends RealType< T >, U extends ComplexType< U > > EigenValuesSquare< T, U > square( final int nDim )
+	{
+		return new EigenValuesSquare<>( nDim );
+	}
+
+	public static < T extends RealType< T >, U extends ComplexType< U > > EigenValuesSymmetric< T, U > symmetric( final int nDim )
+	{
+		return new EigenValuesSymmetric<>( nDim );
+	}
+
+	public static < T extends RealType< T >, U extends ComplexType< U > > EigenValues< T, U > invalid()
+	{
+		return ( m, evs ) -> {
+			throw new UnsupportedOperationException( "EigenValues not implemented yet!" );
+		};
+	}
 
 }

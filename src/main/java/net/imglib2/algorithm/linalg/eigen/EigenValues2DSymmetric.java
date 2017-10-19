@@ -32,48 +32,24 @@
  * #L%
  */
 
-package net.imglib2.algorithm.morphology.distance;
+package net.imglib2.algorithm.linalg.eigen;
 
-/**
- * Family of strictly convex, real valued functions that are separable in all
- * dimension. The interface thus specifies just a one-dimensional function that
- * is parameterized by an offset along both the x- and the y-axis. These
- * parameters are passed at evaluation along with the dimension in which the
- * function is to be evaluated.
- * <p>
- * Two distinct members of the same family, {@code d = f(x)} and
- * {@code d' = f(x - x0) + y0}, must have exactly one intersection point (for
- * each dimension):
- * </p>
- * 
- * <pre>
- * |{ x : f(x) = f(x -x0) + y0 }| = 1
- * </pre>
- * <p>
- * This interface is used in {@link DistanceTransform}:
- * </p>
- * <p>
- * {@code D( p ) = min_q f(q) + d(p,q)} where p,q are points on a grid/image.
- * </p>
- * 
- * @author Philipp Hanslovsky
- *
- */
-public interface Distance
+import net.imglib2.type.numeric.ComplexType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.composite.Composite;
+
+public class EigenValues2DSymmetric< T extends RealType< T >, U extends ComplexType< U > > implements EigenValues< T, U >
 {
-
-	/**
-	 * Evaluate function with family parameters xShift and yShift at position x
-	 * in dimension dim.
-	 */
-	double evaluate( double x, double xShift, double yShift, int dim );
-
-	/**
-	 *
-	 * Determine the intersection point in dimension dim of two members of the
-	 * function family. The members are parameterized by xShift1, yShift1,
-	 * xShift2, yShift2, with xShift1 &lt; xShift2.
-	 */
-	double intersect( double xShift1, double yShift1, double xShift2, double yShift2, int dim );
-
+	@Override
+	public void compute( final Composite< T > tensor, final Composite< U > evs )
+	{
+		final double x11 = tensor.get( 0 ).getRealDouble();
+		final double x12 = tensor.get( 1 ).getRealDouble();
+		final double x22 = tensor.get( 2 ).getRealDouble();
+		final double sum = x11 + x22;
+		final double diff = x11 - x22;
+		final double sqrt = Math.sqrt( 4 * x12 * x12 + diff * diff );
+		evs.get( 0 ).setReal( 0.5 * ( sum + sqrt ) );
+		evs.get( 1 ).setReal( 0.5 * ( sum - sqrt ) );
+	}
 }

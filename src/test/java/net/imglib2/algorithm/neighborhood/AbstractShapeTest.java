@@ -79,15 +79,15 @@ public abstract class AbstractShapeTest
 	protected abstract Shape createShape();
 
 	/**
-	 * Returns <code>true</code> iff the specified <code>pos</code> coordinates
+	 * Returns {@code true} iff the specified {@code pos} coordinates
 	 * are within a neighborhood generated from the Shape under test, and
-	 * positioned on <code>center</code>.
+	 * positioned on {@code center}.
 	 * 
 	 * @param pos
 	 *            the position to test.
 	 * @param center
 	 *            the neighborhood center.
-	 * @return <code>true</code> if pos is inside the nieghborhood.
+	 * @return {@code true} if pos is inside the nieghborhood.
 	 */
 	protected abstract boolean isInside( final long[] pos, final long[] center );
 

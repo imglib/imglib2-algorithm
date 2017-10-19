@@ -32,48 +32,49 @@
  * #L%
  */
 
-package net.imglib2.algorithm.morphology.distance;
+package net.imglib2.algorithm.hessian;
 
-/**
- * Family of strictly convex, real valued functions that are separable in all
- * dimension. The interface thus specifies just a one-dimensional function that
- * is parameterized by an offset along both the x- and the y-axis. These
- * parameters are passed at evaluation along with the dimension in which the
- * function is to be evaluated.
- * <p>
- * Two distinct members of the same family, {@code d = f(x)} and
- * {@code d' = f(x - x0) + y0}, must have exactly one intersection point (for
- * each dimension):
- * </p>
- * 
- * <pre>
- * |{ x : f(x) = f(x -x0) + y0 }| = 1
- * </pre>
- * <p>
- * This interface is used in {@link DistanceTransform}:
- * </p>
- * <p>
- * {@code D( p ) = min_q f(q) + d(p,q)} where p,q are points on a grid/image.
- * </p>
- * 
- * @author Philipp Hanslovsky
- *
- */
-public interface Distance
+import java.util.stream.IntStream;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import net.imglib2.Cursor;
+import net.imglib2.algorithm.gradient.ScaleAsFunctionOfPosition;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.basictypeaccess.array.IntArray;
+import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.util.Intervals;
+import net.imglib2.view.Views;
+
+public class ScaleAsFunctionOfPositionTest
 {
 
-	/**
-	 * Evaluate function with family parameters xShift and yShift at position x
-	 * in dimension dim.
-	 */
-	double evaluate( double x, double xShift, double yShift, int dim );
+	long[] dim = new long[] { 2, 3, 4 };
 
-	/**
-	 *
-	 * Determine the intersection point in dimension dim of two members of the
-	 * function family. The members are parameterized by xShift1, yShift1,
-	 * xShift2, yShift2, with xShift1 &lt; xShift2.
-	 */
-	double intersect( double xShift1, double yShift1, double xShift2, double yShift2, int dim );
+	int[] data = IntStream.range( 0, ( int ) Intervals.numElements( dim ) ).map( i -> 1 ).toArray();
+
+	ArrayImg< IntType, IntArray > img = ArrayImgs.ints( data, dim );
+
+	@Test
+	public void test()
+	{
+		final ScaleAsFunctionOfPosition< IntType > scaled = new ScaleAsFunctionOfPosition<>( img, l -> {
+			double s = l.getDoublePosition( 0 );
+			for ( int d = 1; d < l.numDimensions(); ++d )
+				s = Math.max( l.getDoublePosition( d ), s );
+			return s;
+		} );
+
+		for ( final Cursor< IntType > c = Views.interval( scaled, img ).cursor(); c.hasNext(); ) {
+			final int v = c.next().get();
+			int m = c.getIntPosition( 0 );
+			for ( int d = 1; d < c.numDimensions(); ++d )
+				m = Math.max( c.getIntPosition( d ), m );
+			Assert.assertEquals( m, v );
+		}
+
+	}
 
 }

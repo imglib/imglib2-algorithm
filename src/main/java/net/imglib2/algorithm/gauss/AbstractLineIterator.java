@@ -65,7 +65,7 @@ public abstract class AbstractLineIterator implements Iterator
 	 *            - which dimension to iterate (dimension id)
 	 * @param size
 	 *            - number of pixels to iterate
-	 * @param randomaccess
+	 * @param randomAccess
 	 *            - defines the right position (one pixel left of the starting
 	 *            pixel) and can be moved along the line
 	 */

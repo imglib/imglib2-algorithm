@@ -63,11 +63,12 @@ public class DifferenceOfGaussian
 	/**
 	 * Compute the difference of Gaussian for the input. Input convolved with
 	 * Gaussian of sigmaSmaller is subtracted from input convolved with Gaussian
-	 * of sigmaLarger (where sigmaLarger > sigmaSmaller).
-	 *
+	 * of sigmaLarger (where {@code sigmaLarger > sigmaSmaller}).
 	 * <p>
 	 * Creates an appropriate temporary image and calls
-	 * {@link #DoG(double[], double[], RandomAccessible, RandomAccessible, RandomAccessibleInterval, int)}.
+	 * {@link #DoG(double[], double[], RandomAccessible, RandomAccessible, RandomAccessibleInterval, ExecutorService)}
+	 * .
+	 * </p>
 	 *
 	 * @param sigmaSmaller
 	 *            stddev (in every dimension) of smaller Gaussian.
@@ -99,7 +100,7 @@ public class DifferenceOfGaussian
 	/**
 	 * Compute the difference of Gaussian for the input. Input convolved with
 	 * Gaussian of sigmaSmaller is subtracted from input convolved with Gaussian
-	 * of sigmaLarger (where sigmaLarger > sigmaSmaller).
+	 * of sigmaLarger (where sigmaLarger &gt; sigmaSmaller).
 	 *
 	 * @param sigmaSmaller
 	 *            stddev (in every dimension) of smaller Gaussian.
@@ -200,7 +201,7 @@ public class DifferenceOfGaussian
 
 	/**
 	 * Helper function to compute per-dimension sigmas in pixel coordinates. The
-	 * parameters <code>sigma1</code> and <code>sigma2</code> specify desired
+	 * parameters {@code sigma1} and {@code sigma2} specify desired
 	 * sigmas (scale) in image coordinates. Taking into account the sigma of the
 	 * input image as well as the image calibration, the resulting sigma arrays
 	 * specifiy the smoothing that has to be applied to achieve the desired
@@ -209,7 +210,7 @@ public class DifferenceOfGaussian
 	 * @param imageSigma
 	 *            estimated sigma of the input image, in pixel coordinates.
 	 * @param minf
-	 *            multiple of the <code>imageSigma</code> that smoothing with
+	 *            multiple of the {@code imageSigma} that smoothing with
 	 *            the resulting sigma must at least achieve.
 	 * @param pixelSize
 	 *            calibration. Dimensions of a pixel in image units.
@@ -217,7 +218,7 @@ public class DifferenceOfGaussian
 	 *            desired sigma in image coordinates.
 	 * @param sigma2
 	 *            desired sigma in image coordinates.
-	 * @return <code>double[2][numDimensions]</code>, array of two arrays
+	 * @return {@code double[2][numDimensions]}, array of two arrays
 	 *         contains resulting sigmas for sigma1, sigma2.
 	 */
 	public static double[][] computeSigmas( final double imageSigma, final double minf, final double[] pixelSize, final double sigma1, final double sigma2 )
