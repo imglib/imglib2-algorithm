@@ -180,8 +180,8 @@ public class PartialDerivative
 			shiftback[ d ] = min[ d ] - max[ d ];
 
 		final RandomAccess< T > result = gradient.randomAccess();
-		final RandomAccess< T > back = source.randomAccess( Intervals.translate( gradient, 1, dimension ) );
-		final RandomAccess< T > front = source.randomAccess( Intervals.translate( gradient, -1, dimension ) );
+		final RandomAccess< T > back = source.randomAccess( Intervals.translate( gradient, -1, dimension ) );
+		final RandomAccess< T > front = source.randomAccess( Intervals.translate( gradient, 1, dimension ) );
 
 		result.setPosition( min );
 		back.setPosition( min );
