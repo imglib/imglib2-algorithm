@@ -46,6 +46,7 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.convolution.Kernel1D;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgFactory;
@@ -66,9 +67,12 @@ import net.imglib2.view.Views;
  * 
  * @author Tobias Pietzsch
  */
+@Deprecated
 public final class SeparableSymmetricConvolution
 {
 	/**
+	 * @deprecated Use {@link net.imglib2.algorithm.convolution.SeparableConvolution#convolve(Kernel1D[], RandomAccessible, RandomAccessibleInterval, ExecutorService)}
+	 * <p>
 	 * Convolve source with a separable symmetric kernel and write the result to
 	 * output. In-place operation (source==target) is supported.
 	 * 
@@ -100,6 +104,7 @@ public final class SeparableSymmetricConvolution
 	 *             if source and target type are not compatible (they must be
 	 *             either both {@link RealType RealTypes} or the same type).
 	 */
+	@Deprecated
 	@SuppressWarnings( { "rawtypes", "unchecked" } )
 	public static < S extends NumericType< S >, T extends NumericType< T > > void convolve( final double[][] halfkernels, final RandomAccessible< S > source, final RandomAccessibleInterval< T > target, final ExecutorService service ) throws IncompatibleTypeException
 	{
@@ -203,6 +208,10 @@ public final class SeparableSymmetricConvolution
 		return a.get();
 	}
 
+	/**
+	 * @deprecated use {@link net.imglib2.algorithm.convolution.SeparableConvolutionHelper#convolve1d(Kernel1D, int, RandomAccessible, RandomAccessibleInterval)}
+	 */
+	@Deprecated
 	public static < S, T > void convolve1d( final double[] halfkernel,
 			final RandomAccessible< S > source, final RandomAccessibleInterval< T > target,
 			final ConvolverFactory< S, T > convolverFactoryST,
@@ -213,6 +222,8 @@ public final class SeparableSymmetricConvolution
 	}
 
 	/**
+	 * @deprecated use {@link net.imglib2.algorithm.convolution.SeparableConvolutionHelper#convolve(Kernel1D[], RandomAccessible, RandomAccessibleInterval)}
+	 * <p>
 	 * Convolve source with a separable symmetric kernel and write the result to
 	 * output. In-place operation (source==target) is supported. Calculations
 	 * are done in the intermediate type determined by the
@@ -246,6 +257,7 @@ public final class SeparableSymmetricConvolution
 	 * @param service
 	 *            service providing threads for multi-threading
 	 */
+	@Deprecated
 	public static < S, I, T > void convolve( final double[][] halfkernels,
 			final RandomAccessible< S > source, final RandomAccessibleInterval< T > target,
 			final ConvolverFactory< S, I > convolverFactorySI,

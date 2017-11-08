@@ -19,6 +19,9 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * Performance benchmark for {@link Gauss3}.
  *
@@ -49,13 +52,40 @@ public class GaussBenchmark {
 	}
 
 	@Benchmark
+	public void deprecated() throws IncompatibleTypeException {
+		deprecatedGauss(10, in, out);
+	}
+
+	@Benchmark
 	public void gaussOnCellImg() throws IncompatibleTypeException {
 		Gauss3.gauss(10, cellIn, cellOut);
 	}
 
 	@Benchmark
+	public void deprecatedOnCellImg() throws IncompatibleTypeException {
+		deprecatedGauss(10, cellIn, cellOut);
+	}
+
+	@Benchmark
 	public void gaussOnPlanarImg() throws IncompatibleTypeException {
 		Gauss3.gauss(10, planarIn, planarOut);
+	}
+
+	@Benchmark
+	public void deprecatedOnPlanarImg() throws IncompatibleTypeException {
+		deprecatedGauss(10, planarIn, planarOut);
+	}
+
+	void deprecatedGauss(double sigma, RandomAccessible<DoubleType> source, RandomAccessibleInterval<DoubleType> target) throws IncompatibleTypeException {
+		final int n = source.numDimensions();
+		final double[] s = new double[ n ];
+		for ( int d = 0; d < n; ++d )
+			s[ d ] = sigma;
+		final int numthreads = Runtime.getRuntime().availableProcessors();
+		final ExecutorService service = Executors.newFixedThreadPool( numthreads );
+		final double[][] halfkernels = Gauss3.halfkernels(s);
+		SeparableSymmetricConvolution.convolve( halfkernels, source, target, service);
+		service.shutdown();
 	}
 
 	public static void main(String[] args) throws RunnerException {
