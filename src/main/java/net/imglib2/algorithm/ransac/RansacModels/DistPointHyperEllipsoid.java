@@ -76,7 +76,6 @@ public class DistPointHyperEllipsoid
 			final double[] x )
 	{
 		final int n = e.length;
-
 		// Determine negations for y to the first octant.
 		final boolean[] negate = new boolean[ n ];
 		for ( int i = 0; i < n; ++i )
@@ -169,7 +168,9 @@ public class DistPointHyperEllipsoid
 		
 		if ( y[ n - 1 ] > 0 )
 		{
-			sqrDistance = new NewtonRaphsonEllipsoid(rndx).run(numPos, e, yPos, xPos); 
+			sqrDistance = Bisector( numPos, ePos, yPos, xPos );
+					
+				//	new NewtonRaphsonEllipsoid(rndx).run(numPos, ePos, yPos, xPos); 
 					//Bisector( numPos, ePos, yPos, xPos );
 		}
 		else
@@ -231,8 +232,10 @@ public class DistPointHyperEllipsoid
 				// hyperellipsoid point has x[n-1] == 0 and is on the
 				// domain-boundary hyperellipsoid.
 				x[ n - 1 ] = 0;
-				sqrDistance = new NewtonRaphsonEllipsoid(rndx).run(numPos, e, yPos, xPos);  
-						//Bisector( numPos, ePos, yPos, xPos );
+				sqrDistance = //Bisector( numPos, ePos, yPos, xPos );
+						
+						//new NewtonRaphsonEllipsoid(rndx).run(numPos, ePos, yPos, xPos);  
+						Bisector( numPos, ePos, yPos, xPos );
 			}
 		}
 
@@ -246,7 +249,6 @@ public class DistPointHyperEllipsoid
 				++numPos;
 			}
 		}
-
 		return sqrDistance;
 	}
 	

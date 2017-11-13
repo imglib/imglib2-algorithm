@@ -78,11 +78,11 @@ public class RansacEllipsoid {
 			catch ( final IllegalArgumentException e )
 			{
 				e.printStackTrace();
-				System.out.println( "oops" );
+				System.out.println( "Something is illegal" );
 			}
 			catch ( final RuntimeException e )
 			{
-				System.out.println( "psd" );
+				System.out.println( "Something is null" );
 			}
 		}
 
@@ -196,7 +196,8 @@ public class RansacEllipsoid {
 		{
 			final double xf = Math.cos(Math.toRadians(j));
 			final double yf = Math.sin(Math.toRadians(j));
-			final double[] posf = new double[] { xf, yf };
+			final double zf = 0;
+			final double[] posf = new double[] { xf, yf, zf };
 			final RealPoint rpos = new RealPoint( posf );
 			truths.add( rpos );
 		
@@ -205,10 +206,10 @@ public class RansacEllipsoid {
 
 	
 		// Using the polynomial model to do the fitting
-		final Ellipsoid regression = sample(truths,nsamples,500,500);
-		final Ellipsoid finalellipse = fitToInliers(regression,truths,500,500);
+		final Ellipsoid regression = sample(truths,nsamples,50,100);
+		final Ellipsoid finalellipse = fitToInliers(regression,truths,50,100);
 
-		
+		System.out.println(finalellipse.getCenter()[0] + " " + finalellipse.getCenter()[1] + " " + finalellipse.getCenter()[2]);
 		
 
 	}

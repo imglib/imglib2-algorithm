@@ -130,7 +130,6 @@ public class FitEllipsoid
 		LinAlgHelpers.mult( aa, cc, At );
 		final double r33 = LinAlgHelpers.dot( cc, At ) + 2 * LinAlgHelpers.dot( bb, cc ) - 1;
 		LinAlgHelpers.scale( aa, -1 / r33, aa );
-		System.out.println(cc[0] + " " + cc[1]);
 		return new Ellipsoid( cc, null, aa, null, null );
 	}
 }
