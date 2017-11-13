@@ -16,7 +16,7 @@ import Jama.Matrix;
 /**
  * Adapted from BoneJ's FitEllipsoid.
  *
- * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
+ * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt Modified by Varun Kapoor;
  */
 public class FitEllipsoid
 {

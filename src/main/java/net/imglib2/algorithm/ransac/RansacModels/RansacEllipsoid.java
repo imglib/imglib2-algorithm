@@ -188,14 +188,14 @@ public class RansacEllipsoid {
 	{
 
 
-		int nsamples = 628;
+		int nsamples = 90;
 		final List< Point > peaks = new ArrayList< Point >( nsamples );
 		final List< RealLocalizable > truths = new ArrayList< RealLocalizable >( peaks.size() );
 
 		for ( int j = 0; j < nsamples; j++ )
 		{
-			final double xf = Math.cos(Math.toRadians(j));
-			final double yf = Math.sin(Math.toRadians(j));
+			final double xf =  Math.cos(Math.toRadians(j));
+			final double yf =  2*Math.sin(Math.toRadians(j));
 			final double zf = 0;
 			final double[] posf = new double[] { xf, yf, zf };
 			final RealPoint rpos = new RealPoint( posf );
@@ -206,10 +206,10 @@ public class RansacEllipsoid {
 
 	
 		// Using the polynomial model to do the fitting
-		final Ellipsoid regression = sample(truths,nsamples,50,100);
-		final Ellipsoid finalellipse = fitToInliers(regression,truths,50,100);
+		final Ellipsoid regression = sample(truths,nsamples,105,105);
+		final Ellipsoid finalellipse = fitToInliers(regression,truths,105,105);
 
-		System.out.println(finalellipse.getCenter()[0] + " " + finalellipse.getCenter()[1] + " " + finalellipse.getCenter()[2]);
+		System.out.println(finalellipse.getCenter()[0] + " " + finalellipse.getCenter()[1] + " " + finalellipse.getCenter()[2] + " " + finalellipse.getRadii()[1] + " " + finalellipse.getRadii()[2]);
 		
 
 	}
