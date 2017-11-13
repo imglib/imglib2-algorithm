@@ -208,7 +208,6 @@ public class RansacEllipsoid {
 		final Ellipsoid regression = sample(truths,nsamples,500,500);
 		final Ellipsoid finalellipse = fitToInliers(regression,truths,500,500);
 
-		System.out.println(finalellipse.getCenter());
 		
 		
 
