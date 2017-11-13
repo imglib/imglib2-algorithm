@@ -1,5 +1,14 @@
 package net.imglib2.algorithm.ransac.RansacModels;
 
+import java.awt.image.SampleModel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+
+import mpicbg.models.IllDefinedDataPointsException;
+import mpicbg.models.NotEnoughDataPointsException;
+import mpicbg.models.Point;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.util.LinAlgHelpers;
@@ -16,6 +25,11 @@ import net.imglib2.util.LinAlgHelpers;
  */
 public class DistPointHyperEllipsoid
 {
+	
+	
+	// For initial guesses for Newton Raphson
+		final static Random rndx = new Random( 43583458 );
+	
 	public static class Result
 	{
 		public double distance;
@@ -151,9 +165,12 @@ public class DistPointHyperEllipsoid
 			}
 		}
 
+		
+		
 		if ( y[ n - 1 ] > 0 )
 		{
-			sqrDistance = Bisector( numPos, ePos, yPos, xPos );
+			sqrDistance = new NewtonRaphsonEllipsoid(rndx).run(numPos, e, yPos, xPos); 
+					//Bisector( numPos, ePos, yPos, xPos );
 		}
 		else
 		// y[n-1] = 0
@@ -214,7 +231,8 @@ public class DistPointHyperEllipsoid
 				// hyperellipsoid point has x[n-1] == 0 and is on the
 				// domain-boundary hyperellipsoid.
 				x[ n - 1 ] = 0;
-				sqrDistance = Bisector( numPos, ePos, yPos, xPos );
+				sqrDistance = new NewtonRaphsonEllipsoid(rndx).run(numPos, e, yPos, xPos);  
+						//Bisector( numPos, ePos, yPos, xPos );
 			}
 		}
 
@@ -331,6 +349,6 @@ public class DistPointHyperEllipsoid
 		return LinAlgHelpers.length( v );
 	}
 	
-	
+
 	
 }

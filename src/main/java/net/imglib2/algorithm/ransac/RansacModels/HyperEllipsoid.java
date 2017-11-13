@@ -1,7 +1,12 @@
 package net.imglib2.algorithm.ransac.RansacModels;
 
+import java.util.Collection;
+
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
+import mpicbg.models.IllDefinedDataPointsException;
+import mpicbg.models.NotEnoughDataPointsException;
+import mpicbg.models.Point;
 import net.imglib2.AbstractRealLocalizable;
 import net.imglib2.RealLocalizable;
 import net.imglib2.util.LinAlgHelpers;
@@ -223,4 +228,5 @@ public class HyperEllipsoid extends AbstractRealLocalizable {
 		for ( int d = 0; d < n; ++d )
 			radii[ d ] = Math.sqrt( ev.get( d, d ) );
 	}
+
 }

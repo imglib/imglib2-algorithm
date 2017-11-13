@@ -1,5 +1,7 @@
 package net.imglib2.algorithm.ransac.RansacModels;
 
+import java.util.ArrayList;
+
 import net.imglib2.util.LinAlgHelpers;
 
 public class Ellipsoid extends HyperEllipsoid
@@ -38,4 +40,6 @@ public class Ellipsoid extends HyperEllipsoid
 					+ "\nprecision = " +
 					LinAlgHelpers.toString( getPrecision() );
 		}
+
+		
 }
