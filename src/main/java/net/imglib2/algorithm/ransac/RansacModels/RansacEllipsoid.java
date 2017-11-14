@@ -26,13 +26,77 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.FloatArray;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Pair;
 import net.imglib2.util.Util;
+import net.imglib2.util.ValuePair;
 
 public class RansacEllipsoid {
 
 	
-	public static Ellipsoid sample(
-			final List< ? extends RealLocalizable > points,
+	public static ArrayList<Pair<Ellipsoid, List<RealLocalizable>>> Allsamples(final List< ? extends RealLocalizable > points,
+			final int numSamples,
+			final double outsideCutoffDistance,
+			final double insideCutoffDistance )
+	{
+		
+		boolean fitted;
+		
+		final List<RealLocalizable > remainingPoints = new ArrayList<RealLocalizable>();
+		
+		if(points!=null) 
+			remainingPoints.addAll(points);
+			
+			
+		final  ArrayList<Pair<Ellipsoid, List<RealLocalizable>>> segments =  new ArrayList<Pair<Ellipsoid, List<RealLocalizable>>>();
+		
+		
+		do
+		{
+			
+			
+			if (remainingPoints.size() > 9)
+			fitted = false;
+			else {
+				
+				fitted = true;
+				break;
+				
+			}
+			
+			
+			final Pair<Ellipsoid, List<RealLocalizable>> f = sample(remainingPoints, numSamples, outsideCutoffDistance, insideCutoffDistance);
+		
+			
+			if( f!= null && f.getB().size() > 0) {
+				
+				fitted = true;
+				segments.add(f);
+				
+				final List<RealLocalizable> inlierPoints = new ArrayList<RealLocalizable>();
+				for (final RealLocalizable p : f.getB() )
+					inlierPoints.add(p);
+				remainingPoints.removeAll(inlierPoints);
+				
+			}
+				
+			
+		}
+			
+		
+		
+			while(fitted);
+		return segments;
+		
+		
+		
+	}
+	
+	
+	
+	
+	
+	public static Pair<Ellipsoid, List<RealLocalizable> > sample(
+			final List<RealLocalizable > points,
 			final int numSamples,
 			final double outsideCutoffDistance,
 			final double insideCutoffDistance )
@@ -77,25 +141,35 @@ public class RansacEllipsoid {
 			}
 			catch ( final IllegalArgumentException e )
 			{
-				e.printStackTrace();
-				System.out.println( "Something is illegal" );
+			//	e.printStackTrace();
+			//	System.out.println( "Something is illegal" );
 			}
 			catch ( final RuntimeException e )
 			{
-				System.out.println( "Something is null" );
+			//	System.out.println( "Something is null" );
 			}
 		}
 
-		final Ellipsoid refined = fitToInliers( bestEllipsoid, points, outsideCutoffDistance, insideCutoffDistance );
+		final Pair<Ellipsoid,List<RealLocalizable>> refined = fitToInliers( bestEllipsoid, points, outsideCutoffDistance, insideCutoffDistance );
 		if ( refined == null )
 		{
 			System.err.println( "refined ellipsoid == null! This shouldn't happen!");
-			return bestEllipsoid;
+			
+			
+			
+			return new ValuePair<Ellipsoid, List<RealLocalizable>>(bestEllipsoid, points);
 		}
-		return refined;
+		return  refined;
 	}
 
-	public static Ellipsoid fitToInliers(
+	
+	
+	
+	
+	
+	
+	
+	public static Pair<Ellipsoid, List<RealLocalizable>> fitToInliers(
 			final Ellipsoid guess,
 			final List< ? extends RealLocalizable > points,
 			final double outsideCutoffDistance,
@@ -115,8 +189,12 @@ public class RansacEllipsoid {
 		for ( int i = 0; i < inliers.size(); ++i )
 			inliers.get( i ).localize( coordinates[ i ] );
 
+		System.out.println("Cords" +coordinates.length);
 		final Ellipsoid ellipsoid = FitEllipsoid.yuryPetrov( coordinates );
-		return ellipsoid;
+		final Pair<Ellipsoid, List<RealLocalizable>> Allellipsoids = new ValuePair<Ellipsoid, List<RealLocalizable>>(ellipsoid, inliers);
+		return Allellipsoids;
+		
+
 	}
 	
 
@@ -183,36 +261,7 @@ public class RansacEllipsoid {
 		}
 
 	}
-	@SuppressWarnings("deprecation")
-	public static void main(String[] args) throws NotEnoughDataPointsException, IllDefinedDataPointsException
-	{
-
-
-		int nsamples = 90;
-		final List< Point > peaks = new ArrayList< Point >( nsamples );
-		final List< RealLocalizable > truths = new ArrayList< RealLocalizable >( peaks.size() );
-
-		for ( int j = 0; j < nsamples; j++ )
-		{
-			final double xf =  Math.cos(Math.toRadians(j));
-			final double yf =  2*Math.sin(Math.toRadians(j));
-			final double zf = 0;
-			final double[] posf = new double[] { xf, yf, zf };
-			final RealPoint rpos = new RealPoint( posf );
-			truths.add( rpos );
-		
-		}
-
-
 	
-		// Using the polynomial model to do the fitting
-		final Ellipsoid regression = sample(truths,nsamples,105,105);
-		final Ellipsoid finalellipse = fitToInliers(regression,truths,105,105);
-
-		System.out.println(finalellipse.getCenter()[0] + " " + finalellipse.getCenter()[1] + " " + finalellipse.getCenter()[2] + " " + finalellipse.getRadii()[1] + " " + finalellipse.getRadii()[2]);
-		
-
-	}
 	
 	
 }

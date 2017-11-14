@@ -39,7 +39,10 @@ public class FitEllipsoid
 	public static Ellipsoid yuryPetrov( final double[][] points )
 	{
 		final int nPoints = points.length;
-		if ( nPoints < 9 )
+		
+		
+		
+		if ( nPoints < 9 ) 
 			throw new IllegalArgumentException( "Too few points; need at least 9 to calculate a unique ellipsoid" );
 
 	
@@ -95,6 +98,9 @@ public class FitEllipsoid
 		
 		
 		return ellipsoidFromEquation( v );
+		
+	
+		
 	}
 
 	/**
