@@ -29,7 +29,6 @@ public class DisplayEllipse {
 		final double dy = scale1 * Math.sin(theta);
 		final EllipseRoi ellipse = new EllipseRoi(x - dx, y - dy, x + dx, y + dy, scale2 / scale1);
 		
-		System.out.println(ellipse.getLength() + " " + a + " " + b + " " + c + " " + mean[0] + " " + mean[1] + " " + mean[2]);
 		return ellipse;
 	}
 	

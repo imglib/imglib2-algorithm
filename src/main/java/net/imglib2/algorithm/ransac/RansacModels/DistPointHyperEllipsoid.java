@@ -169,9 +169,9 @@ public class DistPointHyperEllipsoid
 		
 		if ( y[ n - 1 ] > 0 )
 		{
-			sqrDistance = Bisector( numPos, ePos, yPos, xPos );
+			sqrDistance = //Bisector( numPos, ePos, yPos, xPos );
 					
-				//	new NewtonRaphsonEllipsoid(rndx).run(numPos, ePos, yPos, xPos); 
+					new NewtonRaphsonEllipsoid(rndx).run(numPos, ePos, yPos, xPos); 
 					//Bisector( numPos, ePos, yPos, xPos );
 		}
 		else
@@ -235,8 +235,8 @@ public class DistPointHyperEllipsoid
 				x[ n - 1 ] = 0;
 				sqrDistance = //Bisector( numPos, ePos, yPos, xPos );
 						
-						//new NewtonRaphsonEllipsoid(rndx).run(numPos, ePos, yPos, xPos);  
-						Bisector( numPos, ePos, yPos, xPos );
+						new NewtonRaphsonEllipsoid(rndx).run(numPos, ePos, yPos, xPos);  
+						//Bisector( numPos, ePos, yPos, xPos );
 			}
 		}
 
