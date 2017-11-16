@@ -90,7 +90,7 @@ public class StructuringElements
 	 *
 	 * @param radius
 	 *            the radius of the disk, so that it extends over
-	 *            <code>2 × radius + 1</code> in all dimensions
+	 *            {@code 2 × radius + 1} in all dimensions
 	 * @param dimensionality
 	 *            the dimensionality of the target problem.
 	 * @return a disk structuring element as a new list of {@link Shape}s.
@@ -147,20 +147,21 @@ public class StructuringElements
 	 *
 	 * @param radius
 	 *            the radius of the disk, so that it extends over
-	 *            <code>2 × radius + 1</code> in all dimensions
+	 *            {@code 2 × radius + 1} in all dimensions
 	 * @param dimensionality
 	 *            the dimensionality of the target problem.
 	 * @param decomposition
 	 *            the decomposition to use. Only values 0, 4, 6 and 8 are
 	 *            accepted:
 	 *            <ol start="0">
-	 *            <li> No approximation is made and a full dimension-generic
-	 *            disk is returned. <li value="4"> The disk is decomposed in 4
-	 *            periodic lines, plus in some cases 2 horizontal lines. <li * *
-	 *            value="6"> The disk is decomposed in 6 periodic lines, plus in
-	 *            some cases 2 horizontal lines. <li value="8"> The disk is
-	 *            decomposed in 8 periodic lines, plus in some cases 2
-	 *            horizontal lines.
+	 *            <li>No approximation is made and a full dimension-generic disk
+	 *            is returned.</li>
+	 *            <li value="4">The disk is decomposed in 4 periodic lines, plus
+	 *            in some cases 2 horizontal lines.</li>
+	 *            <li value="6">The disk is decomposed in 6 periodic lines, plus
+	 *            in some cases 2 horizontal lines.</li>
+	 *            <li value="8">The disk is decomposed in 8 periodic lines, plus
+	 *            in some cases 2 horizontal lines.</li>
 	 *            </ol>
 	 *            This parameter is ignored for dimensionality other than 2.
 	 * @return a disk structuring element as a new list of {@link Shape}s.
@@ -278,7 +279,7 @@ public class StructuringElements
 	 * <p>
 	 * This method specify the square size using its <b>radius</b> to comply to
 	 * sibling methods. The extend of the generated square is
-	 * <code>2 × radius + 1</code> in all dimensions.
+	 * {@code 2 × radius + 1} in all dimensions.
 	 * <p>
 	 * The structuring element (strel) is returned as a {@link List} of
 	 * {@link Shape}s, for Structuring elements can be decomposed to yield a
@@ -295,7 +296,7 @@ public class StructuringElements
 	 * @param dimensionality
 	 *            the dimensionality of the target problem.
 	 * @param decompose
-	 *            if <code>true</code>, the structuring element will be
+	 *            if {@code true}, the structuring element will be
 	 *            optimized through decomposition.
 	 * @return a new structuring element, as a list of {@link Shape}s.
 	 */
@@ -324,7 +325,7 @@ public class StructuringElements
 	 * <p>
 	 * This method specify the square size using its <b>radius</b> to comply to
 	 * sibling methods. The extend of the generated square is
-	 * <code>2 × radius + 1</code> in all dimensions.
+	 * {@code 2 × radius + 1} in all dimensions.
 	 * <p>
 	 * The structuring element (strel) is returned as a {@link List} of
 	 * {@link Shape}s, for Structuring elements can be decomposed to yield a
@@ -370,14 +371,14 @@ public class StructuringElements
 	 * morphological operations.
 	 *
 	 * @param halfSpans
-	 *            an <code>int[]</code> array containing the half-span of the
+	 *            an {@code int[]} array containing the half-span of the
 	 *            symmetric rectangle in each dimension. The total extent of the
-	 *            rectangle will therefore be <code>2 × halfSpan[d] + 1</code>
+	 *            rectangle will therefore be {@code 2 × halfSpan[d] + 1}
 	 *            in each dimension.
 	 * @param decompose
-	 *            if <code>true</code>, the strel will be returned as a
+	 *            if {@code true}, the strel will be returned as a
 	 *            {@link List} of {@link HorizontalLineShape}, indeed performing
-	 *            the rectangle decomposition. If <code>false</code>, the list
+	 *            the rectangle decomposition. If {@code false}, the list
 	 *            will be made of a single {@link CenteredRectangleShape}.
 	 * @return the desired structuring element, as a {@link List} of
 	 *         {@link Shape}s.
@@ -423,9 +424,9 @@ public class StructuringElements
 	 * whether to decompose the rectangle or not.
 	 *
 	 * @param halfSpans
-	 *            an <code>int[]</code> array containing the half-span of the
+	 *            an {@code int[]} array containing the half-span of the
 	 *            symmetric rectangle in each dimension. The total extent of the
-	 *            rectangle will therefore be <code>2 × halfSpan[d] + 1</code>
+	 *            rectangle will therefore be {@code 2 × halfSpan[d] + 1}
 	 *            in each dimension.
 	 * @return the desired structuring element, as a {@link List} of
 	 *         {@link Shape}s.
@@ -479,7 +480,7 @@ public class StructuringElements
 	 *
 	 * @param radius
 	 *            the desired radius of the diamond structuring element. The
-	 *            strel will extend over <code>2 × radius + 1</code> in all
+	 *            strel will extend over {@code 2 × radius + 1} in all
 	 *            dimensions.
 	 * @param dimensionality
 	 *            the target dimensionality this structuring element will be
@@ -528,14 +529,14 @@ public class StructuringElements
 	 *
 	 * @param radius
 	 *            the desired radius of the diamond structuring element. The
-	 *            strel will extend over <code>2 × radius + 1</code> in all
+	 *            strel will extend over {@code 2 × radius + 1} in all
 	 *            dimensions.
 	 * @param dimensionality
 	 *            the target dimensionality this structuring element will be
 	 *            used with. A structuring element build for one dimension will
 	 *            <b>not</b> work properly for any other dimensions.
 	 * @param decompose
-	 *            if <code>true</code>, this strel will be optimized through
+	 *            if {@code true}, this strel will be optimized through
 	 *            decomposition.
 	 * @return the structuring element as a list of {@link Shape}s.
 	 *
@@ -605,7 +606,7 @@ public class StructuringElements
 
 	/**
 	 * Creates a new periodic line structuring element, that will iterate over
-	 * <code>2 × span + 1</code> pixels as follow:
+	 * {@code 2 × span + 1} pixels as follow:
 	 *
 	 * <pre>
 	 * position - span x increments,
@@ -623,7 +624,7 @@ public class StructuringElements
 	 *
 	 * @param span
 	 *            the span of the neighborhood, so that it will iterate over
-	 *            <code>2 × span + 1</code> pixels.
+	 *            {@code 2 × span + 1} pixels.
 	 * @param increments
 	 *            the values by which each element of the position vector is to
 	 *            be incremented when iterating.

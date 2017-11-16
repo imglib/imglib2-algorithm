@@ -52,10 +52,12 @@ import net.imglib2.RealLocalizable;
  * The volumetric search uses a K-D tree to search for all hyper-rectangular
  * nodes that contain a given point.
  * 
- * You can use this via the RandomAccessible<List<I>> interface: Get the
- * RandomAccess<List<I>> interface Localize it to your point get() performs the
- * search, returning the list.
- * 
+ * You can use this via the {@code RandomAccessible<List<I>>} interface:
+ * <ul>
+ * <li>Get the {@code RandomAccess<List<I>>} interface</li>
+ * <li>Localize it to your point,</li>
+ * <li>{@code get()} performs the search, returning the list.</li>
+ * </ul>
  * 
  * @author Lee Kamentsky
  * @author Tobias Pietzsch

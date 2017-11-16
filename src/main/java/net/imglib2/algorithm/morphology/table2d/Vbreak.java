@@ -45,7 +45,7 @@ import net.imglib2.type.BooleanType;
  * 
  * <pre>
  * 1 0 1    1 0 1
- * 1 1 1 -> 1 0 1
+ * 1 1 1 -&gt; 1 0 1
  * 1 0 1    1 0 1
  * </pre>
  * 

@@ -65,7 +65,7 @@ public class PeriodicLineShape implements Shape
 
 	/**
 	 * Creates a new periodic line shape, that will iterate over
-	 * <code>2 × span + 1</code> pixels as follow:
+	 * {@code 2 × span + 1} pixels as follow:
 	 * 
 	 * <pre>
 	 * position - span x increments,
@@ -81,7 +81,7 @@ public class PeriodicLineShape implements Shape
 	 * 
 	 * @param span
 	 *            the span of the neighborhood, so that it will iterate over
-	 *            <code>2 × span + 1</code> pixels. Must be positive.
+	 *            {@code 2 × span + 1} pixels. Must be positive.
 	 * @param increments
 	 *            the values by which each element of the position vector is to
 	 *            be incremented when iterating.

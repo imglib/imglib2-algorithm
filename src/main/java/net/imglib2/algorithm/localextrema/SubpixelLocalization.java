@@ -177,8 +177,8 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 	 * @param img
 	 *            Pixel values.
 	 * @param validInterval
-	 *            In which interval the <code>img</code> contains valid pixels.
-	 *            If null, an infinite <code>img</code> is assumed. Integer
+	 *            In which interval the {@code img} contains valid pixels.
+	 *            If null, an infinite {@code img} is assumed. Integer
 	 *            peaks must lie within a 1-pixel border of this interval.
 	 * @return refined list of peaks.
 	 */
@@ -203,8 +203,8 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 	 * @param img
 	 *            Pixel values.
 	 * @param validInterval
-	 *            In which interval the <code>img</code> contains valid pixels.
-	 *            If null, an infinite <code>img</code> is assumed. Integer
+	 *            In which interval the {@code img} contains valid pixels.
+	 *            If null, an infinite {@code img} is assumed. Integer
 	 *            peaks must lie within a 1-pixel border of this interval.
 	 * @param returnInvalidPeaks
 	 *            Whether (invalid) {@link RefinedPeak} should be created for
@@ -288,8 +288,8 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 	 * @param img
 	 *            Pixel values.
 	 * @param validInterval
-	 *            In which interval the <code>img</code> contains valid pixels.
-	 *            If null, an infinite <code>img</code> is assumed. Integer
+	 *            In which interval the {@code img} contains valid pixels.
+	 *            If null, an infinite {@code img} is assumed. Integer
 	 *            peaks must lie within a 1-pixel border of this interval.
 	 * @param returnInvalidPeaks
 	 *            Whether (invalid) {@link RefinedPeak} should be created for
@@ -418,8 +418,8 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 	}
 
 	/**
-	 * Estimate subpixel <code>offset</code> of extremum of quadratic function
-	 * fitted at <code>p</code>.
+	 * Estimate subpixel {@code offset} of extremum of quadratic function
+	 * fitted at {@code p}.
 	 * 
 	 * @param p
 	 *            integer position at which to fit quadratic.
@@ -434,7 +434,7 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 	 *            dimensionality of the image. (This is a temporary variable to
 	 *            store the Hessian).
 	 * @param offset
-	 *            subpixel offset of extremum wrt. <code>p</code> is stored
+	 *            subpixel offset of extremum wrt. {@code p} is stored
 	 *            here.
 	 */
 	protected static < T extends RealType< T > > void quadraticFitOffset( final Localizable p, final RandomAccess< T > access, final Matrix g, final Matrix H, final RealPositionable offset )

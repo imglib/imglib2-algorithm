@@ -66,16 +66,16 @@ public interface Shape
 	 * the same {@link Cursor} instance is re-used. If you require to have more
 	 * than one {@link Cursor} into the current neighborhood at a given time you
 	 * have several options:
+	 * </p>
 	 * <ol>
 	 * <li> {@link Cursor#copy()} the cursor you obtained using
 	 * {@link Neighborhood#cursor()}.
 	 * <li>use multiple parent cursors, i.e., cursors on the
-	 * {@link IterableInterval}<{@link Neighborhood}>.
+	 * {@link IterableInterval}&lt;{@link Neighborhood}&gt;.
 	 * <li>use {@link #neighborhoodsSafe(RandomAccessibleInterval)} which
 	 * returns a new {@link Neighborhood#cursor()} every time (but therefore is
 	 * not recommended if you want to use enhanced for loops).
 	 * </ol>
-	 * </p>
 	 *
 	 * @param source
 	 *            source image.
@@ -87,14 +87,12 @@ public interface Shape
 	/**
 	 * Get an {@link RandomAccessibleInterval} that contains all
 	 * {@link Neighborhood Neighborhoods} of the source image.
-	 *
 	 * <p>
 	 * A {@link RandomAccess} on the resulting accessible can be used to access
 	 * the {@link Neighborhood neighborhoods}. As usual, when the access is
 	 * moved, a neighborhood {@link Sampler#get() obtained} previously from the
 	 * access should be considered invalid.
 	 * </p>
-	 *
 	 * <p>
 	 * <em>The {@link Neighborhood neighborhoods} that are obtained from the
 	 * resulting accessible are unsafe in the following sense:</em> Every time,
@@ -102,17 +100,17 @@ public interface Shape
 	 * the same {@link Cursor} instance is re-used. If you require to have more
 	 * than one {@link Cursor} into the current neighborhood at a given time you
 	 * have several options:
+	 * </p>
 	 * <ol>
-	 * <li> {@link Cursor#copy()} the cursor you obtained using
+	 * <li>{@link Cursor#copy()} the cursor you obtained using
 	 * {@link Neighborhood#cursor()}.
 	 * <li>use multiple parent {@link RandomAccess RandomAccesses}, i.e.,
-	 * accesses on the {@link RandomAccessibleInterval}<{@link Neighborhood}>.
-	 * <li>use
-	 * {@link #neighborhoodsRandomAccessibleSafe(RandomAccessibleInterval)}
-	 * which returns a new {@link Neighborhood#cursor()} every time (but
-	 * therefore is not recommended if you want to use enhanced for loops).
+	 * accesses on the
+	 * {@link RandomAccessibleInterval}&lt;{@link Neighborhood}&gt;.
+	 * <li>use {@link #neighborhoodsRandomAccessibleSafe} which returns a new
+	 * {@link Neighborhood#cursor()} every time (but therefore is not
+	 * recommended if you want to use enhanced for loops).
 	 * </ol>
-	 * </p>
 	 *
 	 * @param source
 	 *            source image.

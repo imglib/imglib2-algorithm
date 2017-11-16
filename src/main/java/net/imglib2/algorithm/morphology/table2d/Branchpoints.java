@@ -44,11 +44,11 @@ import net.imglib2.type.BooleanType;
  * those pixels that are at the intersection of branches.
  * <p>
  * For example:
- * 
+ * </p>
  * <pre>
  * 1 0 0 0 0    ? 0 0 0 0
  * 0 1 0 0 0    0 0 0 0 0
- * 0 0 1 0 0 -> 0 0 1 0 0
+ * 0 0 1 0 0 -&gt; 0 0 1 0 0
  * 0 1 0 1 0    0 0 0 0 0
  * 1 0 0 0 1    ? 0 0 0 ?
  * </pre>

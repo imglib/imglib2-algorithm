@@ -97,8 +97,8 @@ public final class PixelListComponentTree< T extends Type< T > > implements Comp
 	 * @param type
 	 *            a variable of the input image type.
 	 * @param imgFactory
-	 *            used for creating the {@link PixelList} image {@see
-	 *            PixelListComponentGenerator}.
+	 *            used for creating the {@link PixelList} image (see
+	 *            {@link PixelListPartialComponentGenerator}).
 	 * @param darkToBright
 	 *            whether to apply thresholds from dark to bright (true) or
 	 *            bright to dark (false)
@@ -146,8 +146,8 @@ public final class PixelListComponentTree< T extends Type< T > > implements Comp
 	 * @param comparator
 	 *            determines ordering of threshold values.
 	 * @param imgFactory
-	 *            used for creating the {@link PixelList} image {@see
-	 *            PixelListComponentGenerator}.
+	 *            used for creating the {@link PixelList} image
+	 *            {@link PixelListPartialComponentGenerator}.
 	 * @return component tree of the image.
 	 */
 	public static < T extends Type< T > > PixelListComponentTree< T > buildComponentTree( final RandomAccessibleInterval< T > input, final T maxValue, final Comparator< T > comparator, final ImgFactory< LongType > imgFactory )
