@@ -102,23 +102,23 @@ public class LocalExtrema
 	 * test for being an extremum can be specified as an implementation of the
 	 * {@link LocalNeighborhoodCheck} interface.
 	 *
-	 * The task is parallelized along the last dimension of <code>source</code>.
+	 * The task is parallelized along the last dimension of {@code source}.
 	 *
 	 * The number of tasks for parallelization is determined as:
-	 * <code>Math.max( Math.min( maxSizeDim, numThreads * 20 ), 1 )</code>
+	 * {@code Math.max( Math.min( maxSizeDim, numThreads * 20 ), 1 )}
 	 *
-	 * where <code>maxSizeDim</code> is the longest dimension of
-	 * <code>img</code> after adjusting for the bounding box of a
+	 * where {@code maxSizeDim} is the longest dimension of
+	 * {@code img} after adjusting for the bounding box of a
 	 * {@link RectangleShape} with span 1, and numThreads is
-	 * <code>Runtime.getRuntime().availableProcessors()</code>
+	 * {@code Runtime.getRuntime().availableProcessors()}
 	 *
 	 * {@link RectangleShape} is used as local neighborhood.
 	 *
-	 * Note: Pixels within 1 point of the <code>source</code> border will be
+	 * Note: Pixels within 1 point of the {@code source} border will be
 	 * ignored as local extrema candidates because the complete neighborhood
-	 * would not be included in <code>source</code>. To include those pixel,
-	 * expand <code>source</code> accordingly. The returned coordinate list is
-	 * valid for the original <code>source</code>.
+	 * would not be included in {@code source}. To include those pixel,
+	 * expand {@code source} accordingly. The returned coordinate list is
+	 * valid for the original {@code source}.
 	 *
 	 * @param source
 	 *            Find local extrema within this
@@ -158,14 +158,14 @@ public class LocalExtrema
 	 * {@link LocalNeighborhoodCheck} interface.
 	 *
 	 * The task is parallelized along the longest dimension of
-	 * <code>source</code> after adjusting for size based on <code>shape</code>.
+	 * {@code source} after adjusting for size based on {@code shape}.
 	 *
-	 * Note: Pixels within a margin of <code>source</code> border as determined
+	 * Note: Pixels within a margin of {@code source} border as determined
 	 * by {@link #getRequiredBorderSize(Shape, int)} will be ignored as local
 	 * extrema candidates because the complete neighborhood would not be
-	 * included in <code>source</code>. To include those pixel, expand
-	 * <code>source</code> accordingly. The returned coordinate list is valid
-	 * for the original <code>source</code>.
+	 * included in {@code source}. To include those pixel, expand
+	 * {@code source} accordingly. The returned coordinate list is valid
+	 * for the original {@code source}.
 	 *
 	 * @param source
 	 *            Find local extrema within this
@@ -174,7 +174,7 @@ public class LocalExtrema
 	 *            Check if current pixel qualifies as local maximum. It is the
 	 *            callers responsibility to pass a
 	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
-	 *            <code>shape</code> does not skip the center pixel.
+	 *            {@code shape} does not skip the center pixel.
 	 * @param shape
 	 *            Defines the local neighborhood.
 	 * @param service
@@ -201,12 +201,12 @@ public class LocalExtrema
 	 * test for being an extremum can be specified as an implementation of the
 	 * {@link LocalNeighborhoodCheck} interface.
 	 *
-	 * Note: Pixels within a margin of <code>source</code> border as determined
+	 * Note: Pixels within a margin of {@code source} border as determined
 	 * by {@link #getRequiredBorderSize(Shape, int)} will be ignored as local
 	 * extrema candidates because the complete neighborhood would not be
-	 * included in <code>source</code>. To include those pixel, expand
-	 * <code>source</code> accordingly. The returned coordinate list is valid
-	 * for the original <code>source</code>.
+	 * included in {@code source}. To include those pixel, expand
+	 * {@code source} accordingly. The returned coordinate list is valid
+	 * for the original {@code source}.
 	 *
 	 * @param source
 	 *            Find local extrema within this
@@ -215,7 +215,7 @@ public class LocalExtrema
 	 *            Check if current pixel qualifies as local maximum. It is the
 	 *            callers responsibility to pass a
 	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
-	 *            <code>shape</code> does not skip the center pixel.
+	 *            {@code shape} does not skip the center pixel.
 	 * @param shape
 	 *            Defines the local neighborhood.
 	 * @param service
@@ -246,20 +246,20 @@ public class LocalExtrema
 	 * {@link LocalNeighborhoodCheck} interface.
 	 *
 	 * The task is parallelized along the longest dimension of
-	 * <code>interval</code>
+	 * {@code interval}
 	 *
 	 * @param source
 	 *            Find local extrema of the function defined by this
 	 *            {@link RandomAccessible}
 	 * @param interval
 	 *            Domain in which to look for local extrema. It is the callers
-	 *            responsibility to ensure that <code>source</code> is defined
-	 *            in all neighborhoods of <code>interval</code>.
+	 *            responsibility to ensure that {@code source} is defined
+	 *            in all neighborhoods of {@code interval}.
 	 * @param localNeighborhoodCheck
 	 *            Check if current pixel qualifies as local maximum. It is the
 	 *            callers responsibility to pass a
 	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
-	 *            <code>shape</code> does not skip the center pixel.
+	 *            {@code shape} does not skip the center pixel.
 	 * @param shape
 	 *            Defines the local neighborhood.
 	 * @param service
@@ -292,13 +292,13 @@ public class LocalExtrema
 	 *            {@link RandomAccessible}
 	 * @param interval
 	 *            Domain in which to look for local extrema. It is the callers
-	 *            responsibility to ensure that <code>source</code> is defined
-	 *            in all neighborhoods of <code>interval</code>.
+	 *            responsibility to ensure that {@code source} is defined
+	 *            in all neighborhoods of {code interval}.
 	 * @param localNeighborhoodCheck
 	 *            Check if current pixel qualifies as local maximum. It is the
 	 *            callers responsibility to pass a
 	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
-	 *            <code>shape</code> does not skip the center pixel.
+	 *            {@code shape} does not skip the center pixel.
 	 * @param shape
 	 *            Defines the local neighborhood.
 	 * @param service
@@ -361,11 +361,11 @@ public class LocalExtrema
 	 *
 	 * {@link RectangleShape} is used as local neighborhood.
 	 *
-	 * Note: Pixels within 1 point of the <code>source</code> border will be
+	 * Note: Pixels within 1 point of the {@code source} border will be
 	 * ignored as local extrema candidates because the complete neighborhood
-	 * would not be included in <code>source</code>. To include those pixel,
-	 * expand <code>source</code> accordingly. The returned coordinate list is
-	 * valid for the original <code>source</code>.
+	 * would not be included in {@code source}. To include those pixel,
+	 * expand {@code source} accordingly. The returned coordinate list is
+	 * valid for the original {@code source}.
 	 *
 	 * @param source
 	 *            Find local extrema within this
@@ -386,12 +386,12 @@ public class LocalExtrema
 	 * test for being an extremum can be specified as an implementation of the
 	 * {@link LocalNeighborhoodCheck} interface.
 	 *
-	 * Note: Pixels within a margin of <code>source</code> border as determined
+	 * Note: Pixels within a margin of {@code source} border as determined
 	 * by {@link #getRequiredBorderSize(Shape, int)} will be ignored as local
 	 * extrema candidates because the complete neighborhood would not be
-	 * included in <code>source</code>. To include those pixel, expand
-	 * <code>source</code> accordingly. The returned coordinate list is valid
-	 * for the original <code>source</code>.
+	 * included in {@code source}. To include those pixel, expand
+	 * {@code source} accordingly. The returned coordinate list is valid
+	 * for the original {@code source}.
 	 *
 	 * @param source
 	 *            Find local extrema within this
@@ -400,7 +400,7 @@ public class LocalExtrema
 	 *            Check if current pixel qualifies as local maximum. It is the
 	 *            callers responsibility to pass a
 	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
-	 *            <code>shape</code> does not skip the center pixel.
+	 *            {@code shape} does not skip the center pixel.
 	 * @param shape
 	 *            Defines the local neighborhood
 	 * @return {@link List} of extrema
@@ -435,7 +435,7 @@ public class LocalExtrema
 	 *            Check if current pixel qualifies as local maximum. It is the
 	 *            callers responsibility to pass a
 	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
-	 *            <code>shape</code> does not skip the center pixel.
+	 *            {@code shape} does not skip the center pixel.
 	 * @return {@link List} of extrema
 	 */
 	public static < P, T > List< P > findLocalExtrema(
@@ -459,7 +459,7 @@ public class LocalExtrema
 	 *            Check if current pixel qualifies as local maximum. It is the
 	 *            callers responsibility to pass a
 	 *            {@link LocalNeighborhoodCheck} that avoids the center pixel if
-	 *            <code>shape</code> does not skip the center pixel.
+	 *            {@code shape} does not skip the center pixel.
 	 * @param shape
 	 *            Defines the local neighborhood
 	 * @return {@link List} of extrema
@@ -491,7 +491,7 @@ public class LocalExtrema
 	/**
 	 *
 	 * Get the required border size based on the bounding box of the
-	 * neighborhood specified by <code>shape</code>. This is useful for
+	 * neighborhood specified by {@code shape}. This is useful for
 	 * determining by how much a {@link RandomAccessibleInterval} should be
 	 * expanded to include min and max positions in the local extrema search.
 	 *
@@ -500,7 +500,7 @@ public class LocalExtrema
 	 * @param nDim
 	 *            Number of dimensions.
 	 * @return The required border size for the local neighborhood specified by
-	 *         <code>shape</code>
+	 *         {@code shape}
 	 */
 	public static long[] getRequiredBorderSize( final Shape shape, final int nDim )
 	{
