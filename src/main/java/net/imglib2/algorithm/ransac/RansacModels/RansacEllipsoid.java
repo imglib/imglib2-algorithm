@@ -33,7 +33,7 @@ import net.imglib2.util.ValuePair;
 
 public class RansacEllipsoid {
 
-	static int maxtolerance = 20;
+	static int maxtolerance = 100;
 	
 	
 	
@@ -58,13 +58,13 @@ public class RansacEllipsoid {
 			
 			List<RealLocalizable> closePoints = queue.get(key);
 		
-
+System.out.println(closePoints.size());
 			do {
 
 				
 
 				
-				if (remainingPoints.size() > maxtolerance) {
+				if (closePoints.size() > maxtolerance) {
 					fitted = false;
 				
 				final Pair<Ellipsoid, List<RealLocalizable>> f = sample(closePoints, numSamples,
@@ -79,7 +79,7 @@ public class RansacEllipsoid {
 					final List<RealLocalizable> inlierPoints = new ArrayList<RealLocalizable>();
 					for (final RealLocalizable p : f.getB())
 						inlierPoints.add(p);
-					remainingPoints.removeAll(inlierPoints);
+					closePoints.removeAll(inlierPoints);
 
 					
 				}
