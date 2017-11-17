@@ -2,17 +2,18 @@ package net.imglib2.algorithm.ransac.RansacModels;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
-import mpicbg.models.IllDefinedDataPointsException;
-import mpicbg.models.NotEnoughDataPointsException;
-import mpicbg.models.Point;
+
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.ransac.RansacModels.DistPointHyperEllipsoid.Result;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import net.imglib2.Cursor;
@@ -38,7 +39,7 @@ public class RansacEllipsoid {
 	
 	public static ArrayList<Pair<Ellipsoid, List<RealLocalizable>>> Allsamples(
 			final List<? extends RealLocalizable> points, final int numSamples, final double outsideCutoffDistance,
-			final double insideCutoffDistance, final double maxSize, final double minSize, final double minpoints) {
+			final double insideCutoffDistance, final double maxSize, final double minSize, final double minpoints, double maxdist) {
 
 		boolean fitted;
 
@@ -51,18 +52,22 @@ public class RansacEllipsoid {
 		
 		SortRealLocalizable.SortPoints(remainingPoints);
 		
-
+		HashMap<Integer, List<RealLocalizable>> queue = QueueList(remainingPoints, maxdist);
 		final ArrayList<Pair<Ellipsoid, List<RealLocalizable>>> segments = new ArrayList<Pair<Ellipsoid, List<RealLocalizable>>>();
-
-		do {
-
+		for (Integer key : queue.keySet()) {
 			
+			List<RealLocalizable> closePoints = queue.get(key);
+		
 
-			
+			do {
+
+				
+
+				
 				if (remainingPoints.size() > maxtolerance) {
 					fitted = false;
 				
-				final Pair<Ellipsoid, List<RealLocalizable>> f = sample(remainingPoints, numSamples,
+				final Pair<Ellipsoid, List<RealLocalizable>> f = sample(closePoints, numSamples,
 						outsideCutoffDistance, insideCutoffDistance, maxSize, minSize, minpoints);
 
 				if (f != null && f.getB().size() > 0) {
@@ -91,9 +96,59 @@ public class RansacEllipsoid {
 		}
 		
 		while (fitted);
+			
+		}
+		
+		
+
+		
 		return segments;
 
 	}
+	
+	
+	public static HashMap<Integer, List<RealLocalizable>> QueueList(final List<RealLocalizable> points, final double maxdist){
+		
+		
+		List<RealLocalizable> sublist = new ArrayList<RealLocalizable>();
+		List<RealLocalizable> copylist = points.subList(0, points.size() - 1);
+		HashMap<Integer, List<RealLocalizable>> queue = new HashMap<Integer, List<RealLocalizable>>();
+		
+		do {
+			
+		int count = 0;	
+		RealLocalizable firstPoint = copylist.get(0);
+		sublist.add(firstPoint);
+		for(int index = 1; index < copylist.size(); ++index) {
+			
+			RealLocalizable nextPoint = copylist.get(index);
+			
+			double dist = DistanceSq(firstPoint, nextPoint);
+			
+			if (dist < maxdist) {
+				
+				sublist.add(nextPoint);
+				
+			}
+			
+			
+			
+		}
+		
+		copylist.removeAll(sublist);
+		
+		queue.put(count, sublist);
+		
+		
+		
+		
+		count++;
+		}while(copylist.size() > 0);
+		
+		return queue;
+		
+	}
+	
 
 	public static Pair<Ellipsoid, List<RealLocalizable>> sample(final List<RealLocalizable> points,
 			final int numSamples, final double outsideCutoffDistance, final double insideCutoffDistance, double maxSize,
