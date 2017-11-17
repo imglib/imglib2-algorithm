@@ -533,11 +533,7 @@ public class LocalExtrema
 		assert Arrays.stream( margin ).min().getAsLong() >= 0: "Margin cannot be negative";
 		assert IntStream.range( 0, margin.length ).mapToLong( d -> source.dimension( d ) - 2 * margin[ d ] ).min().getAsLong() >= 0: "Margin bigger than input";
 
-		final long[] min = IntStream.range( 0, margin.length ).mapToLong( d -> source.min( d ) + margin[ d ] ).toArray();
-		final long[] max = IntStream.range( 0, margin.length ).mapToLong( d -> source.max( d ) - margin[ d ] ).toArray();
-
-		return Views.interval( source, new FinalInterval( min, max ) );
-
+		return Views.expandBorder( source, Arrays.stream(margin).map(m -> -m).toArray());
 	}
 
 	/**
