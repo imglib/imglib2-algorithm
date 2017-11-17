@@ -38,8 +38,8 @@ public class RansacEllipsoid {
 	
 	
 	public static ArrayList<Pair<Ellipsoid, List<RealLocalizable>>> Allsamples(
-			final List<? extends RealLocalizable> points, final int numSamples, final double outsideCutoffDistance,
-			final double insideCutoffDistance, final double maxSize, final double minSize, final double minpoints, double maxdist) {
+			final List<? extends RealLocalizable> points, final double outsideCutoffDistance,
+			final double insideCutoffDistance, int minsize) {
 
 		boolean fitted;
 
@@ -50,27 +50,21 @@ public class RansacEllipsoid {
 		if (points != null)
 			remainingPoints.addAll(points);
 		
-		SortRealLocalizable.SortPoints(remainingPoints);
-		
-		HashMap<Integer, List<RealLocalizable>> queue = QueueList(remainingPoints, maxdist);
+	
 		final ArrayList<Pair<Ellipsoid, List<RealLocalizable>>> segments = new ArrayList<Pair<Ellipsoid, List<RealLocalizable>>>();
-		for (Integer key : queue.keySet()) {
+	
 			
-			List<RealLocalizable> closePoints = queue.get(key);
-		
-System.out.println(closePoints.size());
 			do {
 
 				
 
 				
-				if (closePoints.size() > maxtolerance) {
+				if (remainingPoints.size() > 0) {
 					fitted = false;
-				
-				final Pair<Ellipsoid, List<RealLocalizable>> f = sample(closePoints, numSamples,
-						outsideCutoffDistance, insideCutoffDistance, maxSize, minSize, minpoints);
+				final Pair<Ellipsoid, List<RealLocalizable>> f = sample(remainingPoints, remainingPoints.size(),
+						outsideCutoffDistance, insideCutoffDistance);
 
-				if (f != null && f.getB().size() > 0) {
+				if (f != null && f.getB().size() > minsize) {
 
 					fitted = true;
 
@@ -79,7 +73,7 @@ System.out.println(closePoints.size());
 					final List<RealLocalizable> inlierPoints = new ArrayList<RealLocalizable>();
 					for (final RealLocalizable p : f.getB())
 						inlierPoints.add(p);
-					closePoints.removeAll(inlierPoints);
+					remainingPoints.removeAll(inlierPoints);
 
 					
 				}
@@ -97,7 +91,7 @@ System.out.println(closePoints.size());
 		
 		while (fitted);
 			
-		}
+		
 		
 		
 
@@ -110,13 +104,13 @@ System.out.println(closePoints.size());
 	public static HashMap<Integer, List<RealLocalizable>> QueueList(final List<RealLocalizable> points, final double maxdist){
 		
 		
-		List<RealLocalizable> sublist = new ArrayList<RealLocalizable>();
 		List<RealLocalizable> copylist = points.subList(0, points.size() - 1);
 		HashMap<Integer, List<RealLocalizable>> queue = new HashMap<Integer, List<RealLocalizable>>();
-		
+		int count = 0;	
 		do {
 			
-		int count = 0;	
+			List<RealLocalizable> sublist = new ArrayList<RealLocalizable>();
+
 		RealLocalizable firstPoint = copylist.get(0);
 		sublist.add(firstPoint);
 		for(int index = 1; index < copylist.size(); ++index) {
@@ -131,18 +125,21 @@ System.out.println(closePoints.size());
 				
 			}
 			
-			
+
 			
 		}
 		
+		if (sublist.size() > 0)
 		copylist.removeAll(sublist);
+		
+			if (sublist.size() > maxtolerance) {
 		
 		queue.put(count, sublist);
 		
 		
-		
-		
 		count++;
+		}
+		
 		}while(copylist.size() > 0);
 		
 		return queue;
@@ -151,8 +148,7 @@ System.out.println(closePoints.size());
 	
 
 	public static Pair<Ellipsoid, List<RealLocalizable>> sample(final List<RealLocalizable> points,
-			final int numSamples, final double outsideCutoffDistance, final double insideCutoffDistance, double maxSize,
-			double minSize, double minpoints) {
+			final int numSamples, final double outsideCutoffDistance, final double insideCutoffDistance) {
 		final int numPointsPerSample = 9;
 
 		final Random rand = new Random(System.currentTimeMillis());
@@ -193,7 +189,7 @@ System.out.println(closePoints.size());
 		}
 
 		Pair<Ellipsoid, List<RealLocalizable>> refined = fitToInliers(bestEllipsoid, points,
-				outsideCutoffDistance, insideCutoffDistance, maxSize, minSize, minpoints);
+				outsideCutoffDistance, insideCutoffDistance);
 		if (refined == null) {
 
 			
@@ -207,7 +203,7 @@ System.out.println(closePoints.size());
 
 	public static Pair<Ellipsoid, List<RealLocalizable>> fitToInliers(final Ellipsoid guess,
 			final List<? extends RealLocalizable> points, final double outsideCutoffDistance,
-			final double insideCutoffDistance, double maxSize, double minSize, double minpoints) {
+			final double insideCutoffDistance) {
 		final ArrayList<RealLocalizable> inliers = new ArrayList<RealLocalizable>();
 		for (final RealLocalizable point : points) {
 			final Result result = DistPointHyperEllipsoid.distPointHyperEllipsoid(point, guess);
@@ -224,6 +220,7 @@ System.out.println(closePoints.size());
 		
 		
 		if (inliers.size() < 9){
+			
 			
 			for (final RealLocalizable point : points) {
 			
@@ -305,7 +302,17 @@ System.out.println(closePoints.size());
 	}
 	
 	
-	
+public static double DistanceX(final RealLocalizable pointA, final RealLocalizable pointB) {
+		
+		
+		double distance = 0;
+		
+			
+			distance+= (pointA.getDoublePosition(0) - pointB.getDoublePosition(0)) * (pointA.getDoublePosition(0) - pointB.getDoublePosition(0)); 
+			
+		
+		return distance;
+	}
 	public static double DistanceSq(final RealLocalizable pointA, final RealLocalizable pointB) {
 		
 		
@@ -317,7 +324,6 @@ System.out.println(closePoints.size());
 			distance+= (pointA.getDoublePosition(d) - pointB.getDoublePosition(d)) * (pointA.getDoublePosition(d) - pointB.getDoublePosition(d)); 
 			
 		}
-		
 		return distance;
 	}
 	

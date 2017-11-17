@@ -12,9 +12,9 @@ import java.util.Random;
 
 public class NewtonRaphsonEllipsoid {
 
-	public static int MAX_ITER = 10000;
-	public static double MIN_CHANGE = 1.0E-1;
-	public double xc, xcNew, func, funcdiff, newratio, oldratio;
+	public static int MAX_ITER = 1000000;
+	public static double MIN_CHANGE = 1.0E-3;
+	public double xc, xcNew, func = 0, funcdiff = 0, newratio, oldratio;
 	double damp = 0.001;
 	final Random rndx;
 
@@ -29,22 +29,21 @@ public class NewtonRaphsonEllipsoid {
 			final double[] targetPoint) {
 
 		final int n = ellipseCoeff.length;
-		final double[] z = new double[n];
-		double sumZSqr = 0;
-		final double[] pSqr = new double[n];
+		final double[] z = new double[ n ];
+		final double emin = ellipseCoeff[ numComponents - 1 ];
+		final double[] pSqr = new double[ n ];
+		final double[] numerator = new double[ n ];
+		for ( int i = 0; i < numComponents; ++i )
+		{
+			z[ i ] = sourcePoint[ i ] / ellipseCoeff[ i ];
 
-		for (int i = 0; i < numComponents; ++i) {
-			z[i] = sourcePoint[i] / ellipseCoeff[i];
-			sumZSqr += z[i] * z[i];
+		
+			final double p = ellipseCoeff[ i ] / emin;
+			pSqr[ i ] = p * p;
+			numerator[ i ] = pSqr[ i ] * z[ i ];
 		}
 
-		if (sumZSqr == 1) {
-			// The point is on the hyperellipsoid.
-			for (int i = 0; i < numComponents; ++i) {
-				targetPoint[i] = sourcePoint[i];
-			}
-			return 0;
-		}
+		
 
 		updateFunctions(xc, sourcePoint, ellipseCoeff, numComponents);
 
@@ -52,10 +51,11 @@ public class NewtonRaphsonEllipsoid {
 
 		do {
 
-			xc = xcNew;
+			
 
+			xc = xcNew;
 			updateFunctions(xc, sourcePoint, ellipseCoeff, numComponents);
-			// Compute the first iteration of the new point
+
 
 			++iteration;
 
@@ -65,17 +65,13 @@ public class NewtonRaphsonEllipsoid {
 			if (Double.isNaN(xcNew))
 				xcNew = xc;
 
-			updateFunctions(xcNew, sourcePoint, ellipseCoeff, numComponents);
 
-			// if(Math.abs( ( xcNew - xc ) ) < 0.1)
-			// System.out.println(Math.abs( ( xcNew - xc ) ) + " " + iteration + " " + func
-			// / funcdiff );
+		
 			if (iteration >= MAX_ITER)
 				break;
 
 		} while (Math.abs((xcNew - xc)) > MIN_CHANGE);
 
-		final double emin = ellipseCoeff[numComponents - 1];
 		for (int i = 0; i < numComponents; ++i) {
 			final double p = ellipseCoeff[i] / emin;
 			pSqr[i] = p * p;
@@ -98,7 +94,7 @@ public class NewtonRaphsonEllipsoid {
 
 	protected void iterate() {
 
-		xcNew = iterate(xc, func, funcdiff);
+		this.xcNew = iterate(xc, func, funcdiff);
 
 	}
 
@@ -112,20 +108,28 @@ public class NewtonRaphsonEllipsoid {
 			final int numComponents) {
 
 		func = -1;
-		final double emin = ellipseCoeff[numComponents - 1];
-		final double[] pSqr = new double[numComponents];
-		final double[] numerator = new double[numComponents];
-		final double[] denominator = new double[numComponents];
+		funcdiff= 0;
+		final int n = ellipseCoeff.length;
+		final double[] z = new double[ n ];
 
-		for (int i = 0; i < numComponents; ++i) {
+		final double emin = ellipseCoeff[ numComponents - 1 ];
+		final double[] pSqr = new double[ n ];
+		final double[] numerator = new double[ n ];
+		final double[] denominator = new double[ n ];
+		for ( int i = 0; i < numComponents; ++i )
+		{
+			z[ i ] = sourcePoint[ i ] / ellipseCoeff[ i ];
 
-			final double p = ellipseCoeff[i] / emin;
-			pSqr[i] = p * p;
-			numerator[i] = pSqr[i] * sourcePoint[i] / ellipseCoeff[i];
+		
+			final double p = ellipseCoeff[ i ] / emin;
+			pSqr[ i ] = p * p;
+			numerator[ i ] = pSqr[ i ] * z[ i ];
+		
+
 			denominator[i] = xc + pSqr[i];
 
 			func += (numerator[i] / denominator[i]) * (numerator[i] / denominator[i]);
-			funcdiff += -2 * numerator[i] * numerator[i] / denominator[i];
+			funcdiff += -2 * numerator[i] * numerator[i] / (denominator[i] * denominator[i] * denominator[i]   );
 
 		}
 
