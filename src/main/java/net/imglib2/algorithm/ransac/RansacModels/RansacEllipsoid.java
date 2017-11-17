@@ -33,7 +33,6 @@ import net.imglib2.util.ValuePair;
 
 public class RansacEllipsoid {
 
-	static int maxtolerance = 100;
 	
 	
 	
@@ -59,15 +58,15 @@ public class RansacEllipsoid {
 				
 
 				
-				if (remainingPoints.size() > 0) {
+				if (remainingPoints.size() > 9) {
 					fitted = false;
 				final Pair<Ellipsoid, List<RealLocalizable>> f = sample(remainingPoints, remainingPoints.size(),
 						outsideCutoffDistance, insideCutoffDistance);
 
-				if (f != null && f.getB().size() > minsize) {
+				if (f != null && f.getB().size() > 0) {
 
 					fitted = true;
-
+//					if(f.getB().size() > minsize) {
 					segments.add(f);
 
 					final List<RealLocalizable> inlierPoints = new ArrayList<RealLocalizable>();
@@ -75,8 +74,9 @@ public class RansacEllipsoid {
 						inlierPoints.add(p);
 					remainingPoints.removeAll(inlierPoints);
 
-					
-				}
+					}
+//				}
+				
 				
 				
 				
@@ -101,52 +101,7 @@ public class RansacEllipsoid {
 	}
 	
 	
-	public static HashMap<Integer, List<RealLocalizable>> QueueList(final List<RealLocalizable> points, final double maxdist){
-		
-		
-		List<RealLocalizable> copylist = points.subList(0, points.size() - 1);
-		HashMap<Integer, List<RealLocalizable>> queue = new HashMap<Integer, List<RealLocalizable>>();
-		int count = 0;	
-		do {
-			
-			List<RealLocalizable> sublist = new ArrayList<RealLocalizable>();
-
-		RealLocalizable firstPoint = copylist.get(0);
-		sublist.add(firstPoint);
-		for(int index = 1; index < copylist.size(); ++index) {
-			
-			RealLocalizable nextPoint = copylist.get(index);
-			
-			double dist = DistanceSq(firstPoint, nextPoint);
-			
-			if (dist < maxdist) {
-				
-				sublist.add(nextPoint);
-				
-			}
-			
-
-			
-		}
-		
-		if (sublist.size() > 0)
-		copylist.removeAll(sublist);
-		
-			if (sublist.size() > maxtolerance) {
-		
-		queue.put(count, sublist);
-		
-		
-		count++;
-		}
-		
-		}while(copylist.size() > 0);
-		
-		return queue;
-		
-	}
 	
-
 	public static Pair<Ellipsoid, List<RealLocalizable>> sample(final List<RealLocalizable> points,
 			final int numSamples, final double outsideCutoffDistance, final double insideCutoffDistance) {
 		final int numPointsPerSample = 9;
