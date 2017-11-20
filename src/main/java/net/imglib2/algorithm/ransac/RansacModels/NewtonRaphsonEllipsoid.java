@@ -69,18 +69,29 @@ public class NewtonRaphsonEllipsoid implements NumericalSolvers {
 			
 			xc = xcNew;
 			++iteration;
-			iterate();
+
+			if ( iteration % 1000 == 0 ||count > 1 )
+			{
+				damp = new Random().nextDouble();
+				iterate();
+				damp = 1;
+			}
+			else
+			{
+				iterate();
+			}
 			
-			if(Double.isNaN(xcNew) || xcNew > 1.0E10) {
+			if(Double.isNaN(xcNew) || Math.abs(xcNew) > 1.0E10) {
 				xcNew = xc;
 			    count++;	
 				
 			}
 			
 			else count = 0;
-			
-			if (count > 1)
+		
+			if (count > 10)
 				break;
+			
 			
 			if (iteration > MAX_ITER)
 				break;
@@ -88,7 +99,7 @@ public class NewtonRaphsonEllipsoid implements NumericalSolvers {
 			updateFunctions(xcNew, sourcePoint, ellipseCoeff, numComponents);
 			
 			
-		//	System.out.println((xc - xcNew) + " " + iteration);
+			System.out.println((xc - xcNew) + " " + iteration);
 		
 			
 			if (Math.abs(xc - xcNew) < MIN_CHANGE)
