@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.ransac.RansacModels.DistPointHyperEllipsoid.Result;
@@ -33,40 +32,30 @@ import net.imglib2.util.ValuePair;
 
 public class RansacEllipsoid {
 
-	
-	
-	
 	public static ArrayList<Pair<Ellipsoid, List<RealLocalizable>>> Allsamples(
 			final List<? extends RealLocalizable> points, final double outsideCutoffDistance,
-			final double insideCutoffDistance, int minsize) {
+			final double insideCutoffDistance, int minsize, final NumericalSolvers numsol) {
 
 		boolean fitted;
 
-		
-		
-		
 		final List<RealLocalizable> remainingPoints = new ArrayList<RealLocalizable>();
 		if (points != null)
 			remainingPoints.addAll(points);
-		
-	
+
 		final ArrayList<Pair<Ellipsoid, List<RealLocalizable>>> segments = new ArrayList<Pair<Ellipsoid, List<RealLocalizable>>>();
-	
-			
-			do {
 
-				
+		do {
 
-				
-				if (remainingPoints.size() > 9) {
-					fitted = false;
+			if (remainingPoints.size() > minsize) {
+				fitted = false;
+
 				final Pair<Ellipsoid, List<RealLocalizable>> f = sample(remainingPoints, remainingPoints.size(),
-						outsideCutoffDistance, insideCutoffDistance);
+						outsideCutoffDistance, insideCutoffDistance, numsol);
 
 				if (f != null && f.getB().size() > 0) {
 
 					fitted = true;
-//					if(f.getB().size() > minsize) {
+
 					segments.add(f);
 
 					final List<RealLocalizable> inlierPoints = new ArrayList<RealLocalizable>();
@@ -74,12 +63,8 @@ public class RansacEllipsoid {
 						inlierPoints.add(p);
 					remainingPoints.removeAll(inlierPoints);
 
-					}
-//				}
-				
-				
-				
-				
+				}
+
 			} else {
 
 				fitted = true;
@@ -88,22 +73,15 @@ public class RansacEllipsoid {
 			}
 
 		}
-		
-		while (fitted);
-			
-		
-		
-		
 
-		
+		while (fitted);
+
 		return segments;
 
 	}
-	
-	
-	
+
 	public static Pair<Ellipsoid, List<RealLocalizable>> sample(final List<RealLocalizable> points,
-			final int numSamples, final double outsideCutoffDistance, final double insideCutoffDistance) {
+			final int numSamples, final double outsideCutoffDistance, final double insideCutoffDistance, final NumericalSolvers numsol) {
 		final int numPointsPerSample = 9;
 
 		final Random rand = new Random(System.currentTimeMillis());
@@ -112,7 +90,7 @@ public class RansacEllipsoid {
 
 		Ellipsoid bestEllipsoid = null;
 		double bestCost = Double.POSITIVE_INFINITY;
-		final Cost costFunction = new AbsoluteDistanceCost(outsideCutoffDistance, insideCutoffDistance);
+		final Cost costFunction = new AbsoluteDistanceCost(outsideCutoffDistance, insideCutoffDistance, numsol);
 
 		for (int sample = 0; sample < numSamples; ++sample) {
 
@@ -130,64 +108,51 @@ public class RansacEllipsoid {
 
 				final Ellipsoid ellipsoid = FitEllipsoid.yuryPetrov(coordinates);
 
-				final double cost = costFunction.compute(ellipsoid, points);
+				final double cost = costFunction.compute(ellipsoid, points, numsol);
 				if (cost < bestCost) {
 					bestCost = cost;
 					bestEllipsoid = ellipsoid;
 
 				}
 			} catch (final IllegalArgumentException e) {
-				
+
 			} catch (final RuntimeException e) {
-				
+
 			}
 		}
 
-		Pair<Ellipsoid, List<RealLocalizable>> refined = fitToInliers(bestEllipsoid, points,
-				outsideCutoffDistance, insideCutoffDistance);
+		Pair<Ellipsoid, List<RealLocalizable>> refined = fitToInliers(bestEllipsoid, points, outsideCutoffDistance,
+				insideCutoffDistance, numsol);
 		if (refined == null) {
 
-			
-			
 			return new ValuePair<Ellipsoid, List<RealLocalizable>>(bestEllipsoid, points);
-			
-			
+
 		}
 		return refined;
 	}
 
 	public static Pair<Ellipsoid, List<RealLocalizable>> fitToInliers(final Ellipsoid guess,
 			final List<? extends RealLocalizable> points, final double outsideCutoffDistance,
-			final double insideCutoffDistance) {
+			final double insideCutoffDistance,final NumericalSolvers numsol) {
 		final ArrayList<RealLocalizable> inliers = new ArrayList<RealLocalizable>();
 		for (final RealLocalizable point : points) {
-			final Result result = DistPointHyperEllipsoid.distPointHyperEllipsoid(point, guess);
+			final Result result = DistPointHyperEllipsoid.distPointHyperEllipsoid(point, guess, numsol);
+
 			final double d = result.distance;
 			final boolean inside = guess.contains(point);
-		
-		//	System.out.println(point.getDoublePosition(0) + " " + point.getDoublePosition(1));
-			if ((inside && d <= insideCutoffDistance)
-					|| (!inside && d <= outsideCutoffDistance) )
+
+			// System.out.println(point.getDoublePosition(0) + " " +
+			// point.getDoublePosition(1));
+			if ((inside && d <= insideCutoffDistance) || (!inside && d <= outsideCutoffDistance))
 				inliers.add(point);
-			
-			
 		}
-		
-		
-		if (inliers.size() < 9){
-			
-			
-			for (final RealLocalizable point : points) {
-			
-				
-					inliers.add(point);
-				
-				
-			}
-			
+		if (inliers.size() < 9) {
+
+			inliers.clear();
+			for (final RealLocalizable point : points)
+				inliers.add(point);
+
 		}
-		
-		
 
 		final double[][] coordinates = new double[inliers.size()][3];
 		for (int i = 0; i < inliers.size(); ++i)
@@ -198,28 +163,67 @@ public class RansacEllipsoid {
 
 		final Pair<Ellipsoid, List<RealLocalizable>> Allellipsoids = new ValuePair<Ellipsoid, List<RealLocalizable>>(
 				ellipsoid, inliers);
+
 		return Allellipsoids;
 
 	}
 
+	public static HashMap<Integer, List<RealLocalizable>> QueueList(final List<RealLocalizable> points,
+			final double maxdist) {
+
+		List<RealLocalizable> sublist = new ArrayList<RealLocalizable>();
+		List<RealLocalizable> copylist = points.subList(0, points.size() - 1);
+		HashMap<Integer, List<RealLocalizable>> queue = new HashMap<Integer, List<RealLocalizable>>();
+
+		do {
+
+			int count = 0;
+			RealLocalizable firstPoint = copylist.get(0);
+			sublist.add(firstPoint);
+			for (int index = 1; index < copylist.size(); ++index) {
+
+				RealLocalizable nextPoint = copylist.get(index);
+
+				double dist = DistanceSq(firstPoint, nextPoint);
+
+				if (dist < maxdist) {
+
+					sublist.add(nextPoint);
+
+				}
+
+			}
+
+			copylist.removeAll(sublist);
+
+			queue.put(count, sublist);
+
+			count++;
+		} while (copylist.size() > 0);
+
+		return queue;
+
+	}
+
 	static interface Cost {
-		double compute(final Ellipsoid ellipsoid, final List<? extends RealLocalizable> points);
+		double compute(final Ellipsoid ellipsoid, final List<? extends RealLocalizable> points, final NumericalSolvers numsol);
 	}
 
 	static class AbsoluteDistanceCost implements Cost {
 		private final double outsideCutoff;
 		private final double insideCutoff;
-
-		public AbsoluteDistanceCost(final double outsideCutoffDistance, final double insideCutoffDistance) {
+        private final NumericalSolvers numsol;
+		public AbsoluteDistanceCost(final double outsideCutoffDistance, final double insideCutoffDistance, final NumericalSolvers numsol) {
 			outsideCutoff = outsideCutoffDistance;
 			insideCutoff = insideCutoffDistance;
+			this.numsol = numsol;
 		}
 
 		@Override
-		public double compute(final Ellipsoid ellipsoid, final List<? extends RealLocalizable> points) {
+		public double compute(final Ellipsoid ellipsoid, final List<? extends RealLocalizable> points, final NumericalSolvers numsol) {
 			double cost = 0;
 			for (final RealLocalizable point : points) {
-				final Result result = DistPointHyperEllipsoid.distPointHyperEllipsoid(point, ellipsoid);
+				final Result result = DistPointHyperEllipsoid.distPointHyperEllipsoid(point, ellipsoid, numsol);
 				final double d = result.distance;
 				if (ellipsoid.contains(point))
 					cost += Math.min(d, insideCutoff);
@@ -234,17 +238,18 @@ public class RansacEllipsoid {
 	static class SquaredDistanceCost implements Cost {
 		private final double outsideCutoff;
 		private final double insideCutoff;
-
-		public SquaredDistanceCost(final double outsideCutoffDistance, final double insideCutoffDistance) {
+        private final NumericalSolvers numsol;
+		public SquaredDistanceCost(final double outsideCutoffDistance, final double insideCutoffDistance, final NumericalSolvers numsol) {
 			outsideCutoff = outsideCutoffDistance * outsideCutoffDistance;
 			insideCutoff = insideCutoffDistance * insideCutoffDistance;
+			this.numsol = numsol;
 		}
 
 		@Override
-		public double compute(final Ellipsoid ellipsoid, final List<? extends RealLocalizable> points) {
+		public double compute(final Ellipsoid ellipsoid, final List<? extends RealLocalizable> points, final NumericalSolvers numsol) {
 			double cost = 0;
 			for (final RealLocalizable point : points) {
-				final Result result = DistPointHyperEllipsoid.distPointHyperEllipsoid(point, ellipsoid);
+				final Result result = DistPointHyperEllipsoid.distPointHyperEllipsoid(point, ellipsoid, numsol);
 				final double d = result.distance * result.distance;
 				if (ellipsoid.contains(point))
 					cost += Math.min(d, insideCutoff);
@@ -255,32 +260,29 @@ public class RansacEllipsoid {
 		}
 
 	}
-	
-	
-public static double DistanceX(final RealLocalizable pointA, final RealLocalizable pointB) {
-		
-		
+
+	public static double DistanceX(final RealLocalizable pointA, final RealLocalizable pointB) {
+
 		double distance = 0;
-		
-			
-			distance+= (pointA.getDoublePosition(0) - pointB.getDoublePosition(0)) * (pointA.getDoublePosition(0) - pointB.getDoublePosition(0)); 
-			
-		
+
+		distance += (pointA.getDoublePosition(0) - pointB.getDoublePosition(0))
+				* (pointA.getDoublePosition(0) - pointB.getDoublePosition(0));
+
 		return distance;
 	}
+
 	public static double DistanceSq(final RealLocalizable pointA, final RealLocalizable pointB) {
-		
-		
+
 		double distance = 0;
 		int numDim = pointA.numDimensions();
-		
+
 		for (int d = 0; d < numDim; ++d) {
-			
-			distance+= (pointA.getDoublePosition(d) - pointB.getDoublePosition(d)) * (pointA.getDoublePosition(d) - pointB.getDoublePosition(d)); 
-			
+
+			distance += (pointA.getDoublePosition(d) - pointB.getDoublePosition(d))
+					* (pointA.getDoublePosition(d) - pointB.getDoublePosition(d));
+
 		}
 		return distance;
 	}
-	
 
 }
