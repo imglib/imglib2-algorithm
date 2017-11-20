@@ -49,7 +49,7 @@ public class NewtonRaphsonEllipsoid implements NumericalSolvers {
 		xc = xcNew;
 		updateFunctions(xc, sourcePoint, ellipseCoeff, numComponents);
 		iterate();
-	
+	//Iterate
 
 		for (int iter = 0; iter< MAX_ITER; ++iter) {
 			
