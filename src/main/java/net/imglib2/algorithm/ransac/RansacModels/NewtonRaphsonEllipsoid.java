@@ -15,7 +15,7 @@ import net.imglib2.util.LinAlgHelpers;
 public class NewtonRaphsonEllipsoid implements NumericalSolvers {
 
 	public static int MAX_ITER = 10000;
-	public static double MIN_CHANGE = 1.0E-2;
+	public static double MIN_CHANGE = 1.0E-1;
 	public double xc = 0, xcNew = 0, func = 0, funcdiff = 0, funcsecdiff = 0, newratio = 0, newsecratio = 0;
 	double damp = 0.01;
 
@@ -28,85 +28,82 @@ public class NewtonRaphsonEllipsoid implements NumericalSolvers {
 			final double[] targetPoint) {
 
 		final int n = ellipseCoeff.length;
-		final double[] z = new double[n];
-		final double emin = ellipseCoeff[numComponents - 1];
-		final double[] pSqr = new double[n];
-		final double[] numerator = new double[n];
-		for (int i = 0; i < numComponents; ++i) {
-			z[i] = sourcePoint[i] / ellipseCoeff[i];
-
-			final double p = ellipseCoeff[i] / emin;
-			pSqr[i] = p * p;
-			numerator[i] = pSqr[i] * z[i];
+		final double[] z = new double[ n ];
+		double sumZSqr = 0;
+		for ( int i = 0; i < numComponents; ++i )
+		{
+			z[ i ] = sourcePoint[ i ] / ellipseCoeff[ i ];
+			sumZSqr += z[ i ] * z[ i ];
 		}
-		
-		int iteration = 0;
-		int count = 0;
-		double smin = z[ numComponents - 1 ] - 1;
-		double smax = LengthRobust( numerator ) - 1;
-		xcNew = 0.5 * (smin + smax);
-		
-		xc = xcNew;
-		updateFunctions(xc, sourcePoint, ellipseCoeff, numComponents);
-		iterate();
-	//Iterate
 
-		for (int iter = 0; iter< MAX_ITER; ++iter) {
+		if ( sumZSqr == 1 )
+		{
+			// The point is on the hyperellipsoid.
+			for ( int i = 0; i < numComponents; ++i )
+			{
+				targetPoint[ i ] = sourcePoint[ i ];
+			}
+			return 0;
+		}
+
+		final double emin = ellipseCoeff[ numComponents - 1 ];
+		final double[] pSqr = new double[ n ];
+		final double[] numerator = new double[ n ];
+		for ( int i = 0; i < numComponents; ++i )
+		{
+			final double p = ellipseCoeff[ i ] / emin;
+			pSqr[ i ] = p * p;
+			numerator[ i ] = pSqr[ i ] * z[ i ];
+		}
+
+		
+		
+		xc = -ellipseCoeff[1] * ellipseCoeff[1] + ellipseCoeff[1] * sourcePoint[1];
+		xcNew = xc;
+ // Main NR method
+		updateFunctions(xc, sourcePoint, ellipseCoeff, numComponents);
+		int count = 0;
+		int iteration = 0;
+		for (int iter = 0; iter < MAX_ITER; ++iter) {
+			
 			
 			xc = xcNew;
-			
-			
-			updateFunctions(xc, sourcePoint, ellipseCoeff, numComponents);
-		
-			// Compute the first iteration of the new point
-
 			++iteration;
-
-			if ( iteration%1000 == 0)
-			{
+			iterate();
 			
-				damp = new Random((int)Math.round(smax)).nextDouble();
-				iterate();
-				damp = 0.01;
-			}
-			else
-			{
-				iterate();
-			}
-
-			// Compute the functions and the required derivates at the new point
-			if (Double.isNaN(xcNew) ) {
+			if(Double.isNaN(xcNew) || xcNew > 1.0E10) {
 				xcNew = xc;
 			    count++;	
+				
 			}
+			
 			else count = 0;
 			
-			
-			
-
-
-			
-			
-			if (Math.abs(xc -xcNew) > MIN_CHANGE && iteration > 10 || count > 10)
+			if (count > 1)
 				break;
 			
-		} 
+			if (iteration > MAX_ITER)
+				break;
+			
+			updateFunctions(xcNew, sourcePoint, ellipseCoeff, numComponents);
+			
+			
+		//	System.out.println((xc - xcNew) + " " + iteration);
 		
-		
-	
-		double sqrdist = 0;
-		for (int i = 0; i < numComponents; ++i) {
-
-			targetPoint[i] = pSqr[i] * sourcePoint[i] / (xcNew + pSqr[i]);
-
-			final double diff = targetPoint[i] - sourcePoint[i];
-
-			sqrdist += diff * diff;
-
+			
+			if (Math.abs(xc - xcNew) < MIN_CHANGE)
+				break;
+			
 		}
-
-		return sqrdist;
 		
+		double sqrDistance = 0;
+		for ( int i = 0; i < numComponents; ++i )
+		{
+			targetPoint[ i ] = pSqr[ i ] * sourcePoint[ i ] / ( xc + pSqr[ i ] );
+			final double diff = targetPoint[ i ] - sourcePoint[ i ];
+			sqrDistance += diff * diff;
+		}
+		return sqrDistance;
 	}
 
 	protected void iterate() {
