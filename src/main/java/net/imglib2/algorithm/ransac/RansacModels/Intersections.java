@@ -90,7 +90,7 @@ public class Intersections {
 		
 		if (d4 == 0 && d2 ==0 && e2 == 0) {
 			
-           // Listing 5 David Eberly, intersection of ellipses		
+           // Listing 5 David Eberly, intersection of ellipses text		
 			Vector<double[]> intersection = new Vector<>();
 			double w, y;
 			
