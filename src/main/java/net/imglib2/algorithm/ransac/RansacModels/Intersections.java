@@ -128,11 +128,220 @@ public class Intersections {
 			
 		}
 		
+		if (d4 == 0 && d2 == 0 && e2!=0) {
+			// Listing 6 David Eberly intersection of ellipses
+			ResultRoot result = null;
+			ResultRoot resultA;
+			ResultRoot resultB;
+			double f0 = e0 / e2, f1 = e1 / e2;
+			double mid = -f1 / 2;
+			double discr = mid * mid - f0;
+			if (discr > 0) {
+				
+				// The roots are xhat = mid + s* sqrtDiscr for s in {-1, 1}
+				double sqrtDiscr = Math.sqrt(discr);
+				double g0 = c0 - c2 *  f0, g1 = c1 -c2 * f1;
+				
+				if (g1 > 0) {
+					
+					// We need s * sqrt(discr) < = -g0 / g1 + fi/2
+					double r = -g0 / g1 - mid;
+					
+					//s =+1;
+					
+					
+					if (r >= 0) {
+						
+						double rsqr = r * r;
+						if (discr < rsqr) {
+							
+							result = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
+						}
+						
+						else if (discr == rsqr) {
+							
+							result = SpecialIntersection(mid + sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
+						}
+						
+						
+					}
+					
+					// s = -1;
+					
+					if ( r > 0) {
+						
+						result = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
+					}
+					
+					else
+					{
+						
+						double rsqr = r * r;
+						if (discr > rsqr) {
+							
+							result = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
+							
+						}
+						
+						else if (discr == rsqr)
+						{
+							
+							result = SpecialIntersection(mid - sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
+						}
+						
+					}
+					
+				}
+				
+				else if (g1 < 0)
+				{
+					
+					// We need s* sqrt(discr) >= -g0/g1 + f1/2
+					
+					double r = -g0 / g1 - mid;
+					
+					//s = -1
+					if(r <= 0)
+					{
+						
+						double rsqr = r * r;
+						if (discr < rsqr)
+						{
+							
+							result = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
+							
+						}
+						else
+						{
+							
+							result = SpecialIntersection(mid - sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
+						}
+						
+					}
+					// s = +1;
+					if (r < 0)
+					{
+						
+						result = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
+					}
+					else
+					{
+						
+						double rsqr = r * r;
+						if (discr > rsqr)
+						{
+							result = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
+						}
+						
+						else if (discr == rsqr)
+						{
+							result = SpecialIntersection(mid + sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
+							
+						}
+						
+					}
+					
+					
+				}
+				
+				
+				else // g1 = 0
+				{
+					
+					if (g0 < 0)
+					{
+						resultA = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
+						resultB = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
+						Vector<double[]> vec = resultA.intersection;
+						vec.addAll(resultB.intersection);
+						result = new ResultRoot(vec);
+					}
+					else if (g0 == 0) {
+						
+						resultA = SpecialIntersection(mid-sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
+						resultB = SpecialIntersection(mid + sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
+						
+						Vector<double[]> vec = resultA.intersection;
+						vec.addAll(resultB.intersection);
+						result = new ResultRoot(vec);
+						
+					}
+					
+					
+					
+					
+				}
+				
+				
+			}
+			
+			else if (discr == 0)
+			{
+				
+				double nchat = - (c0 + mid * (c1 + mid * c2));
+				if (nchat > 0)
+				{
+					result = SpecialIntersection(mid, true, a2Sec, a4Sec, c0, c1, c2);
+					
+				}
+				else if (nchat == 0)
+				{
+					
+					result = SpecialIntersection(mid, false, a2Sec, a4Sec, c0, c1, c2);
+				}
+				
+			}
+		
+			
+			return result.intersection;
+		}
+		
 		
 		else
 			
 			return null;
 		
+		
+		
+	}
+	
+	public  ResultRoot SpecialIntersection(double x, boolean transverse, double a2, double a4, double c0, double c1, double c2) {
+		
+		Vector<double[]> intersection = new Vector<double[]>();
+		if (transverse) {
+			
+			double translate = (a2 + x * a4) / 2;
+			double nc = -( c0 + x * (c1 + x* c2));
+			
+			if (nc < 0) {
+				
+				// Clamp to eliminate the rounding error, but duplicate the point because we know that it is a transverse interesection
+				
+				nc = 0;
+			}
+			
+			double w = Math.sqrt(nc);
+			double y = w - translate;
+			intersection.add(new double[] {x, y});
+			w = -w;
+			y = w - translate;
+			intersection.add(new double[] {x, y});
+			
+		}
+		
+		else {
+			
+			// The vertical line at the root is tangent to the ellipse
+			
+			double y = -(a2 + x* a4) / 2;
+			intersection.add(new double[] {x, y});
+
+			
+		}
+		
+		ResultRoot finalroot = new ResultRoot(intersection);
+		
+		return finalroot;
 		
 		
 	}
