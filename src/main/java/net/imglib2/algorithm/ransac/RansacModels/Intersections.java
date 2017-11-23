@@ -79,7 +79,7 @@ public class Intersections {
 			if (dVector[i] == 0) {
 				
 				System.out.println("Ellipses are identical");
-				
+//f				
 				return null;
 				
 			}
