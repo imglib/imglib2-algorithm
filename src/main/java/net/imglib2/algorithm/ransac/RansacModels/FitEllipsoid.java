@@ -2,6 +2,8 @@ package net.imglib2.algorithm.ransac.RansacModels;
 
 
 import net.imglib2.util.LinAlgHelpers;
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
@@ -36,7 +38,7 @@ public class FitEllipsoid
 	 *      </p>
 	 */
 	
-	public static Ellipsoid yuryPetrov( final double[][] points )
+	public static Pair<Ellipsoid, GeneralEllipsoid> yuryPetrov( final double[][] points )
 	{
 		final int nPoints = points.length;
 		
@@ -112,7 +114,7 @@ public class FitEllipsoid
 	 * @param V vector (a,b,c,d,e,f,g,h,i)
 	 * @return the ellipsoid.
 	 */
-	private static Ellipsoid ellipsoidFromEquation( final RealVector V )
+	private static Pair<Ellipsoid, GeneralEllipsoid> ellipsoidFromEquation( final RealVector V )
 	{
 		final double a = V.getEntry(0);
 		final double b = V.getEntry( 1);
@@ -124,6 +126,8 @@ public class FitEllipsoid
 		final double h = V.getEntry( 7);
 		final double i = V.getEntry( 8);
 
+		GeneralEllipsoid genEllipsoid = new GeneralEllipsoid(V);
+		
 		final double[][] aa = new double[][] {
 				{ a, d, e },
 				{ d, b, f },
@@ -136,7 +140,8 @@ public class FitEllipsoid
 		LinAlgHelpers.mult( aa, cc, At );
 		final double r33 = LinAlgHelpers.dot( cc, At ) + 2 * LinAlgHelpers.dot( bb, cc ) - 1;
 		LinAlgHelpers.scale( aa, -1 / r33, aa );
-		return new Ellipsoid( cc, null, aa, null, null );
+		
+		return new ValuePair<Ellipsoid, GeneralEllipsoid>(new Ellipsoid( cc, null, aa, null, null ), genEllipsoid);
 	}
 }
 	
