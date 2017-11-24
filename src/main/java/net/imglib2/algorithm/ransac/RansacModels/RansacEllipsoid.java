@@ -46,13 +46,13 @@ public class RansacEllipsoid {
 
 		do {
 
-			if (remainingPoints.size() > minsize) {
+			if (remainingPoints.size() > 0) {
 				fitted = false;
 
 				final Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<RealLocalizable>> f = sample(remainingPoints,
 						remainingPoints.size(), outsideCutoffDistance, insideCutoffDistance, numsol);
 
-				if (f != null && f.getB().size() > 0) {
+				if (f != null && f.getB().size() > minsize) {
 
 					fitted = true;
 
@@ -92,7 +92,7 @@ public class RansacEllipsoid {
 		Ellipsoid bestEllipsoid = null;
 		GeneralEllipsoid bestGeneralEllipsoid = null;
 		double bestCost = Double.POSITIVE_INFINITY;
-		final Cost costFunction = new AbsoluteDistanceCost(outsideCutoffDistance, insideCutoffDistance, numsol);
+		final Cost costFunction = new AbsoluteDistanceCost(outsideCutoffDistance, insideCutoffDistance);
 
 		for (int sample = 0; sample < numSamples; ++sample) {
 
@@ -214,13 +214,10 @@ public class RansacEllipsoid {
 	static class AbsoluteDistanceCost implements Cost {
 		private final double outsideCutoff;
 		private final double insideCutoff;
-		private final NumericalSolvers numsol;
 
-		public AbsoluteDistanceCost(final double outsideCutoffDistance, final double insideCutoffDistance,
-				final NumericalSolvers numsol) {
+		public AbsoluteDistanceCost(final double outsideCutoffDistance, final double insideCutoffDistance) {
 			outsideCutoff = outsideCutoffDistance;
 			insideCutoff = insideCutoffDistance;
-			this.numsol = numsol;
 		}
 
 		@Override
@@ -243,13 +240,10 @@ public class RansacEllipsoid {
 	static class SquaredDistanceCost implements Cost {
 		private final double outsideCutoff;
 		private final double insideCutoff;
-		private final NumericalSolvers numsol;
 
-		public SquaredDistanceCost(final double outsideCutoffDistance, final double insideCutoffDistance,
-				final NumericalSolvers numsol) {
+		public SquaredDistanceCost(final double outsideCutoffDistance, final double insideCutoffDistance) {
 			outsideCutoff = outsideCutoffDistance * outsideCutoffDistance;
 			insideCutoff = insideCutoffDistance * insideCutoffDistance;
-			this.numsol = numsol;
 		}
 
 		@Override
