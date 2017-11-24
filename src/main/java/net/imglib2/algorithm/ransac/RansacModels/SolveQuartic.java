@@ -14,7 +14,7 @@ public class SolveQuartic {
 	 */
 	
 	
-	public ArrayList<Pair<Integer, Double>> SolveQuartic(double[] p){
+	public static ArrayList<Pair<Integer, Double>> SolveQuartic(double[] p){
 		
 		ArrayList<Pair<Integer, Double>> Rootmap = new ArrayList<Pair<Integer, Double>>();
 		
@@ -44,7 +44,7 @@ public class SolveQuartic {
 	}
 	
 	
-	public ArrayList<Pair<Integer, Double>> SolveDepressedQuadratic(double c0){
+	public static ArrayList<Pair<Integer, Double>> SolveDepressedQuadratic(double c0){
 		ArrayList<Pair<Integer, Double>> Rootmap = new ArrayList<Pair<Integer, Double>>();
 
 		double zero = 0;
@@ -79,7 +79,7 @@ public class SolveQuartic {
 	}
 	
 	
-	public ArrayList<Pair<Integer, Double>> SolveDepressedCubic(double c0, double c1){
+	public static ArrayList<Pair<Integer, Double>> SolveDepressedCubic(double c0, double c1){
 		ArrayList<Pair<Integer, Double>> Rootmap = new ArrayList<Pair<Integer, Double>>();
 
 		double zero = 0;
@@ -215,7 +215,7 @@ public class SolveQuartic {
 	}
 	
 	
-	public ArrayList<Pair<Integer, Double>> SolveBiquadratic(double c0, double c2)
+	public static ArrayList<Pair<Integer, Double>> SolveBiquadratic(double c0, double c2)
 	{
 		
 		ArrayList<Pair<Integer, Double>> Rootmap = new ArrayList<Pair<Integer, Double>>();
@@ -323,7 +323,7 @@ public class SolveQuartic {
 		
 	}
 	
-	public ArrayList<Pair<Integer, Double>> SolveCubic(double[] p)
+	public static ArrayList<Pair<Integer, Double>> SolveCubic(double[] p)
 	{
 		ArrayList<Pair<Integer, Double>> Rootmap = new ArrayList<Pair<Integer, Double>>();
 
@@ -347,7 +347,7 @@ public class SolveQuartic {
 		
 	}
 	
-	public ArrayList<Pair<Integer, Double>> SolveDepressedQuartic(double c0, double c1, double c2){
+	public static ArrayList<Pair<Integer, Double>> SolveDepressedQuartic(double c0, double c1, double c2){
 		ArrayList<Pair<Integer, Double>> Rootmap = new ArrayList<Pair<Integer, Double>>();
 		
 		
