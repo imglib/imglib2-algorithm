@@ -23,6 +23,7 @@ public class Intersections {
 	 * 
 	 * a0 = -1/b, a1 = 2 g / b,a2 = 2 h / b, a3 = a/b, a4 = 2 d / b
 	 * 
+	 * @ V Kapoor
 	 */
 
 	public Vector<double[]> PointsofIntersection(GeneralEllipsoid EllipseA, GeneralEllipsoid EllipseB) {
