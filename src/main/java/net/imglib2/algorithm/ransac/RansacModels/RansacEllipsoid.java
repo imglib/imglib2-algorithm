@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import ij.gui.EllipseRoi;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.ransac.RansacModels.DistPointHyperEllipsoid.Result;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import net.imagej.DrawingTool;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RealLocalizable;
@@ -32,6 +34,29 @@ import net.imglib2.util.ValuePair;
 
 public class RansacEllipsoid {
 
+	
+	
+	public static List<Pair<int[], int[]>> GetEllipsepoints(Ellipsoid ellipse){
+		
+		List<Pair<int[], int[]>> pointlist = new ArrayList<Pair<int[], int[]>>();
+		
+		EllipseRoi roi = DisplayEllipse.create2DEllipse(ellipse.getCenter(), new double[] {ellipse.getCovariance()[0][0], ellipse.getCovariance()[0][1], ellipse.getCovariance()[1][1] });
+		
+		
+     int[] xCord = roi.getXCoordinates();
+	 int[] yCord = roi.getYCoordinates();	
+	 
+	 pointlist.add(new ValuePair<int[] , int[]> (xCord, yCord));
+	 
+	 for (int index = 0; index < pointlist.size(); ++index)
+	 System.out.println(pointlist.get(index).getA());
+		
+		return pointlist;
+	}
+	
+	
+	
+	
 	public static <T extends Comparable<T>>  ArrayList<Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>> Allsamples(
 			final List<Pair<RealLocalizable, T>> points, final double outsideCutoffDistance,
 			final double insideCutoffDistance, int minsize, final NumericalSolvers numsol) {
@@ -53,6 +78,9 @@ public class RansacEllipsoid {
 				final Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>> f = sample(remainingPoints,
 						remainingPoints.size(), outsideCutoffDistance, insideCutoffDistance, numsol);
 
+				
+				GetEllipsepoints(f.getA().getA());
+				
 				if (f != null && f.getB().size() > minsize) {
 
 					fitted = true;
