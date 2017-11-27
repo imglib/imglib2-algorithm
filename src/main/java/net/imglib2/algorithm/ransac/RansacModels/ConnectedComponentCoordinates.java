@@ -11,15 +11,17 @@ import net.imglib2.RealPoint;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.util.Intervals;
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 
 public class ConnectedComponentCoordinates {
 
 	
 	
-	public static <T extends Comparable<T>> ArrayList<RealLocalizable> GetCoordinates(RandomAccessibleInterval<T> source, final T threshold) {
+	public static <T extends Comparable<T>> ArrayList<Pair<RealLocalizable, T>> GetCoordinates(RandomAccessibleInterval<T> source, final T threshold) {
 		
-		ArrayList<RealLocalizable> coordinatelist = new ArrayList<RealLocalizable>();
+		ArrayList<Pair<RealLocalizable, T>> coordinatelist = new ArrayList<Pair<RealLocalizable, T>>();
 	 
 		
 		Interval interval = Intervals.expand(source, -1);
@@ -66,7 +68,7 @@ public class ConnectedComponentCoordinates {
 				
 				if (isConnected) {
 					
-					coordinatelist.add(rpos);
+					coordinatelist.add( new ValuePair<RealLocalizable, T>(rpos, centerValue));
 					
 				}
 				
