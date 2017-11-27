@@ -46,11 +46,11 @@ public class RansacEllipsoid {
 		
 		EllipseRoi roi = DisplayEllipse.create2DEllipse(ellipse.getCenter(), new double[] {ellipse.getCovariance()[0][0], ellipse.getCovariance()[0][1], ellipse.getCovariance()[1][1] });
 		
-    int N = roi.getNCoordinates();	
+   	
     Rectangle bounds = roi.getBounds();
      int[] xCord = roi.getXCoordinates();
 	 int[] yCord = roi.getYCoordinates();	
-	 
+	 int N = xCord.length; 
 	
 	 
 	 for (int index = 0; index < N; ++index) {
@@ -91,7 +91,7 @@ public class RansacEllipsoid {
 	
 	public static <T extends Comparable<T>>  ArrayList<Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>> Allsamples(
 			final List<Pair<RealLocalizable, T>> points, final double outsideCutoffDistance,
-			final double insideCutoffDistance, double minpercent, final NumericalSolvers numsol) {
+			final double insideCutoffDistance, double minpercent, final NumericalSolvers numsol, int maxiter) {
 
 		boolean fitted;
 
@@ -102,11 +102,13 @@ public class RansacEllipsoid {
 		final ArrayList<Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>> segments = 
 				new ArrayList<Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>>();
 
+		int iter = 0;
 		do {
 
 			if (remainingPoints.size() > 0) {
 				fitted = false;
 
+				++iter;
 				final Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>> f = sample(remainingPoints,
 						remainingPoints.size(), outsideCutoffDistance, insideCutoffDistance, numsol);
 
@@ -142,7 +144,7 @@ public class RansacEllipsoid {
 				
 				if (percent < minpercent) {
 					
-					System.out.println("Wrong Ellipse detected, removing" + count + " " + size);
+					System.out.println("Wrong Ellipse detected, removing" );
 
 					segments.remove(f);
 					final List<Pair<RealLocalizable, T>> inlierPoints = new ArrayList<Pair<RealLocalizable, T>>();
@@ -153,13 +155,17 @@ public class RansacEllipsoid {
 					
 				}
 				}
+				else
+					break;
 			} else {
 
 				fitted = true;
 				break;
 
 			}
-
+            if (iter >= maxiter)
+	            break;
+			
 		}
 
 		while (fitted);
