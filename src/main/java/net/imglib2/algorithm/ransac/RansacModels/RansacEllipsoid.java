@@ -44,7 +44,7 @@ public class RansacEllipsoid {
 		
 		List<double[]> pointlist = new ArrayList<double[]>();
 		
-		EllipseRoi roi = DisplayEllipse.create2DEllipse(ellipse.getCenter(), new double[] {ellipse.getCovariance()[0][0], ellipse.getCovariance()[0][1], ellipse.getCovariance()[1][1] });
+		EllipseRoi roi = DisplayasROI.create2DEllipse(ellipse.getCenter(), new double[] {ellipse.getCovariance()[0][0], ellipse.getCovariance()[0][1], ellipse.getCovariance()[1][1] });
 		
    	
     Rectangle bounds = roi.getBounds();

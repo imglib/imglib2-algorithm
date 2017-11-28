@@ -1,8 +1,10 @@
 package net.imglib2.algorithm.ransac.RansacModels;
 
 import ij.gui.EllipseRoi;
+import ij.gui.Line;
+import net.imglib2.RealLocalizable;
 
-public class DisplayEllipse {
+public class DisplayasROI {
 
 	
 	
@@ -32,5 +34,33 @@ public class DisplayEllipse {
 		return ellipse;
 	}
 	
+	
+	public static Line create2DLine(final double[] lineparam, final double[] sourcepoint) {
+		
+		final double slope = lineparam[0];
+		final double intercept = lineparam[1];
+		
+		final double midx = sourcepoint[0];
+		
+		 double startx = midx - 5;
+		
+		
+		 double endx = midx + 5;
+		 
+		System.out.println(slope);
+		
+		if (Math.abs(slope) < 1) {
+			
+			startx = midx - 20;
+			endx = midx + 20;
+		}
+			
+		 double starty = slope * startx + intercept;
+		 double endy = slope * endx + intercept;
+		Line line = new Line(startx, starty, endx, endy);
+		
+		return line;
+		
+	}
 	
 }
