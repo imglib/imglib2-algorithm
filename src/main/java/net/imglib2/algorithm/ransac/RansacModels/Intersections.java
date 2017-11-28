@@ -30,86 +30,41 @@ public class Intersections {
 	 * @ V Kapoor
 	 */
 
-	public static Vector<double[]> PointsofIntersection(Ellipsoid EllipseA, Ellipsoid EllipseB) {
+	public static Vector<double[]> PointsofIntersection(GeneralEllipsoid EllipseA, GeneralEllipsoid EllipseB) {
+
+		
 
 		
 		
 		
-		double[] centerA = EllipseA.getCenter();
 		
-		RealVector VxA = new ArrayRealVector(EllipseA.getAxes().length);
-		RealVector VyA = new ArrayRealVector(EllipseA.getAxes().length);
-		for (int i = 0; i < EllipseA.getAxes().length ; ++i) {
-			
-			
-			
-			VxA.setEntry(i,EllipseA.getAxes()[i][0]);
-			VyA.setEntry(i,EllipseA.getAxes()[i][1]);
-			
-		}
-		
-		double[] LA = EllipseA.getRadii();
-		RealMatrix UUA = VxA.outerProduct(VxA).scalarMultiply(1.0/(LA[0] * LA[0])).add(VxA.outerProduct(VxA).scalarMultiply(1.0/(LA[1] * LA[1]))) ;
-		double mA00 = UUA.getEntry(0, 0);
-		double mA11 = UUA.getEntry(1, 1);
-		double mA01 = UUA.getEntry(0, 1);
-		double mA10 = UUA.getEntry(1, 0);
-		
-		double[] centerB = EllipseB.getCenter();
-		
-		RealVector VxB = new ArrayRealVector(EllipseB.getAxes().length);
-		RealVector VyB = new ArrayRealVector(EllipseB.getAxes().length);
-		
-	    for (int i = 0; i < EllipseB.getAxes().length ; ++i) {
-			
-			VxB.setEntry(i,EllipseB.getAxes()[i][0]);
-			VyB.setEntry(i,EllipseB.getAxes()[i][1]);
-			
-		}
-		
-		
-		
-		double[] LB = EllipseB.getRadii();
-		
-		RealMatrix UUB = VxB.outerProduct(VxB).scalarMultiply(1.0/(LB[0] * LB[0])).add(VxB.outerProduct(VxB).scalarMultiply(1.0/(LB[1] * LB[1]))) ;
-		double mB00 = UUB.getEntry(0, 0);
-		double mB11 = UUB.getEntry(1, 1);
-		double mB01 = UUB.getEntry(0, 1);
-		double mB10 = UUB.getEntry(1, 0);
-		
-		
-		
-		
+		final double[] coefficients = EllipseA.Coefficients;
 
-		double a0 = ( mA00 * centerA[0] * centerA[0] + mA11 * centerA[1] * centerA[1] + (mA01 + mA10) * ( centerA[0] * centerA[1]) );
-		double a1 = (-2 * centerA[0] * mA00 - centerA[1] * (mA01 + mA10)  );
-		double a2 = (-2 * centerA[1] -centerA[0] * (mA01 + mA10));
-		double a3 = mA00;
-		double a4 = mA01 + mA10;
-		double a5 = mA11;
-		
-		a0 = a0 / a5;
-		a1 = a1 / a5;
-		a2 = a2 / a5;
-		a3 = a3 / a5;
-		a4 = a4 / a5;
-		
-		
-	
+		final double a = coefficients[0];
+		final double b = coefficients[1];
+		final double d = coefficients[2];
+		final double g = coefficients[3];
+		final double h = coefficients[4];
 
-		double a0Sec = ( mB00 * centerB[0] * centerB[0] + mA11 * centerB[1] * centerB[1] + (mB01 + mB10) * ( centerB[0] * centerB[1]) );
-		double a1Sec = (-2 * centerB[0] * mB00 - centerB[1] * (mB01 + mB10)  );
-		double a2Sec = (-2 * centerB[1] -centerB[0] * (mB01 + mB10));
-		double a3Sec =  mB00;
-		double a4Sec = mB01 + mB10;
-		double a5Sec = mB11;
+		final double a0 = -1.0 / b;
+		final double a1 = 2.0 * g / b;
+		final double a2 = 2.0 * h / b;
+		final double a3 = a / b;
+		final double a4 = 2 * d / b;
+		final double[] coefficientsSec = EllipseB.Coefficients;
 
-		a0Sec = a0Sec / a5Sec;
-		a1Sec = a1Sec / a5Sec;
-		a2Sec = a2Sec / a5Sec;
-		a3Sec = a3Sec / a5Sec;
-		a4Sec = a4Sec / a5Sec;
-		
+		final double aSec = coefficientsSec[0];
+		final double bSec = coefficientsSec[1];
+		final double dSec = coefficientsSec[2];
+		final double gSec = coefficientsSec[3];
+		final double hSec = coefficientsSec[4];
+
+		final double a0Sec = -1.0 / bSec;
+		final double a1Sec = 2.0 * gSec / bSec;
+		final double a2Sec = 2.0 * hSec / bSec;
+		final double a3Sec = aSec / bSec;
+		final double a4Sec = 2 * dSec / bSec;
+
 		final double d0 = a0 - a0Sec;
 		final double d1 = a1 - a1Sec;
 		final double d2 = a2 - a2Sec;
@@ -139,7 +94,6 @@ public class Intersections {
 		// Finding points of intersection in different cases
 		double xbar = -d2 / d4;
 		double e2xbar = e0 + e1 * xbar + e2 * xbar * xbar;
-		System.out.println(centerA[0]);
 		Vector<double[]> intersection = new Vector<>();
 		if (d4 != 0 && e2xbar != 0) {
 
