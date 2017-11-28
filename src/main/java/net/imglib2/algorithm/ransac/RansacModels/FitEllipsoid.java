@@ -38,11 +38,11 @@ public class FitEllipsoid
 	 *      </p>
 	 */
 	
-	public static Pair<Ellipsoid, GeneralEllipsoid> yuryPetrov( final double[][] points )
+	public static Pair<Ellipsoid, GeneralEllipsoid> yuryPetrov( final double[][] points, final int ndims )
 	{
 		final int nPoints = points.length;
 		
-		
+	
 		
 		if ( nPoints < 9 ) 
 			throw new IllegalArgumentException( "Too few points; need at least 9 to calculate a unique ellipsoid" );
@@ -50,6 +50,8 @@ public class FitEllipsoid
 	
 		RealMatrix MatrixD = new Array2DRowRealMatrix(nPoints, 9);
 
+		
+		if (ndims > 2) {
 		for (int i = 0; i < nPoints; i++) {
 			final double x = points[i][0];
 			final double y = points[i][1];
@@ -101,7 +103,57 @@ public class FitEllipsoid
 		
 		return ellipsoidFromEquation( v );
 		
-	
+		}
+		
+		else
+		{
+			
+			for (int i = 0; i < nPoints; i++) {
+				final double x = points[i][0];
+				final double y = points[i][1];
+				
+				double xx = x*x;
+				double yy =y*y;
+				double xy = 2 * x *y;
+			
+
+				
+
+				MatrixD.setEntry(i, 0, xx);
+				MatrixD.setEntry(i, 1, yy);
+				MatrixD.setEntry(i, 2, xy);
+				MatrixD.setEntry(i, 3, 2 * x);
+				MatrixD.setEntry(i, 4, 2 * y);
+				
+				
+				
+			}
+			
+			RealMatrix dtd = MatrixD.transpose().multiply(MatrixD);
+			
+			
+			// Create a vector of ones.
+					RealVector ones = new ArrayRealVector(nPoints);
+					ones.mapAddToSelf(1);
+
+					// Multiply: d' * ones.mapAddToSelf(1)
+					RealVector dtOnes = MatrixD.transpose().operate(ones);
+
+					// Find ( d' * d )^-1
+					DecompositionSolver solver = new SingularValueDecomposition(dtd)
+							.getSolver();
+					RealMatrix dtdi = solver.getInverse();
+
+					// v = (( d' * d )^-1) * ( d' * ones.mapAddToSelf(1));
+					RealVector v = dtdi.operate(dtOnes);
+			
+			
+			
+			return ellipsoidFromEquation2D( v );
+			
+			
+			
+		}
 		
 	}
 
@@ -143,5 +195,31 @@ public class FitEllipsoid
 		
 		return new ValuePair<Ellipsoid, GeneralEllipsoid>(new Ellipsoid( cc, null, aa, null, null ), genEllipsoid);
 	}
+	private static Pair<Ellipsoid, GeneralEllipsoid> ellipsoidFromEquation2D( final RealVector V )
+	{
+		final double a = V.getEntry(0);
+		final double b = V.getEntry( 1);
+		final double c = V.getEntry( 2);
+		final double d = V.getEntry( 3);
+		final double e = V.getEntry( 4);
+
+
+		GeneralEllipsoid genEllipsoid = new GeneralEllipsoid(V);
+		
+		final double[][] aa = new double[][] {
+				{ a, c },
+				{ c, b } };
+		final double[] bb = new double[] { d, e };
+		final double[] cc = new Matrix( aa ).solve( new Matrix( bb, 2 ) ).getRowPackedCopy();
+		LinAlgHelpers.scale( cc, -1, cc );
+
+		final double[] At = new double[ 2 ];
+		LinAlgHelpers.mult( aa, cc, At );
+		final double r33 = LinAlgHelpers.dot( cc, At ) + 2 * LinAlgHelpers.dot( bb, cc ) - 1;
+		LinAlgHelpers.scale( aa, -1 / r33, aa );
+		
+		return new ValuePair<Ellipsoid, GeneralEllipsoid>(new Ellipsoid( cc, null, aa, null, null ), genEllipsoid);
+	}
+	
 }
 	

@@ -3,6 +3,10 @@ package net.imglib2.algorithm.ransac.RansacModels;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+
 import net.imglib2.RealLocalizable;
 import net.imglib2.util.Pair;
 
@@ -26,36 +30,86 @@ public class Intersections {
 	 * @ V Kapoor
 	 */
 
-	public Vector<double[]> PointsofIntersection(GeneralEllipsoid EllipseA, GeneralEllipsoid EllipseB) {
+	public static Vector<double[]> PointsofIntersection(Ellipsoid EllipseA, Ellipsoid EllipseB) {
 
-		final double[] coefficients = EllipseA.Coefficients;
+		
+		
+		
+		double[] centerA = EllipseA.getCenter();
+		
+		RealVector VxA = new ArrayRealVector(EllipseA.getAxes().length);
+		RealVector VyA = new ArrayRealVector(EllipseA.getAxes().length);
+		for (int i = 0; i < EllipseA.getAxes().length ; ++i) {
+			
+			
+			
+			VxA.setEntry(i,EllipseA.getAxes()[i][0]);
+			VyA.setEntry(i,EllipseA.getAxes()[i][1]);
+			
+		}
+		
+		double[] LA = EllipseA.getRadii();
+		RealMatrix UUA = VxA.outerProduct(VxA).scalarMultiply(1.0/(LA[0] * LA[0])).add(VxA.outerProduct(VxA).scalarMultiply(1.0/(LA[1] * LA[1]))) ;
+		double mA00 = UUA.getEntry(0, 0);
+		double mA11 = UUA.getEntry(1, 1);
+		double mA01 = UUA.getEntry(0, 1);
+		double mA10 = UUA.getEntry(1, 0);
+		
+		double[] centerB = EllipseB.getCenter();
+		
+		RealVector VxB = new ArrayRealVector(EllipseB.getAxes().length);
+		RealVector VyB = new ArrayRealVector(EllipseB.getAxes().length);
+		
+	    for (int i = 0; i < EllipseB.getAxes().length ; ++i) {
+			
+			VxB.setEntry(i,EllipseB.getAxes()[i][0]);
+			VyB.setEntry(i,EllipseB.getAxes()[i][1]);
+			
+		}
+		
+		
+		
+		double[] LB = EllipseB.getRadii();
+		
+		RealMatrix UUB = VxB.outerProduct(VxB).scalarMultiply(1.0/(LB[0] * LB[0])).add(VxB.outerProduct(VxB).scalarMultiply(1.0/(LB[1] * LB[1]))) ;
+		double mB00 = UUB.getEntry(0, 0);
+		double mB11 = UUB.getEntry(1, 1);
+		double mB01 = UUB.getEntry(0, 1);
+		double mB10 = UUB.getEntry(1, 0);
+		
+		
+		
+		
 
-		final double a = coefficients[0];
-		final double b = coefficients[1];
-		final double d = coefficients[3];
-		final double g = coefficients[6];
-		final double h = coefficients[7];
+		double a0 = ( mA00 * centerA[0] * centerA[0] + mA11 * centerA[1] * centerA[1] + (mA01 + mA10) * ( centerA[0] * centerA[1]) );
+		double a1 = (-2 * centerA[0] * mA00 - centerA[1] * (mA01 + mA10)  );
+		double a2 = (-2 * centerA[1] -centerA[0] * (mA01 + mA10));
+		double a3 = mA00;
+		double a4 = mA01 + mA10;
+		double a5 = mA11;
+		
+		a0 = a0 / a5;
+		a1 = a1 / a5;
+		a2 = a2 / a5;
+		a3 = a3 / a5;
+		a4 = a4 / a5;
+		
+		
+	
 
-		final double a0 = -1.0 / b;
-		final double a1 = 2.0 * g / b;
-		final double a2 = 2.0 * h / b;
-		final double a3 = a / b;
-		final double a4 = 2 * d / b;
+		double a0Sec = ( mB00 * centerB[0] * centerB[0] + mA11 * centerB[1] * centerB[1] + (mB01 + mB10) * ( centerB[0] * centerB[1]) );
+		double a1Sec = (-2 * centerB[0] * mB00 - centerB[1] * (mB01 + mB10)  );
+		double a2Sec = (-2 * centerB[1] -centerB[0] * (mB01 + mB10));
+		double a3Sec =  mB00;
+		double a4Sec = mB01 + mB10;
+		double a5Sec = mB11;
 
-		final double[] coefficientsSec = EllipseB.Coefficients;
-
-		final double aSec = coefficientsSec[0];
-		final double bSec = coefficientsSec[1];
-		final double dSec = coefficientsSec[3];
-		final double gSec = coefficientsSec[6];
-		final double hSec = coefficientsSec[7];
-
-		final double a0Sec = -1.0 / bSec;
-		final double a1Sec = 2.0 * gSec / bSec;
-		final double a2Sec = 2.0 * hSec / bSec;
-		final double a3Sec = aSec / bSec;
-		final double a4Sec = 2 * dSec / bSec;
-
+		a0Sec = a0Sec / a5Sec;
+		a1Sec = a1Sec / a5Sec;
+		a2Sec = a2Sec / a5Sec;
+		a3Sec = a3Sec / a5Sec;
+		a4Sec = a4Sec / a5Sec;
+		
 		final double d0 = a0 - a0Sec;
 		final double d1 = a1 - a1Sec;
 		final double d2 = a2 - a2Sec;
@@ -85,18 +139,20 @@ public class Intersections {
 		// Finding points of intersection in different cases
 		double xbar = -d2 / d4;
 		double e2xbar = e0 + e1 * xbar + e2 * xbar * xbar;
+		System.out.println(centerA[0]);
 		Vector<double[]> intersection = new Vector<>();
 		if (d4 != 0 && e2xbar != 0) {
 
 			// Listing 1 and 2 David Eberly, intersection of ellipses text
 
+			System.out.println("Intersection: Listing 1 Solution");
 			double f0 = c0 * d2 * d2 + e0 * e0;
 			double f1 = c1 * d2 * d2 + 2 * (c0 * d2 * d4 + e0 * e1);
 			double f2 = c2 * d2 * d2 + c0 * d4 * d4 + e1 + 2 * (c1 * d2 * d4 + e0 * e2);
 			double f3 = c1 * d4 * d4 + 2 * (c2 * d2 * d4 + e1 * e2);
 			double f4 = c2 * d4 * d4 + e2 * e2;
 
-			ArrayList<Pair<Integer, Double>> RootMap = SolveQuartic.SolveQuartic(new double[] { f0, f1, f2, f3, f4 });
+			ArrayList<Pair<Integer, Double>> RootMap = Solvers.SolveQuartic(new double[] { f0, f1, f2, f3, f4 });
 
 			for (Pair<Integer, Double> rm : RootMap) {
 
@@ -117,7 +173,7 @@ public class Intersections {
 		if (d4 != 0 && e2xbar == 0) {
 
 			// Listing 2 David Eberly text, intersection of ellipses
-
+			System.out.println("Intersection: Listing 2 Solution");
 			double translate, w, y;
 
 			// Compute intersections of x = xbar with ellipse
@@ -146,7 +202,7 @@ public class Intersections {
 			double f1 = c1 + 2 * h0 * h1;
 			double f2 = c2 + h1 * h1;
 
-			ArrayList<Pair<Integer, Double>> RootMap = SolveQuartic.SolveQuartic(new double[] { f0, f1, f2 });
+			ArrayList<Pair<Integer, Double>> RootMap = Solvers.SolveQuartic(new double[] { f0, f1, f2 });
 
 			for (Pair<Integer, Double> rm : RootMap) {
 
@@ -164,13 +220,13 @@ public class Intersections {
 		if (d4 == 0 && d2 != 0 && e2 != 0) {
 
 			// Listing 3 David Eberly, interesection of ellipses text
-
+			System.out.println("Intersection: Listing 3 Solution");
 			double f0 = c0 * d2 * d2 + e0 * e0;
 			double f1 = c1 * d2 * d2 + 2 * e0 * e1;
 			double f2 = c2 * d2 * d2 + e1 * e1 + 2 * e0 * e2;
 			double f3 = 2 * e1 * e2;
 			double f4 = e2 * e2;
-			ArrayList<Pair<Integer, Double>> RootMap = SolveQuartic.SolveQuartic(new double[] { f0, f1, f2, f3, f4 });
+			ArrayList<Pair<Integer, Double>> RootMap = Solvers.SolveQuartic(new double[] { f0, f1, f2, f3, f4 });
 
 			for (Pair<Integer, Double> rm : RootMap) {
 
@@ -186,11 +242,13 @@ public class Intersections {
 
 		if (d4 == 0 && d2 != 0 && e2 == 0) {
 
+			// Listing 4 David Eberly, interesection of ellipses text
+			System.out.println("Intersection: Listing 4 Solution");
 			double f0 = c0 * d2 * d2 + e0 * e0;
 			double f1 = c1 * d2 * d2 + 2 * e0 * e1;
 			double f2 = c2 * d2 * d2 + e1 * e1;
 
-			ArrayList<Pair<Integer, Double>> RootMap = SolveQuartic.SolveQuartic(new double[] { f0, f1, f2 });
+			ArrayList<Pair<Integer, Double>> RootMap = Solvers.SolveQuartic(new double[] { f0, f1, f2 });
 
 			for (Pair<Integer, Double> rm : RootMap) {
 
@@ -208,7 +266,7 @@ public class Intersections {
 		if (d4 == 0 && d2 == 0 && e2 == 0) {
 
 			// Listing 5 David Eberly, intersection of ellipses text
-
+			System.out.println("Intersection: Listing 5 Solution");
 			double w, y;
 
 			double xhat = -e0 / e1;
@@ -241,6 +299,8 @@ public class Intersections {
 
 		if (d4 == 0 && d2 == 0 && e2 != 0) {
 			// Listing 6 David Eberly intersection of ellipses
+			System.out.println("Intersection: Listing 6 Solution");
+			
 			ResultRoot result = null;
 			ResultRoot resultA;
 			ResultRoot resultB;
@@ -386,7 +446,7 @@ public class Intersections {
 
 	}
 
-	public ResultRoot SpecialIntersection(double x, boolean transverse, double a2, double a4, double c0, double c1,
+	public static ResultRoot SpecialIntersection(double x, boolean transverse, double a2, double a4, double c0, double c1,
 			double c2) {
 
 		Vector<double[]> intersection = new Vector<double[]>();

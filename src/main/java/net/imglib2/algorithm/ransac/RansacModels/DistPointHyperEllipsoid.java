@@ -50,8 +50,7 @@ public class DistPointHyperEllipsoid {
 
 		// Compute the coordinates of Y in the hyperellipsoid coordinate system.
 		final double[] diff = new double[n];
-		// System.out.println(point.length + " " + hyperellipsoid.getCenter().length + "
-		// " + diff.length);
+//		 System.out.println(point.length + " " + hyperellipsoid.getCenter().length + " " + diff.length);
 		LinAlgHelpers.subtract(point, hyperellipsoid.getCenter(), diff);
 		final double[] y = new double[n];
 		LinAlgHelpers.mult(hyperellipsoid.getAxes(), diff, y);

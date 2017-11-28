@@ -38,9 +38,14 @@ public class ConnectedComponentCoordinates {
 		for (final Neighborhood<T> localNeighborhood : shape.neighborhoods(source))
 		{
 			
-			double[] posf = new double[3];
+			double[] posf = new double[ndims];
 			final T centerValue = center.next();
+			
+				
 			center.localize(posf);
+			
+		
+			
 			final RealPoint rpos = new RealPoint(posf);
 			// We are looking for pixels which are connected to pixels in the neighborhood
 			// having intensity above a certain threshold

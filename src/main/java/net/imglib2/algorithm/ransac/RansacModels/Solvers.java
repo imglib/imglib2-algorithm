@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 
-public class SolveQuartic {
+public class Solvers {
 
 	
 	/**
