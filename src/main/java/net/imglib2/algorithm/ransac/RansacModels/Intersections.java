@@ -30,13 +30,14 @@ public class Intersections {
 	 * @ V Kapoor
 	 */
 
-	public static Vector<double[]> PointsofIntersection(GeneralEllipsoid EllipseA, GeneralEllipsoid EllipseB) {
+	public static ArrayList<double[]> PointsofIntersection(final Pair<GeneralEllipsoid, GeneralEllipsoid> Ellipsepair) {
 
 		
 
 		
 		
-		
+		GeneralEllipsoid EllipseA = Ellipsepair.getA();
+		GeneralEllipsoid EllipseB = Ellipsepair.getB();
 		
 		final double[] coefficients = EllipseA.Coefficients;
 
@@ -94,12 +95,13 @@ public class Intersections {
 		// Finding points of intersection in different cases
 		double xbar = -d2 / d4;
 		double e2xbar = e0 + e1 * xbar + e2 * xbar * xbar;
-		Vector<double[]> intersection = new Vector<>();
-		if (d4 != 0 && e2xbar != 0) {
+		ArrayList<double[]> intersection = new ArrayList<>();
+		if (c2 > 0 && c1 * c1 > 4 * c0 * c2) {
+		if (Math.abs(d4) >= 1.0E-3 && Math.abs(e2xbar) >= 1.0E-3) {
 
 			// Listing 1 and 2 David Eberly, intersection of ellipses text
 
-			System.out.println("Intersection: Listing 1 Solution");
+			System.out.println("Intersection: Listing 1 Solution" + d4);
 			double f0 = c0 * d2 * d2 + e0 * e0;
 			double f1 = c1 * d2 * d2 + 2 * (c0 * d2 * d4 + e0 * e1);
 			double f2 = c2 * d2 * d2 + c0 * d4 * d4 + e1 + 2 * (c1 * d2 * d4 + e0 * e2);
@@ -120,11 +122,10 @@ public class Intersections {
 
 			}
 
-			return intersection;
 
 		}
 
-		if (d4 != 0 && e2xbar == 0) {
+		else	 if (Math.abs(d4) >= 1.0E-3 && Math.abs(e2xbar) <= 1.0E-3) {
 
 			// Listing 2 David Eberly text, intersection of ellipses
 			System.out.println("Intersection: Listing 2 Solution");
@@ -167,11 +168,10 @@ public class Intersections {
 				intersection.add(new double[] { x, y });
 			}
 
-			return intersection;
 
 		}
 
-		if (d4 == 0 && d2 != 0 && e2 != 0) {
+		else if (Math.abs(d4) <= 1.0E-3 && d2 != 0 && e2 != 0) {
 
 			// Listing 3 David Eberly, interesection of ellipses text
 			System.out.println("Intersection: Listing 3 Solution");
@@ -191,10 +191,9 @@ public class Intersections {
 
 			}
 
-			return intersection;
 		}
 
-		if (d4 == 0 && d2 != 0 && e2 == 0) {
+		else if (Math.abs(d4) <= 1.0E-3 && d2 != 0 && Math.abs(e2) <= 1.0E-3) {
 
 			// Listing 4 David Eberly, interesection of ellipses text
 			System.out.println("Intersection: Listing 4 Solution");
@@ -213,11 +212,10 @@ public class Intersections {
 
 			}
 
-			return intersection;
 
 		}
 
-		if (d4 == 0 && d2 == 0 && e2 == 0) {
+		else 	if (Math.abs(d4) <= 1.0E-3 && Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
 
 			// Listing 5 David Eberly, intersection of ellipses text
 			System.out.println("Intersection: Listing 5 Solution");
@@ -247,11 +245,10 @@ public class Intersections {
 
 			}
 
-			return intersection;
 
 		}
 
-		if (d4 == 0 && d2 == 0 && e2 != 0) {
+		else if (Math.abs(d4) <= 1.0E-3 && Math.abs(d2) <= 1.0E-3 && e2 != 0) {
 			// Listing 6 David Eberly intersection of ellipses
 			System.out.println("Intersection: Listing 6 Solution");
 			
@@ -391,12 +388,14 @@ public class Intersections {
 
 			}
 
-			return result.intersection;
+			intersection.addAll(result.intersection);
 		}
-
-		else
-
-			return null;
+		
+	
+		}
+		
+		return intersection;
+		
 
 	}
 
