@@ -47,7 +47,6 @@ public class DisplayasROI {
 		
 		 double endx = midx + 5;
 		 
-		System.out.println(slope);
 		
 		if (Math.abs(slope) < 1) {
 			

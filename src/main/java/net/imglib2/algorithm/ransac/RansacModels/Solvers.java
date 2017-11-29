@@ -11,6 +11,7 @@ public class Solvers {
 	/**
 	 * 
 	 * Quartic solvers needed to find interesection of ellipses, adopted from David Eberlz SolveQuartics.h code
+	 * @V Kapoor
 	 */
 	
 	

@@ -346,4 +346,6 @@ public class RansacEllipsoid {
 		return distance;
 	}
 
+	
+	
 }
