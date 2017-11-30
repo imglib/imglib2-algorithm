@@ -79,6 +79,11 @@
 		</developer>
 	</developers>
 	<contributors>
+	<contributor>
+			<name>Varun Kapoor</name>
+			<url>https://imagej.net/User:MTrack</url>
+			<properties><id>kapoorlab</id></properties>
+		</contributor>
 		<contributor>
 			<name>John Bogovic</name>
 			<url>http://imagej.net/User:Bogovic</url>

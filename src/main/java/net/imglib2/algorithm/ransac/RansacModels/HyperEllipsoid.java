@@ -4,11 +4,11 @@ import java.util.Collection;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
-import mpicbg.models.IllDefinedDataPointsException;
-import mpicbg.models.NotEnoughDataPointsException;
-import mpicbg.models.Point;
+
 import net.imglib2.AbstractRealLocalizable;
 import net.imglib2.RealLocalizable;
+import net.imglib2.RealPoint;
+import net.imglib2.roi.geom.real.Ellipsoid;
 import net.imglib2.util.LinAlgHelpers;
 
 /**
@@ -25,10 +25,10 @@ import net.imglib2.util.LinAlgHelpers;
  * <p>
  * To rotate a point <em>x</em> into ellipsoid coordinates (axis-aligned ellipsoid) compute <em>R^T * x</em>.
  *
- * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
+ * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt; Modified to implement Ellipsoid of ImageJ-roi by V. Kapoor
  * */
 
-public class HyperEllipsoid extends AbstractRealLocalizable {
+public class HyperEllipsoid extends AbstractRealLocalizable implements Ellipsoid<RealPoint>{
 
 	
 	private double[][] axes;
@@ -39,6 +39,7 @@ public class HyperEllipsoid extends AbstractRealLocalizable {
 
 	private double[][] precision;
 	
+	private double[] Coefficients;
 	
 
 	/**
@@ -67,6 +68,29 @@ public class HyperEllipsoid extends AbstractRealLocalizable {
 		this.precision = precision;
 	}
 	
+	
+	protected HyperEllipsoid(final double[] center, final double[][] covariance, final double[][] precision, final double[][] axes, final double[] radii , final double[] Coefficients) {
+		
+		super(center);
+		this.axes = axes;
+		this.radii = radii;
+		this.covariance = covariance;
+		this.precision = precision;
+		this.Coefficients = Coefficients;
+		
+	}
+	
+
+	/**
+	 * Get Coefficient matrix for ellipsoid in quadratic form.
+	 *
+	 * @return quadratic form coefficients.
+	 */
+	public double[] getCoefficients()
+	{
+		return Coefficients;
+	}
+
 	/**
 	 * Get coordinates of center.
 	 *
@@ -229,4 +253,75 @@ public class HyperEllipsoid extends AbstractRealLocalizable {
 			radii[ d ] = Math.sqrt( ev.get( d, d ) );
 	}
 
+	@Override
+	public double exponent() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double semiAxisLength(int d) {
+
+		
+		return radii[d];
+	}
+
+	@Override
+	public RealPoint center() {
+		
+
+		double[] point = position;
+		
+		RealPoint realpoint = new RealPoint(point.length);
+		
+		realpoint.setPosition(point);
+		
+		
+		return realpoint;
+	}
+
+	@Override
+	public void setSemiAxisLength(int d, double length) {
+		radii[d] = length;
+		
+	}
+
+	@Override
+	public boolean test(RealLocalizable l) {
+		return distancePowered( l ) <= 1.0;
+	}
+
+
+	// -- Helper methods --
+
+	/**
+	 * Computes the unit distance squared between a given location and the
+	 * center of the ellipsoid.
+	 *
+	 * @param l
+	 *            location to check
+	 * @return squared unit distance
+	 */
+	protected double distancePowered( final RealLocalizable l )
+	{
+		assert ( l.numDimensions() >= n ): "l must have no less than " + n + " dimensions";
+
+		double distancePowered = 0;
+		for ( int d = 0; d < n; d++ )
+			distancePowered += ( ( l.getDoublePosition( d ) - getCenter()[ d ] ) / radii[ d ] ) * ( ( l.getDoublePosition( d ) - getCenter()[ d ] ) / radii[ d ] );
+
+		return distancePowered;
+	}
+
+	@Override
+	public double realMin(int d) {
+		
+		return getCenter()[d] - radii[d];
+	}
+
+	@Override
+	public double realMax(int d) {
+
+		return getCenter()[d] + radii[d];
+	}
 }

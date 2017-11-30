@@ -89,9 +89,9 @@ public class RansacEllipsoid {
 		
 	}
 	
-	public static <T extends Comparable<T>>  ArrayList<Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>> Allsamples(
+	public static <T extends Comparable<T>>  ArrayList<Pair<Ellipsoid, List<Pair<RealLocalizable, T>>>> Allsamples(
 			final List<Pair<RealLocalizable, T>> points, final double outsideCutoffDistance,
-			final double insideCutoffDistance, double minpercent, final NumericalSolvers numsol, int maxiter, final int ndims) {
+			final double insideCutoffDistance, double minpercent, final NumericalSolvers numsol, int maxiter, final int ndims, final int maxCircles) {
 
 		boolean fitted;
 
@@ -99,8 +99,8 @@ public class RansacEllipsoid {
 		if (points != null)
 			remainingPoints.addAll(points);
 
-		final ArrayList<Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>> segments = 
-				new ArrayList<Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>>();
+		final ArrayList<Pair<Ellipsoid, List<Pair<RealLocalizable, T>>>> segments = 
+				new ArrayList<Pair<Ellipsoid, List<Pair<RealLocalizable, T>>>>();
 
 		int iter = 0;
 		do {
@@ -109,11 +109,11 @@ public class RansacEllipsoid {
 				fitted = false;
 
 				++iter;
-				final Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>> f = sample(remainingPoints,
+				final Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> f = sample(remainingPoints,
 						remainingPoints.size(), outsideCutoffDistance, insideCutoffDistance, numsol, ndims);
 
 				if (f!=null) {
-				List<double[]> pointlist = GetEllipsepoints(f.getA().getA());
+				List<double[]> pointlist = GetEllipsepoints(f.getA());
 				double size = pointlist.size();
 				double count = 0;
 				for (int index = 0; index < pointlist.size(); ++index) {
@@ -165,6 +165,8 @@ public class RansacEllipsoid {
 			}
             if (iter >= maxiter)
 	            break;
+            if(segments.size() >= maxCircles)
+            	    break;
 			
 		}
 
@@ -174,7 +176,7 @@ public class RansacEllipsoid {
 
 	}
 
-	public static <T extends Comparable<T>>  Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>> sample(
+	public static <T extends Comparable<T>>  Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> sample(
 			final List<Pair<RealLocalizable, T>> points, final int numSamples, final double outsideCutoffDistance,
 			final double insideCutoffDistance, final NumericalSolvers numsol, final int ndims) {
 		final int numPointsPerSample = 9;
@@ -184,7 +186,6 @@ public class RansacEllipsoid {
 		final double[][] coordinates = new double[numPointsPerSample][ndims];
 
 		Ellipsoid bestEllipsoid = null;
-		GeneralEllipsoid bestGeneralEllipsoid = null;
 		double bestCost = Double.POSITIVE_INFINITY;
 		final Cost costFunction = new AbsoluteDistanceCost(outsideCutoffDistance, insideCutoffDistance);
 
@@ -202,13 +203,13 @@ public class RansacEllipsoid {
 
 				}
 
-				final Pair<Ellipsoid, GeneralEllipsoid> ellipsoid = FitEllipsoid.yuryPetrov(coordinates, ndims);
+				final Ellipsoid ellipsoid = FitEllipsoid.yuryPetrov(coordinates, ndims);
 				if (ellipsoid != null) {
-					final double cost = costFunction.compute(ellipsoid.getA(), points, numsol);
+					final double cost = costFunction.compute(ellipsoid, points, numsol);
 					if (cost < bestCost) {
 						bestCost = cost;
-						bestEllipsoid = ellipsoid.getA();
-						bestGeneralEllipsoid = ellipsoid.getB();
+						bestEllipsoid = ellipsoid;
+						
 					}
 				}
 			} catch (final IllegalArgumentException e) {
@@ -218,12 +219,12 @@ public class RansacEllipsoid {
 			}
 		}
 		if (bestEllipsoid != null) {
-			Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>> refined = fitToInliers(bestEllipsoid, points,
+			Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> refined = fitToInliers(bestEllipsoid, points,
 					outsideCutoffDistance, insideCutoffDistance, numsol, ndims);
 			if (refined == null) {
 
-				return new ValuePair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>(
-						new ValuePair<Ellipsoid, GeneralEllipsoid>(bestEllipsoid, bestGeneralEllipsoid), points);
+				return new ValuePair<Ellipsoid, List<Pair<RealLocalizable, T>>>(
+						bestEllipsoid, points);
 
 			}
 			return refined;
@@ -233,7 +234,7 @@ public class RansacEllipsoid {
 			return null;
 	}
 
-	public static <T extends Comparable<T>>  Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>> fitToInliers(final Ellipsoid guess,
+	public static <T extends Comparable<T>>  Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> fitToInliers(final Ellipsoid guess,
 			final List<Pair<RealLocalizable, T>> points, final double outsideCutoffDistance,
 			final double insideCutoffDistance, final NumericalSolvers numsol, final int ndims) {
 		final ArrayList<Pair<RealLocalizable, T>> inliers = new ArrayList<Pair<RealLocalizable, T>>();
@@ -254,10 +255,10 @@ public class RansacEllipsoid {
 			inliers.get(i).getA().localize(coordinates[i]);
 
 		System.out.println("Fitting on Co-ordinates " + coordinates.length);
-		Pair<Ellipsoid, GeneralEllipsoid> ellipsoid = FitEllipsoid.yuryPetrov(coordinates, ndims);
-		Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>> Allellipsoids = null;
+		Ellipsoid ellipsoid = FitEllipsoid.yuryPetrov(coordinates, ndims);
+		Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> Allellipsoids = null;
 		if (ellipsoid != null)
-			Allellipsoids = new ValuePair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>(ellipsoid, inliers);
+			Allellipsoids = new ValuePair<Ellipsoid, List<Pair<RealLocalizable, T>>>(ellipsoid, inliers);
 
 		return Allellipsoids;
 

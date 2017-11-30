@@ -30,16 +30,16 @@ public class Intersections {
 	 * @ V Kapoor
 	 */
 
-	public static ArrayList<double[]> PointsofIntersection(final Pair<GeneralEllipsoid, GeneralEllipsoid> Ellipsepair) {
+	public static ArrayList<double[]> PointsofIntersection(final Pair<Ellipsoid, Ellipsoid> Ellipsepair) {
 
 		
 
 		
 		
-		GeneralEllipsoid EllipseA = Ellipsepair.getA();
-		GeneralEllipsoid EllipseB = Ellipsepair.getB();
+		Ellipsoid EllipseA = Ellipsepair.getA();
+		Ellipsoid EllipseB = Ellipsepair.getB();
 		
-		final double[] coefficients = EllipseA.Coefficients;
+		final double[] coefficients = EllipseA.getCoefficients();
 
 		final double a = coefficients[0];
 		final double b = coefficients[1];
@@ -52,7 +52,7 @@ public class Intersections {
 		final double a2 = 2.0 * h / b;
 		final double a3 = a / b;
 		final double a4 = 2 * d / b;
-		final double[] coefficientsSec = EllipseB.Coefficients;
+		final double[] coefficientsSec = EllipseB.getCoefficients();
 
 		final double aSec = coefficientsSec[0];
 		final double bSec = coefficientsSec[1];
@@ -95,32 +95,30 @@ public class Intersections {
 		// Finding points of intersection in different cases
 		double xbar = -d2 / d4;
 		double e2xbar = e0 + e1 * xbar + e2 * xbar * xbar;
-		double veto = 0.1;
+		double veto = 1.0E-3;
 		ArrayList<double[]> intersection = new ArrayList<>();
 		if (c2 > 0 && c1 * c1 > 4 * c0 * c2) {
 			
-			
+		/*
 		if (Math.abs(d4) > veto && Math.abs(e2xbar) >= 1.0E-3) {
 
 			// Listing 1 and 2 David Eberly, intersection of ellipses text
 
 			System.out.println("Intersection: Listing 1 Solution" + d4);
+		
 			double f0 = c0 * d2 * d2 + e0 * e0;
 			double f1 = c1 * d2 * d2 + 2 * (c0 * d2 * d4 + e0 * e1);
-			double f2 = c2 * d2 * d2 + c0 * d4 * d4 + e1 + 2 * (c1 * d2 * d4 + e0 * e2);
+			double f2 = c2 * d2 * d2 + c0 * d4 * d4 + e1 * e1 + 2 * (c1 * d2 * d4 + e0 * e2);
 			double f3 = c1 * d4 * d4 + 2 * (c2 * d2 * d4 + e1 * e2);
 			double f4 = c2 * d4 * d4 + e2 * e2;
-
+	
 			ArrayList<Pair<Integer, Double>> RootMap = Solvers.SolveQuartic(new double[] { f0, f1, f2, f3, f4 });
 
 			for (Pair<Integer, Double> rm : RootMap) {
 
 				double x = rm.getB();
-				double e2x = -(e0 + x * (e1 + x * e2));
-
-				double w = e2x / (d2 + d4 * x);
+				double w = -(e0 + x * (e1 + x * e2)) / (d2 + d4 * x);
 				double y = w - (a2 + x * a4) / 2;
-
 				intersection.add(new double[] { x, y });
 
 			}
@@ -173,9 +171,9 @@ public class Intersections {
 
 
 		}
-
-		if (Math.abs(d4) <= veto && d2 != 0 && e2 != 0) {
-		//	if (d2 != 0 && e2 != 0) {
+*/
+//		if (Math.abs(d4) <= veto && d2 != 0 && e2 != 0) {
+			if (d2 != 0 && e2 != 0) {
 			// Listing 3 David Eberly, interesection of ellipses text
 			System.out.println("Intersection: Listing 3 Solution");
 			double f0 = c0 * d2 * d2 + e0 * e0;
@@ -196,8 +194,8 @@ public class Intersections {
 
 		}
 
-		else if (Math.abs(d4) <= veto && d2 != 0 && Math.abs(e2) <= 1.0E-3) {
-		//	else if (d2 != 0 && Math.abs(e2) <= 1.0E-3) {
+	//	else if (Math.abs(d4) <= veto && d2 != 0 && Math.abs(e2) <= 1.0E-3) {
+			else if (d2 != 0 && Math.abs(e2) <= 1.0E-3) {
 			
 			// Listing 4 David Eberly, interesection of ellipses text
 			System.out.println("Intersection: Listing 4 Solution");
@@ -219,8 +217,8 @@ public class Intersections {
 
 		}
 
-		else 	if (Math.abs(d4) <= veto && Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
-			//	else 	if (Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
+		//else 	if (Math.abs(d4) <= veto && Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
+				else 	if (Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
 
 			// Listing 5 David Eberly, intersection of ellipses text
 			System.out.println("Intersection: Listing 5 Solution");
@@ -253,8 +251,8 @@ public class Intersections {
 
 		}
 
-		else if (Math.abs(d4) <= veto && Math.abs(d2) <= 1.0E-3 && e2 != 0) {
-			//	else if (Math.abs(d2) <= 1.0E-3 && e2 != 0) {
+		//else if (Math.abs(d4) <= veto && Math.abs(d2) <= 1.0E-3 && e2 != 0) {
+				else if (Math.abs(d2) <= 1.0E-3 && e2 != 0) {
 
 			
 			// Listing 6 David Eberly intersection of ellipses

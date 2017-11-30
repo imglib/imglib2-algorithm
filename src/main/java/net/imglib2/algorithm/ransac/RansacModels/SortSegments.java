@@ -11,26 +11,26 @@ import net.imglib2.util.Pair;
 public class SortSegments {
 
 	
-	public static <T extends Comparable<T>>  void Sort(ArrayList<Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>> segments) {
+	public static <T extends Comparable<T>>  void Sort(ArrayList<Pair<Ellipsoid, List<Pair<RealLocalizable, T>>>> segments) {
 		
 		
-		Collections.sort(segments, new Comparator<Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>>>(){
+		Collections.sort(segments, new Comparator<Pair<Ellipsoid, List<Pair<RealLocalizable, T>>>>(){
 
 			@Override
-			public int compare(Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>> o1,
-					Pair<Pair<Ellipsoid, GeneralEllipsoid>, List<Pair<RealLocalizable, T>>> o2) {
+			public int compare(Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> o1,
+					Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> o2) {
 
 				
 				
 				int i = 0;
-				int numDim = o1.getA().getA().numDimensions();
+				int numDim = o1.getA().numDimensions();
 				
 				while(i < numDim) {
 					
 					if (o1!=o2) {
 						
 						
-						return (int) Math.signum(o1.getA().getA().getCenter()[i] - o2.getA().getA().getCenter()[i]);
+						return (int) Math.signum(o1.getA().getCenter()[i] - o2.getA().getCenter()[i]);
 						
 					}
 					i++;

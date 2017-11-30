@@ -27,6 +27,30 @@ public class Ellipsoid extends HyperEllipsoid
 		{
 			super( center, covariance, precision, axes, radii );
 		}
+		
+		
+		
+		
+		
+		/**
+		 * 
+		 * In addition to the above ellipsoid, also include a representation of ellipsoid in a quadratic form
+		 * The coefficient matrix contains these coefficients of such a form of the ellipsoid.
+		 * 
+		 * @param center
+		 * @param covariance
+		 * @param precision
+		 * @param axes
+		 * @param radii
+		 * @param Coefficients
+		 */
+		
+		public Ellipsoid(final double[] center, final double[][] covariance, final double[][] precision, final double[][] axes, final double[] radii,final double[] Coefficients) {
+			
+			
+			super( center, covariance, precision, axes, radii, Coefficients );
+		}
+		
 
 		@Override
 		public String toString()
@@ -38,7 +62,9 @@ public class Ellipsoid extends HyperEllipsoid
 					+ "\naxes = " +
 					LinAlgHelpers.toString( getAxes() )
 					+ "\nprecision = " +
-					LinAlgHelpers.toString( getPrecision() );
+					LinAlgHelpers.toString( getPrecision() )
+			        +  "\nCoefficients = " +
+					LinAlgHelpers.toString(getCoefficients());
 		}
 
 		

@@ -14,7 +14,7 @@ public class Tangent2D {
 		double[] radius = ellipse.getRadii();
 		
 		double ratio = (sourcepoint[0] - center[0] ) / (sourcepoint[1] - center[1]);
-		double preratio =  radius[0] * radius[0] / (radius[1] * radius[1]);
+		double preratio =  radius[1] * radius[1] / (radius[0] * radius[0]);
 		double slope = - preratio * ratio;
 		double intercept = sourcepoint[1] + preratio * ratio * sourcepoint[0];
 		

@@ -38,7 +38,7 @@ public class FitEllipsoid
 	 *      </p>
 	 */
 	
-	public static Pair<Ellipsoid, GeneralEllipsoid> yuryPetrov( final double[][] points, final int ndims )
+	public static Ellipsoid yuryPetrov( final double[][] points, final int ndims )
 	{
 		final int nPoints = points.length;
 		
@@ -166,7 +166,7 @@ public class FitEllipsoid
 	 * @param V vector (a,b,c,d,e,f,g,h,i)
 	 * @return the ellipsoid.
 	 */
-	private static Pair<Ellipsoid, GeneralEllipsoid> ellipsoidFromEquation( final RealVector V )
+	private static Ellipsoid ellipsoidFromEquation( final RealVector V )
 	{
 		final double a = V.getEntry(0);
 		final double b = V.getEntry( 1);
@@ -178,7 +178,8 @@ public class FitEllipsoid
 		final double h = V.getEntry( 7);
 		final double i = V.getEntry( 8);
 
-		GeneralEllipsoid genEllipsoid = new GeneralEllipsoid(V);
+		double[] Coefficents = V.toArray();
+		
 		
 		final double[][] aa = new double[][] {
 				{ a, d, e },
@@ -193,18 +194,17 @@ public class FitEllipsoid
 		final double r33 = LinAlgHelpers.dot( cc, At ) + 2 * LinAlgHelpers.dot( bb, cc ) - 1;
 		LinAlgHelpers.scale( aa, -1 / r33, aa );
 		
-		return new ValuePair<Ellipsoid, GeneralEllipsoid>(new Ellipsoid( cc, null, aa, null, null ), genEllipsoid);
+		return (new Ellipsoid( cc, null, aa, null, null, Coefficents ));
 	}
-	private static Pair<Ellipsoid, GeneralEllipsoid> ellipsoidFromEquation2D( final RealVector V )
+	private static Ellipsoid ellipsoidFromEquation2D( final RealVector V )
 	{
 		final double a = V.getEntry(0);
 		final double b = V.getEntry( 1);
 		final double c = V.getEntry( 2);
 		final double d = V.getEntry( 3);
 		final double e = V.getEntry( 4);
+		double[] Coefficents = V.toArray();
 
-
-		GeneralEllipsoid genEllipsoid = new GeneralEllipsoid(V);
 		
 		final double[][] aa = new double[][] {
 				{ a, c },
@@ -218,7 +218,7 @@ public class FitEllipsoid
 		final double r33 = LinAlgHelpers.dot( cc, At ) + 2 * LinAlgHelpers.dot( bb, cc ) - 1;
 		LinAlgHelpers.scale( aa, -1 / r33, aa );
 		
-		return new ValuePair<Ellipsoid, GeneralEllipsoid>(new Ellipsoid( cc, null, aa, null, null ), genEllipsoid);
+		return (new Ellipsoid( cc, null, aa, null, null, Coefficents ));
 	}
 	
 }
