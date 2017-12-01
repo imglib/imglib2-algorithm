@@ -242,7 +242,7 @@ public class RansacEllipsoid {
 			final Result result = DistPointHyperEllipsoid.distPointHyperEllipsoid(point.getA(), guess, numsol);
 
 			final double d = result.distance;
-			final boolean inside = guess.contains(point.getA());
+			final boolean inside = guess.test(point.getA());
 
 			// System.out.println(point.getDoublePosition(0) + " " +
 			// point.getDoublePosition(1));
@@ -287,7 +287,7 @@ public class RansacEllipsoid {
 			for (final Pair<RealLocalizable, T> point : points) {
 				final Result result = DistPointHyperEllipsoid.distPointHyperEllipsoid(point.getA(), ellipsoid, numsol);
 				final double d = result.distance;
-				if (ellipsoid.contains(point.getA()))
+				if (ellipsoid.test(point.getA()))
 					cost += Math.min(d, insideCutoff);
 				else
 					cost += Math.min(d, outsideCutoff);
@@ -313,7 +313,7 @@ public class RansacEllipsoid {
 			for (final Pair<RealLocalizable, T> point : points) {
 				final Result result = DistPointHyperEllipsoid.distPointHyperEllipsoid(point.getA(), ellipsoid, numsol);
 				final double d = result.distance * result.distance;
-				if (ellipsoid.contains(point.getA()))
+				if (ellipsoid.test(point.getA()))
 					cost += Math.min(d, insideCutoff);
 				else
 					cost += Math.min(d, outsideCutoff);

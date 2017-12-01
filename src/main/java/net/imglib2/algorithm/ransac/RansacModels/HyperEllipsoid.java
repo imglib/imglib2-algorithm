@@ -8,6 +8,7 @@ import Jama.Matrix;
 import net.imglib2.AbstractRealLocalizable;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
+import net.imglib2.roi.geom.real.AbstractEllipsoid;
 import net.imglib2.roi.geom.real.Ellipsoid;
 import net.imglib2.util.LinAlgHelpers;
 
@@ -28,7 +29,7 @@ import net.imglib2.util.LinAlgHelpers;
  * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt; Modified to implement Ellipsoid of ImageJ-roi by V. Kapoor
  * */
 
-public class HyperEllipsoid extends AbstractRealLocalizable implements Ellipsoid<RealPoint>{
+public class HyperEllipsoid extends AbstractEllipsoid {
 
 	
 	private double[][] axes;
@@ -61,7 +62,7 @@ public class HyperEllipsoid extends AbstractRealLocalizable implements Ellipsoid
 	 */
 	protected HyperEllipsoid( final double[] center, final double[][] covariance, final double[][] precision, final double[][] axes, final double[] radii )
 	{
-		super( center );
+		super( center, radii );
 		this.axes = axes;
 		this.radii = radii;
 		this.covariance = covariance;
@@ -71,7 +72,7 @@ public class HyperEllipsoid extends AbstractRealLocalizable implements Ellipsoid
 	
 	protected HyperEllipsoid(final double[] center, final double[][] covariance, final double[][] precision, final double[][] axes, final double[] radii , final double[] Coefficients) {
 		
-		super(center);
+		super(center, radii);
 		this.axes = axes;
 		this.radii = radii;
 		this.covariance = covariance;
@@ -98,7 +99,7 @@ public class HyperEllipsoid extends AbstractRealLocalizable implements Ellipsoid
 	 */
 	public double[] getCenter()
 	{
-		return position;
+		return this.center;
 	}
 
 	/**
@@ -181,7 +182,7 @@ public class HyperEllipsoid extends AbstractRealLocalizable implements Ellipsoid
 		return precision;
 	}
 	
-	public boolean contains( final double[] point )
+	public boolean test( final double[] point )
 	{
 		final double[] x = new double[ n ];
 		final double[] y = new double[ n ];
@@ -189,12 +190,12 @@ public class HyperEllipsoid extends AbstractRealLocalizable implements Ellipsoid
 		LinAlgHelpers.mult( getPrecision(), x, y );
 		return LinAlgHelpers.dot( x, y ) <= 1;
 	}
-
-	public boolean contains( final RealLocalizable point )
+	@Override
+	public boolean test( final RealLocalizable point )
 	{
 		final double[] p = new double[ n ];
 		point.localize( p );
-		return contains( p );
+		return test( p );
 	}
 
 	private void computeCovarianceFromAxesAndRadii()
@@ -255,8 +256,8 @@ public class HyperEllipsoid extends AbstractRealLocalizable implements Ellipsoid
 
 	@Override
 	public double exponent() {
-		// TODO Auto-generated method stub
-		return 0;
+
+		return 2;
 	}
 
 	@Override
@@ -269,15 +270,9 @@ public class HyperEllipsoid extends AbstractRealLocalizable implements Ellipsoid
 	@Override
 	public RealPoint center() {
 		
-
-		double[] point = position;
-		
-		RealPoint realpoint = new RealPoint(point.length);
-		
-		realpoint.setPosition(point);
 		
 		
-		return realpoint;
+		return this.center();
 	}
 
 	@Override
@@ -286,10 +281,8 @@ public class HyperEllipsoid extends AbstractRealLocalizable implements Ellipsoid
 		
 	}
 
-	@Override
-	public boolean test(RealLocalizable l) {
-		return distancePowered( l ) <= 1.0;
-	}
+	
+
 
 
 	// -- Helper methods --

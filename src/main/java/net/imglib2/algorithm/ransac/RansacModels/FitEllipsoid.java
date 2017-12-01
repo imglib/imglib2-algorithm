@@ -13,6 +13,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 import Jama.CholeskyDecomposition;
+import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
 /**
@@ -193,8 +194,9 @@ public class FitEllipsoid
 		LinAlgHelpers.mult( aa, cc, At );
 		final double r33 = LinAlgHelpers.dot( cc, At ) + 2 * LinAlgHelpers.dot( bb, cc ) - 1;
 		LinAlgHelpers.scale( aa, -1 / r33, aa );
-		
-		return (new Ellipsoid( cc, null, aa, null, null, Coefficents ));
+		int n = cc.length;
+		double[][] covariance = new Matrix(aa).inverse().getArray();	
+		return (new Ellipsoid( cc, covariance , aa, null, computeAxisAndRadiiFromCovariance(covariance, n), Coefficents ));
 	}
 	private static Ellipsoid ellipsoidFromEquation2D( final RealVector V )
 	{
@@ -212,14 +214,27 @@ public class FitEllipsoid
 		final double[] bb = new double[] { d, e };
 		final double[] cc = new Matrix( aa ).solve( new Matrix( bb, 2 ) ).getRowPackedCopy();
 		LinAlgHelpers.scale( cc, -1, cc );
-
 		final double[] At = new double[ 2 ];
 		LinAlgHelpers.mult( aa, cc, At );
 		final double r33 = LinAlgHelpers.dot( cc, At ) + 2 * LinAlgHelpers.dot( bb, cc ) - 1;
 		LinAlgHelpers.scale( aa, -1 / r33, aa );
-		
-		return (new Ellipsoid( cc, null, aa, null, null, Coefficents ));
+		int n = cc.length;
+		double[][] covariance = new Matrix(aa).inverse().getArray();	
+		return (new Ellipsoid( cc, covariance , aa, null, computeAxisAndRadiiFromCovariance(covariance, n), Coefficents ));
 	}
+	
+	
+	private static double[] computeAxisAndRadiiFromCovariance(double[][] covariance, int n)
+	{
+		final EigenvalueDecomposition eig = new Matrix( covariance ).eig();
+		final Matrix ev = eig.getD();
+		double[] radii = new double[ n ];
+		for ( int d = 0; d < n; ++d )
+			radii[ d ] = Math.sqrt( ev.get( d, d ) );
+		return radii;
+	}
+
+	
 	
 }
 	
