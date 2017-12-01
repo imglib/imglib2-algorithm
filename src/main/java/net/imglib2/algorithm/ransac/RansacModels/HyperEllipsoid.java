@@ -272,7 +272,7 @@ public class HyperEllipsoid extends AbstractEllipsoid {
 		
 		
 		
-		return this.center();
+		return new RealPoint(getCenter());
 	}
 
 	@Override
