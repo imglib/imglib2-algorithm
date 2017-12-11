@@ -42,17 +42,13 @@ public class DisplayasROI {
 		
 		final double midx = sourcepoint[0];
 		
-		 double startx = midx - 5;
-		
-		
-		 double endx = midx + 5;
+		 
+		final double length = 15;
+		double startx = midx - length / (Math.sqrt(1 + slope * slope));
+		 double endx = midx + length / (Math.sqrt(1 + slope * slope));
 		 
 		
-		if (Math.abs(slope) < 1) {
-			
-			startx = midx - 20;
-			endx = midx + 20;
-		}
+		
 			
 		 double starty = slope * startx + intercept;
 		 double endy = slope * endx + intercept;
