@@ -23,4 +23,24 @@ public class Tangent2D {
 		return tangentline;
 	}
 	
+	
+	
+	
+	public static double GetAngle(final double[] lineparamA, final double[] lineparamB) {
+		
+		
+		double slopeA = lineparamA[0];
+		
+		double slopeB = lineparamB[0];
+		
+		double numerator = slopeA - slopeB;
+		double denominator = 1 + slopeA * slopeB;
+		
+		double angle = Math.abs(numerator / denominator);
+		
+		
+		return Math.toDegrees(angle);
+		
+	}
+	
 }

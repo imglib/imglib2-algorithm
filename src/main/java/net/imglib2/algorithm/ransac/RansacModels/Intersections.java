@@ -98,7 +98,7 @@ public class Intersections {
 		double veto = 1.0E-1;
 		ArrayList<double[]> intersection = new ArrayList<>();
 		if (c2 > 0 && c1 * c1 > 4 * c0 * c2) {
-			
+	/*		
 		
 		if (Math.abs(d4) > veto && Math.abs(e2xbar) >= 1.0E-3) {
 
@@ -171,9 +171,10 @@ public class Intersections {
 
 
 		}
+		*/
 
-		if (Math.abs(d4) <= veto && d2 != 0 && e2 != 0) {
-//			if (d2 != 0 && e2 != 0) {
+//		if (Math.abs(d4) <= veto && d2 != 0 && e2 != 0) {
+			if (d2 != 0 && e2 != 0) {
 			// Listing 3 David Eberly, interesection of ellipses text
 			System.out.println("Intersection: Listing 3 Solution");
 			double f0 = c0 * d2 * d2 + e0 * e0;
@@ -194,8 +195,8 @@ public class Intersections {
 
 		}
 
-		else if (Math.abs(d4) <= veto && d2 != 0 && Math.abs(e2) <= 1.0E-3) {
-	//		else if (d2 != 0 && Math.abs(e2) <= 1.0E-3) {
+	//	else if (Math.abs(d4) <= veto && d2 != 0 && Math.abs(e2) <= 1.0E-3) {
+			else if (d2 != 0 && Math.abs(e2) <= 1.0E-3) {
 			
 			// Listing 4 David Eberly, interesection of ellipses text
 			System.out.println("Intersection: Listing 4 Solution");
@@ -217,8 +218,8 @@ public class Intersections {
 
 		}
 
-		else 	if (Math.abs(d4) <= veto && Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
-		//		else 	if (Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
+ //		else 	if (Math.abs(d4) <= veto && Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
+				else 	if (Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
 
 			// Listing 5 David Eberly, intersection of ellipses text
 			System.out.println("Intersection: Listing 5 Solution");
@@ -251,8 +252,8 @@ public class Intersections {
 
 		}
 
-		else if (Math.abs(d4) <= veto && Math.abs(d2) <= 1.0E-3 && e2 != 0) {
-		//		else if (Math.abs(d2) <= 1.0E-3 && e2 != 0) {
+	//	else if (Math.abs(d4) <= veto && Math.abs(d2) <= 1.0E-3 && e2 != 0) {
+				else if (Math.abs(d2) <= 1.0E-3 && e2 != 0) {
 
 			
 			// Listing 6 David Eberly intersection of ellipses
