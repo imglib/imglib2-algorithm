@@ -36,7 +36,7 @@ public class Tangent2D {
 		double numerator = slopeA - slopeB;
 		double denominator = 1 + slopeA * slopeB;
 		
-		double angle = Math.abs(numerator / denominator);
+		double angle = Math.atan(Math.abs(numerator/ denominator));
 		
 		
 		return Math.toDegrees(angle);
