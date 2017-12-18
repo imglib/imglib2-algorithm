@@ -91,7 +91,7 @@ public class RansacEllipsoid {
 	
 	public static <T extends Comparable<T>>  ArrayList<Pair<Ellipsoid, List<Pair<RealLocalizable, T>>>> Allsamples(
 			final List<Pair<RealLocalizable, T>> points, final double outsideCutoffDistance,
-			final double insideCutoffDistance, double minpercent, final NumericalSolvers numsol, int maxiter, final int ndims, final int maxCircles) {
+			final double insideCutoffDistance, double minpercent, final NumericalSolvers numsol, int maxiter, final int ndims) {
 
 		boolean fitted;
 
@@ -165,8 +165,7 @@ public class RansacEllipsoid {
 			}
             if (iter >= maxiter)
 	            break;
-            if(segments.size() >= maxCircles)
-            	    break;
+            
 			
 		}
 
