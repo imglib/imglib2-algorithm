@@ -5,6 +5,7 @@ import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 
+import org.apache.commons.math3.*;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;

@@ -396,7 +396,7 @@ public class Solvers {
 		if (delta > zero)
 		{
 			
-			System.out.println("Delta > zero QuarticDep");
+			System.out.println("Delta > zero QuarticDep" +  delta);
 			if (c2 < zero && a1 < zero)
 			{
 				

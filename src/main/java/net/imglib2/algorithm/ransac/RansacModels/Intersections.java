@@ -21,7 +21,7 @@ public class Intersections {
 		return newXY;
 	}
 
-	public static double[] XYremove(final Ellipsoid Ellipse) {
+	public static double[] XYremove(final Ellipsoid Ellipse, int sign) {
 
 		double[] ellipseparam = Ellipse.getCoefficients();
 		final double a = ellipseparam[0];
@@ -30,7 +30,8 @@ public class Intersections {
 		final double g = ellipseparam[3];
 		final double h = ellipseparam[4];
 
-		double angle = 0.5 * Math.atan2(2 * d, a - b);
+		double angle =  0.5 * Math.atan2(2 * d, a - b);
+	
 		
 
 		final double aprime = a * Math.cos(angle) * Math.cos(angle) + b * Math.sin(angle) * Math.sin(angle)
@@ -113,18 +114,18 @@ public class Intersections {
 	 * @ V Kapoor
 	 */
 
-	public static ArrayList<double[]> PointsofIntersection(final Pair<Ellipsoid, Ellipsoid> Ellipsepair) {
+	public static ArrayList<double[]> PointsofIntersection(final Pair<Ellipsoid, Ellipsoid> Ellipsepair, int sign) {
 
 		Ellipsoid EllipseA = Ellipsepair.getA();
 		Ellipsoid EllipseB = Ellipsepair.getB();
 
-		final double[] coefficients = XYremove(EllipseA);
+		final double[] coefficients = EllipseA.getCoefficients();
 		final double a = coefficients[0];
 		final double b = coefficients[1];
 		final double d = coefficients[2];
 		final double g = coefficients[3];
 		final double h = coefficients[4];
-		final double angleA = coefficients[5];
+		final double angleA = 0;
 
 		final double a0 = -1.0 / b;
 		final double a1 = 2.0 * g / b;
@@ -132,13 +133,13 @@ public class Intersections {
 		final double a3 = a / b;
 		final double a4 = 2.0 * d / b;
 
-		final double[] coefficientsSec = XYremove(EllipseB);
+		final double[] coefficientsSec = EllipseB.getCoefficients();
 		final double aSec = coefficientsSec[0];
 		final double bSec = coefficientsSec[1];
 		final double dSec = coefficientsSec[2];
 		final double gSec = coefficientsSec[3];
 		final double hSec = coefficientsSec[4];
-		final double angleB = coefficientsSec[5];
+		final double angleB = 0;
 
 		final double a0Sec = -1.0 / bSec;
 		final double a1Sec = 2.0 * gSec / bSec;
@@ -180,7 +181,7 @@ public class Intersections {
 		double e2xbar = e0 + e1 * xbar + e2 * xbar * xbar;
 		double veto = 1.0E-10;
 		ArrayList<double[]> intersection = new ArrayList<>();
-
+		int count = 0;
 		if (Math.abs(d4) > veto && Math.abs(e2xbar) >= 1.0E-3) {
 
 			// Listing 1 and 2 David Eberly, intersection of ellipses text
@@ -268,7 +269,8 @@ public class Intersections {
 			double f3 = 2 * e1 * e2;
 			double f4 = e2 * e2;
 			ArrayList<Pair<Integer, Double>> RootMap = Solvers.SolveQuartic(new double[] { f0, f1, f2, f3, f4 });
-
+            count++;
+		
 			for (Pair<Integer, Double> rm : RootMap) {
 
 				double x = rm.getB();
@@ -276,6 +278,9 @@ public class Intersections {
 				double y = w - (a2 + x * a4) / 2;
 				final double[] newxy = XYrotate(new double[] { x, y }, angleA);
 
+				if (newxy== null && count <= 2)
+					PointsofIntersection(Ellipsepair, -1);
+				System.out.println(count + " " + newxy[0]);
 				intersection.add(newxy);
 
 			}
