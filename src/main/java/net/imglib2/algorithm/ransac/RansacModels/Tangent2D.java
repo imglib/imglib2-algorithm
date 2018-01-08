@@ -9,14 +9,22 @@ public class Tangent2D {
 	public static double[] GetTangent(final Ellipsoid ellipse, final double[] sourcepoint) {
 		
 		
+		double[] coefficients = ellipse.getCoefficients();
 		
-		double[] center = ellipse.getCenter();
-		double[] radius = ellipse.getRadii();
+		final double a = coefficients[0];
+		final double b = coefficients[1];
+		final double d = coefficients[2];
+		final double g = coefficients[3];
+		final double h = coefficients[4];
 		
-		double ratio = (sourcepoint[0] - center[0] ) / (sourcepoint[1] - center[1]);
-		double preratio =  radius[1] * radius[1] / (radius[0] * radius[0]);
-		double slope = - preratio * ratio;
-		double intercept = sourcepoint[1] + preratio * ratio * sourcepoint[0];
+		final double x = sourcepoint[0];
+		final double y = sourcepoint[1];
+		
+
+		
+		double ratio = (a * x + d * y + g) / (b * y + d * x + h);
+		double slope = -ratio;
+		double intercept = y + x * ratio;
 		
 		double[] tangentline = new double[] {slope, intercept};
 		

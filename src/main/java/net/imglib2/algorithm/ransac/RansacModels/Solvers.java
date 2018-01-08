@@ -20,10 +20,13 @@ public class Solvers {
 		ArrayList<Pair<Integer, Double>> Rootmap = new ArrayList<Pair<Integer, Double>>();
 		
 		int rat2 = 2, rat3 = 3, rat4 = 4, rat6 = 6;
-		double q0 = p[0] / p[4];
-		double q1 = p[1] / p[4];
-		double q2 = p[2] / p[4];
-		double q3 = p[3] / p[4];
+		
+		
+		float q0 = (float) (p[0] / p[4]);
+		float q1 = (float) (p[1] / p[4]);
+		float q2 = (float) (p[2] / p[4]);
+		float q3 = (float) (p[3] / p[4]);
+		
 		double q3fourth = q3 / rat4;
 		double q3fourthSqr = q3fourth * q3fourth;
 		double c0 = q0 - q3fourth * (q1 - q3fourth * ( q2 - q3fourthSqr * rat3));
@@ -133,7 +136,7 @@ public class Solvers {
 		double delta = -(rat4 * c1 * c1 * c1 + rat27 * c0 * c0);
 		if (delta > zero)
 		{
-			
+			System.out.println("Delta > zero");
 			//Three simple roots
 			double deltaDiv108 = delta / rat108;
 			double betaRe = -c0 / rat2;
@@ -157,39 +160,41 @@ public class Solvers {
 
 		else if (delta < zero)
 		{
-			
-			// One Simple root
+			System.out.println("Delta < zero");
+			// One Simple root 
 			double deltaDiv108 = delta / rat108;
 			double temp0 = -c0 / rat2;
 			double temp1 = Math.sqrt(-deltaDiv108);
 			double temp2 = temp0 - temp1;
 			double temp3 = temp0 + temp1;
 			
+			double temp22,temp33;
+			
 			if (temp2 >=zero)
 			{
-				temp2 = Math.pow(temp2, oneThird);
+				temp22 = Math.pow(temp2, oneThird);
 				
 			}
 			else
 			{
 				
-				temp2 = -Math.pow(-temp2, oneThird);
+				temp22 = -Math.pow(-temp2, oneThird);
 				
 			}
 			if (temp3 >= zero)
 			{
 				
-				temp3 = Math.pow(temp3, oneThird);
+				temp33 = Math.pow(temp3, oneThird);
 				
 			}
 			
 			else
 			{
 				
-				temp3 = -Math.pow(-temp3, oneThird);
+				temp33 = -Math.pow(-temp3, oneThird);
 			}
 			
-			double root0 = temp2 + temp3;
+			double root0 = temp22 + temp33;
 			Rootmap.add(new ValuePair<Integer, Double>(1, root0));
 			
 			
@@ -197,7 +202,7 @@ public class Solvers {
 		
 		else
 		{
-			
+			System.out.println("Delta Nothing zero");
 			//One simple root and one double root.
 			double root0 = -rat3 * c0 / (rat2 * c1);
 			double root1 = -rat2 * root0;
@@ -227,6 +232,7 @@ public class Solvers {
 		double delta = rat256 * c0 * a1 * a1;
 		if (delta > zero)
 		{
+			System.out.println("Delta > zero Biquad");
 			if (c2 < zero)
 			{
 				
@@ -278,7 +284,7 @@ public class Solvers {
 		
 		else if (delta < zero)
 		{
-			
+			System.out.println("Delta < zero Biquad");
 			// Two simple real roots
 			
 			double root1 = Math.sqrt(-c2Half);
@@ -390,7 +396,7 @@ public class Solvers {
 		if (delta > zero)
 		{
 			
-			
+			System.out.println("Delta > zero QuarticDep");
 			if (c2 < zero && a1 < zero)
 			{
 				
@@ -451,7 +457,7 @@ public class Solvers {
 		else if (delta < zero)
 		{
 			
-			
+			System.out.println("Delta < zero QuarticDep");
 			
 			// Two simple real roots, one complex conjugate pair
 			ArrayList<Pair<Integer, Double>> RootmapLocal = SolveCubic(new double[] {c1sqr - rat4 * c0 * c2, rat8 * c0, rat4 * c2, -rat8});
@@ -477,7 +483,7 @@ public class Solvers {
 			double root0, root1;
 			if (sgnC1 > 0)
 			{
-				
+				System.out.println("sgnC1 > 0 QuarticDep");
 				double D1 = alphaSqr - rat4 * (t - beta);
 					double sqrtD1 = Math.sqrt(Math.max(D1, 0));
 					root0 = (-alpha -sqrtD1) / rat2;
@@ -486,7 +492,7 @@ public class Solvers {
 			}
 			else 
 			{
-			
+				System.out.println("sgnC1 < 0 QuarticDep");
 				double D0 = alphaSqr - rat4 * (t + beta);
 				double sqrtD0 = Math.sqrt(Math.max(D0, 0));
 				root0 = (alpha - sqrtD0) / rat2;
