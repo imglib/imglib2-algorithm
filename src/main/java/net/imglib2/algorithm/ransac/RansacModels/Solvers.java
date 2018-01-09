@@ -22,10 +22,10 @@ public class Solvers {
 		int rat2 = 2, rat3 = 3, rat4 = 4, rat6 = 6;
 		
 		
-		float q0 = (float) (p[0] / p[4]);
-		float q1 = (float) (p[1] / p[4]);
-		float q2 = (float) (p[2] / p[4]);
-		float q3 = (float) (p[3] / p[4]);
+		double q0 =  (p[0] / p[4]);
+		double q1 = (p[1] / p[4]);
+		double q2 = (p[2] / p[4]);
+		double q3 = (p[3] / p[4]);
 		
 		double q3fourth = q3 / rat4;
 		double q3fourthSqr = q3fourth * q3fourth;

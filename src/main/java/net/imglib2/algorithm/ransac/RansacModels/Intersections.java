@@ -160,7 +160,7 @@ public class Intersections {
 
 		final double c0 = a0 - a2 * a2 / 4;
 		final double c1 = a1 - a2 * a4 / 2;
-		final double c2 = a3 - a4 * a4 / 2;
+		final double c2 = a3 - a4 * a4 / 4;
 
 		int simcount = 0;
 		for (int i = 0; i < dVector.length; ++i) {
@@ -202,9 +202,8 @@ public class Intersections {
 				double w = -(e0 + x * (e1 + x * e2)) / (d2 + d4 * x);
 				double y = w - (a2 + x * a4) / 2;
 
-				final double[] newxy = XYrotate(new double[] { x, y }, angleA);
 
-				intersection.add(newxy);
+				intersection.add(new double[] { x, y });
 
 			}
 
@@ -229,9 +228,8 @@ public class Intersections {
 
 					w = -w;
 					y = w - translate;
-					final double[] newxy = XYrotate(new double[] { xbar, y }, angleA);
 
-					intersection.add(newxy);
+					intersection.add(new double[] { xbar, y });
 
 				}
 
@@ -252,9 +250,8 @@ public class Intersections {
 				translate = (a2 + xbar * a4) / 2;
 				w = -(h0 + x * h1);
 				y = w - translate;
-				final double[] newxy = XYrotate(new double[] { x, y }, angleA);
 
-				intersection.add(newxy);
+				intersection.add(new double[] { x, y });
 			}
 
 		}
@@ -276,12 +273,8 @@ public class Intersections {
 				double x = rm.getB();
 				double w = -(e0 + x * (e1 + x * e2)) / d2;
 				double y = w - (a2 + x * a4) / 2;
-				final double[] newxy = XYrotate(new double[] { x, y }, angleA);
 
-				if (newxy== null && count <= 2)
-					PointsofIntersection(Ellipsepair, -1);
-				System.out.println(count + " " + newxy[0]);
-				intersection.add(newxy);
+				intersection.add(new double[] { x, y });
 
 			}
 
@@ -303,9 +296,8 @@ public class Intersections {
 				double x = rm.getB();
 				double w = -(e0 + x * e1) / d2;
 				double y = w - (a2 + x * a4) / 2;
-				final double[] newxy = XYrotate(new double[] { x, y }, angleA);
 
-				intersection.add(newxy);
+				intersection.add(new double[] { x, y });
 
 			}
 
@@ -333,19 +325,16 @@ public class Intersections {
 
 				w = -w;
 				y = w - translate;
-				newxy = XYrotate(new double[] { xhat, y }, angleA);
 
-				intersection.add(newxy);
+				intersection.add(new double[] { xhat, y });
 
 			}
 
 			else if (nchat == 0) {
 
 				y = -(a2 + xhat * a4) / 2;
-				final double[] newxy = XYrotate(new double[] { xhat, y }, angleA);
 
-				intersection.add(newxy);
-
+				intersection.add(new double[] { xhat, y });
 			}
 
 		}
@@ -523,9 +512,8 @@ public class Intersections {
 			intersection.add(newxy);
 			w = -w;
 			y = w - translate;
-			newxy = XYrotate(new double[] { x, y }, angleA);
 
-			intersection.add(newxy);
+			intersection.add(new double[] { x, y });
 
 		}
 
@@ -534,9 +522,7 @@ public class Intersections {
 			// The vertical line at the root is tangent to the ellipse
 
 			double y = -(a2 + x * a4) / 2;
-			final double[] newxy = XYrotate(new double[] { x, y }, angleA);
-
-			intersection.add(newxy);
+			intersection.add(new double[] { x, y });
 
 		}
 
