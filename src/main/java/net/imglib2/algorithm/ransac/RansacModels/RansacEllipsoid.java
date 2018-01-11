@@ -111,7 +111,6 @@ public class RansacEllipsoid {
 				++iter;
 				final Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> f = sample(remainingPoints,
 						remainingPoints.size(), outsideCutoffDistance, insideCutoffDistance, numsol, ndims);
-
 				if (f!=null) {
 				List<double[]> pointlist = GetEllipsepoints(f.getA());
 				double size = pointlist.size();
