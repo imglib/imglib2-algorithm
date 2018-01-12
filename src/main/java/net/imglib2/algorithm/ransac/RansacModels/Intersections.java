@@ -10,18 +10,32 @@ import org.apache.commons.math3.linear.RealVector;
 
 import net.imglib2.RealLocalizable;
 import net.imglib2.util.Pair;
-
+/**
+ * Takes in the GeneralEllipsoid of the form a x^2 + b y^2 + c z^2 + 2 d xy + 2
+ * e xz + 2 f yz + 2 gx + 2 hy + 2 iz = 1
+ * 
+ * In 2D a x^2 + b y^2 + 2 d xy + 2 gx + 2 hy = 1
+ * 
+ * For a chosen Z plane, determine the intersection to the ellipse to another
+ * ellipse by Dividing the form above with the coefficient of y^2 (b) to reduce
+ * the ellipse to the form
+ * 
+ * A(x,y) = a0 + a1 x + a2 y + a3 x^2 + a4 xy + y^2
+ * 
+ * 
+ * a0 = -1/b, a1 = 2 g / b,a2 = 2 h / b, a3 = a/b, a4 = 2 d / b
+ * 
+ * @ V Kapoor based on David Eberly Intersection of Ellipses manuscript, Geometric tools
+ */
 public class Intersections {
 
-	public static double[] XYrotate(final double[] XY, double angle) {
-
-		final double[] newXY = new double[] { XY[0] * Math.cos(angle) - XY[1] * Math.sin(angle),
-				XY[0] * Math.sin(angle) + XY[1] * Math.cos(angle) };
-
-		return newXY;
-	}
-
-	public static double[] XYremove(final Ellipsoid Ellipse, int sign) {
+	/**
+	 * If ellipse is not axis aligned to the X-Y plane this method can force removal of the xy term in the equation of the ellipse by doing this transformation
+	 * @param Ellipsoid: To extract the current coefficients of the ellipse
+	 * @return new set of coefficients after removing the xy term by doing the transformation
+	 * 
+	 */
+	public static double[] XYremove(final Ellipsoid Ellipse) {
 
 		double[] ellipseparam = Ellipse.getCoefficients();
 		final double a = ellipseparam[0];
@@ -47,6 +61,26 @@ public class Intersections {
 		return newellipseparam;
 
 	}
+	
+	/**
+	 * @param XY the xy coordinate to be transformed back to the non-axis aligned ellipse
+	 * @param angle the angle with which the ellipse was rotated from the axis aligned ellipse.
+	 * @return the xy coordinates of the non-axis aligned ellipse
+	 */
+	public static double[] XYrotate(final double[] XY, double angle) {
+
+		final double[] newXY = new double[] { XY[0] * Math.cos(angle) - XY[1] * Math.sin(angle),
+				XY[0] * Math.sin(angle) + XY[1] * Math.cos(angle) };
+
+		return newXY;
+	}
+
+	/**
+	 * 
+	 * To convert the ellipse from a general form to a quadratic form
+	 * @param Ellipsoid already has the quadratic parameteres saved during the Yury Petrov step, this method demonstrates how such a conversion works
+	 * @return the quadratic form coefficients of the ellipse
+	 */
 
 	public static double[] EllipseParam(final Ellipsoid Ellipse) {
 
@@ -97,24 +131,14 @@ public class Intersections {
 	}
 
 	/**
-	 * Takes in the GeneralEllipsoid of the form a x^2 + b y^2 + c z^2 + 2 d xy + 2
-	 * e xz + 2 f yz + 2 gx + 2 hy + 2 iz = 1
+	 * Main routine computing the point of intersection between the ellipses using a quartic solver.
 	 * 
-	 * In 2D a x^2 + b y^2 + 2 d xy + 2 gx + 2 hy = 1
-	 * 
-	 * For a chosen Z plane, determine the intersection to the ellipse to another
-	 * ellipse by Dividing the form above with the coefficient of y^2 (b) to reduce
-	 * the ellipse to the form
-	 * 
-	 * A(x,y) = a0 + a1 x + a2 y + a3 x^2 + a4 xy + y^2
-	 * 
-	 * 
-	 * a0 = -1/b, a1 = 2 g / b,a2 = 2 h / b, a3 = a/b, a4 = 2 d / b
-	 * 
-	 * @ V Kapoor
+	 * @param Ellipsepair: The pair of ellipses between which we have to compute the angles
+	 * @return the point of intersection between the ellipses
 	 */
 
-	public static ArrayList<double[]> PointsofIntersection(final Pair<Ellipsoid, Ellipsoid> Ellipsepair, int sign) {
+
+	public static ArrayList<double[]> PointsofIntersection(final Pair<Ellipsoid, Ellipsoid> Ellipsepair) {
 
 		Ellipsoid EllipseA = Ellipsepair.getA();
 		Ellipsoid EllipseB = Ellipsepair.getB();
@@ -125,7 +149,6 @@ public class Intersections {
 		final double d = coefficients[2];
 		final double g = coefficients[3];
 		final double h = coefficients[4];
-		final double angleA = 0;
 
 		final double a0 = -1.0 / b;
 		final double a1 = 2.0 * g / b;
@@ -139,7 +162,6 @@ public class Intersections {
 		final double dSec = coefficientsSec[2];
 		final double gSec = coefficientsSec[3];
 		final double hSec = coefficientsSec[4];
-		final double angleB = 0;
 
 		final double a0Sec = -1.0 / bSec;
 		final double a1Sec = 2.0 * gSec / bSec;
@@ -181,7 +203,6 @@ public class Intersections {
 		double e2xbar = e0 + e1 * xbar + e2 * xbar * xbar;
 		double veto = 1.0E-10;
 		ArrayList<double[]> intersection = new ArrayList<>();
-		int count = 0;
 		if (Math.abs(d4) > veto && Math.abs(e2xbar) >= 1.0E-3) {
 
 			// Listing 1 and 2 David Eberly, intersection of ellipses text
@@ -257,7 +278,6 @@ public class Intersections {
 		}
 
 		if (Math.abs(d4) <= veto && d2 != 0 && e2 != 0) {
-			// if (d2 != 0 && e2 != 0) {
 			// Listing 3 David Eberly, interesection of ellipses text
 			System.out.println("Intersection: Listing 3 Solution");
 			double f0 = c0 * d2 * d2 + e0 * e0;
@@ -266,7 +286,6 @@ public class Intersections {
 			double f3 = 2 * e1 * e2;
 			double f4 = e2 * e2;
 			ArrayList<Pair<Integer, Double>> RootMap = Solvers.SolveQuartic(new double[] { f0, f1, f2, f3, f4 });
-            count++;
 		
 			for (Pair<Integer, Double> rm : RootMap) {
 
@@ -281,7 +300,6 @@ public class Intersections {
 		}
 
 		else if (Math.abs(d4) <= veto && d2 != 0 && Math.abs(e2) <= 1.0E-3) {
-			// else if (d2 != 0 && Math.abs(e2) <= 1.0E-3) {
 
 			// Listing 4 David Eberly, interesection of ellipses text
 			System.out.println("Intersection: Listing 4 Solution");
@@ -304,7 +322,6 @@ public class Intersections {
 		}
 
 		else if (Math.abs(d4) <= veto && Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
-			// else if (Math.abs(d2) <= 1.0E-3 && Math.abs(e2) <= 1.0E-3) {
 
 			// Listing 5 David Eberly, intersection of ellipses text
 			System.out.println("Intersection: Listing 5 Solution");
@@ -319,9 +336,7 @@ public class Intersections {
 
 				w = Math.sqrt(nchat);
 				y = w - translate;
-				double[] newxy = XYrotate(new double[] { xhat, y }, angleA);
 
-				intersection.add(newxy);
 
 				w = -w;
 				y = w - translate;
@@ -340,7 +355,6 @@ public class Intersections {
 		}
 
 		else if (Math.abs(d4) <= veto && Math.abs(d2) <= 1.0E-3 && e2 != 0) {
-			// else if (Math.abs(d2) <= 1.0E-3 && e2 != 0) {
 
 			// Listing 6 David Eberly intersection of ellipses
 			System.out.println("Intersection: Listing 6 Solution");
@@ -369,12 +383,12 @@ public class Intersections {
 						double rsqr = r * r;
 						if (discr < rsqr) {
 
-							result = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2, angleA);
+							result = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
 						}
 
 						else if (discr == rsqr) {
 
-							result = SpecialIntersection(mid + sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2, angleA);
+							result = SpecialIntersection(mid + sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
 						}
 
 					}
@@ -383,7 +397,7 @@ public class Intersections {
 
 					if (r > 0) {
 
-						result = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2, angleA);
+						result = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
 					}
 
 					else {
@@ -391,13 +405,13 @@ public class Intersections {
 						double rsqr = r * r;
 						if (discr > rsqr) {
 
-							result = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2, angleA);
+							result = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
 
 						}
 
 						else if (discr == rsqr) {
 
-							result = SpecialIntersection(mid - sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2, angleA);
+							result = SpecialIntersection(mid - sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
 						}
 
 					}
@@ -416,27 +430,27 @@ public class Intersections {
 						double rsqr = r * r;
 						if (discr < rsqr) {
 
-							result = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2, angleA);
+							result = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
 
 						} else {
 
-							result = SpecialIntersection(mid - sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2, angleA);
+							result = SpecialIntersection(mid - sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
 						}
 
 					}
 					// s = +1;
 					if (r < 0) {
 
-						result = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2, angleA);
+						result = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
 					} else {
 
 						double rsqr = r * r;
 						if (discr > rsqr) {
-							result = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2, angleA);
+							result = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
 						}
 
 						else if (discr == rsqr) {
-							result = SpecialIntersection(mid + sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2, angleA);
+							result = SpecialIntersection(mid + sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
 
 						}
 
@@ -448,15 +462,15 @@ public class Intersections {
 				{
 
 					if (g0 < 0) {
-						resultA = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2, angleA);
-						resultB = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2, angleA);
+						resultA = SpecialIntersection(mid - sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
+						resultB = SpecialIntersection(mid + sqrtDiscr, true, a2Sec, a4Sec, c0, c1, c2);
 						Vector<double[]> vec = resultA.intersection;
 						vec.addAll(resultB.intersection);
 						result = new ResultRoot(vec);
 					} else if (g0 == 0) {
 
-						resultA = SpecialIntersection(mid - sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2, angleA);
-						resultB = SpecialIntersection(mid + sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2, angleA);
+						resultA = SpecialIntersection(mid - sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
+						resultB = SpecialIntersection(mid + sqrtDiscr, false, a2Sec, a4Sec, c0, c1, c2);
 
 						Vector<double[]> vec = resultA.intersection;
 						vec.addAll(resultB.intersection);
@@ -472,11 +486,11 @@ public class Intersections {
 
 				double nchat = -(c0 + mid * (c1 + mid * c2));
 				if (nchat > 0) {
-					result = SpecialIntersection(mid, true, a2Sec, a4Sec, c0, c1, c2, angleA);
+					result = SpecialIntersection(mid, true, a2Sec, a4Sec, c0, c1, c2);
 
 				} else if (nchat == 0) {
 
-					result = SpecialIntersection(mid, false, a2Sec, a4Sec, c0, c1, c2, angleA);
+					result = SpecialIntersection(mid, false, a2Sec, a4Sec, c0, c1, c2);
 				}
 
 			}
@@ -489,7 +503,7 @@ public class Intersections {
 	}
 
 	public static ResultRoot SpecialIntersection(double x, boolean transverse, double a2, double a4, double c0,
-			double c1, double c2, double angleA) {
+			double c1, double c2) {
 
 		Vector<double[]> intersection = new Vector<double[]>();
 		if (transverse) {
@@ -507,9 +521,7 @@ public class Intersections {
 
 			double w = Math.sqrt(nc);
 			double y = w - translate;
-			double[] newxy = XYrotate(new double[] { x, y }, angleA);
 
-			intersection.add(newxy);
 			w = -w;
 			y = w - translate;
 
