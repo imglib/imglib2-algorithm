@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>imglib2-algorithm</artifactId>
-	<version>0.8.2-SNAPSHOT</version>
+	<version>0.8.2</version>
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>
@@ -164,7 +164,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/imglib/imglib2-algorithm</connection>
 		<developerConnection>scm:git:git@github.com:imglib/imglib2-algorithm</developerConnection>
-		<tag>HEAD</tag>
+		<tag>imglib2-algorithm-0.8.2</tag>
 		<url>https://github.com/imglib/imglib2-algorithm</url>
 	</scm>
 	<issueManagement>
