@@ -209,7 +209,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
-			<version>4.6.1-SNAPSHOT</version>
+			<version>4.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>
