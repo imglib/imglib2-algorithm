@@ -20,13 +20,7 @@
  * #L%
  */
 package subpixelLocalization;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import Jama.Matrix;
-import ij.IJ;
 public class LevenbergMarquardtSolverLine {
 	
 		/**
