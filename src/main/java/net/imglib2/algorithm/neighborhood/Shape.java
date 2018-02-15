@@ -34,13 +34,17 @@
 
 package net.imglib2.algorithm.neighborhood;
 
+import java.util.stream.LongStream;
+
 import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.Sampler;
+import net.imglib2.util.ConstantUtils;
 
 /**
  * A factory for Accessibles on {@link Neighborhood Neighborhoods}.
@@ -69,7 +73,25 @@ public interface Shape
 	 * @return an {@link Interval} that describes the bounding box of a
 	 *         {@link Shape}
 	 */
-	public Interval getStructuringElementBoundingBox(final int numDimensions);
+	public default Interval getStructuringElementBoundingBox( final int numDimensions )
+	{
+		final RandomAccessible< Object > accessible = ConstantUtils.constantRandomAccessible( null, numDimensions );
+		final RandomAccess< Neighborhood< Object > > access = neighborhoodsRandomAccessible( accessible ).randomAccess();
+		access.setPosition( new long[ numDimensions ] );
+		final long[] min = LongStream.generate( () -> Long.MAX_VALUE ).limit( numDimensions ).toArray();
+		final long[] max = LongStream.generate( () -> Long.MIN_VALUE ).limit( numDimensions ).toArray();
+		for ( final Cursor< Object > cursor = access.get().localizingCursor(); cursor.hasNext(); )
+		{
+			cursor.fwd();
+			for ( int d = 0; d < numDimensions; ++d )
+			{
+				final long pos = cursor.getLongPosition( d );
+				min[ d ] = Math.min( pos, min[ d ] );
+				max[ d ] = Math.max( pos, max[ d ] );
+			}
+		}
+		return new FinalInterval( min, max );
+	}
 
 	/**
 	 * Get an {@link IterableInterval} that contains all {@link Neighborhood
