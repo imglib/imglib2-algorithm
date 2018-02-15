@@ -168,7 +168,7 @@ public class ParallelizeOverBlocks
 			final ExecutorService es,
 			final int numTasks )
 	{
-		final List< Interval > blocks = BlockOffsets.collectAllOffsets( min, max, blockSize, blockMin -> {
+		final List< Interval > blocks = Grids.collectAllOffsets( min, max, blockSize, blockMin -> {
 			final long[] blockMax = new long[ blockMin.length ];
 			for ( int d = 0; d < blockMax.length; ++d )
 				blockMax[ d ] = Math.min( blockMin[ d ] + blockSize[ d ] - 1, max[ d ] );
