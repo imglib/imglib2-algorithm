@@ -43,9 +43,9 @@ import java.util.concurrent.Future;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
-import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.IntervalView;
@@ -162,214 +162,61 @@ public class PartialDerivative
 	 * @param source
 	 *            source image, has to provide valid data in the interval of the
 	 *            gradient image plus a one pixel border in dimension.
-	 * @param gradient
+	 * @param result
 	 *            output image
 	 * @param dimension
 	 *            along which dimension the partial derivatives are computed
 	 */
-	public static < T extends NumericType< T > > void gradientCentralDifference( final RandomAccessible< T > source, final RandomAccessibleInterval< T > gradient, final int dimension )
+	public static < T extends NumericType< T > > void gradientCentralDifference( final RandomAccessible< T > source,
+			final RandomAccessibleInterval< T > result, final int dimension )
 	{
-		final int n = gradient.numDimensions();
+		final RandomAccessibleInterval< T > back = Views.interval( source, Intervals.translate( result, -1, dimension ) );
+		final RandomAccessibleInterval< T > front = Views.interval( source, Intervals.translate( result, 1, dimension ) );
 
-		final long[] min = new long[ n ];
-		gradient.min( min );
-		final long[] max = new long[ n ];
-		gradient.max( max );
-		final long[] shiftback = new long[ n ];
-		for ( int d = 0; d < n; ++d )
-			shiftback[ d ] = min[ d ] - max[ d ];
-
-		final RandomAccess< T > result = gradient.randomAccess();
-		final RandomAccess< T > back = source.randomAccess( Intervals.translate( gradient, -1, dimension ) );
-		final RandomAccess< T > front = source.randomAccess( Intervals.translate( gradient, 1, dimension ) );
-
-		result.setPosition( min );
-		back.setPosition( min );
-		back.bck( dimension );
-		front.setPosition( min );
-		front.fwd( dimension );
-
-		final long max0 = max[ 0 ];
-		while ( true )
-		{
-			// process pixel
-			final T t = result.get();
-			t.set( front.get() );
-			t.sub( back.get() );
-			t.mul( 0.5 );
-
-			// move to next pixel
-			// check dimension 0 separately to avoid the loop over d in most
-			// iterations
-			if ( result.getLongPosition( 0 ) == max0 )
-			{
-				if ( n == 1 )
-					return;
-				result.move( shiftback[ 0 ], 0 );
-				back.move( shiftback[ 0 ], 0 );
-				front.move( shiftback[ 0 ], 0 );
-				// now check the remaining dimensions
-				for ( int d = 1; d < n; ++d )
-					if ( result.getLongPosition( d ) == max[ d ] )
-					{
-						result.move( shiftback[ d ], d );
-						back.move( shiftback[ d ], d );
-						front.move( shiftback[ d ], d );
-						if ( d == n - 1 )
-							return;
-					}
-					else
-					{
-						result.fwd( d );
-						back.fwd( d );
-						front.fwd( d );
-						break;
-					}
-			}
-			else
-			{
-				result.fwd( 0 );
-				back.fwd( 0 );
-				front.fwd( 0 );
-			}
-		}
+		LoopBuilder.setImages( result, back, front ).forEachPixel( ( r, b, f ) -> {
+			r.set( f );
+			r.sub( b );
+			r.mul( 0.5 );
+		} );
 	}
-	
+
 	/**
 	 * Compute the backward difference of source in a particular dimension.
-	 * 
+	 *
 	 * @param source source image, has to provide valid data in the interval of
 	 *            the gradient image plus a one pixel border in dimension.
-	 * @param gradient output image
-	 * @param dim along which dimension the partial derivatives are computed
+	 * @param result output image
+	 * @param dimension along which dimension the partial derivatives are computed
 	 */
-	public static <T extends NumericType<T>> void gradientBackwardDifference(final RandomAccessible<T> source,
-		final RandomAccessibleInterval<T> gradient, final int dim)
+	public static < T extends NumericType< T > > void gradientBackwardDifference( final RandomAccessible< T > source,
+			final RandomAccessibleInterval< T > result, final int dimension )
 	{
-		final int n = gradient.numDimensions();
+		final RandomAccessibleInterval< T > back = Views.interval( source, Intervals.translate( result, -1, dimension ) );
+		final RandomAccessibleInterval< T > front = Views.interval( source, result );
 
-		final long[] min = new long[n];
-		gradient.min(min);
-		final long[] max = new long[n];
-		gradient.max(max);
-		final long[] shiftback = new long[n];
-		for (int d = 0; d < n; ++d)
-			shiftback[d] = min[d] - max[d];
-
-		final RandomAccess<T> result = gradient.randomAccess();
-		final RandomAccess<T> back = source.randomAccess(Intervals.translate(
-			gradient, 1, dim));
-		final RandomAccess<T> current = source.randomAccess(gradient);
-
-		result.setPosition(min);
-		back.setPosition(min);
-		back.bck(dim);
-		current.setPosition(min);
-
-		final long max0 = max[0];
-		while (true) {
-			// process pixel
-			final T t = result.get();
-			t.set(current.get());
-			t.sub(back.get());
-
-			// move to next pixel
-			// check dimension 0 separately to avoid the loop over d in most
-			// iterations
-			if (result.getLongPosition(0) == max0) {
-				if (n == 1) return;
-				result.move(shiftback[0], 0);
-				back.move(shiftback[0], 0);
-				current.move(shiftback[0], 0);
-				// now check the remaining dimensions
-				for (int d = 1; d < n; ++d)
-					if (result.getLongPosition(d) == max[d]) {
-						result.move(shiftback[d], d);
-						back.move(shiftback[d], d);
-						current.move(shiftback[d], d);
-						if (d == n - 1) return;
-					}
-					else {
-						result.fwd(d);
-						back.fwd(d);
-						current.fwd(d);
-						break;
-					}
-			}
-			else {
-				result.fwd(0);
-				back.fwd(0);
-				current.fwd(0);
-			}
-		}
+		LoopBuilder.setImages( result, back, front ).forEachPixel( ( r, b, f ) -> {
+			r.set( f );
+			r.sub( b );
+		} );
 	}
-	
+
 	/**
 	 * Compute the forward difference of source in a particular dimension.
-	 * 
+	 *
 	 * @param source source image, has to provide valid data in the interval of
 	 *            the gradient image plus a one pixel border in dimension.
-	 * @param gradient output image
-	 * @param dim along which dimension the partial derivatives are computed
+	 * @param result output image
+	 * @param dimension along which dimension the partial derivatives are computed
 	 */
-	public static <T extends NumericType<T>> void gradientForwardDifference(final RandomAccessible<T> source,
-		final RandomAccessibleInterval<T> gradient, final int dim)
+	public static < T extends NumericType< T > > void gradientForwardDifference( final RandomAccessible< T > source,
+			final RandomAccessibleInterval< T > result, final int dimension )
 	{
-		final int n = gradient.numDimensions();
+		final RandomAccessibleInterval< T > back = Views.interval( source, result );
+		final RandomAccessibleInterval< T > front = Views.interval( source, Intervals.translate( result, 1, dimension ) );
 
-		final long[] min = new long[n];
-		gradient.min(min);
-		final long[] max = new long[n];
-		gradient.max(max);
-		final long[] shiftback = new long[n];
-		for (int d = 0; d < n; ++d)
-			shiftback[d] = min[d] - max[d];
-
-		final RandomAccess<T> result = gradient.randomAccess();
-		final RandomAccess<T> front = source.randomAccess(Intervals.translate(
-			gradient, -1, dim));
-		final RandomAccess<T> current = source.randomAccess(gradient);
-
-		result.setPosition(min);
-		front.setPosition(min);
-		front.fwd(dim);
-		current.setPosition(min);
-
-		final long max0 = max[0];
-		while (true) {
-			// process pixel
-			final T t = result.get();
-			t.set(front.get());
-			t.sub(current.get());
-
-			// move to next pixel
-			// check dimension 0 separately to avoid the loop over d in most
-			// iterations
-			if (result.getLongPosition(0) == max0) {
-				if (n == 1) return;
-				result.move(shiftback[0], 0);
-				front.move(shiftback[0], 0);
-				current.move(shiftback[0], 0);
-				// now check the remaining dimensions
-				for (int d = 1; d < n; ++d)
-					if (result.getLongPosition(d) == max[d]) {
-						result.move(shiftback[d], d);
-						front.move(shiftback[d], d);
-						current.move(shiftback[d], d);
-						if (d == n - 1) return;
-					}
-					else {
-						result.fwd(d);
-						front.fwd(d);
-						current.fwd(d);
-						break;
-					}
-			}
-			else {
-				result.fwd(0);
-				front.fwd(0);
-				current.fwd(0);
-			}
-		}
+		LoopBuilder.setImages( result, back, front ).forEachPixel( ( r, b, f ) -> {
+			r.set( f );
+			r.sub( b );
+		} );
 	}
 }
