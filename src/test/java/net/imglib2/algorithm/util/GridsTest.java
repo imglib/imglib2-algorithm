@@ -1,14 +1,23 @@
 package net.imglib2.algorithm.util;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
+import net.imglib2.RandomAccess;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.basictypeaccess.array.LongArray;
+import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 
 public class GridsTest
 {
@@ -108,12 +117,58 @@ public class GridsTest
 		}
 	}
 
+	@Test
+	public void testRandomAccess()
+	{
+		final ArrayImg< BitType, LongArray > data = ArrayImgs.bits( 1, 2, 3, 4, 5 );
+		data.forEach( BitType::setZero );
+		final IntervalView< BitType > translated = Views.translate( data, 5, 4, 3, 2, 1 );
+		final RandomAccess< BitType > access = translated.randomAccess();
+		final UnsignedIntType count = new UnsignedIntType();
+		Grids.forEachOffset(
+				Intervals.minAsLongArray( translated ),
+				Intervals.maxAsLongArray( translated ),
+				IntStream.generate( () -> 1 ).limit( data.numDimensions() ).toArray(),
+				access,
+				() -> {
+					count.inc();
+					access.get().setOne();
+				} );
+
+		Assert.assertEquals( Intervals.numElements( data ), count.get() );
+		data.forEach( v -> Assert.assertTrue( v.get() ) );
+	}
+
 	private static long[] add( final long[] arr, final long[] add )
 	{
 		final long[] result = new long[ arr.length ];
 		for ( int d = 0; d < result.length; ++d )
 			result[ d ] = arr[ d ] + add[ d ];
 		return result;
+	}
+
+	@Test( expected = AssertionError.class )
+	public void testZeroBlockSizeAssertion()
+	{
+		Grids.forEachOffset( new long[] { 0, 0 }, new long[] { 1, 1 }, new int[] { 1, 0 }, arr -> {} );
+	}
+
+	@Test( expected = AssertionError.class )
+	public void testMinDimensionalityMismatchAssertion()
+	{
+		Grids.forEachOffset( new long[] { 0, 0, 0 }, new long[] { 1, 1 }, new int[] { 1, 1 }, arr -> {} );
+	}
+
+	@Test( expected = AssertionError.class )
+	public void testMaxDimensionalityMismatchAssertion()
+	{
+		Grids.forEachOffset( new long[] { 0, 0 }, new long[] { 1, 1, 1 }, new int[] { 1, 1 }, arr -> {} );
+	}
+
+	@Test( expected = AssertionError.class )
+	public void testMinLargerThanMaxAssertion()
+	{
+		Grids.forEachOffset( new long[] { 0, 2 }, new long[] { 1, 1 }, new int[] { 1, 1 }, arr -> {} );
 	}
 
 }

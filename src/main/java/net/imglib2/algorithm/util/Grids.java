@@ -37,10 +37,14 @@ package net.imglib2.algorithm.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
+import net.imglib2.Localizable;
+import net.imglib2.Positionable;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
@@ -52,6 +56,158 @@ import net.imglib2.util.ValuePair;
  */
 public class Grids
 {
+
+	/**
+	 *
+	 * Helper interface for moving by a specified distance along a specified
+	 * dimension.
+	 *
+	 */
+	public static interface MoveForDimension
+	{
+		/**
+		 *
+		 * @param by
+		 *            Distance to move.
+		 * @param dimension
+		 *            Dimension along which to move.
+		 */
+		public void move( long by, int dimension );
+	}
+
+	/**
+	 *
+	 * Helper interface to set position of specified dimension.
+	 *
+	 */
+	public static interface SetForDimension
+	{
+		/**
+		 *
+		 * @param to
+		 *            Set to this value.
+		 * @param dimension
+		 *            Affected dimension.
+		 */
+		public void set( long to, int dimension );
+	}
+
+	/**
+	 *
+	 * Helper interface to get current value of specified dimension
+	 *
+	 */
+	public static interface GetForDimension
+	{
+		/**
+		 *
+		 * @param dimension
+		 * @return Current value at specified dimension.
+		 */
+		public long get( int dimension );
+	}
+
+	/**
+	 * Execute {@code runAtOffset} for each offset of a grid defined by
+	 * {@code min}, {@code max}, and {@code blockSize}. The offset object
+	 * {@link p} must be provided by the caller.
+	 *
+	 * @param min
+	 * @param max
+	 * @param blockSize
+	 * @param p
+	 * @param runAtOffset
+	 */
+	public static < P extends Positionable & Localizable > void forEachOffset(
+			final long[] min,
+			final long[] max,
+			final int[] blockSize,
+			final P p,
+			final Runnable runAtOffset )
+	{
+
+		assert p.numDimensions() == min.length: "Dimensionality mismatch!";
+
+		forEachOffset( min, max, blockSize, ( to, d ) -> p.setPosition( to, d ), d -> p.getLongPosition( d ), ( by, d ) -> p.move( by, d ), runAtOffset );
+	}
+
+	/**
+	 *
+	 * Execute {@code runAtOffset} for each offset of a grid defined by
+	 * {@code min}, {@code max}, and {@code blockSize}.
+	 *
+	 * @param min
+	 * @param max
+	 * @param blockSize
+	 * @param runAtOffset
+	 */
+	public static void forEachOffset(
+			final long[] min,
+			final long[] max,
+			final int[] blockSize,
+			final Consumer< long[] > runAtOffset )
+	{
+		final long[] offset = new long[ min.length ];
+		forEachOffset( min, max, blockSize, ( to, d ) -> offset[ d ] = to, ( d ) -> offset[ d ], ( by, d ) -> offset[ d ] += by, () -> runAtOffset.accept( offset ) );
+	}
+
+	/**
+	 * Execute a {@link Runnable} for each offset of a grid defined by
+	 * {@code min}, {@code max}, and {@code blockSize}.
+	 *
+	 * This method is agonstic of the object that represents the current offset.
+	 * Instead, the caller provides {@code setOffsetForDimension},
+	 * {@code getOffsetForDimension}, and {@code moveForDimension} to move the
+	 * offset object in the correct positions. Consequently,
+	 * {@code runAtEachOffset} needs to be a stateful object that is aware of
+	 * the current position.
+	 *
+	 * See {@link Grids#forEachOffset(long[], long[], int[], Consumer)} and
+	 * {@link Grids#forEachOffset(long[], long[], int[], Positionable, Runnable)}
+	 * for example/convenience implementations for {@code long[]} and
+	 * {@code Positionable & Lozalizable} offset objects.
+	 *
+	 * @param min
+	 * @param max
+	 * @param blockSize
+	 * @param setOffsetForDimension
+	 * @param getOffsetForDimension
+	 * @param moveForDimension
+	 * @param runAtEachOffset
+	 */
+	public static void forEachOffset(
+			final long[] min,
+			final long[] max,
+			final int[] blockSize,
+			final SetForDimension setOffsetForDimension,
+			final GetForDimension getOffsetForDimension,
+			final MoveForDimension moveForDimension,
+			final Runnable runAtEachOffset )
+	{
+
+		assert Arrays.stream( blockSize ).filter( b -> b < 1 ).count() == 0: "Only non-zero blockSize allowed!";
+		assert min.length == blockSize.length: "Dimensionality mismatch!";
+		assert max.length == blockSize.length: "Dimensionality mismatch!";
+		assert IntStream.range( 0, min.length ).filter( d -> max[ d ] < min[ d ] ).count() == 0: "max has to greater or equal than min for all dimensions!";
+
+		final int nDim = min.length;
+		for ( int d = 0; d < nDim; ++d )
+			setOffsetForDimension.set( min[ d ], d );
+
+		for ( int d = 0; d < nDim; )
+		{
+			runAtEachOffset.run();
+			for ( d = 0; d < nDim; ++d )
+			{
+				moveForDimension.move( blockSize[ d ], d );
+				if ( getOffsetForDimension.get( d ) <= max[ d ] )
+					break;
+				else
+					setOffsetForDimension.set( min[ d ], d );
+			}
+		}
+	}
+
 	/**
 	 *
 	 * Get all blocks of size {@code blockSize} contained within an interval
@@ -125,7 +281,7 @@ public class Grids
 	 */
 	public static List< long[] > collectAllOffsets( final long[] dimensions, final int[] blockSize )
 	{
-		return collectAllOffsets( dimensions, blockSize, block -> block );
+		return collectAllOffsets( dimensions, blockSize, block -> block.clone() );
 	}
 
 	/**
@@ -157,7 +313,7 @@ public class Grids
 	 */
 	public static List< long[] > collectAllOffsets( final long[] min, final long[] max, final int[] blockSize )
 	{
-		return collectAllOffsets( min, max, blockSize, block -> block );
+		return collectAllOffsets( min, max, blockSize, block -> block.clone() );
 	}
 
 	/**
@@ -176,21 +332,7 @@ public class Grids
 	public static < T > List< T > collectAllOffsets( final long[] min, final long[] max, final int[] blockSize, final Function< long[], T > func )
 	{
 		final List< T > blocks = new ArrayList<>();
-		final int nDim = min.length;
-		final long[] offset = min.clone();
-		for ( int d = 0; d < nDim; )
-		{
-			final long[] target = offset.clone();
-			blocks.add( func.apply( target ) );
-			for ( d = 0; d < nDim; ++d )
-			{
-				offset[ d ] += blockSize[ d ];
-				if ( offset[ d ] <= max[ d ] )
-					break;
-				else
-					offset[ d ] = min[ d ];
-			}
-		}
+		forEachOffset( min, max, blockSize, offset -> blocks.add( func.apply( offset ) ) );
 		return blocks;
 	}
 
