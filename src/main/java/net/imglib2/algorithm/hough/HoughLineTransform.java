@@ -31,9 +31,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
+
 package net.imglib2.algorithm.hough;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
 
 import net.imglib2.Cursor;
 import net.imglib2.img.Img;
@@ -80,6 +82,7 @@ import net.imglib2.type.numeric.integer.ShortType;
  */
 public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T extends Type< T > & Comparable< T > > extends HoughTransform< S, T >
 {
+
 	public static final int DEFAULT_THETA = 180;
 
 	public final double dTheta;
@@ -138,9 +141,9 @@ public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T ex
 	 * @return a default {@link HoughLineTransform} with {@link IntType} vote
 	 *         space.
 	 */
-	public static < T extends Type< T > & Comparable< T > > HoughLineTransform< ShortType, T > shortHoughLine( final Img< T > inputImage )
+	public static < T extends Type< T > & Comparable< T > > HoughLineTransform< ShortType, T > shortHoughLine( final Img< T > inputImage, final ExecutorService exService )
 	{
-		return new HoughLineTransform<>( inputImage, new ShortType() );
+		return new HoughLineTransform<>( inputImage, new ShortType(), exService );
 	}
 
 	/**
@@ -153,9 +156,9 @@ public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T ex
 	 * @return a default {@link HoughLineTransform} with {@link IntType} vote
 	 *         space.
 	 */
-	public static < T extends Type< T > & Comparable< T > > HoughLineTransform< IntType, T > integerHoughLine( final Img< T > inputImage )
+	public static < T extends Type< T > & Comparable< T > > HoughLineTransform< IntType, T > integerHoughLine( final Img< T > inputImage, final ExecutorService exService )
 	{
-		return new HoughLineTransform<>( inputImage, new IntType() );
+		return new HoughLineTransform<>( inputImage, new IntType(), exService );
 	}
 
 	/**
@@ -174,9 +177,9 @@ public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T ex
 	 *         create a {@link HoughLineTransform} instantiated with an
 	 *         {@link ImgFactory} capable of handling it.
 	 */
-	public static < T extends Type< T > & Comparable< T > > HoughLineTransform< LongType, T > longHoughLine( final Img< T > inputImage )
+	public static < T extends Type< T > & Comparable< T > > HoughLineTransform< LongType, T > longHoughLine( final Img< T > inputImage, final ExecutorService exService )
 	{
-		return new HoughLineTransform<>( inputImage, new LongType() );
+		return new HoughLineTransform<>( inputImage, new LongType(), exService );
 	}
 
 	/**
@@ -189,9 +192,9 @@ public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T ex
 	 * @param type
 	 *            the {@link Type} for the vote space.
 	 */
-	public HoughLineTransform( final Img< T > inputImage, final S type )
+	public HoughLineTransform( final Img< T > inputImage, final S type, final ExecutorService exService )
 	{
-		this( inputImage, DEFAULT_THETA, type );
+		this( inputImage, DEFAULT_THETA, type, exService );
 	}
 
 	/**
@@ -206,9 +209,9 @@ public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T ex
 	 * @param type
 	 *            the {@link Type} for the vote space.
 	 */
-	public HoughLineTransform( final Img< T > inputImage, final int theta, final S type )
+	public HoughLineTransform( final Img< T > inputImage, final int theta, final S type, final ExecutorService exService )
 	{
-		this( inputImage, defaultRho( inputImage ), theta, type );
+		this( inputImage, defaultRho( inputImage ), theta, type, exService );
 	}
 
 	/**
@@ -225,10 +228,10 @@ public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T ex
 	 * @param type
 	 *            the {@link Type} for the vote space.
 	 */
-	public HoughLineTransform( final Img< T > inputImage, final int inNRho, final int inNTheta, final S type )
+	public HoughLineTransform( final Img< T > inputImage, final int inNRho, final int inNTheta, final S type, final ExecutorService exService )
 	{
 		// Call the base constructor
-		super( inputImage, new long[] { inNRho, inNTheta }, type );
+		super( inputImage, new long[] { inNRho, inNTheta }, type, exService );
 
 		// Theta by definition is in [0..pi].
 		dTheta = Math.PI / inNTheta;
@@ -262,10 +265,10 @@ public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T ex
 	 * @param type
 	 *            the {@link Type} for the vote space.
 	 */
-	public HoughLineTransform( final Img< T > inputImage, final ImgFactory< S > factory, final S type, final int inNRho, final int inNTheta )
+	public HoughLineTransform( final Img< T > inputImage, final ImgFactory< S > factory, final S type, final int inNRho, final int inNTheta, final ExecutorService exService )
 	{
 		// Call the base constructor
-		super( inputImage, new long[] { inNRho, inNTheta }, factory, type );
+		super( inputImage, new long[] { inNRho, inNTheta }, factory, type, exService );
 
 		dTheta = Math.PI / inNTheta;
 
@@ -332,7 +335,7 @@ public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T ex
 			}
 		}
 		// pick peaks
-		success = super.pickPeaks();
+		success = super.pickPeaks( getExecutorService() );
 		super.pTime = System.currentTimeMillis() - sTime;
 		return success;
 	}

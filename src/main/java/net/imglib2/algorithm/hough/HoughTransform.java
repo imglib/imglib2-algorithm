@@ -31,14 +31,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
+
 package net.imglib2.algorithm.hough;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
+import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.algorithm.Benchmark;
 import net.imglib2.algorithm.OutputAlgorithm;
+import net.imglib2.algorithm.localextrema.LocalExtrema;
+import net.imglib2.algorithm.localextrema.LocalExtrema.MaximumCheck;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgFactory;
 import net.imglib2.img.array.ArrayImgFactory;
@@ -60,6 +66,7 @@ import net.imglib2.type.numeric.RealType;
  */
 public abstract class HoughTransform< S extends RealType< S > & NativeType< S >, T extends Type< T > & Comparable< T > > implements OutputAlgorithm< Img< S > >, Benchmark
 {
+
 	protected long pTime;
 
 	private String errorMsg;
@@ -76,6 +83,8 @@ public abstract class HoughTransform< S extends RealType< S > & NativeType< S >,
 
 	private final S one;
 
+	private ExecutorService exService;
+
 	/**
 	 * Constructor for a HoughTransform using an ArrayImageFactory to back the
 	 * ImageFactory used to generate the voteSpace image.
@@ -88,9 +97,9 @@ public abstract class HoughTransform< S extends RealType< S > & NativeType< S >,
 	 * @param type
 	 *            the Type used for generating the voteSpace image.
 	 */
-	protected HoughTransform( final Img< T > inputImage, final long[] voteSize, final S type )
+	protected HoughTransform( final Img< T > inputImage, final long[] voteSize, final S type, final ExecutorService exService )
 	{
-		this( inputImage, voteSize, new ArrayImgFactory<>(), type );
+		this( inputImage, voteSize, new ArrayImgFactory<>(), type, exService );
 	}
 
 	/**
@@ -106,7 +115,7 @@ public abstract class HoughTransform< S extends RealType< S > & NativeType< S >,
 	 * @param voteFactory
 	 *            the ImgFactory used to generate the voteSpace image.
 	 */
-	protected HoughTransform( final Img< T > inputImage, final long[] voteSize, final ImgFactory< S > voteFactory, final S type )
+	protected HoughTransform( final Img< T > inputImage, final long[] voteSize, final ImgFactory< S > voteFactory, final S type, final ExecutorService exService )
 	{
 		image = inputImage;
 		voteCursor = null;
@@ -117,6 +126,7 @@ public abstract class HoughTransform< S extends RealType< S > & NativeType< S >,
 		one = type.createVariable();
 		one.setOne();
 		Arrays.fill( peakExclusion, 0 );
+		this.exService = exService;
 	}
 
 	/**
@@ -188,22 +198,26 @@ public abstract class HoughTransform< S extends RealType< S > & NativeType< S >,
 	 *
 	 * @return whether peak picking was successful
 	 */
-	protected boolean pickPeaks()
+	protected boolean pickPeaks( ExecutorService exService )
 	{
-		final PickImagePeaks< S > peakPicker = new PickImagePeaks<>( voteSpace );
-		boolean ok;
+		S maxValue = voteSpace.firstElement().copy();
+		maxValue.setReal( maxValue.getRealDouble() );
+		final MaximumCheck< S > maxCheck = new MaximumCheck< S >( maxValue );
 
-		peakPicker.setSuppression( peakExclusion );
-		ok = peakPicker.process();
-		if ( ok )
+		List< Point > peaksList = LocalExtrema.findLocalExtrema( voteSpace, maxCheck, exService );
+		peaks = new ArrayList();
+		long[] dims = new long[ image.numDimensions() ];
+
+		for ( Point p : peaksList )
 		{
-			peaks = peakPicker.getPeakList();
-			return true;
+			for ( int i = 0; i < p.numDimensions(); i++ )
+			{
+				dims[ i ] = p.getLongPosition( i );
+			}
+			peaks.add( dims );
 		}
-		else
-		{
-			return false;
-		}
+		
+		return true;
 	}
 
 	@Override
@@ -229,6 +243,11 @@ public abstract class HoughTransform< S extends RealType< S > & NativeType< S >,
 	public long getProcessingTime()
 	{
 		return pTime;
+	}
+
+	public ExecutorService getExecutorService()
+	{
+		return exService;
 	}
 
 	public Img< T > getImage()

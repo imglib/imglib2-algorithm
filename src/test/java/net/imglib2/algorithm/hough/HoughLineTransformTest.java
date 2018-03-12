@@ -31,12 +31,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
+
 package net.imglib2.algorithm.hough;
 
 import static org.junit.Assert.assertEquals;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 
@@ -53,9 +56,14 @@ import net.imglib2.util.Util;
 
 public class HoughLineTransformTest
 {
+
 	private BufferedImage groundTruth;
 
 	private Img< UnsignedByteType > tpImg;
+
+	public static int N_THREADS = Runtime.getRuntime().availableProcessors();
+
+	public static ExecutorService ES = Executors.newFixedThreadPool( N_THREADS );
 
 	@Before
 	public void setUp() throws IOException
@@ -76,7 +84,7 @@ public class HoughLineTransformTest
 	@Test
 	public < T extends RealType< T > & NativeType< T > > void testHoughLineTransformToTarget() throws IOException
 	{
-		final HoughLineTransform line = HoughLineTransform.integerHoughLine( tpImg );
+		final HoughLineTransform line = HoughLineTransform.integerHoughLine( tpImg, ES );
 
 		if ( line.process() )
 		{
