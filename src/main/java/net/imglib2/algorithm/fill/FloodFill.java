@@ -201,12 +201,6 @@ public class FloodFill
 			coordinates.add( seed.getLongPosition( d ) );
 		}
 
-//		final TLongList[] coordinates = new TLongList[ n ];
-//		for ( int d = 0; d < n; ++d )
-//		{
-//			coordinates[ d ] = new TLongArrayList();
-//			coordinates[ d ].add( seed.getLongPosition( d ) );
-//		}
 		final int cleanupThreshold = n * CLEANUP_THRESHOLD;
 
 		final RandomAccessible< Neighborhood< Pair< T, U > > > neighborhood = shape.neighborhoodsRandomAccessible( paired );

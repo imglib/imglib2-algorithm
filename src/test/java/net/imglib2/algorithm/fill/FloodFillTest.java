@@ -61,7 +61,7 @@ public class FloodFillTest
 
 	private static final int[] N_DIMS = { 1, 2, 3, 4 };
 
-	private static final int SIZE_OF_EACH_DIM = 60;
+	private static final int SIZE_OF_EACH_DIM = 24;
 
 	private static < T extends IntegerType< T > > void runTest( final int nDim, final int sizeOfEachDim, final ImgFactory< T > imageFactory, final T t )
 	{
@@ -187,8 +187,8 @@ public class FloodFillTest
 	{
 		for ( final int nDim : N_DIMS )
 		{
-			runTestDeprecated( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory< LongType >(), new LongType() );
-			runTest( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory< LongType >(), new LongType() );
+			runTestDeprecated( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory<>(), new LongType() );
+			runTest( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory<>(), new LongType() );
 		}
 	}
 
