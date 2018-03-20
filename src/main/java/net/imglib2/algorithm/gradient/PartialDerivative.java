@@ -60,7 +60,10 @@ public class PartialDerivative
 {
 	// nice version...
 	/**
-	 * Compute the partial derivative of source in a particular dimension.
+	 * Compute the partial derivative (central difference approximation) of source
+	 * in a particular dimension:
+	 * {@code d_f( x ) = ( f( x + e ) - f( x - e ) ) / 2},
+	 * where {@code e} is the unit vector along that dimension.
 	 *
 	 * @param source
 	 *            source image, has to provide valid data in the interval of the
@@ -85,7 +88,10 @@ public class PartialDerivative
 
 	// parallel version...
 	/**
-	 * Compute the partial derivative of source in a particular dimension.
+	 * Compute the partial derivative (central difference approximation) of source
+	 * in a particular dimension:
+	 * {@code d_f( x ) = ( f( x + e ) - f( x - e ) ) / 2},
+	 * where {@code e} is the unit vector along that dimension.
 	 *
 	 * @param source
 	 *            source image, has to provide valid data in the interval of the
@@ -157,7 +163,10 @@ public class PartialDerivative
 
 	// fast version
 	/**
-	 * Compute the partial derivative of source in a particular dimension.
+	 * Compute the partial derivative (central difference approximation) of source
+	 * in a particular dimension:
+	 * {@code d_f( x ) = ( f( x + e ) - f( x - e ) ) / 2},
+	 * where {@code e} is the unit vector along that dimension.
 	 *
 	 * @param source
 	 *            source image, has to provide valid data in the interval of the
@@ -181,7 +190,9 @@ public class PartialDerivative
 	}
 
 	/**
-	 * Compute the backward difference of source in a particular dimension.
+	 * Compute the backward difference of source in a particular dimension:
+	 * {@code d_f( x ) = ( f( x ) - f( x - e ) )}
+	 * where {@code e} is the unit vector along that dimension
 	 *
 	 * @param source source image, has to provide valid data in the interval of
 	 *            the gradient image plus a one pixel border in dimension.
@@ -201,8 +212,10 @@ public class PartialDerivative
 	}
 
 	/**
-	 * Compute the forward difference of source in a particular dimension.
-	 *
+	 * Compute the forward difference of source in a particular dimension:
+	 * {@code d_f( x ) = ( f( x + e ) - f( x ) )}
+	 * where {@code e} is the unit vector along that dimension
+	 
 	 * @param source source image, has to provide valid data in the interval of
 	 *            the gradient image plus a one pixel border in dimension.
 	 * @param result output image
