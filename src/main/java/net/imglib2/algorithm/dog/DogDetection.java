@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import net.imagej.space.LinearSpace;
 import net.imglib2.Interval;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessible;
@@ -77,16 +76,6 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 	 * be created on demand
 	 **/
 	private ExecutorService executorService;
-
-	public < I extends RandomAccessibleInterval< T > & LinearSpace< ? > > DogDetection(
-			final I input,
-			final double sigmaSmaller,
-			final double sigmaLarger,
-			final ExtremaType extremaType,
-			final double minPeakValue )
-	{
-		this( Views.extendMirrorSingle( input ), input, getcalib( input ), sigmaSmaller, sigmaLarger, extremaType, minPeakValue, true );
-	}
 
 	public DogDetection(
 			final RandomAccessibleInterval< T > input,
@@ -312,14 +301,6 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 	public void setExecutorService( final ExecutorService service )
 	{
 		this.executorService = service;
-	}
-
-	private static double[] getcalib( final LinearSpace< ? > calib )
-	{
-		final double[] c = new double[ calib.numDimensions() ];
-		for ( int d = 0; d < c.length; ++d )
-			c[ d ] = calib.axis( d ).scale();
-		return c;
 	}
 
 	private static class DogComputationType< F extends RealType< F > & NativeType< F > >
