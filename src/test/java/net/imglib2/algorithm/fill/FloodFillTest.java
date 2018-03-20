@@ -112,14 +112,66 @@ public class FloodFillTest
 
 		final ExtendedRandomAccessibleInterval< T, Img< T > > extendedImg = Views.extendValue( img, fillLabel );
 
-		final Filter< Pair< T, T >, Pair< T, T > > filter = new Filter< Pair< T, T >, Pair< T, T > >()
+		FloodFill.fill( extendedImg, extendedImg, new Point( c ), fillLabel, new DiamondShape( 1 ) );
+
+		for ( Cursor< T > imgCursor = img.cursor(), refCursor = refImg.cursor(); imgCursor.hasNext(); )
 		{
-			@Override
-			public boolean accept( final Pair< T, T > p1, final Pair< T, T > p2 )
+			Assert.assertEquals( refCursor.next(), imgCursor.next() );
+		}
+
+	}
+
+	@Deprecated
+	private static < T extends IntegerType< T > > void runTestDeprecated( final int nDim, final int sizeOfEachDim, final ImgFactory< T > imageFactory, final T t )
+	{
+		final long[] dim = new long[ nDim ];
+		final long[] c = new long[ nDim ];
+		final long r = sizeOfEachDim / 4;
+		for ( int d = 0; d < nDim; ++d )
+		{
+			dim[ d ] = sizeOfEachDim;
+			c[ d ] = sizeOfEachDim / 3;
+		}
+
+		final long divisionLine = r / 3;
+
+		final Img< T > img = imageFactory.create( dim, t.copy() );
+		final Img< T > refImg = imageFactory.create( dim, t.copy() );
+
+		for ( Cursor< T > i = img.cursor(), ref = refImg.cursor(); i.hasNext(); )
+		{
+			i.fwd();
+			ref.fwd();
+			long diffSum = 0;
+			for ( int d = 0; d < nDim; ++d )
 			{
-				return ( p1.getB().getIntegerLong() != p2.getB().getIntegerLong() ) && ( p1.getA().getIntegerLong() == p2.getA().getIntegerLong() );
+				final long diff = i.getLongPosition( d ) - c[ d ];
+				diffSum += diff * diff;
+
 			}
-		};
+
+			if ( ( diffSum < r * r ) )
+			{
+				if ( ( i.getLongPosition( 0 ) - c[ 0 ] < divisionLine ) )
+				{
+					i.get().setInteger( START_LABEL );
+					ref.get().setInteger( FILL_LABEL );
+				}
+				else if ( i.getLongPosition( 0 ) - c[ 0 ] > divisionLine )
+				{
+					i.get().setInteger( START_LABEL );
+					ref.get().setInteger( START_LABEL );
+				}
+			}
+
+		}
+
+		final T fillLabel = t.createVariable();
+		fillLabel.setInteger( FILL_LABEL );
+
+		final ExtendedRandomAccessibleInterval< T, Img< T > > extendedImg = Views.extendValue( img, fillLabel );
+
+		final Filter< Pair< T, T >, Pair< T, T > > filter = ( p1, p2 ) -> ( p1.getB().getIntegerLong() != p2.getB().getIntegerLong() ) && ( p1.getA().getIntegerLong() == p2.getA().getIntegerLong() );
 
 		FloodFill.fill( extendedImg, extendedImg, new Point( c ), fillLabel, new DiamondShape( 1 ), filter );
 
@@ -135,6 +187,7 @@ public class FloodFillTest
 	{
 		for ( final int nDim : N_DIMS )
 		{
+			runTestDeprecated( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory< LongType >(), new LongType() );
 			runTest( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory< LongType >(), new LongType() );
 		}
 	}

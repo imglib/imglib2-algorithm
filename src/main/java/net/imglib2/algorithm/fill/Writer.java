@@ -42,6 +42,7 @@ package net.imglib2.algorithm.fill;
  *
  * @param <U>
  */
+@Deprecated
 public interface Writer< U >
 {
 	void write( final U source, final U target );

@@ -34,6 +34,9 @@
 
 package net.imglib2.algorithm.fill;
 
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+
 import gnu.trove.list.TLongList;
 import gnu.trove.list.array.TLongArrayList;
 import net.imglib2.Cursor;
@@ -66,6 +69,190 @@ public class FloodFill
 	 * written into that location yet (comparator evaluates to 0).
 	 *
 	 * Convenience call to
+	 * {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Object, Type, Shape, BiPredicate)}.
+	 * seedLabel is extracted from source at seed location.
+	 *
+	 * @param source
+	 *            input
+	 * @param target
+	 *            {@link RandomAccessible} to be written into. May be the same
+	 *            as input.
+	 * @param seed
+	 *            Start flood fill at this location.
+	 * @param fillLabel
+	 *            Immutable. Value to be written into valid flood fill
+	 *            locations.
+	 * @param shape
+	 *            Defines neighborhood that is considered for connected
+	 *            components, e.g.
+	 *            {@link net.imglib2.algorithm.neighborhood.DiamondShape}
+	 * @param <T>
+	 *            T implements {@code Type<U>}.
+	 * @param <U>
+	 *            U implements {@code Type<U>}.
+	 */
+	public static < T extends Type< T >, U extends Type< U > > void fill(
+			final RandomAccessible< T > source,
+			final RandomAccessible< U > target,
+			final Localizable seed,
+			final U fillLabel,
+			final Shape shape )
+	{
+		final RandomAccess< T > access = source.randomAccess();
+		access.setPosition( seed );
+		final T seedValue = access.get().copy();
+		final BiPredicate< T, U > filter = ( t, u ) -> t.valueEquals( seedValue ) && !u.valueEquals( fillLabel );
+		fill( source, target, seed, fillLabel, shape, filter );
+	}
+
+	/**
+	 * Iterative n-dimensional flood fill for arbitrary neighborhoods: Starting
+	 * at seed location, write fillLabel into target at current location and
+	 * continue for each pixel in neighborhood defined by shape if neighborhood
+	 * pixel is in the same connected component and fillLabel has not been
+	 * written into that location yet (comparator evaluates to 0).
+	 *
+	 * Convenience call to
+	 * {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Object, Object, Shape, BiPredicate, Consumer)}
+	 * with {@link TypeWriter} as writer.
+	 *
+	 * @param source
+	 *            input
+	 * @param target
+	 *            {@link RandomAccessible} to be written into. May be the same
+	 *            as input.
+	 * @param seed
+	 *            Start flood fill at this location.
+	 * @param fillLabel
+	 *            Immutable. Value to be written into valid flood fill
+	 *            locations.
+	 * @param shape
+	 *            Defines neighborhood that is considered for connected
+	 *            components, e.g.
+	 *            {@link net.imglib2.algorithm.neighborhood.DiamondShape}
+	 * @param filter
+	 *            Returns true if pixel has not been visited yet and should be
+	 *            written into. Returns false if target pixel has been visited
+	 *            or source pixel is not part of the same connected component.
+	 * @param <T>
+	 *            No restrictions on {@link T}.
+	 * @param <U>
+	 *            {@link U} implements {@code Type<U>}.
+	 */
+	public static < T, U extends Type< U > > void fill(
+			final RandomAccessible< T > source,
+			final RandomAccessible< U > target,
+			final Localizable seed,
+			final U fillLabel,
+			final Shape shape,
+			final BiPredicate< T, U > filter )
+	{
+		fill( source, target, seed, shape, filter, targetPixel -> targetPixel.set( fillLabel ) );
+	}
+
+	/**
+	 *
+	 * Iterative n-dimensional flood fill for arbitrary neighborhoods: Starting
+	 * at seed location, write fillLabel into target at current location and
+	 * continue for each pixel in neighborhood defined by shape if neighborhood
+	 * pixel is in the same connected component and fillLabel has not been
+	 * written into that location yet (comparator evaluates to 0).
+	 *
+	 * @param source
+	 *            input
+	 * @param target
+	 *            {@link RandomAccessible} to be written into. May be the same
+	 *            as input.
+	 * @param seed
+	 *            Start flood fill at this location.
+	 * @param shape
+	 *            Defines neighborhood that is considered for connected
+	 *            components, e.g.
+	 *            {@link net.imglib2.algorithm.neighborhood.DiamondShape}
+	 * @param filter
+	 *            Returns true if pixel has not been visited yet and should be
+	 *            written into. Returns false if target pixel has been visited
+	 *            or source pixel is not part of the same connected component.
+	 * @param writer
+	 *            Defines how fill label is written into target at current
+	 *            location.
+	 * @param <T>
+	 *            No restrictions on T. Appropriate filter is the only
+	 *            requirement.
+	 * @param <U>
+	 *            No restrictions on U. Appropriate filter and writer is the
+	 *            only requirement.
+	 */
+	public static < T, U > void fill(
+			final RandomAccessible< T > source,
+			final RandomAccessible< U > target,
+			final Localizable seed,
+			final Shape shape,
+			final BiPredicate< T, U > filter,
+			final Consumer< U > writer )
+	{
+		final int n = source.numDimensions();
+
+		final RandomAccessible< Pair< T, U > > paired = Views.pair( source, target );
+
+		TLongList coordinates = new TLongArrayList();
+		for ( int d = 0; d < n; ++d )
+		{
+			coordinates.add( seed.getLongPosition( d ) );
+		}
+
+//		final TLongList[] coordinates = new TLongList[ n ];
+//		for ( int d = 0; d < n; ++d )
+//		{
+//			coordinates[ d ] = new TLongArrayList();
+//			coordinates[ d ].add( seed.getLongPosition( d ) );
+//		}
+		final int cleanupThreshold = n * CLEANUP_THRESHOLD;
+
+		final RandomAccessible< Neighborhood< Pair< T, U > > > neighborhood = shape.neighborhoodsRandomAccessible( paired );
+		final RandomAccess< Neighborhood< Pair< T, U > > > neighborhoodAccess = neighborhood.randomAccess();
+
+		final RandomAccess< U > targetAccess = target.randomAccess();
+		targetAccess.setPosition( seed );
+		writer.accept( targetAccess.get() );
+
+		for ( int i = 0; i < coordinates.size(); i += n )
+		{
+			for ( int d = 0; d < n; ++d )
+				neighborhoodAccess.setPosition( coordinates.get( i + d ), d );
+
+			final Cursor< Pair< T, U > > neighborhoodCursor = neighborhoodAccess.get().cursor();
+
+			while ( neighborhoodCursor.hasNext() )
+			{
+				final Pair< T, U > p = neighborhoodCursor.next();
+				if ( filter.test( p.getA(), p.getB() ) )
+				{
+					writer.accept( p.getB() );
+					for ( int d = 0; d < n; ++d )
+						coordinates.add( neighborhoodCursor.getLongPosition( d ) );
+				}
+			}
+
+			if ( i > cleanupThreshold )
+			{
+				// TODO should it start from i + n?
+				coordinates = coordinates.subList( i, coordinates.size() );
+				i = 0;
+			}
+
+		}
+
+	}
+
+	/**
+	 * Iterative n-dimensional flood fill for arbitrary neighborhoods: Starting
+	 * at seed location, write fillLabel into target at current location and
+	 * continue for each pixel in neighborhood defined by shape if neighborhood
+	 * pixel is in the same connected component and fillLabel has not been
+	 * written into that location yet (comparator evaluates to 0).
+	 *
+	 * Convenience call to
 	 * {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Object, Type, Shape, Filter)}
 	 * . seedLabel is extracted from source at seed location.
 	 *
@@ -88,6 +275,7 @@ public class FloodFill
 	 * @param <U>
 	 *            U implements {@code Type<U>}.
 	 */
+	@Deprecated
 	public static < T extends Type< T >, U extends Type< U > > void fill( final RandomAccessible< T > source, final RandomAccessible< U > target, final Localizable seed, final U fillLabel, final Shape shape, final Filter< Pair< T, U >, Pair< T, U > > filter )
 	{
 		final RandomAccess< T > access = source.randomAccess();
@@ -127,6 +315,7 @@ public class FloodFill
 	 * @param <U>
 	 *            {@link U} implements {@code Type<U>}.
 	 */
+	@Deprecated
 	public static < T, U extends Type< U > > void fill( final RandomAccessible< T > source, final RandomAccessible< U > target, final Localizable seed, final T seedLabel, final U fillLabel, final Shape shape, final Filter< Pair< T, U >, Pair< T, U > > filter )
 	{
 		fill( source, target, seed, seedLabel, fillLabel, shape, filter, new TypeWriter< U >() );
@@ -170,11 +359,12 @@ public class FloodFill
 	 *            No restrictions on U. Appropriate comparator and writer is the
 	 *            only requirement.
 	 */
+	@Deprecated
 	public static < T, U > void fill( final RandomAccessible< T > source, final RandomAccessible< U > target, final Localizable seed, final T seedLabel, final U fillLabel, final Shape shape, final Filter< Pair< T, U >, Pair< T, U > > filter, final Writer< U > writer )
 	{
 		final int n = source.numDimensions();
 
-		final ValuePair< T, U > reference = new ValuePair< T, U >( seedLabel, fillLabel );
+		final ValuePair< T, U > reference = new ValuePair<>( seedLabel, fillLabel );
 
 		final RandomAccessible< Pair< T, U > > paired = Views.pair( source, target );
 
