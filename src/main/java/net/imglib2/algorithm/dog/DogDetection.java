@@ -86,7 +86,7 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 			final double minPeakValue,
 			final boolean normalizeMinPeakValue )
 	{
-		this( Views.extendMirrorSingle( input ), input, calibration, sigmaSmaller, sigmaLarger, extremaType, minPeakValue, true );
+		this( Views.extendMirrorSingle( input ), input, calibration, sigmaSmaller, sigmaLarger, extremaType, minPeakValue, normalizeMinPeakValue );
 	}
 
 	/**
