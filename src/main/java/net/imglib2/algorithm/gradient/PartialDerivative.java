@@ -54,6 +54,8 @@ import net.imglib2.view.Views;
 /**
  * @author Tobias Pietzsch
  * @author Philipp Hanslovsky
+ * @author Tim-Oliver Buchholz
+ * @author Matthias Arzt
  *
  */
 public class PartialDerivative
