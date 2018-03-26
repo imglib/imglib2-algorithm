@@ -33,17 +33,20 @@
  */
 package net.imglib2.algorithm.neighborhood;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.AbstractInterval;
 import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
 import net.imglib2.FlatIterationOrder;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 
 /**
@@ -199,6 +202,15 @@ public class PairOfPointsShape implements Shape
 		{
 			return source.numDimensions();
 		}
+	}
+
+	@Override
+	public Interval getStructuringElementBoundingBox(final int numDimensions) {
+		final long[] zeroMin = new long[numDimensions];
+		Arrays.fill(zeroMin, 0);
+
+		return Intervals.union(new FinalInterval(zeroMin, zeroMin),
+			new FinalInterval(offset, offset));
 	}
 
 }
