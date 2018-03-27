@@ -91,7 +91,7 @@ public class RansacEllipsoid {
 	
 	public static <T extends Comparable<T>>  ArrayList<Pair<Ellipsoid, List<Pair<RealLocalizable, T>>>> Allsamples(
 			final List<Pair<RealLocalizable, T>> points, final double outsideCutoffDistance,
-			final double insideCutoffDistance, double minpercent, final NumericalSolvers numsol, int maxiter, final int ndims) {
+			final double insideCutoffDistance, double minpercent, int minperimeter, int maxperimeter, final NumericalSolvers numsol, int maxiter, final int ndims) {
 
 		boolean fitted;
 
@@ -113,6 +113,16 @@ public class RansacEllipsoid {
 						remainingPoints.size(), outsideCutoffDistance, insideCutoffDistance, numsol, ndims);
 				if (f!=null) {
 				List<double[]> pointlist = GetEllipsepoints(f.getA());
+				double[] radii = f.getA().getRadii();
+				double perimeter = 0;
+				for (int i = 0; i < radii.length; ++i) {
+					
+					if (radii[i]!=Double.NaN)
+						perimeter+=radii[i];
+					
+				}
+				perimeter*=3;
+				
 				double size = pointlist.size();
 				double count = 0;
 				for (int index = 0; index < pointlist.size(); ++index) {
@@ -141,7 +151,7 @@ public class RansacEllipsoid {
 				}
 				double percent = (size - count) / size;
 				
-				if (percent < minpercent) {
+				if (percent < minpercent || perimeter <= minperimeter || perimeter >= maxperimeter ) {
 					
 					System.out.println("Wrong Ellipse detected, removing" );
 
