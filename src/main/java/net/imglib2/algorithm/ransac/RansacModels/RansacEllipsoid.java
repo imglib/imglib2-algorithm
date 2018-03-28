@@ -55,11 +55,14 @@ public class RansacEllipsoid {
 	 
 	 for (int index = 0; index < N; ++index) {
 	
-	 
+	 if ((bounds.x + xCord[index])!= 0 && (bounds.y + yCord[index])!=0 )
 	 pointlist.add(new double[] {bounds.x + xCord[index], bounds.y + yCord[index]});
 	 
 	 }
+	 if (pointlist.size() > 0)
 		return pointlist;
+	 else
+		 return null;
 	}
 	
 	
@@ -125,6 +128,7 @@ public class RansacEllipsoid {
 				
 				double size = pointlist.size();
 				double count = 0;
+				if (size!= 0) {
 				for (int index = 0; index < pointlist.size(); ++index) {
 					
 					double distance = GetnearestPoint(remainingPoints, pointlist.get(index));
@@ -133,10 +137,11 @@ public class RansacEllipsoid {
 						count++;
 				}
 				
+				int minpoints = 9;
 				
 				
 				
-				if ( f.getB().size() > 9) {
+				if ( f.getB().size() > minpoints) {
 
 					fitted = true;
 
@@ -163,9 +168,11 @@ public class RansacEllipsoid {
 					
 					
 				}
-				}
+				
 				else
 					break;
+				}
+				}
 			} else {
 
 				fitted = true;
@@ -177,9 +184,9 @@ public class RansacEllipsoid {
             
 			
 		}
-
+		
 		while (fitted);
-
+		
 		return segments;
 
 	}
@@ -187,7 +194,9 @@ public class RansacEllipsoid {
 	public static <T extends Comparable<T>>  Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> sample(
 			final List<Pair<RealLocalizable, T>> points, final int numSamples, final double outsideCutoffDistance,
 			final double insideCutoffDistance, final NumericalSolvers numsol, final int ndims) {
-		final int numPointsPerSample = 9;
+		   int numPointsPerSample = 9;
+		  
+		  
 
 		final Random rand = new Random(System.currentTimeMillis());
 		final ArrayList<Integer> indices = new ArrayList<Integer>();
@@ -263,7 +272,11 @@ public class RansacEllipsoid {
 			inliers.get(i).getA().localize(coordinates[i]);
 
 		System.out.println("Fitting on Co-ordinates " + coordinates.length);
+		
 		Ellipsoid ellipsoid = FitEllipsoid.yuryPetrov(coordinates, ndims);
+		
+		System.out.println("Yury Success ");
+		
 		Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> Allellipsoids = null;
 		if (ellipsoid != null)
 			Allellipsoids = new ValuePair<Ellipsoid, List<Pair<RealLocalizable, T>>>(ellipsoid, inliers);
