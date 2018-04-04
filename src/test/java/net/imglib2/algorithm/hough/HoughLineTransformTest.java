@@ -35,14 +35,13 @@
 package net.imglib2.algorithm.hough;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-
-import org.junit.Before;
-import org.junit.Test;
 
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
@@ -50,7 +49,9 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.util.Util;
+
+import org.junit.Before;
+import org.junit.Test;
 
 public class HoughLineTransformTest
 {
@@ -71,7 +72,8 @@ public class HoughLineTransformTest
 		{
 			for ( int j = 14; j < 35; ++j )
 			{
-				randomAccess.setPosition( new int[] { i, j } );
+				randomAccess.setPosition( i, 0 );
+				randomAccess.setPosition( j, 1 );
 				randomAccess.get().set( 255 );
 			}
 		}
@@ -82,24 +84,31 @@ public class HoughLineTransformTest
 	{
 		final HoughLineTransform line = HoughLineTransform.integerHoughLine( tpImg );
 
-		if ( line.process() )
+		boolean success = line.process();
+		assertTrue( success );
+		final Img< T > result = line.getResult();
+		final long[] dims = new long[ result.numDimensions() ];
+		result.dimensions( dims );
+		final RandomAccess< T > ra = result.randomAccess();
+
+		int height = groundTruth.getHeight();
+		int width = groundTruth.getWidth();
+		assertEquals( "Ground truth and result height do not match.", height, dims[ 1 ] );
+		assertEquals( "Ground truth and result width do not match.", width, dims[ 0 ] );
+
+		DataBufferByte db = ( DataBufferByte ) groundTruth.getData().getDataBuffer();
+		byte[] expected = db.getBankData()[ 0 ];
+
+		int index = 0;
+		for ( int j = 0; j < height; ++j )
 		{
-			final Img< T > result = line.getResult();
-			final long[] dims = new long[ result.numDimensions() ];
-			result.dimensions( dims );
-			final RandomAccess< T > ra = result.randomAccess();
-
-			assertEquals( "Ground truth and result height do not match.", groundTruth.getHeight(), dims[ 1 ] );
-			assertEquals( "Ground truth and result width do not match.", groundTruth.getWidth(), dims[ 0 ] );
-
-			for ( long i = 0; i < groundTruth.getWidth(); ++i )
+			ra.setPosition( j, 1 );
+			for ( int i = 0; i < width; ++i )
 			{
-				for ( long j = 0; j < groundTruth.getHeight(); ++j )
-				{
-					ra.setPosition( new long[] { i, j } );
+				ra.setPosition( i, 0 );
 
-					assertEquals( "Ground truth and result pixel do not match at " + Util.printCoordinates( ra ) + ".", groundTruth.getData().getSample( ( int ) i, ( int ) j, 0 ), ra.get().getRealDouble(), 0 );
-				}
+				assertEquals( expected[ index++ ], ra.get().getRealDouble(), 0 );
+
 			}
 		}
 	}
