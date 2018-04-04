@@ -53,6 +53,12 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Tests {@link HoughLineTransform}.
+ *
+ * @author Yili Zhao
+ * @author Gabe Selzer
+ */
 public class HoughLineTransformTest
 {
 
