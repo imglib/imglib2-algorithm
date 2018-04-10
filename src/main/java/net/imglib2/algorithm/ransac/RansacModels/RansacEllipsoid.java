@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import ij.IJ;
 import ij.gui.EllipseRoi;
 import ij.gui.Roi;
 import net.imglib2.RealLocalizable;
@@ -176,12 +177,13 @@ public class RansacEllipsoid {
 			} else {
 
 				fitted = true;
-				break;
-
+                break;
 			}
-            if (iter >= maxiter)
-	            break;
-            
+            if (iter >= maxiter) {
+	            fitted = true;
+	            break;   
+            }
+        
 			
 		}
 		
@@ -271,11 +273,9 @@ public class RansacEllipsoid {
 		for (int i = 0; i < inliers.size(); ++i)
 			inliers.get(i).getA().localize(coordinates[i]);
 
-		System.out.println("Fitting on Co-ordinates " + coordinates.length);
 		
 		Ellipsoid ellipsoid = FitEllipsoid.yuryPetrov(coordinates, ndims);
 		
-		System.out.println("Yury Success ");
 		
 		Pair<Ellipsoid, List<Pair<RealLocalizable, T>>> Allellipsoids = null;
 		if (ellipsoid != null)

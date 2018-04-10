@@ -84,7 +84,8 @@ public class Tangent2D {
 
 		final double midxA = sourcepoint[0];
 
-		final double length = 20;
+		final double length = 10;
+		final double drawlength = 20;
 		double startxA = midxA - length / (Math.sqrt(1 + slopeA * slopeA));
 		double endxA = midxA + length / (Math.sqrt(1 + slopeA * slopeA));
 
@@ -102,17 +103,51 @@ public class Tangent2D {
 		final double[] candidatepointstartB = new double[] {startxB, startyB};
 		
 	
+		final double[] vectorstartA = new double[] {startxA - meanA[0], startyA - meanA[1]};
+		final double[] vectorstartB = new double[] {startxA - meanA[0], startyA - meanA[1]};
 		
 		final double[] candidatepointendA = new double[] {endxA, endyA};
 		final double[] candidatepointendB = new double[] {endxB, endyB};
 		
 	
+		 double[] realstartpoint = new double[candidatepointstartA.length];
+	     double[] realendpoint = new double[candidatepointstartA.length];
+		if(!ellipseroiA.contains((int)startxA, (int)startyA) && !ellipseroiB.contains((int)startxA, (int)startyA) ) {
+			startxA = midxA - drawlength / (Math.sqrt(1 + slopeA * slopeA));
+			startyA = slopeA * startxA + interceptA;
+			
+			realstartpoint = new double[] {  startxA, startyA  };
+			
+		}
+		else {
+			
+			
+			endxA = midxA + drawlength / (Math.sqrt(1 + slopeA * slopeA));
+			endyA = slopeA * endxA + interceptA;
+			
+			
+			realstartpoint = new double[] {endxA, endyA};
+			
+			
+			
 		
+		}
+		if(!ellipseroiA.contains((int)endxB, (int)endyB) && !ellipseroiB.contains((int)endxB, (int)endyB)) {
+			endxB = midxA + drawlength / (Math.sqrt(1 + slopeB * slopeB));
+			endyB = slopeB * endxB + interceptB;
+			
+			realendpoint = new double[] {endxB, endyB};
+			
+		}
+		else {
+			startxB = midxA - drawlength / (Math.sqrt(1 + slopeB * slopeB));
+			startyB = slopeB * startxB + interceptB;
+			
+			
+			realendpoint = new double[] {startxB, startyB};
 		
-		final double[] realstartpoint = (ellipseroiA.contains((int)candidatepointstartA[0],(int) candidatepointstartA[1]) || ellipseroiB.contains((int)candidatepointstartA[0],(int) candidatepointstartA[1]))?
-				candidatepointendA:candidatepointstartA; 
-		final double[] realendpoint = (ellipseroiA.contains((int)candidatepointstartB[0],(int) candidatepointstartB[1]) || ellipseroiB.contains((int)candidatepointstartB[0],(int) candidatepointstartB[1]))?
-				candidatepointendB:candidatepointstartB; 
+		}
+		
 
 		
 		final double[] vA = new double[] { realstartpoint[0] - sourcepoint[0], realstartpoint[1] - sourcepoint[1]};
@@ -128,7 +163,6 @@ public class Tangent2D {
 		
 		double angle = Math.acos(argument);
 		double angledeg = Math.toDegrees(angle)%360;
-		System.out.println(angledeg);
 		Line lineA = new Line(sourcepoint[0], sourcepoint[1], realendpoint[0], realendpoint[1]) ;
 		Line lineB = new Line(sourcepoint[0], sourcepoint[1], realstartpoint[0], realstartpoint[1]) ;
 		
@@ -146,6 +180,17 @@ public class Tangent2D {
 
 	}
 	
+	private static double Distance(double[] minCorner, double[] maxCorner) {
+		double distance = 0;
+
+		for (int d = 0; d < minCorner.length; ++d) {
+
+			distance += Math.pow((minCorner[d] - maxCorner[d]), 2);
+
+		}
+		return distance;
+	}
+
 	public static double Distance(final double[] minCorner, final int[] maxCorner) {
 
 		double distance = 0;
