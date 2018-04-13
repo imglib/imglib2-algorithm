@@ -224,6 +224,7 @@ public class RansacEllipsoid {
 
 				final Ellipsoid ellipsoid = FitEllipsoid.yuryPetrov(coordinates, ndims);
 				if (ellipsoid != null) {
+					bestEllipsoid = ellipsoid;
 					final double cost = costFunction.compute(ellipsoid, points, numsol);
 					if (cost < bestCost) {
 						bestCost = cost;

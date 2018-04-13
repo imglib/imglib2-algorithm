@@ -84,7 +84,7 @@ public class Tangent2D {
 
 		final double midxA = sourcepoint[0];
 
-		final double length = 10;
+		final double length = 15;
 		final double drawlength = 20;
 		double startxA = midxA - length / (Math.sqrt(1 + slopeA * slopeA));
 		double endxA = midxA + length / (Math.sqrt(1 + slopeA * slopeA));
