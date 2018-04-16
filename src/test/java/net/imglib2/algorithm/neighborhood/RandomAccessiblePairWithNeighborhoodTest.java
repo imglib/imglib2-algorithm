@@ -33,43 +33,46 @@
  */
 package net.imglib2.algorithm.neighborhood;
 
-import static org.junit.Assert.assertTrue;
-
-import net.imglib2.FinalInterval;
-import net.imglib2.Interval;
-import net.imglib2.algorithm.neighborhood.DiamondShape;
-import net.imglib2.algorithm.neighborhood.Shape;
-import net.imglib2.util.Intervals;
+import net.imglib2.Cursor;
+import net.imglib2.FinalDimensions;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.numeric.integer.ByteType;
+import net.imglib2.util.Pair;
+import net.imglib2.view.Views;
 
 import org.junit.Test;
 
-public class DiamondShapeTest extends AbstractShapeTest
+public class RandomAccessiblePairWithNeighborhoodTest
 {
 
-	private static final long RADIUS = 3;
-
-	@Override
-	protected Shape createShape()
-	{
-		return new DiamondShape( RADIUS );
-	}
-
-	@Override
-	protected boolean isInside( final long[] pos, final long[] center )
-	{
-		long cityblock = 0;
-		for ( int d = 0; d < pos.length; d++ )
-		{
-			cityblock += Math.abs( center[ d ] - pos[ d ] );
-		}
-		return cityblock <= RADIUS;
-	}
-
 	@Test
-	public void testStructuringElementBoundingBox() {
-		Interval boundingBox = shape.getStructuringElementBoundingBox(img
-			.numDimensions());
-		assertTrue(Intervals.equals(boundingBox, new FinalInterval(new long[] { -3,
-			-3, -3 }, new long[] { 3, 3, 3 })));
+	public void testRandomAccessOnPair()
+	{
+		// Extend input with Views.extend()
+		Img< ByteType > in = new ArrayImgFactory< ByteType >().create( new FinalDimensions( 3, 3 ), new ByteType() );
+		RandomAccessibleInterval< ByteType > extendedIn = Views.interval( Views.extendBorder( in ), in );
+
+		// Create RandomAccessiblePair
+		final RandomAccessible< Neighborhood< ByteType > > safe = new RectangleShape( //
+				1,
+				false ).neighborhoodsRandomAccessibleSafe( extendedIn );
+		RandomAccessible< Pair< Neighborhood< ByteType >, ByteType > > pair = Views.pair( safe, extendedIn );
+
+		// Set position out of bounds
+		RandomAccess< Pair< Neighborhood< ByteType >, ByteType > > randomAccess = pair.randomAccess();
+		randomAccess.setPosition( new int[] { 0, 0 } );
+
+		// Get value from Neighborhood via RandomAccessiblePair
+		Pair< Neighborhood< ByteType >, ByteType > pair2 = randomAccess.get();
+		Neighborhood< ByteType > neighborhood = pair2.getA();
+		Cursor< ByteType > cursor = neighborhood.cursor();
+
+		// Tries to access (-1, -1) of the source
+		cursor.next().getRealDouble();
 	}
+
 }

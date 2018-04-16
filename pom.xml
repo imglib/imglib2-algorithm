@@ -5,12 +5,14 @@
 	<parent>
 		<groupId>net.imglib2</groupId>
 		<artifactId>pom-imglib2</artifactId>
-		<version>9.0.0</version>
+		<version>10.0.2</version>
 		<relativePath />
 	</parent>
 
 	<artifactId>imglib2-algorithm</artifactId>
-	<version>0.8.4</version>
+
+	<version>0.8.3-SNAPSHOT</version>
+
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>
@@ -196,6 +198,9 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 
 		<imglib2-realtransform.version>2.0.0-beta-38</imglib2-realtransform.version>
 		<jitk-tps.version>3.0.0</jitk-tps.version>
+
+		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
+		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 	</properties>
 
 	<repositories>
@@ -235,7 +240,6 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>net.sf.trove4j</groupId>
 			<artifactId>trove4j</artifactId>
-			<version>3.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ojalgo</groupId>
