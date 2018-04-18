@@ -35,8 +35,8 @@
 package net.imglib2.algorithm.fill;
 
 /**
- * Interface for comparing {@link T} t and {@link U} u and accepting
- * them as equivalent in a sense specified by implementation thereof.
+ * Interface for comparing {@link T} t and {@link U} u and accepting them as
+ * equivalent in a sense specified by implementation thereof.
  *
  * @author Philipp Hanslovsky
  * @author Stephan Saalfeld
@@ -44,6 +44,7 @@ package net.imglib2.algorithm.fill;
  * @param <T>
  * @param <U>
  */
+@Deprecated
 public interface Filter< T, U >
 {
 	boolean accept( T t, U u );
