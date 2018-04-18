@@ -97,8 +97,6 @@ public class ParallelizeOverBlocks
 	 * @param numTasks
 	 * @return List of futures of the submitted tasks. Each future contains a
 	 *         list of results.
-	 * @throws InterruptedException
-	 * @throws ExecutionException
 	 */
 	public static < T > List< Future< List< T > > > parallelize(
 			final Function< Interval, T > func,
@@ -157,8 +155,6 @@ public class ParallelizeOverBlocks
 	 * @param numTasks
 	 * @return List of futures of the submitted tasks. Each future contains a
 	 *         list of results.
-	 * @throws InterruptedException
-	 * @throws ExecutionException
 	 */
 	public static < T > List< Future< List< T > > > parallelize(
 			final Function< Interval, T > func,
@@ -218,8 +214,6 @@ public class ParallelizeOverBlocks
 	 * @param numTasks
 	 * @return List of futures of the submitted tasks. Each future contains a
 	 *         list of results.
-	 * @throws InterruptedException
-	 * @throws ExecutionException
 	 */
 	public static < T > List< Future< List< T > > > parallelize(
 			final Function< Interval, T > func,

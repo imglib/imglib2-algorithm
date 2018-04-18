@@ -110,7 +110,7 @@ public class Grids
 	/**
 	 * Execute {@code runAtOffset} for each offset of a grid defined by
 	 * {@code min}, {@code max}, and {@code blockSize}. The offset object
-	 * {@link p} must be provided by the caller.
+	 * {@code p} must be provided by the caller.
 	 *
 	 * @param min
 	 * @param max
@@ -437,7 +437,6 @@ public class Grids
 		 * using {@code min = 0}.
 		 *
 		 * @param blockSize
-		 * @param interval
 		 */
 		public GetGridCoordinates( final int[] blockSize )
 		{
