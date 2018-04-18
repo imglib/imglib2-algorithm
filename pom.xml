@@ -77,6 +77,18 @@
 				<role>maintainer</role>
 			</roles>
 		</developer>
+		<developer>
+			<id>hanslovsky</id>
+			<name>Philipp Hanslovsky</name>
+			<url>http://imagej.net/User:Hanslovsky</url>
+			<roles>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
 	</developers>
 	<contributors>
 		<contributor>
@@ -102,10 +114,6 @@
 		<contributor>
 			<name>Jonathan Hale</name>
 			<properties><id>Squareys</id></properties>
-		</contributor>
-		<contributor>
-			<name>Philipp Hanslovsky</name>
-			<properties><id>hanslovsky</id></properties>
 		</contributor>
 		<contributor>
 			<name>Stefan Helfrich</name>
