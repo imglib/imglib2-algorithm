@@ -66,10 +66,10 @@ public class FloodFill
 	 * at seed location, write fillLabel into target at current location and
 	 * continue for each pixel in neighborhood defined by shape if neighborhood
 	 * pixel is in the same connected component and fillLabel has not been
-	 * written into that location yet (comparator evaluates to 0).
+	 * written into that location yet.
 	 *
 	 * Convenience call to
-	 * {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Object, Type, Shape, BiPredicate)}.
+	 * {@link #fill(RandomAccessible, RandomAccessible, Localizable, Type, Shape, BiPredicate)}.
 	 * seedLabel is extracted from source at seed location.
 	 *
 	 * @param source
@@ -110,11 +110,11 @@ public class FloodFill
 	 * at seed location, write fillLabel into target at current location and
 	 * continue for each pixel in neighborhood defined by shape if neighborhood
 	 * pixel is in the same connected component and fillLabel has not been
-	 * written into that location yet (comparator evaluates to 0).
+	 * written into that location yet.
 	 *
 	 * Convenience call to
-	 * {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Object, Object, Shape, BiPredicate, Consumer)}
-	 * with {@link TypeWriter} as writer.
+	 * {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Shape, BiPredicate, Consumer)}
+	 * with {@link Type#set} as writer.
 	 *
 	 * @param source
 	 *            input
@@ -156,7 +156,7 @@ public class FloodFill
 	 * at seed location, write fillLabel into target at current location and
 	 * continue for each pixel in neighborhood defined by shape if neighborhood
 	 * pixel is in the same connected component and fillLabel has not been
-	 * written into that location yet (comparator evaluates to 0).
+	 * written into that location yet.
 	 *
 	 * @param source
 	 *            input
