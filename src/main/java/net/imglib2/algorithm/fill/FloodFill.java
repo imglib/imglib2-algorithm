@@ -87,9 +87,9 @@ public class FloodFill
 	 *            components, e.g.
 	 *            {@link net.imglib2.algorithm.neighborhood.DiamondShape}
 	 * @param <T>
-	 *            T implements {@code Type<U>}.
+	 *            input pixel type
 	 * @param <U>
-	 *            U implements {@code Type<U>}.
+	 *            fill label type
 	 */
 	public static < T extends Type< T >, U extends Type< U > > void fill(
 			final RandomAccessible< T > source,
@@ -135,9 +135,9 @@ public class FloodFill
 	 *            written into. Returns false if target pixel has been visited
 	 *            or source pixel is not part of the same connected component.
 	 * @param <T>
-	 *            No restrictions on {@link T}.
+	 *            input pixel type
 	 * @param <U>
-	 *            {@link U} implements {@code Type<U>}.
+	 *            fill label type
 	 */
 	public static < T, U extends Type< U > > void fill(
 			final RandomAccessible< T > source,
@@ -177,11 +177,9 @@ public class FloodFill
 	 *            Defines how fill label is written into target at current
 	 *            location.
 	 * @param <T>
-	 *            No restrictions on T. Appropriate filter is the only
-	 *            requirement.
+	 *            input pixel type
 	 * @param <U>
-	 *            No restrictions on U. Appropriate filter and writer is the
-	 *            only requirement.
+	 *            fill label type
 	 */
 	public static < T, U > void fill(
 			final RandomAccessible< T > source,
@@ -265,9 +263,9 @@ public class FloodFill
 	 *            written into. Returns false if target pixel has been visited
 	 *            or source pixel is not part of the same connected component.
 	 * @param <T>
-	 *            T implements {@code Type<U>}.
+	 *            input pixel type
 	 * @param <U>
-	 *            U implements {@code Type<U>}.
+	 *            fill label type
 	 */
 	@Deprecated
 	public static < T extends Type< T >, U extends Type< U > > void fill( final RandomAccessible< T > source, final RandomAccessible< U > target, final Localizable seed, final U fillLabel, final Shape shape, final Filter< Pair< T, U >, Pair< T, U > > filter )
@@ -305,9 +303,9 @@ public class FloodFill
 	 *            written into. Returns false if target pixel has been visited
 	 *            or source pixel is not part of the same connected component.
 	 * @param <T>
-	 *            No restrictions on {@link T}.
+	 *            input pixel type
 	 * @param <U>
-	 *            {@link U} implements {@code Type<U>}.
+	 *            fill label type
 	 */
 	@Deprecated
 	public static < T, U extends Type< U > > void fill( final RandomAccessible< T > source, final RandomAccessible< U > target, final Localizable seed, final T seedLabel, final U fillLabel, final Shape shape, final Filter< Pair< T, U >, Pair< T, U > > filter )
@@ -347,11 +345,9 @@ public class FloodFill
 	 *            Defines how fillLabel is written into target at current
 	 *            location.
 	 * @param <T>
-	 *            No restrictions on T. Appropriate comparator is the only
-	 *            requirement.
+	 *            input pixel type
 	 * @param <U>
-	 *            No restrictions on U. Appropriate comparator and writer is the
-	 *            only requirement.
+	 *            fill label type
 	 */
 	@Deprecated
 	public static < T, U > void fill( final RandomAccessible< T > source, final RandomAccessible< U > target, final Localizable seed, final T seedLabel, final U fillLabel, final Shape shape, final Filter< Pair< T, U >, Pair< T, U > > filter, final Writer< U > writer )
