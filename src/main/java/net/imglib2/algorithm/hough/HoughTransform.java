@@ -212,7 +212,7 @@ public abstract class HoughTransform< S extends RealType< S > & NativeType< S >,
 			{
 				dims[ i ] = p.getLongPosition( i );
 			}
-			peaks.add( dims );
+			peaks.add( Arrays.copyOf( dims, dims.length ) );
 		}
 
 		return true;
