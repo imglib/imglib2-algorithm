@@ -298,7 +298,6 @@ public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T ex
 		getImage().dimensions( dims );
 		final double minRho = -computeLength( dims );
 
-		final long sTime = System.currentTimeMillis();
 		boolean success;
 
 		for ( int t = 0; t < nTheta; ++t )
@@ -335,7 +334,6 @@ public class HoughLineTransform< S extends RealType< S > & NativeType< S >, T ex
 		}
 		// pick peaks
 		success = super.pickPeaks();
-		super.pTime = System.currentTimeMillis() - sTime;
 		return success;
 	}
 

@@ -40,7 +40,6 @@ import java.util.List;
 
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
-import net.imglib2.algorithm.Benchmark;
 import net.imglib2.algorithm.OutputAlgorithm;
 import net.imglib2.algorithm.localextrema.LocalExtrema;
 import net.imglib2.algorithm.localextrema.LocalExtrema.MaximumCheck;
@@ -64,10 +63,8 @@ import net.imglib2.type.numeric.RealType;
  * @author Yili Zhao
  * @author Gabe Selzer
  */
-public abstract class HoughTransform< S extends RealType< S > & NativeType< S >, T extends Type< T > & Comparable< T > > implements OutputAlgorithm< Img< S > >, Benchmark
+public abstract class HoughTransform< S extends RealType< S > & NativeType< S >, T extends Type< T > & Comparable< T > > implements OutputAlgorithm< Img< S > >
 {
-
-	protected long pTime;
 
 	private String errorMsg;
 
@@ -117,7 +114,6 @@ public abstract class HoughTransform< S extends RealType< S > & NativeType< S >,
 	{
 		image = inputImage;
 		voteCursor = null;
-		pTime = 0;
 		voteSpace = voteFactory.create( voteSize, type );
 		peaks = null;
 		peakExclusion = new double[ voteSize.length ];
@@ -228,12 +224,6 @@ public abstract class HoughTransform< S extends RealType< S > & NativeType< S >,
 	public String getErrorMessage()
 	{
 		return errorMsg;
-	}
-
-	@Override
-	public long getProcessingTime()
-	{
-		return pTime;
 	}
 
 	public Img< T > getImage()
