@@ -201,9 +201,9 @@ public abstract class HoughTransform< S extends RealType< S > & NativeType< S >,
 		maxValue.setReal( maxValue.getRealDouble() );
 		final MaximumCheck< S > maxCheck = new MaximumCheck< S >( maxValue );
 
-		List< Point > peaksList = LocalExtrema.findLocalExtrema( voteSpace, maxCheck);
-		peaks = new ArrayList();
-
+		List< Point > peaksList = LocalExtrema.findLocalExtrema( voteSpace, maxCheck );
+		peaks = new ArrayList<>();
+		
 		long[] dims = new long[ image.numDimensions() ];
 
 		for ( Point p : peaksList )
