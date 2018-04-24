@@ -39,22 +39,22 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.junit.Test;
+
 import net.imglib2.Cursor;
 import net.imglib2.algorithm.labeling.AllConnectedComponents;
 import net.imglib2.algorithm.labeling.Watershed;
 import net.imglib2.img.NativeImg;
 import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.IntAccess;
 import net.imglib2.labeling.LabelingType;
 import net.imglib2.labeling.NativeImgLabeling;
 import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.util.Fraction;
-
-import org.junit.Test;
 
 /**
  * TODO
- * 
+ *
  * @author Lee Kamentsky
  */
 public class WatershedTest
@@ -64,9 +64,9 @@ public class WatershedTest
 		final long[] imageDimensions = new long[] { image.length, image[ 0 ].length };
 		final long[] seedDimensions = new long[] { seeds.length, seeds[ 0 ].length };
 		final long[] outputDimensions = new long[] { expected.length, expected[ 0 ].length };
-		final NativeImgLabeling< Integer, IntType > seedLabeling = new NativeImgLabeling< Integer, IntType >( new ArrayImgFactory< IntType >().create( seedDimensions, new IntType() ) );
-		final NativeImgLabeling< Integer, IntType > outputLabeling = new NativeImgLabeling< Integer, IntType >( new ArrayImgFactory< IntType >().create( outputDimensions, new IntType() ) );
-		final NativeImg< IntType, ? extends IntAccess > imageImage = new ArrayImgFactory< IntType >().createIntInstance( imageDimensions, new Fraction() );
+		final NativeImgLabeling< Integer, IntType > seedLabeling = new NativeImgLabeling< >( new ArrayImgFactory< IntType >().create( seedDimensions, new IntType() ) );
+		final NativeImgLabeling< Integer, IntType > outputLabeling = new NativeImgLabeling< >( new ArrayImgFactory< IntType >().create( outputDimensions, new IntType() ) );
+		final NativeImg< IntType, ? extends IntAccess > imageImage = ArrayImgs.ints( imageDimensions );
 		imageImage.setLinkedType( new IntType( imageImage ) );
 		/*
 		 * Fill the image.
