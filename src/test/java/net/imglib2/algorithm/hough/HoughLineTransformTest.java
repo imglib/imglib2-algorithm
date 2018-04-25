@@ -40,15 +40,18 @@ import static org.junit.Assert.assertTrue;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.util.Util;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -88,23 +91,27 @@ public class HoughLineTransformTest
 	@Test
 	public < T extends RealType< T > & NativeType< T > > void testHoughLineTransformToTarget() throws IOException
 	{
-		final HoughLineTransform line = HoughLineTransform.integerHoughLine( tpImg );
+		//create votespace
+		final long[] dims = new long[ tpImg.numDimensions() ];
+		tpImg.dimensions( dims );
+		final long[] outputDims = HoughTransforms.getVotespaceSize( tpImg );
+		final Img< UnsignedByteType > votespace = new ArrayImgFactory().create( outputDims, tpImg.firstElement() );
 
-		boolean success = line.process();
-		assertTrue( success );
-		final Img< T > result = line.getResult();
-		final long[] dims = new long[ result.numDimensions() ];
-		result.dimensions( dims );
-		final RandomAccess< T > ra = result.randomAccess();
+		//run transform
+		HoughTransforms.voteLines( tpImg, votespace );
 
+		//compare expected / actual dimensions
 		int height = groundTruth.getHeight();
 		int width = groundTruth.getWidth();
-		assertEquals( "Ground truth and result height do not match.", height, dims[ 1 ] );
-		assertEquals( "Ground truth and result width do not match.", width, dims[ 0 ] );
+		assertEquals( "Ground truth and result height do not match.", height, outputDims[ 1 ] );
+		assertEquals( "Ground truth and result width do not match.", width, outputDims[ 0 ] );
 
 		DataBufferByte db = ( DataBufferByte ) groundTruth.getData().getDataBuffer();
 		byte[] expected = db.getBankData()[ 0 ];
+		
+		final RandomAccess< UnsignedByteType > ra = votespace.randomAccess();
 
+		//compare expected / actual results for regression.
 		int index = 0;
 		for ( int j = 0; j < height; ++j )
 		{
