@@ -186,8 +186,42 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	}
 
 	/**
+	 * 
 	 * Runs a Hough Line Tranform on an image and populates the vote space
 	 * parameter with the results.
+	 * <p>
+	 * Vote space here has two dimensions: {@code rho} and {@code theta}.
+	 * {@code theta} is measured in radians {@code [-pi/2 pi/2)}, {@code rho} is
+	 * measured in {@code [-rhoMax, rhoMax)}.
+	 * </p>
+	 * <p>
+	 * Lines are modeled as
+	 * </p>
+	 * 
+	 * <pre>
+	 * l(t) = | x | = rho * |  cos(theta) | + t * | sin(theta) |
+	 *        | y |         | -sin(theta) |       | cos(theta) |
+	 * </pre>
+	 * <p>
+	 * In other words, {@code rho} represents the signed minimum distance from
+	 * the image origin to the line, and {@code theta} indicates the angle
+	 * between the row-axis and the minimum offset vector.
+	 * </p>
+	 * <p>
+	 * For a given point, then, votes are placed along the curve
+	 * </p>
+	 * 
+	 * <pre>
+	 * rho = y * sin( theta ) + x * cos( theta )
+	 * </pre>
+	 * <p>
+	 * It is important to note that the interval of the first dimension of the
+	 * vote space image is NOT {@code [-maxRho, maxRho)} but instead
+	 * {@code [0, maxRho * 2)}. Thus if {@link HoughTransforms#pickPeaks} is not
+	 * used to retrieve the maxima from the vote space, the vote space will have
+	 * to be translated by {@code -maxRho} in dimension 0 to get the correct
+	 * {@code rho} and {@code theta} values from the vote space.
+	 * </p>
 	 * 
 	 * @param input
 	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
