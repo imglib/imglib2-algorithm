@@ -35,20 +35,19 @@
 package net.imglib2.algorithm.hough;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Util;
@@ -125,4 +124,34 @@ public class HoughLineTransformTest
 			}
 		}
 	}
+
+	@Test
+	public < T extends RealType< T > > void testPickPeaks()
+	{
+		// three expected peaks
+		final long[] expected = { 24, 89, 24, 90, 25, 91 };
+		int index = 0;
+
+		// create votespace
+		final long[] dims = new long[ tpImg.numDimensions() ];
+		tpImg.dimensions( dims );
+		final long[] outputDims = HoughTransforms.getVotespaceSize( tpImg );
+		final Img< UnsignedByteType > votespace = new ArrayImgFactory().create( outputDims, tpImg.firstElement() );
+
+		// run transform
+		HoughTransforms.voteLines( tpImg, votespace );
+
+		final UnsignedByteType minPeak = Util.getTypeFromInterval( votespace ).createVariable();
+		minPeak.setReal( 21 );
+
+		List< Point > peaks = HoughTransforms.pickPeaks( votespace, minPeak );
+		for ( Point p : peaks )
+		{
+			// assert dimension 0
+			assertEquals( expected[ index++ ], p.getLongPosition( 0 ), 0 );
+			// assert dimension 1
+			assertEquals( expected[ index++ ], p.getLongPosition( 1 ), 0 );
+		}
+	}
+
 }
