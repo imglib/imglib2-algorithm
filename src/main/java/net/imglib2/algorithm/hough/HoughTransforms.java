@@ -261,4 +261,46 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 			}
 		}
 	}
+
+	/**
+	 * Method used to convert the {rho, theta} output of the
+	 * {@link HoughTransforms#voteLines} algorithm into a more useful
+	 * y-intercept value. Used with {@link HoughTransforms#getSlope} to create
+	 * line equations.
+	 * 
+	 * @param rho
+	 *            - the {@code rho} of the line
+	 * @param theta
+	 *            - the {@code theta} of the line
+	 * @return {@code double} - the y-intercept of the line
+	 */
+	public static double getIntercept( final long rho, final long theta )
+	{
+		double radians = ( Math.PI * theta ) / 180;
+		return ( rho / Math.sin( radians ) );
+	}
+
+	/**
+	 * Method used to convert the {rho, theta} output of the
+	 * {@link HoughTransforms#voteLines} algorithm into a more useful slope
+	 * value. Used with {@link HoughTransforms#getIntercept} to create line
+	 * equations.
+	 * 
+	 * @param theta
+	 *            - the {@code theta} of the line
+	 * @return {@code double} - the y-intercept of the line
+	 */
+	public static double getSlope( final long theta )
+	{
+		double radians = ( Math.PI * theta ) / 180;
+
+		double n = -Math.cos( radians );
+		double d = Math.sin( radians );
+
+		// to avoid a divide by zero error return an infinite slope if the
+		// denominator is zero.
+		if ( d == 0 )
+			return n > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+		return ( n / d );
+	}
 }

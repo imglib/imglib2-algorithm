@@ -154,4 +154,17 @@ public class HoughLineTransformTest
 		}
 	}
 
+	@Test
+	public void testEquationConversion()
+	{
+		final int rho = 2, theta = 45;
+		final double slope = HoughTransforms.getSlope( theta );
+		final double yint = HoughTransforms.getIntercept( rho, theta );
+
+		assertEquals( -1.0000000000000002, slope, 0 );
+		assertEquals( 2.8284271247461903, yint, 0 );
+
+		// make sure undefined slope does not throw an error.
+		assertEquals( HoughTransforms.getSlope( 0 ), Double.NEGATIVE_INFINITY, 0 );
+	}
 }
