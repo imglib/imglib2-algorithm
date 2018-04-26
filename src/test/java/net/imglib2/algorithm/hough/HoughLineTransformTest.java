@@ -56,7 +56,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests {@link HoughLineTransform}.
+ * Tests {@link HoughTransforms#voteLines}, {@link HoughTransforms#pickPeaks},
+ * {@link HoughTransforms#getSlope}, and {@link HoughTransforms#getIntercept}.
  *
  * @author Yili Zhao
  * @author Gabe Selzer
@@ -88,18 +89,18 @@ public class HoughLineTransformTest
 	}
 
 	@Test
-	public < T extends RealType< T > & NativeType< T > > void testHoughLineTransformToTarget() throws IOException
+	public < T extends RealType< T > > void testHoughLineTransformToTarget() throws IOException
 	{
-		//create votespace
+		// create votespace
 		final long[] dims = new long[ tpImg.numDimensions() ];
 		tpImg.dimensions( dims );
 		final long[] outputDims = HoughTransforms.getVotespaceSize( tpImg );
 		final Img< UnsignedByteType > votespace = new ArrayImgFactory().create( outputDims, tpImg.firstElement() );
 
-		//run transform
+		// run transform
 		HoughTransforms.voteLines( tpImg, votespace );
 
-		//compare expected / actual dimensions
+		// compare expected / actual dimensions
 		int height = groundTruth.getHeight();
 		int width = groundTruth.getWidth();
 		assertEquals( "Ground truth and result height do not match.", height, outputDims[ 1 ] );
@@ -107,10 +108,10 @@ public class HoughLineTransformTest
 
 		DataBufferByte db = ( DataBufferByte ) groundTruth.getData().getDataBuffer();
 		byte[] expected = db.getBankData()[ 0 ];
-		
+
 		final RandomAccess< UnsignedByteType > ra = votespace.randomAccess();
 
-		//compare expected / actual results for regression.
+		// compare expected / actual results for regression.
 		int index = 0;
 		for ( int j = 0; j < height; ++j )
 		{

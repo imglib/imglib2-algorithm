@@ -210,9 +210,6 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 		final long[] dims = new long[ input.numDimensions() ];
 		input.dimensions( dims );
 
-		final Cursor< T > imageCursor = Views.iterable( input ).localizingCursor();
-		final RandomAccess< T > outputRA = votespace.randomAccess();
-
 		final double minRho = -computeLength( dims );
 		final double dRho = 2 * computeLength( dims ) / ( double ) nRho;
 
@@ -222,15 +219,20 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 		final double[] rho = new double[ nRho ];
 		final double[] theta = new double[ nTheta ];
 
+		// create theta LUT
 		for ( int t = 0; t < nTheta; ++t )
 		{
 			theta[ t ] = dTheta * t + minTheta;
 		}
 
+		// create rho LUT
 		for ( int r = 0; r < nRho; ++r )
 		{
 			rho[ r ] = dRho * r + minRho;
 		}
+
+		final Cursor< T > imageCursor = Views.iterable( input ).localizingCursor();
+		final RandomAccess< T > outputRA = votespace.randomAccess();
 
 		final long[] position = new long[ input.numDimensions() ];
 
@@ -254,6 +256,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 					r = Math.round( ( float ) ( ( fRho - minRho ) / dRho ) );
 					voteLoc[ 0 ] = r;
 					voteLoc[ 1 ] = t;
+
 					// place vote
 					outputRA.setPosition( voteLoc );
 					outputRA.get().add( one );
