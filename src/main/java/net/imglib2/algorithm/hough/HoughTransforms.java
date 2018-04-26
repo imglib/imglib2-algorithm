@@ -45,6 +45,7 @@ import net.imglib2.algorithm.localextrema.LocalExtrema.MaximumCheck;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Util;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 /**
@@ -137,7 +138,15 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	{
 		final MaximumCheck< T > maxCheck = new MaximumCheck<>( minPeak );
 
-		return LocalExtrema.findLocalExtrema( voteSpace, maxCheck );
+		// since the vote space runs [0, maxRho * 2) to allow both positive and
+		// negative rho values without having the user to reinterval their
+		// vote space, we need to translate the vote space by {@code -maxRho} in
+		// the first dimension so that we return accurate coordinates from the
+		// vote space.
+		long[] translation = { -( voteSpace.dimension( 0 ) / 2 ), 0 };
+		IntervalView< T > translatedVotes = Views.translate( voteSpace, translation );
+
+		return LocalExtrema.findLocalExtrema( translatedVotes, maxCheck );
 	}
 
 	/**
