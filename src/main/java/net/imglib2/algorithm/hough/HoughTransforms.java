@@ -133,11 +133,9 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @return {@code List<Point>} - a list of all of the local maxima of the
 	 *         {@code voteSpace}.
 	 */
-	public static < T extends RealType< T > & NativeType< T > > List< Point > pickPeaks( RandomAccessibleInterval< T > voteSpace )
+	public static < T extends RealType< T > & NativeType< T > > List< Point > pickPeaks( RandomAccessibleInterval< T > voteSpace, T minPeak )
 	{
-		T maxValue = Util.getTypeFromInterval( voteSpace ).createVariable();
-		maxValue.setReal( maxValue.getMaxValue() );
-		final MaximumCheck< T > maxCheck = new MaximumCheck<>( maxValue );
+		final MaximumCheck< T > maxCheck = new MaximumCheck<>( minPeak );
 
 		return LocalExtrema.findLocalExtrema( voteSpace, maxCheck );
 	}
