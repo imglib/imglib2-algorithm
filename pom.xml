@@ -202,6 +202,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 
 		<imglib2-realtransform.version>2.0.0-beta-39</imglib2-realtransform.version>
 		<jitk-tps.version>3.0.0</jitk-tps.version>
+		<ojalgo.version>43.0</ojalgo.version>
 	</properties>
 
 	<repositories>
@@ -239,7 +240,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>org.ojalgo</groupId>
 			<artifactId>ojalgo</artifactId>
-			<version>43.0</version>
+			<version>${ojalgo.version}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
