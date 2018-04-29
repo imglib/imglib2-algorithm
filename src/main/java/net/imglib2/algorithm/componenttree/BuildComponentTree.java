@@ -342,8 +342,8 @@ public final class BuildComponentTree< T extends Type< T >, C extends PartialCom
 		final long[] dimensions = new long[ input.numDimensions() ];
 		input.dimensions( dimensions );
 
-		final ImgFactory< BitType > imgFactory = new ArrayImgFactory< BitType >();
-		visited = imgFactory.create( dimensions, new BitType() );
+		final ImgFactory< BitType > imgFactory = new ArrayImgFactory<>( new BitType() );
+		visited = imgFactory.create( dimensions );
 		visitedRandomAccess = visited.randomAccess();
 
 		neighborhood = new Neighborhood( dimensions );

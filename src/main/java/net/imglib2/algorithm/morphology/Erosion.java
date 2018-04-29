@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Vector;
 
 import net.imglib2.Cursor;
+import net.imglib2.FinalDimensions;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
@@ -51,6 +52,7 @@ import net.imglib2.multithreading.SimpleMultiThreading;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Util;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -171,7 +173,7 @@ public class Erosion
 	 */
 	public static < T extends RealType< T >> Img< T > erode( final Img< T > source, final Shape strel, final int numThreads )
 	{
-		final Img< T > target = source.factory().create( source, source.firstElement().copy() );
+		final Img< T > target = source.factory().create( source );
 		final T maxVal = source.firstElement().createVariable();
 		maxVal.setReal( maxVal.getMaxValue() );
 		final ExtendedRandomAccessibleInterval< T, Img< T >> extended = Views.extendValue( source, maxVal );
@@ -217,7 +219,7 @@ public class Erosion
 	 */
 	public static < T extends Type< T > & Comparable< T > > Img< T > erode( final Img< T > source, final Shape strel, final T maxVal, final int numThreads )
 	{
-		final Img< T > target = source.factory().create( source, source.firstElement().copy() );
+		final Img< T > target = source.factory().create( source );
 		final ExtendedRandomAccessibleInterval< T, Img< T >> extended = Views.extendValue( source, maxVal );
 		erode( extended, target, strel, maxVal, numThreads );
 		return target;
@@ -343,8 +345,8 @@ public class Erosion
 		}
 
 		// First shape -> write to enlarged temp.
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( targetDims, maxVal );
-		Img< T > temp = factory.create( targetDims, maxVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( new FinalDimensions(targetDims), maxVal );
+		Img< T > temp = factory.create( targetDims );
 		final IntervalView< T > translated = Views.translate( temp, translation );
 		erode( source, translated, strels.get( 0 ), maxVal, numThreads );
 
@@ -723,7 +725,7 @@ public class Erosion
 		final long[] targetDims = dimensionsAndOffset[ 0 ];
 		final long[] offset = dimensionsAndOffset[ 1 ];
 
-		final Img< T > target = source.factory().create( targetDims, source.firstElement().copy() );
+		final Img< T > target = source.factory().create( targetDims );
 		final IntervalView< T > offsetTarget = Views.offset( target, offset );
 		final T maxVal = MorphologyUtils.createVariable( source, source );
 		maxVal.setReal( maxVal.getMaxValue() );
@@ -789,7 +791,7 @@ public class Erosion
 		final long[] targetDims = dimensionsAndOffset[ 0 ];
 		final long[] offset = dimensionsAndOffset[ 1 ];
 
-		final Img< T > target = source.factory().create( targetDims, source.firstElement().copy() );
+		final Img< T > target = source.factory().create( targetDims );
 		final IntervalView< T > offsetTarget = Views.offset( target, offset );
 		final ExtendedRandomAccessibleInterval< T, Img< T >> extended = Views.extendValue( source, maxVal );
 
@@ -926,8 +928,8 @@ public class Erosion
 	public static < T extends RealType< T > > void erodeInPlace( final RandomAccessible< T > source, final Interval interval, final Shape strel, final int numThreads )
 	{
 		final T maxVal = MorphologyUtils.createVariable( source, interval );
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, maxVal );
-		final Img< T > img = factory.create( interval, maxVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, maxVal );
+		final Img< T > img = factory.create( interval );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );
@@ -982,8 +984,8 @@ public class Erosion
 
 		final ExtendedRandomAccessibleInterval< T, RandomAccessibleInterval< T >> extended = Views.extendValue( source, maxVal );
 
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, maxVal );
-		final Img< T > img = factory.create( interval, maxVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, maxVal );
+		final Img< T > img = factory.create( interval );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );

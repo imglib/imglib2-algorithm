@@ -786,7 +786,7 @@ public class DistanceTransform
 	private static < T extends NativeType< T > & RealType< T > > Img< T > createAppropriateOneDimensionalImage( final long size, final T t )
 	{
 		final long[] dim = new long[] { 1, size };
-		return size > Integer.MAX_VALUE ? new CellImgFactory< T >( Integer.MAX_VALUE ).create( dim, t ) : new ArrayImgFactory< T >().create( dim, t );
+		return size > Integer.MAX_VALUE ? new CellImgFactory<>( t, Integer.MAX_VALUE ).create( dim ) : new ArrayImgFactory<>( t ).create( dim );
 	}
 
 	/**

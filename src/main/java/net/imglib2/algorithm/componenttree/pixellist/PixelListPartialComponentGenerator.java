@@ -86,7 +86,7 @@ final class PixelListPartialComponentGenerator< T extends Type< T > > implements
 		this.maxValue = maxValue;
 		dimensions = new long[ input.numDimensions() ];
 		input.dimensions( dimensions );
-		linkedList = imgFactory.create( dimensions, new LongType() );
+		linkedList = imgFactory.create( dimensions );
 	}
 
 	@Override

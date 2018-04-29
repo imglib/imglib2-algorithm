@@ -93,9 +93,10 @@ public class HessianMatrixEigenValuesTest
 		final RandomAccessibleInterval< DoubleType > hessian =
 				HessianMatrix.calculateMatrix( Views.extendBorder( gaussian ), ArrayImgs.doubles( size, size, 2 ), ArrayImgs.doubles( size, size, 3 ), new OutOfBoundsBorderFactory<>() );
 
+		ArrayImgFactory< DoubleType > imgFactory = new ArrayImgFactory<>( new DoubleType() );
 		final RandomAccessibleInterval< DoubleType > eigenvalues = TensorEigenValues.calculateEigenValuesSymmetric(
 				hessian,
-				TensorEigenValues.createAppropriateResultImg( hessian, new ArrayImgFactory<>(), new DoubleType() ) );
+				TensorEigenValues.createAppropriateResultImg( hessian, imgFactory ) );
 
 		Assert.assertEquals( img.numDimensions() + 1, eigenvalues.numDimensions() );
 		for ( int d = 0; d < img.numDimensions(); ++d )

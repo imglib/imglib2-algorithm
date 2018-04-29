@@ -344,7 +344,7 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 			else
 				service = executorService;
 
-			dogImg = Util.getArrayOrCellImgFactory( interval, type ).create( interval, type );
+			dogImg = Util.getArrayOrCellImgFactory( interval, type ).create( interval );
 			final long[] translation = new long[ interval.numDimensions() ];
 			interval.min( translation );
 			dogImg = Views.translate( dogImg, translation );

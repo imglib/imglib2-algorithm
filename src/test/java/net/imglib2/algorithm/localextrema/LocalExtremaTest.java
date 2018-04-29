@@ -242,7 +242,7 @@ public class LocalExtremaTest
 	// works for 2D only?
 	public static < T extends IntegerType< T > & NativeType< T > > RandomAccessibleInterval< T > checkerBoard( final T t, final long size )
 	{
-		final ArrayImg< T, ? > img = new ArrayImgFactory< T >().create( new long[] { size, size }, t );
+		final ArrayImg< T, ? > img = new ArrayImgFactory<>( t ).create( size, size );
 		for ( long x = 0; x < size; ++x )
 		{
 			final IntervalView< T > hs = Views.hyperSlice( img, 0, x );

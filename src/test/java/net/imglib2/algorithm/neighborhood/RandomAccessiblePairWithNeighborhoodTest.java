@@ -34,7 +34,6 @@
 package net.imglib2.algorithm.neighborhood;
 
 import net.imglib2.Cursor;
-import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
@@ -53,7 +52,7 @@ public class RandomAccessiblePairWithNeighborhoodTest
 	public void testRandomAccessOnPair()
 	{
 		// Extend input with Views.extend()
-		Img< ByteType > in = new ArrayImgFactory< ByteType >().create( new FinalDimensions( 3, 3 ), new ByteType() );
+		Img< ByteType > in = new ArrayImgFactory<>( new ByteType() ).create( 3, 3 );
 		RandomAccessibleInterval< ByteType > extendedIn = Views.interval( Views.extendBorder( in ), in );
 
 		// Create RandomAccessiblePair

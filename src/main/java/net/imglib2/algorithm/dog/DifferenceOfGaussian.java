@@ -91,7 +91,7 @@ public class DifferenceOfGaussian
 			final ExecutorService service )
 	{
 		final T type = Util.getTypeFromInterval( dog );
-		final Img< T > g1 = Util.getArrayOrCellImgFactory( dog, type ).create( dog, type );
+		final Img< T > g1 = Util.getArrayOrCellImgFactory( dog, type ).create( dog );
 		final long[] translation = new long[ dog.numDimensions() ];
 		dog.min( translation );
 		DoG( sigmaSmaller, sigmaLarger, input, Views.translate( g1, translation ), dog, service );

@@ -34,9 +34,6 @@
 
 package net.imglib2.algorithm.fill;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import net.imglib2.Cursor;
 import net.imglib2.Point;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
@@ -45,9 +42,11 @@ import net.imglib2.img.ImgFactory;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.LongType;
-import net.imglib2.util.Pair;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author Philipp Hanslovsky
@@ -63,7 +62,7 @@ public class FloodFillTest
 
 	private static final int SIZE_OF_EACH_DIM = 24;
 
-	private static < T extends IntegerType< T > > void runTest( final int nDim, final int sizeOfEachDim, final ImgFactory< T > imageFactory, final T t )
+	private static < T extends IntegerType< T > > void runTest( final int nDim, final int sizeOfEachDim, final ImgFactory< T > imageFactory )
 	{
 		final long[] dim = new long[ nDim ];
 		final long[] c = new long[ nDim ];
@@ -76,8 +75,8 @@ public class FloodFillTest
 
 		final long divisionLine = r / 3;
 
-		final Img< T > img = imageFactory.create( dim, t.copy() );
-		final Img< T > refImg = imageFactory.create( dim, t.copy() );
+		final Img< T > img = imageFactory.create( dim );
+		final Img< T > refImg = imageFactory.create( dim );
 
 		for ( Cursor< T > i = img.cursor(), ref = refImg.cursor(); i.hasNext(); )
 		{
@@ -107,7 +106,7 @@ public class FloodFillTest
 
 		}
 
-		final T fillLabel = t.createVariable();
+		final T fillLabel = imageFactory.type().createVariable();
 		fillLabel.setInteger( FILL_LABEL );
 
 		final ExtendedRandomAccessibleInterval< T, Img< T > > extendedImg = Views.extendValue( img, fillLabel );
@@ -121,74 +120,12 @@ public class FloodFillTest
 
 	}
 
-	@Deprecated
-	private static < T extends IntegerType< T > > void runTestDeprecated( final int nDim, final int sizeOfEachDim, final ImgFactory< T > imageFactory, final T t )
-	{
-		final long[] dim = new long[ nDim ];
-		final long[] c = new long[ nDim ];
-		final long r = sizeOfEachDim / 4;
-		for ( int d = 0; d < nDim; ++d )
-		{
-			dim[ d ] = sizeOfEachDim;
-			c[ d ] = sizeOfEachDim / 3;
-		}
-
-		final long divisionLine = r / 3;
-
-		final Img< T > img = imageFactory.create( dim, t.copy() );
-		final Img< T > refImg = imageFactory.create( dim, t.copy() );
-
-		for ( Cursor< T > i = img.cursor(), ref = refImg.cursor(); i.hasNext(); )
-		{
-			i.fwd();
-			ref.fwd();
-			long diffSum = 0;
-			for ( int d = 0; d < nDim; ++d )
-			{
-				final long diff = i.getLongPosition( d ) - c[ d ];
-				diffSum += diff * diff;
-
-			}
-
-			if ( ( diffSum < r * r ) )
-			{
-				if ( ( i.getLongPosition( 0 ) - c[ 0 ] < divisionLine ) )
-				{
-					i.get().setInteger( START_LABEL );
-					ref.get().setInteger( FILL_LABEL );
-				}
-				else if ( i.getLongPosition( 0 ) - c[ 0 ] > divisionLine )
-				{
-					i.get().setInteger( START_LABEL );
-					ref.get().setInteger( START_LABEL );
-				}
-			}
-
-		}
-
-		final T fillLabel = t.createVariable();
-		fillLabel.setInteger( FILL_LABEL );
-
-		final ExtendedRandomAccessibleInterval< T, Img< T > > extendedImg = Views.extendValue( img, fillLabel );
-
-		final Filter< Pair< T, T >, Pair< T, T > > filter = ( p1, p2 ) -> ( p1.getB().getIntegerLong() != p2.getB().getIntegerLong() ) && ( p1.getA().getIntegerLong() == p2.getA().getIntegerLong() );
-
-		FloodFill.fill( extendedImg, extendedImg, new Point( c ), fillLabel, new DiamondShape( 1 ), filter );
-
-		for ( Cursor< T > imgCursor = img.cursor(), refCursor = refImg.cursor(); imgCursor.hasNext(); )
-		{
-			Assert.assertEquals( refCursor.next(), imgCursor.next() );
-		}
-
-	}
-
 	@Test
 	public void runTests()
 	{
 		for ( final int nDim : N_DIMS )
 		{
-			runTestDeprecated( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory<>(), new LongType() );
-			runTest( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory<>(), new LongType() );
+			runTest( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory<>( new LongType() ) );
 		}
 	}
 

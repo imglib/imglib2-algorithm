@@ -101,15 +101,15 @@ public class DilationTest
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 
-		final Img< UnsignedByteType > result1 = tpImg.factory().create( interval, tpImg.firstElement().copy() );
+		final Img< UnsignedByteType > result1 = tpImg.factory().create( interval );
 		final IntervalView< UnsignedByteType > target1 = Views.translate( result1, min );
 		Dilation.dilate( tpImg, target1, diamondStrelDecomp, 1 );
 
-		final Img< UnsignedByteType > result2 = tpImg.factory().create( interval, tpImg.firstElement().copy() );
+		final Img< UnsignedByteType > result2 = tpImg.factory().create( interval );
 		final IntervalView< UnsignedByteType > target2 = Views.translate( result2, min );
 		Dilation.dilate( tpImg, target2, diamondStrelStraight, 1 );
 
-		final Img< UnsignedByteType > result3 = tpImg.factory().create( interval, tpImg.firstElement().copy() );
+		final Img< UnsignedByteType > result3 = tpImg.factory().create( interval );
 		final IntervalView< UnsignedByteType > target3 = Views.translate( result3, min );
 		Dilation.dilate( tpImg, target3, diamondShape, 1 );
 		
@@ -136,15 +136,15 @@ public class DilationTest
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 
-		final Img< UnsignedByteType > result1 = ranImg.factory().create( interval, ranImg.firstElement().copy() );
+		final Img< UnsignedByteType > result1 = ranImg.factory().create( interval );
 		final IntervalView< UnsignedByteType > target1 = Views.translate( result1, min );
 		Dilation.dilate( ranImg, target1, diamondStrelDecomp, 2 );
 
-		final Img< UnsignedByteType > result2 = ranImg.factory().create( interval, ranImg.firstElement().copy() );
+		final Img< UnsignedByteType > result2 = ranImg.factory().create( interval );
 		final IntervalView< UnsignedByteType > target2 = Views.translate( result2, min );
 		Dilation.dilate( ranImg, target2, diamondStrelStraight, 2 );
 
-		final Img< UnsignedByteType > result3 = ranImg.factory().create( interval, ranImg.firstElement().copy() );
+		final Img< UnsignedByteType > result3 = ranImg.factory().create( interval );
 		final IntervalView< UnsignedByteType > target3 = Views.translate( result3, min );
 		Dilation.dilate( ranImg, target3, diamondShape, 1 );
 		

@@ -205,7 +205,7 @@ public class Watershed< T extends RealType< T >, L extends Comparable< L >> impl
 		{
 			final long[] dimensions = new long[ seeds.numDimensions() ];
 			seeds.dimensions( dimensions );
-			final NativeImgLabeling< L, IntType > o = new NativeImgLabeling< L, IntType >( new ArrayImgFactory< IntType >().create( dimensions, new IntType() ) );
+			final NativeImgLabeling< L, IntType > o = new NativeImgLabeling<>( new ArrayImgFactory<>( new IntType() ).create( dimensions ) );
 			output = o;
 		}
 		/*

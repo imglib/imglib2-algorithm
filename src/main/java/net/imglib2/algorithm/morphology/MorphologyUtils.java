@@ -36,9 +36,7 @@ package net.imglib2.algorithm.morphology;
 import java.util.Vector;
 
 import net.imglib2.Cursor;
-import net.imglib2.Dimensions;
 import net.imglib2.EuclideanSpace;
-import net.imglib2.FinalDimensions;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
@@ -47,17 +45,12 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.Shape;
 import net.imglib2.img.Img;
-import net.imglib2.img.ImgFactory;
 import net.imglib2.img.array.ArrayImg;
-import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.array.ArrayRandomAccess;
 import net.imglib2.img.basictypeaccess.array.LongArray;
-import net.imglib2.img.cell.CellImgFactory;
-import net.imglib2.img.list.ListImgFactory;
 import net.imglib2.multithreading.Chunk;
 import net.imglib2.multithreading.SimpleMultiThreading;
-import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.operators.Sub;
@@ -362,7 +355,7 @@ public class MorphologyUtils
 		{
 			offset[ d ] = ( largeSource.dimension( d ) - interval.dimension( d ) ) / 2;
 		}
-		final Img< T > create = largeSource.factory().create( interval, largeSource.firstElement().copy() );
+		final Img< T > create = largeSource.factory().create( interval );
 
 		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( create.size(), numThreads );
 		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
@@ -415,30 +408,6 @@ public class MorphologyUtils
 		final IterableInterval< Neighborhood< BitType >> neighborhoods = shape.neighborhoods( img );
 		final Neighborhood< BitType > neighborhood = neighborhoods.cursor().next();
 		return neighborhood;
-	}
-
-	static < T > ImgFactory< T > getSuitableFactory( final long[] targetSize, final T type )
-	{
-		final FinalDimensions dim = FinalDimensions.wrap( targetSize );
-		return getSuitableFactory( dim, type );
-	}
-
-	@SuppressWarnings( { "rawtypes", "unchecked" } )
-	static < T > ImgFactory< T > getSuitableFactory( final Dimensions targetSize, final T type )
-	{
-		if ( type instanceof NativeType )
-		{
-			final NativeType nt = ( NativeType ) type;
-			if ( Intervals.numElements( targetSize ) <= Integer.MAX_VALUE ) {
-				return new ArrayImgFactory();
-			}
-			final int cellSize = ( int ) Math.pow( Integer.MAX_VALUE / nt.getEntitiesPerPixel().getRatio(), 1.0 / targetSize.numDimensions() );
-			return new CellImgFactory( cellSize );
-		}
-		else
-		{
-			return new ListImgFactory< T >();
-		}
 	}
 
 	/**

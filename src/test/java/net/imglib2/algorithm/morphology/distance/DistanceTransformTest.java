@@ -175,7 +175,7 @@ public class DistanceTransformTest
 		final DISTANCE_TYPE DT = DISTANCE_TYPE.EUCLIDIAN;
 
 		{
-			final Img< T > inPlace = source.factory().create( source, source.firstElement() );
+			final Img< T > inPlace = source.factory().create( source );
 			for ( final Pair< T, T > p : Views.interval( Views.pair( source, inPlace ), source ) )
 				p.getB().set( p.getA() );
 			final double w = rng.nextDouble() * 1e-4;
@@ -202,7 +202,7 @@ public class DistanceTransformTest
 
 
 		{
-			final Img< T > inPlace = source.factory().create( source, source.firstElement() );
+			final Img< T > inPlace = source.factory().create( source );
 			for ( final Pair< T, T > p : Views.interval( Views.pair( source, inPlace ), source ) )
 				p.getB().set( p.getA() );
 			final double[] w = new double[ nDim ];
@@ -248,7 +248,7 @@ public class DistanceTransformTest
 		final DISTANCE_TYPE DT = DISTANCE_TYPE.L1;
 
 		{
-			final Img< T > inPlace = source.factory().create( source, source.firstElement() );
+			final Img< T > inPlace = source.factory().create( source );
 			for ( final Pair< T, T > p : Views.interval( Views.pair( source, inPlace ), source ) )
 				p.getB().set( p.getA() );
 
@@ -274,7 +274,7 @@ public class DistanceTransformTest
 		}
 
 		{
-			final Img< T > inPlace = source.factory().create( source, source.firstElement() );
+			final Img< T > inPlace = source.factory().create( source );
 			for ( final Pair< T, T > p : Views.interval( Views.pair( source, inPlace ), source ) )
 				p.getB().set( p.getA() );
 

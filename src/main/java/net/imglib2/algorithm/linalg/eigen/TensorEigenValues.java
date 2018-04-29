@@ -373,21 +373,27 @@ public class TensorEigenValues
 	 *            n+1 dimensional {@link RandomAccessibleInterval}.
 	 * @param factory
 	 *            {@link ImgFactory} used for creating the result image.
-	 * @param u
-	 *            Variable necessary for creating the result image.
 	 * @return n+1 dimensional {@link Img} with size n in the last dimension.
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > Img< U > createAppropriateResultImg(
 			final RandomAccessibleInterval< T > tensor,
-			final ImgFactory< U > factory,
-			final U u )
+			final ImgFactory< U > factory)
 	{
 		final int nDim = tensor.numDimensions();
 		final long[] dimensions = new long[ nDim ];
 		tensor.dimensions( dimensions );
 		dimensions[ nDim - 1 ] = nDim - 1;
-		return factory.create( dimensions, u );
+		return factory.create( dimensions );
 	}
 
+	/** @deprecated Use {@link #createAppropriateResultImg(RandomAccessibleInterval, ImgFactory)} instead. */
+	@Deprecated
+	public static < T extends RealType< T >, U extends RealType< U > > Img< U > createAppropriateResultImg(
+			final RandomAccessibleInterval< T > tensor,
+			final ImgFactory< U > factory,
+			final U u )
+	{
+		return createAppropriateResultImg( tensor, factory.imgFactory( u ) );
+	}
 
 }

@@ -182,12 +182,12 @@ public class FloydSteinbergDithering< T extends RealType< T >> implements Output
 
 	public Img< FloatType > createErrorDiffusionKernel( final int numDimensions )
 	{
-		final ArrayImgFactory< FloatType > factory = new ArrayImgFactory< FloatType >();
+		final ArrayImgFactory< FloatType > factory = new ArrayImgFactory<>( new FloatType() );
 
 		// for 2d we take the values from the literature
 		if ( numDimensions == 2 )
 		{
-			final Img< FloatType > kernel = factory.create( new long[] { 3, 3 }, new FloatType() );
+			final Img< FloatType > kernel = factory.create( 3, 3 );
 
 			final RandomAccess< FloatType > cursor = kernel.randomAccess();
 
@@ -212,7 +212,7 @@ public class FloydSteinbergDithering< T extends RealType< T >> implements Output
 
 			return kernel;
 		}
-		final Img< FloatType > kernel = factory.create( Util.getArrayFromValue( 3L, numDimensions ), new FloatType() );
+		final Img< FloatType > kernel = factory.create( Util.getArrayFromValue( 3L, numDimensions ) );
 		final Cursor< FloatType > cursor = kernel.cursor();
 
 		final int numValues = ( int ) ( kernel.size() / 2 );

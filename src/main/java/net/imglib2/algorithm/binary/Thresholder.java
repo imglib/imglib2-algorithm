@@ -77,7 +77,7 @@ public class Thresholder
 		try
 		{
 			final ImgFactory< BitType > bitFactory = factory.imgFactory( new BitType() );
-			final Img< BitType > target = bitFactory.create( source, new BitType() );
+			final Img< BitType > target = bitFactory.create( source );
 
 			final Converter< T, BitType > converter;
 			if ( above )
