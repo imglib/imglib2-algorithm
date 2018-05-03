@@ -43,6 +43,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.localextrema.LocalExtrema;
 import net.imglib2.algorithm.localextrema.LocalExtrema.MaximumCheck;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
@@ -159,7 +160,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 *            - the {@link RandomAccessibleInterval} in which the results
 	 *            are stored
 	 */
-	public static < T extends RealType< T > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< T > votespace )
+	public static < T extends RealType< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace )
 	{
 		voteLines( input, votespace, defaultRho( input ), DEFAULT_THETA );
 	}
@@ -179,7 +180,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @param nTheta
 	 *            - the number of bins for theta resolution
 	 */
-	public static < T extends RealType< T > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< T > votespace, final int nRho, final int nTheta )
+	public static < T extends RealType< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta )
 	{
 		voteLines( input, votespace, nRho, nTheta, Util.getTypeFromInterval( input ).createVariable() );
 	}
@@ -237,7 +238,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 *            than or equal to this value will be disregarded by the
 	 *            populator.
 	 */
-	public static < T extends RealType< T > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< T > votespace, final int nRho, final int nTheta, final T threshold )
+	public static < T extends RealType< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta, final T threshold )
 	{
 
 		final long[] dims = new long[ input.numDimensions() ];
@@ -265,11 +266,11 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 		}
 
 		final Cursor< T > imageCursor = Views.iterable( input ).localizingCursor();
-		final RandomAccess< T > outputRA = votespace.randomAccess();
+		final RandomAccess< U > outputRA = votespace.randomAccess();
 
 		final long[] position = new long[ input.numDimensions() ];
 
-		final T one = Util.getTypeFromInterval( input ).createVariable();
+		final U one = Util.getTypeFromInterval( votespace ).createVariable();
 		one.setOne();
 
 		while ( imageCursor.hasNext() )
