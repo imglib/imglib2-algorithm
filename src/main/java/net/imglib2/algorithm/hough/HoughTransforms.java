@@ -35,6 +35,7 @@
 package net.imglib2.algorithm.hough;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import net.imglib2.Cursor;
 import net.imglib2.Point;
@@ -185,7 +186,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 *            - the {@link RandomAccessibleInterval} in which the results
 	 *            are stored
 	 */
-	public static < T extends RealType< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace )
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace )
 	{
 		voteLines( input, votespace, defaultRho( input ), DEFAULT_THETA );
 	}
@@ -205,9 +206,34 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @param nTheta
 	 *            - the number of bins for theta resolution
 	 */
-	public static < T extends RealType< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta )
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta )
 	{
-		voteLines( input, votespace, nRho, nTheta, Util.getTypeFromInterval( input ).createVariable() );
+		voteLines( input, votespace, nRho, nTheta, Util.getTypeFromInterval( input ) );
+	}
+
+	/**
+	 * Runs a Hough Line Tranform on an image and populates the vote space
+	 * parameter with the results.
+	 * 
+	 * @param input
+	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
+	 *            Transform over
+	 * @param votespace
+	 *            - the {@link RandomAccessibleInterval} in which the results
+	 *            are stored
+	 * @param nRho
+	 *            - the number of bins for rho resolution
+	 * @param nTheta
+	 *            - the number of bins for theta resolution
+	 * @param threshold
+	 *            - the minimum value allowed by the populator. Any input less
+	 *            than or equal to this value will be disregarded by the
+	 *            populator.
+	 */
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta, final T threshold )
+	{
+		Predicate< T > p = o -> threshold.compareTo( o ) > 0;
+		voteLines( input, votespace, nRho, nTheta, p );
 	}
 
 	/**
@@ -258,12 +284,13 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 *            - the number of bins for rho resolution
 	 * @param nTheta
 	 *            - the number of bins for theta resolution
-	 * @param threshold
-	 *            - the minimum value allowed by the populator. Any input less
-	 *            than or equal to this value will be disregarded by the
+	 * @param filter
+	 *            - a {@link Predicate} judging whether or not the a value is
+	 *            above the minimum value allowed by the populator. Any input
+	 *            less than or equal to this value will be disregarded by the
 	 *            populator.
 	 */
-	public static < T extends RealType< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta, final T threshold )
+	public static < T, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta, final Predicate< T > filter )
 	{
 
 		final long[] dims = new long[ input.numDimensions() ];
@@ -309,7 +336,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 
 			for ( int t = 0; t < nTheta; ++t )
 			{
-				if ( imageCursor.get().compareTo( threshold ) > 0 )
+				if ( filter.test( imageCursor.get() ) )
 				{
 					fRho = Math.cos( theta[ t ] ) * position[ 0 ] + Math.sin( theta[ t ] ) * position[ 1 ];
 					r = Math.round( ( float ) ( ( fRho - minRho ) / dRho ) );
