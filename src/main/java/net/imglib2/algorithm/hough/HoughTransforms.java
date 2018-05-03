@@ -68,11 +68,11 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * 
 	 * @param position
 	 *            - the position of the second point
-	 * @return {@code float} - the distance between the two points.
+	 * @return {@code double} - the distance between the two points.
 	 */
-	final private static float computeLength( final long[] position )
+	final private static double computeLength( final long[] position )
 	{
-		float dist = 0;
+		double dist = 0;
 
 		for ( int d = 0; d < position.length; ++d )
 		{
@@ -81,7 +81,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 			dist += pos * pos;
 		}
 
-		return ( float ) Math.sqrt( dist );
+		return Math.sqrt( dist );
 	}
 
 	/**
