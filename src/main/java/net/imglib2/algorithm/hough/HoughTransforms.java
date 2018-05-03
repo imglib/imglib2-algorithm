@@ -44,6 +44,7 @@ import net.imglib2.algorithm.localextrema.LocalExtrema;
 import net.imglib2.algorithm.localextrema.LocalExtrema.MaximumCheck;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -94,9 +95,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 */
 	private static int defaultRho( final RandomAccessibleInterval< ? > inputImage )
 	{
-		final long[] dims = new long[ inputImage.numDimensions() ];
-		inputImage.dimensions( dims );
-		return ( int ) ( 2 * computeLength( dims ) );
+		return ( int ) ( 2 * computeLength( Intervals.dimensionsAsLongArray( inputImage ) ) );
 	}
 
 	/**
