@@ -130,7 +130,32 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 
 	/**
 	 * Pick vote space peaks with a {@link LocalExtrema}.
+	 * 
+	 * @param voteSpace
+	 *            - the {@link RandomAccessibleInterval} containing the output
+	 *            of a Hough Transform vote
+	 * @param threshold
+	 *            - the {@link IntegerType} at and below which maxima will be
+	 *            ignored
+	 * @return {@code List<Point>} - a list of all of the local maxima of the
+	 *         {@code voteSpace}
+	 */
+	public static < T extends IntegerType< T > > List< Point > pickPeaks( final RandomAccessibleInterval< T > voteSpace, final long threshold )
+	{
+		final T minPeak = Util.getTypeFromInterval( voteSpace ).createVariable();
+		minPeak.setInteger( threshold );
+		return pickPeaks( voteSpace, minPeak );
+	}
+
+	/**
+	 * Pick vote space peaks with a {@link LocalExtrema}.
 	 *
+	 * @param voteSpace
+	 *            - the {@link RandomAccessibleInterval} containing the output
+	 *            of a Hough Transform vote
+	 * @param minPeak
+	 *            - the {@link Comparable} at and below which maxima will be
+	 *            ignored
 	 * @return {@code List<Point>} - a list of all of the local maxima of the
 	 *         {@code voteSpace}.
 	 */
