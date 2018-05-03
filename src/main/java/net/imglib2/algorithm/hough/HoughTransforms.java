@@ -322,14 +322,10 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 
 		final long[] position = new long[ input.numDimensions() ];
 
-		final U one = Util.getTypeFromInterval( votespace ).createVariable();
-		one.setOne();
-
 		while ( imageCursor.hasNext() )
 		{
 			double fRho;
 			int r;
-			final int[] voteLoc = new int[ 2 ];
 
 			imageCursor.fwd();
 			imageCursor.localize( position );
@@ -340,12 +336,11 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 				{
 					fRho = Math.cos( theta[ t ] ) * position[ 0 ] + Math.sin( theta[ t ] ) * position[ 1 ];
 					r = Math.round( ( float ) ( ( fRho - minRho ) / dRho ) );
-					voteLoc[ 0 ] = r;
-					voteLoc[ 1 ] = t;
 
 					// place vote
-					outputRA.setPosition( voteLoc );
-					outputRA.get().add( one );
+					outputRA.setPosition( r, 0 );
+					outputRA.setPosition( t, 1 );
+					outputRA.get().inc();
 				}
 			}
 		}
