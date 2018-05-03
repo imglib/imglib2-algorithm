@@ -232,7 +232,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 */
 	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta, final T threshold )
 	{
-		Predicate< T > p = o -> threshold.compareTo( o ) > 0;
+		Predicate< T > p = o -> threshold.compareTo( o ) < 0;
 		voteLines( input, votespace, nRho, nTheta, p );
 	}
 
