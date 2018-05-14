@@ -162,8 +162,8 @@ public class HoughLineTransformTest
 		final double slope = HoughTransforms.getSlope( theta );
 		final double yint = HoughTransforms.getIntercept( rho, theta );
 
-		assertEquals( -1.0000000000000002, slope, 0 );
-		assertEquals( 2.8284271247461903, yint, 0 );
+		assertEquals( -1.0, slope, 1e-8 );
+		assertEquals( 2 * Math.sqrt( 2 ), yint, 1e-8 );
 
 		// make sure undefined slope does not throw an error.
 		assertEquals( HoughTransforms.getSlope( 0 ), Double.NEGATIVE_INFINITY, 0 );
