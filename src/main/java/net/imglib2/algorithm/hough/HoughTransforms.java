@@ -321,21 +321,18 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 		final Cursor< T > imageCursor = Views.iterable( input ).localizingCursor();
 		final RandomAccess< U > outputRA = votespace.randomAccess();
 
-		final long[] position = new long[ input.numDimensions() ];
-
 		while ( imageCursor.hasNext() )
 		{
 			double fRho;
 			int r;
 
 			imageCursor.fwd();
-			imageCursor.localize( position );
 
 			for ( int t = 0; t < nTheta; ++t )
 			{
 				if ( filter.test( imageCursor.get() ) )
 				{
-					fRho = Math.cos( theta[ t ] ) * position[ 0 ] + Math.sin( theta[ t ] ) * position[ 1 ];
+					fRho = Math.cos( theta[ t ] ) * imageCursor.getDoublePosition( 0 ) + Math.sin( theta[ t ] ) * imageCursor.getDoublePosition( 1 );
 					r = Math.round( ( float ) ( ( fRho - minRho ) / dRho ) );
 
 					// place vote
