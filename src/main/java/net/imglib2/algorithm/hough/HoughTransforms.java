@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import net.imglib2.Cursor;
+import net.imglib2.Dimensions;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
@@ -91,27 +92,27 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * Calculates a default number of rho bins, which corresponds to a
 	 * resolution of one pixel.
 	 *
-	 * @param inputImage
-	 *            the {@link RandomAccessibleInterval} in question.
+	 * @param dimensions
+	 *            the {@link Dimensions} of the input image.
 	 * @return default number of rho bins.
 	 */
-	private static int defaultRho( final RandomAccessibleInterval< ? > inputImage )
+	private static int defaultRho( final Dimensions dimensions )
 	{
-		return ( int ) ( 2 * computeLength( Intervals.dimensionsAsLongArray( inputImage ) ) );
+		return ( int ) ( 2 * computeLength( Intervals.dimensionsAsLongArray( dimensions ) ) );
 	}
 
 	/**
 	 * Returns the size of the vote space output image given an input
 	 * {@link RandomAccessibleInterval}.
 	 * 
-	 * @param input
-	 *            - the {@link RandomAccessibleInterval} over which the Hough
-	 *            Line Transform will be run
+	 * @param dimensions
+	 *            - the {@link Dimensions} over which the Hough Line Transform
+	 *            will be run
 	 * @return {@code long[]} - the dimensions of the vote space image
 	 */
-	public static < T extends RealType< T > > long[] getVotespaceSize( RandomAccessibleInterval< T > input )
+	public static long[] getVotespaceSize( final Dimensions dimensions )
 	{
-		return new long[] { defaultRho( input ), DEFAULT_THETA };
+		return new long[] { defaultRho( dimensions ), DEFAULT_THETA };
 	}
 
 	/**
