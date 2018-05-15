@@ -68,7 +68,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 
 	/**
 	 * Calculates the geometric distance between [0, ... , 0] and position.
-	 * 
+	 *
 	 * @param position
 	 *            - the position of the second point
 	 * @return {@code double} - the distance between the two points.
@@ -103,7 +103,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Returns the size of the vote space output image given an input
 	 * {@link RandomAccessibleInterval}.
-	 * 
+	 *
 	 * @param dimensions
 	 *            - the {@link Dimensions} over which the Hough Line Transform
 	 *            will be run
@@ -117,7 +117,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Returns the size of the vote space output image given an input
 	 * {@link RandomAccessibleInterval}.
-	 * 
+	 *
 	 * @param dimensions
 	 *            - the {@link Dimensions} over which the Hough Line Transform
 	 *            will be run
@@ -133,21 +133,21 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Returns the size of the voteSpace output image given desired {@code nRho}
 	 * and {@code nTheta} values.
-	 * 
+	 *
 	 * @param nRho
 	 *            - the number of bins for rho resolution
 	 * @param nTheta
 	 *            - the number of bins for theta resolution
 	 * @return {@code long[]} - the dimensions of the vote space image.
 	 */
-	public static long[] getVotespaceSize( int nRho, int nTheta )
+	public static long[] getVotespaceSize( final int nRho, final int nTheta )
 	{
 		return new long[] { nRho, nTheta };
 	}
 
 	/**
 	 * Pick vote space peaks with a {@link LocalExtrema}.
-	 * 
+	 *
 	 * @param voteSpace
 	 *            - the {@link RandomAccessibleInterval} containing the output
 	 *            of a Hough Transform vote
@@ -157,7 +157,9 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @return {@code List<Point>} - a list of all of the local maxima of the
 	 *         {@code voteSpace}
 	 */
-	public static < T extends IntegerType< T > > List< Point > pickLinePeaks( final RandomAccessibleInterval< T > voteSpace, final long threshold )
+	public static < T extends IntegerType< T > > List< Point > pickLinePeaks(
+			final RandomAccessibleInterval< T > voteSpace,
+			final long threshold )
 	{
 		final T minPeak = Util.getTypeFromInterval( voteSpace ).createVariable();
 		minPeak.setInteger( threshold );
@@ -176,7 +178,9 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @return {@code List<Point>} - a list of all of the local maxima of the
 	 *         {@code voteSpace}.
 	 */
-	public static < T extends Comparable< T > > List< Point > pickLinePeaks( RandomAccessibleInterval< T > voteSpace, T minPeak )
+	public static < T extends Comparable< T > > List< Point > pickLinePeaks(
+			final RandomAccessibleInterval< T > voteSpace,
+			final T minPeak )
 	{
 		final MaximumCheck< T > maxCheck = new MaximumCheck<>( minPeak );
 
@@ -186,8 +190,8 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 		// the first dimension and by {@code -pi / 2} in the second dimension so
 		// that we return accurate coordinates from the
 		// vote space.
-		long[] translation = { -( voteSpace.dimension( 0 ) / 2 ), -( voteSpace.dimension( 1 ) / 2 ) };
-		IntervalView< T > translatedVotes = Views.translate( voteSpace, translation );
+		final long[] translation = { -( voteSpace.dimension( 0 ) / 2 ), -( voteSpace.dimension( 1 ) / 2 ) };
+		final IntervalView< T > translatedVotes = Views.translate( voteSpace, translation );
 
 		return LocalExtrema.findLocalExtrema( translatedVotes, maxCheck );
 	}
@@ -195,7 +199,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Runs a Hough Line Tranform on an image and populates the vote space
 	 * parameter with the results.
-	 * 
+	 *
 	 * @param input
 	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
 	 *            Transform over
@@ -203,7 +207,9 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 *            - the {@link RandomAccessibleInterval} in which the results
 	 *            are stored
 	 */
-	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace )
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines(
+			final RandomAccessibleInterval< T > input,
+			final RandomAccessibleInterval< U > votespace )
 	{
 		voteLines( input, votespace, DEFAULT_THETA, defaultRho( input ) );
 	}
@@ -211,7 +217,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Runs a Hough Line Tranform on an image and populates the vote space
 	 * parameter with the results.
-	 * 
+	 *
 	 * @param input
 	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
 	 *            Transform over
@@ -221,7 +227,10 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @param nTheta
 	 *            - the number of bins for theta resolution
 	 */
-	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nTheta )
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines(
+			final RandomAccessibleInterval< T > input,
+			final RandomAccessibleInterval< U > votespace,
+			final int nTheta )
 	{
 		voteLines( input, votespace, nTheta, defaultRho( input ), Util.getTypeFromInterval( input ) );
 	}
@@ -229,7 +238,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Runs a Hough Line Tranform on an image and populates the vote space
 	 * parameter with the results.
-	 * 
+	 *
 	 * @param input
 	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
 	 *            Transform over
@@ -241,7 +250,11 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @param nRho
 	 *            - the number of bins for rho resolution
 	 */
-	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nTheta, final int nRho )
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines(
+			final RandomAccessibleInterval< T > input,
+			final RandomAccessibleInterval< U > votespace,
+			final int nTheta,
+			final int nRho )
 	{
 		voteLines( input, votespace, nTheta, nRho, Util.getTypeFromInterval( input ) );
 	}
@@ -249,7 +262,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Runs a Hough Line Tranform on an image and populates the vote space
 	 * parameter with the results.
-	 * 
+	 *
 	 * @param input
 	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
 	 *            Transform over
@@ -264,14 +277,20 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 *            - the minimum value allowed by the populator. Any input less
 	 *            than this value will be disregarded by the populator.
 	 */
-	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nTheta, final int nRho, final T threshold )
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines(
+			final RandomAccessibleInterval< T > input,
+			final RandomAccessibleInterval< U > votespace,
+			final int nTheta,
+			final int nRho,
+			final T threshold )
+
 	{
-		Predicate< T > p = o -> threshold.compareTo( o ) < 0;
+		final Predicate< T > p = o -> threshold.compareTo( o ) < 0;
 		voteLines( input, votespace, nTheta, nRho, p );
 	}
 
 	/**
-	 * 
+	 *
 	 * Runs a Hough Line Tranform on an image and populates the vote space
 	 * parameter with the results.
 	 * <p>
@@ -282,7 +301,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * <p>
 	 * Lines are modeled as
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * l(t) = | x | = rho * |  cos(theta) | + t * | sin(theta) |
 	 *        | y |         | -sin(theta) |       | cos(theta) |
@@ -295,7 +314,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * <p>
 	 * For a given point, then, votes are placed along the curve
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * rho = y * sin( theta ) + x * cos( theta )
 	 * </pre>
@@ -308,7 +327,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * be translated by {@code -maxRho} in dimension 0 to get the correct
 	 * {@code rho} and {@code theta} values from the vote space.
 	 * </p>
-	 * 
+	 *
 	 * @param input
 	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
 	 *            Transform over
@@ -325,14 +344,19 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 *            less than or equal to this value will be disregarded by the
 	 *            populator.
 	 */
-	public static < T, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nTheta, final int nRho, final Predicate< T > filter )
+	public static < T, U extends IntegerType< U > > void voteLines(
+			final RandomAccessibleInterval< T > input,
+			final RandomAccessibleInterval< U > votespace,
+			final int nTheta,
+			final int nRho,
+			final Predicate< T > filter )
 	{
 
 		final long[] dims = new long[ input.numDimensions() ];
 		input.dimensions( dims );
 
 		final double minRho = -computeLength( dims );
-		final double dRho = 2 * computeLength( dims ) / ( double ) nRho;
+		final double dRho = 2 * computeLength( dims ) / nRho;
 
 		final double minTheta = -Math.PI / 2;
 		final double dTheta = Math.PI / nTheta;
@@ -383,7 +407,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * {@link HoughTransforms#voteLines} algorithm into a more useful
 	 * y-intercept value. Used with {@link HoughTransforms#getSlope} to create
 	 * line equations.
-	 * 
+	 *
 	 * @param rho
 	 *            - the {@code rho} of the line
 	 * @param theta
@@ -392,8 +416,8 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 */
 	public static double getIntercept( final long rho, final long theta )
 	{
-		double radians = ( Math.PI * theta ) / 180;
-		return ( rho / Math.sin( radians ) );
+		final double radians = Math.PI * theta / 180;
+		return rho / Math.sin( radians );
 	}
 
 	/**
@@ -401,22 +425,22 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * {@link HoughTransforms#voteLines} algorithm into a more useful slope
 	 * value. Used with {@link HoughTransforms#getIntercept} to create line
 	 * equations.
-	 * 
+	 *
 	 * @param theta
 	 *            - the {@code theta} of the line
 	 * @return {@code double} - the y-intercept of the line
 	 */
 	public static double getSlope( final long theta )
 	{
-		double radians = ( Math.PI * theta ) / 180;
+		final double radians = Math.PI * theta / 180;
 
-		double n = -Math.cos( radians );
-		double d = Math.sin( radians );
+		final double n = -Math.cos( radians );
+		final double d = Math.sin( radians );
 
 		// to avoid a divide by zero error return an infinite slope if the
 		// denominator is zero.
 		if ( Math.abs( n ) == 1 )
 			return n > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-		return ( n / d );
+		return n / d;
 	}
 }
