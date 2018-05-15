@@ -190,7 +190,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 */
 	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace )
 	{
-		voteLines( input, votespace, defaultRho( input ), DEFAULT_THETA );
+		voteLines( input, votespace, DEFAULT_THETA, defaultRho( input ) );
 	}
 
 	/**
@@ -203,14 +203,12 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @param votespace
 	 *            - the {@link RandomAccessibleInterval} in which the results
 	 *            are stored
-	 * @param nRho
-	 *            - the number of bins for rho resolution
 	 * @param nTheta
 	 *            - the number of bins for theta resolution
 	 */
-	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta )
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nTheta )
 	{
-		voteLines( input, votespace, nRho, nTheta, Util.getTypeFromInterval( input ) );
+		voteLines( input, votespace, nTheta, defaultRho( input ), Util.getTypeFromInterval( input ) );
 	}
 
 	/**
@@ -223,19 +221,38 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @param votespace
 	 *            - the {@link RandomAccessibleInterval} in which the results
 	 *            are stored
-	 * @param nRho
-	 *            - the number of bins for rho resolution
 	 * @param nTheta
 	 *            - the number of bins for theta resolution
+	 * @param nRho
+	 *            - the number of bins for rho resolution
+	 */
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nTheta, final int nRho )
+	{
+		voteLines( input, votespace, nTheta, nRho, Util.getTypeFromInterval( input ) );
+	}
+
+	/**
+	 * Runs a Hough Line Tranform on an image and populates the vote space
+	 * parameter with the results.
+	 * 
+	 * @param input
+	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
+	 *            Transform over
+	 * @param votespace
+	 *            - the {@link RandomAccessibleInterval} in which the results
+	 *            are stored
+	 * @param nTheta
+	 *            - the number of bins for theta resolution
+	 * @param nRho
+	 *            - the number of bins for rho resolution
 	 * @param threshold
 	 *            - the minimum value allowed by the populator. Any input less
-	 *            than or equal to this value will be disregarded by the
-	 *            populator.
+	 *            than this value will be disregarded by the populator.
 	 */
-	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta, final T threshold )
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nTheta, final int nRho, final T threshold )
 	{
 		Predicate< T > p = o -> threshold.compareTo( o ) < 0;
-		voteLines( input, votespace, nRho, nTheta, p );
+		voteLines( input, votespace, nTheta, nRho, p );
 	}
 
 	/**
@@ -283,17 +300,17 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @param votespace
 	 *            - the {@link RandomAccessibleInterval} in which the results
 	 *            are stored
-	 * @param nRho
-	 *            - the number of bins for rho resolution
 	 * @param nTheta
 	 *            - the number of bins for theta resolution
+	 * @param nRho
+	 *            - the number of bins for rho resolution
 	 * @param filter
 	 *            - a {@link Predicate} judging whether or not the a value is
 	 *            above the minimum value allowed by the populator. Any input
 	 *            less than or equal to this value will be disregarded by the
 	 *            populator.
 	 */
-	public static < T, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nRho, final int nTheta, final Predicate< T > filter )
+	public static < T, U extends IntegerType< U > > void voteLines( final RandomAccessibleInterval< T > input, final RandomAccessibleInterval< U > votespace, final int nTheta, final int nRho, final Predicate< T > filter )
 	{
 
 		final long[] dims = new long[ input.numDimensions() ];
