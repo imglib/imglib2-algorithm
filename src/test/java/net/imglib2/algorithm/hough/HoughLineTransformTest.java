@@ -74,17 +74,31 @@ public class HoughLineTransformTest
 	@Before
 	public void setUp() throws IOException
 	{
-		groundTruth = ImageIO.read( getClass().getResource( "result8.png" ) );
-		tpImg = ArrayImgs.unsignedBytes( 50l, 50l );
+		groundTruth = ImageIO.read( getClass().getResource( "result9.png" ) );
+		tpImg = ArrayImgs.unsignedBytes( 11l, 13l );
 		final RandomAccess< UnsignedByteType > randomAccess = tpImg.randomAccess();
-		for ( int i = 24; i < 25; ++i )
+		// create vertical line
+		randomAccess.setPosition( 5, 0 );
+		for ( int i = 0; i < 13; i++ )
 		{
-			for ( int j = 14; j < 35; ++j )
-			{
-				randomAccess.setPosition( i, 0 );
-				randomAccess.setPosition( j, 1 );
-				randomAccess.get().set( 255 );
-			}
+			randomAccess.setPosition( i, 1 );
+			randomAccess.get().set( 255 );
+		}
+
+		// create horizontal line
+		randomAccess.setPosition( 5, 1 );
+		for ( int i = 0; i < 11; i++ )
+		{
+			randomAccess.setPosition( i, 0 );
+			randomAccess.get().set( 255 );
+		}
+
+		// create diagonal line
+		for ( int i = 0; i < 11; i++ )
+		{
+			randomAccess.setPosition( i, 0 );
+			randomAccess.setPosition( i / 3, 1 );
+			randomAccess.get().set( 255 );
 		}
 	}
 
@@ -130,7 +144,7 @@ public class HoughLineTransformTest
 	public < T extends RealType< T > > void testPickPeaks()
 	{
 		// three expected peaks
-		final long[] expected = { 24, 89, 24, 90, 25, 91 };
+		final long[] expected = { -5, -89, -5, -88, 0, -76, 0, -74, 0, -73, 5, -2, 5, -1, 5, 0, 5, 1, 5, 2, 5, 88 };
 		int index = 0;
 
 		// create votespace
