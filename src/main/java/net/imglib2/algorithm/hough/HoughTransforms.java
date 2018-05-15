@@ -142,11 +142,11 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @return {@code List<Point>} - a list of all of the local maxima of the
 	 *         {@code voteSpace}
 	 */
-	public static < T extends IntegerType< T > > List< Point > pickPeaks( final RandomAccessibleInterval< T > voteSpace, final long threshold )
+	public static < T extends IntegerType< T > > List< Point > pickLinePeaks( final RandomAccessibleInterval< T > voteSpace, final long threshold )
 	{
 		final T minPeak = Util.getTypeFromInterval( voteSpace ).createVariable();
 		minPeak.setInteger( threshold );
-		return pickPeaks( voteSpace, minPeak );
+		return pickLinePeaks( voteSpace, minPeak );
 	}
 
 	/**
@@ -161,7 +161,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @return {@code List<Point>} - a list of all of the local maxima of the
 	 *         {@code voteSpace}.
 	 */
-	public static < T extends Comparable< T > > List< Point > pickPeaks( RandomAccessibleInterval< T > voteSpace, T minPeak )
+	public static < T extends Comparable< T > > List< Point > pickLinePeaks( RandomAccessibleInterval< T > voteSpace, T minPeak )
 	{
 		final MaximumCheck< T > maxCheck = new MaximumCheck<>( minPeak );
 

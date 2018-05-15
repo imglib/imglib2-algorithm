@@ -143,9 +143,9 @@ public class HoughLineTransformTest
 		HoughTransforms.voteLines( tpImg, votespace );
 
 		final UnsignedByteType minPeak = Util.getTypeFromInterval( votespace ).createVariable();
-		minPeak.setReal( 21 );
+		minPeak.setReal( 10 );
 
-		List< Point > peaks = HoughTransforms.pickPeaks( votespace, minPeak );
+		List< Point > peaks = HoughTransforms.pickLinePeaks( votespace, minPeak );
 		for ( Point p : peaks )
 		{
 			// assert dimension 0
