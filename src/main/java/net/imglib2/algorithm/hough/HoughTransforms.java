@@ -165,12 +165,13 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	{
 		final MaximumCheck< T > maxCheck = new MaximumCheck<>( minPeak );
 
-		// since the vote space runs [0, maxRho * 2) to allow both positive and
-		// negative rho values without having the user to reinterval their
+		// since the vote space runs [0, maxRho * 2) x [0, pi) to allow
+		// negative rho/pi values without having the user to reinterval their
 		// vote space, we need to translate the vote space by {@code -maxRho} in
-		// the first dimension so that we return accurate coordinates from the
+		// the first dimension and by {@code -pi / 2} in the second dimension so
+		// that we return accurate coordinates from the
 		// vote space.
-		long[] translation = { -( voteSpace.dimension( 0 ) / 2 ), 0 };
+		long[] translation = { -( voteSpace.dimension( 0 ) / 2 ), -( voteSpace.dimension( 1 ) / 2 ) };
 		IntervalView< T > translatedVotes = Views.translate( voteSpace, translation );
 
 		return LocalExtrema.findLocalExtrema( translatedVotes, maxCheck );
@@ -269,9 +270,10 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * <p>
 	 * It is important to note that the interval of the first dimension of the
 	 * vote space image is NOT {@code [-maxRho, maxRho)} but instead
-	 * {@code [0, maxRho * 2)}. Thus if {@link HoughTransforms#pickPeaks} is not
-	 * used to retrieve the maxima from the vote space, the vote space will have
-	 * to be translated by {@code -maxRho} in dimension 0 to get the correct
+	 * {@code [0, maxRho * 2)}; the same applies to the second dimension of the
+	 * vote space as well. Thus if {@link HoughTransforms#pickPeaks} is not used
+	 * to retrieve the maxima from the vote space, the vote space will have to
+	 * be translated by {@code -maxRho} in dimension 0 to get the correct
 	 * {@code rho} and {@code theta} values from the vote space.
 	 * </p>
 	 * 
@@ -381,7 +383,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 
 		// to avoid a divide by zero error return an infinite slope if the
 		// denominator is zero.
-		if ( d == 0 )
+		if ( Math.abs( n ) == 1 )
 			return n > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
 		return ( n / d );
 	}
