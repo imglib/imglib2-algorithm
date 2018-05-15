@@ -347,9 +347,9 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 
 			imageCursor.fwd();
 
-			for ( int t = 0; t < nTheta; ++t )
+			if ( filter.test( imageCursor.get() ) )
 			{
-				if ( filter.test( imageCursor.get() ) )
+				for ( int t = 0; t < nTheta; ++t )
 				{
 					fRho = Math.cos( theta[ t ] ) * imageCursor.getDoublePosition( 0 ) + Math.sin( theta[ t ] ) * imageCursor.getDoublePosition( 1 );
 					r = Math.round( ( float ) ( ( fRho - minRho ) / dRho ) );
