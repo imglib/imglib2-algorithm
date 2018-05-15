@@ -115,6 +115,22 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	}
 
 	/**
+	 * Returns the size of the vote space output image given an input
+	 * {@link RandomAccessibleInterval}.
+	 * 
+	 * @param dimensions
+	 *            - the {@link Dimensions} over which the Hough Line Transform
+	 *            will be run
+	 * @param nTheta
+	 *            - the number of theta bins.
+	 * @return {@code long[]} - the dimensions of the vote space image
+	 */
+	public static long[] getVotespaceSize( final Dimensions dimensions, final int nTheta )
+	{
+		return new long[] { defaultRho( dimensions ), nTheta };
+	}
+
+	/**
 	 * Returns the size of the voteSpace output image given desired {@code nRho}
 	 * and {@code nTheta} values.
 	 * 
