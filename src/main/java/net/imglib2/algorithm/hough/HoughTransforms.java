@@ -376,7 +376,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 			rho[ r ] = dRho * r + minRho;
 		}
 
-		final Cursor< T > imageCursor = Views.iterable( input ).localizingCursor();
+		final Cursor< T > imageCursor = Views.iterable( Views.zeroMin( input ) ).localizingCursor();
 		final RandomAccess< U > outputRA = votespace.randomAccess();
 
 		while ( imageCursor.hasNext() )
