@@ -285,7 +285,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 			final T threshold )
 
 	{
-		final Predicate< T > p = o -> threshold.compareTo( o ) < 0;
+		final Predicate< T > p = o -> threshold.compareTo( o ) <= 0;
 		voteLines( input, votespace, nTheta, nRho, p );
 	}
 
