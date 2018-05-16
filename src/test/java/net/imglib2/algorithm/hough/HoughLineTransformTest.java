@@ -119,8 +119,8 @@ public class HoughLineTransformTest
 		HoughTransforms.voteLines( tpImg, votespace );
 
 		// compare expected / actual dimensions
-		int height = groundTruth.getHeight();
-		int width = groundTruth.getWidth();
+		final int height = groundTruth.getHeight();
+		final int width = groundTruth.getWidth();
 		assertEquals( "Ground truth and result height do not match.", height, outputDims[ 1 ] );
 		assertEquals( "Ground truth and result width do not match.", width, outputDims[ 0 ] );
 
@@ -154,8 +154,8 @@ public class HoughLineTransformTest
 		final UnsignedByteType minPeak = Util.getTypeFromInterval( votespace ).createVariable();
 		minPeak.setReal( 10 );
 
-		List< Point > peaks = HoughTransforms.pickLinePeaks( votespace, minPeak );
-		for ( Point p : peaks )
+		final List< Point > peaks = HoughTransforms.pickLinePeaks( votespace, minPeak );
+		for ( final Point p : peaks )
 		{
 			// assert dimension 0
 			assertEquals( expected[ index++ ], p.getLongPosition( 0 ), 0 );
