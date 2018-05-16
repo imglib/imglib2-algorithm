@@ -361,19 +361,19 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 		final double minTheta = -Math.PI / 2;
 		final double dTheta = Math.PI / nTheta;
 
-		final double[] rho = new double[ nRho ];
-		final double[] theta = new double[ nTheta ];
+		final double[] cTheta = new double[ nTheta ];
+		final double[] sTheta = new double[ nTheta ];
 
-		// create theta LUT
+		// create cos(theta) LUT
 		for ( int t = 0; t < nTheta; ++t )
 		{
-			theta[ t ] = dTheta * t + minTheta;
+			cTheta[ t ] = Math.cos( dTheta * t + minTheta );
 		}
 
-		// create rho LUT
-		for ( int r = 0; r < nRho; ++r )
+		// create sin`(theta) LUT
+		for ( int t = 0; t < nTheta; ++t )
 		{
-			rho[ r ] = dRho * r + minRho;
+			sTheta[ t ] = Math.sin( dTheta * t + minTheta );
 		}
 
 		final Cursor< T > imageCursor = Views.iterable( Views.zeroMin( input ) ).localizingCursor();
@@ -390,7 +390,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 			{
 				for ( int t = 0; t < nTheta; ++t )
 				{
-					fRho = Math.cos( theta[ t ] ) * imageCursor.getDoublePosition( 0 ) + Math.sin( theta[ t ] ) * imageCursor.getDoublePosition( 1 );
+					fRho = cTheta[ t ] * imageCursor.getDoublePosition( 0 ) + sTheta[ t ] * imageCursor.getDoublePosition( 1 );
 					r = Math.round( ( float ) ( ( fRho - minRho ) / dRho ) );
 
 					// place vote
