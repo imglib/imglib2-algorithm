@@ -385,9 +385,12 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 
 			if ( filter.test( imageCursor.get() ) )
 			{
+				final double x = imageCursor.getDoublePosition( 0 );
+				final double y = imageCursor.getDoublePosition( 1 );
+
 				for ( int t = 0; t < nTheta; ++t )
 				{
-					final double fRho = cTheta[ t ] * imageCursor.getDoublePosition( 0 ) + sTheta[ t ] * imageCursor.getDoublePosition( 1 );
+					final double fRho = cTheta[ t ] * x + sTheta[ t ] * y;
 					final long r = Math.round( ( float ) ( ( fRho - minRho ) / dRho ) );
 
 					// place vote
