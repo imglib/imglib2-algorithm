@@ -391,7 +391,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 				for ( int t = 0; t < nTheta; ++t )
 				{
 					final double fRho = cTheta[ t ] * x + sTheta[ t ] * y;
-					final long r = Math.round( ( float ) ( ( fRho - minRho ) / dRho ) );
+					final long r = Math.round( ( fRho - minRho ) / dRho );
 
 					// place vote
 					outputRA.setPosition( r, 0 );
