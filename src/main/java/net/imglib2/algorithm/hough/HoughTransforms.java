@@ -52,8 +52,9 @@ import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 /**
- * This abstract class provides some basic functionality for use with arbitrary
- * Hough-like transforms.
+ *
+ * This class provides static methods used to detect imperfect shapes in
+ * two-dimensional images through the use of the Hough Transform.
  *
  * @param <T>
  *            the data type of the input image.
@@ -322,9 +323,9 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * It is important to note that the interval of the first dimension of the
 	 * vote space image is NOT {@code [-maxRho, maxRho)} but instead
 	 * {@code [0, maxRho * 2)}; the same applies to the second dimension of the
-	 * vote space as well. Thus if {@link HoughTransforms#pickPeaks} is not used
-	 * to retrieve the maxima from the vote space, the vote space will have to
-	 * be translated by {@code -maxRho} in dimension 0 to get the correct
+	 * vote space as well. Thus if {@link HoughTransforms#pickLinePeaks} is not
+	 * used to retrieve the maxima from the vote space, the vote space will have
+	 * to be translated by {@code -maxRho} in dimension 0 to get the correct
 	 * {@code rho} and {@code theta} values from the vote space.
 	 * </p>
 	 *
