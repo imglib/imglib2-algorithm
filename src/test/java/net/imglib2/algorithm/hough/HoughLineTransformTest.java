@@ -46,12 +46,12 @@ import javax.imageio.ImageIO;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Util;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -109,7 +109,11 @@ public class HoughLineTransformTest
 		final long[] dims = new long[ tpImg.numDimensions() ];
 		tpImg.dimensions( dims );
 		final long[] outputDims = HoughTransforms.getVotespaceSize( tpImg );
-		final Img< UnsignedByteType > votespace = new ArrayImgFactory().create( outputDims, tpImg.firstElement() );
+		int numElements = 1;
+		for ( final long l : outputDims )
+			numElements *= l;
+		final byte[] store = new byte[ numElements ];
+		final Img< UnsignedByteType > votespace = ArrayImgs.unsignedBytes( store, outputDims );
 
 		// run transform
 		HoughTransforms.voteLines( tpImg, votespace );
@@ -120,24 +124,11 @@ public class HoughLineTransformTest
 		assertEquals( "Ground truth and result height do not match.", height, outputDims[ 1 ] );
 		assertEquals( "Ground truth and result width do not match.", width, outputDims[ 0 ] );
 
-		DataBufferByte db = ( DataBufferByte ) groundTruth.getData().getDataBuffer();
-		byte[] expected = db.getBankData()[ 0 ];
-
-		final RandomAccess< UnsignedByteType > ra = votespace.randomAccess();
+		final DataBufferByte db = ( DataBufferByte ) groundTruth.getData().getDataBuffer();
+		final byte[] expected = db.getBankData()[ 0 ];
 
 		// compare expected / actual results for regression.
-		int index = 0;
-		for ( int j = 0; j < height; ++j )
-		{
-			ra.setPosition( j, 1 );
-			for ( int i = 0; i < width; ++i )
-			{
-				ra.setPosition( i, 0 );
-
-				assertEquals( expected[ index++ ], ra.get().getRealDouble(), 0 );
-
-			}
-		}
+		Assert.assertArrayEquals( expected, store );
 	}
 
 	@Test
@@ -151,7 +142,11 @@ public class HoughLineTransformTest
 		final long[] dims = new long[ tpImg.numDimensions() ];
 		tpImg.dimensions( dims );
 		final long[] outputDims = HoughTransforms.getVotespaceSize( tpImg );
-		final Img< UnsignedByteType > votespace = new ArrayImgFactory().create( outputDims, tpImg.firstElement() );
+		int numElements = 1;
+		for ( final long l : outputDims )
+			numElements *= l;
+		final byte[] store = new byte[ numElements ];
+		final Img< UnsignedByteType > votespace = ArrayImgs.unsignedBytes( store, outputDims );
 
 		// run transform
 		HoughTransforms.voteLines( tpImg, votespace );
