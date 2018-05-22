@@ -32,11 +32,12 @@
  * #L%
  */
 
-package net.imglib2.algorithm.gauss3;
+package net.imglib2.algorithm.convolution.kernel;
 
 import java.lang.reflect.Array;
 
 import net.imglib2.RandomAccess;
+import net.imglib2.algorithm.convolution.ConvolverFactory;
 import net.imglib2.type.numeric.NumericType;
 
 /**
@@ -49,119 +50,82 @@ import net.imglib2.type.numeric.NumericType;
  * @param <T>
  *            input and output type
  */
-@Deprecated
 public class ConvolverNumericType< T extends NumericType< T > > implements Runnable
 {
-	/**
-	 * @return a {@link ConvolverFactory} producing {@link ConvolverNumericType}
-	 *         .
-	 */
-	public static < T extends NumericType< T > > ConvolverNumericTypeFactory< T > factory( final T type )
-	{
-		return new ConvolverNumericTypeFactory< T >( type );
-	}
-
-	public static final class ConvolverNumericTypeFactory< T extends NumericType< T > > implements ConvolverFactory< T, T >
-	{
-		final private T type;
-
-		public ConvolverNumericTypeFactory( final T type )
-		{
-			this.type = type;
-		}
-
-		@Override
-		public Runnable create( final double[] halfkernel, final RandomAccess< T > in, final RandomAccess< T > out, final int d, final long lineLength )
-		{
-			return new ConvolverNumericType< T >( halfkernel, in, out, d, lineLength, type );
-		}
-	}
 
 	final private double[] kernel;
 
-	final private RandomAccess< T > in;
+	final private RandomAccess< ? extends T > in;
 
-	final private RandomAccess< T > out;
+	final private RandomAccess< ? extends T > out;
 
 	final private int d;
 
-	final private int k;
-
-	final private int k1;
-
 	final private int k1k1;
 
-	final private long linelen;
+	final private int k1k;
 
-	final T[] buf;
+	final private long fill2;
 
-	final T tmp;
+	final private T[] buffer;
+
+	final private T tmp;
 
 	@SuppressWarnings( "unchecked" )
-	private ConvolverNumericType( final double[] kernel, final RandomAccess< T > in, final RandomAccess< T > out, final int d, final long lineLength, final T type )
+	public ConvolverNumericType(final Kernel1D kernel, final RandomAccess< ? extends T > in, final RandomAccess< ? extends T > out, final int d, final long lineLength, final T type )
 	{
-		this.kernel = kernel;
+		// NB: This constructor is used in ConvolverFactories. It needs to be public and have this exact signature.
 		this.in = in;
 		this.out = out;
 		this.d = d;
+		this.kernel = kernel.fullKernel().clone();
 
-		k = kernel.length;
-		k1 = k - 1;
-		k1k1 = k1 + k1;
-		linelen = lineLength;
+		k1k = this.kernel.length;
+		k1k1 = k1k - 1;
+		fill2 = lineLength;
 
-		final int buflen = 2 * k - 1;
-		buf = ( T[] ) Array.newInstance( type.getClass(), buflen );
-		for ( int i = 0; i < buflen; ++i )
-			buf[ i ] = type.createVariable();
+		buffer = ( T[] ) Array.newInstance( type.getClass(), k1k + 1);
+		for ( int i = 0; i < k1k + 1; ++i )
+			buffer[ i ] = type.createVariable();
 
 		tmp = type.createVariable();
 	}
 
+	private void prefill()
+	{
+		tmp.set(in.get());
+		process(tmp);
+		in.fwd( d );
+	}
+
 	private void next()
 	{
-		// move buf contents down
-		final T first = buf[ 0 ];
-		for ( int i = 0; i < k1k1; ++i )
-			buf[ i ] = buf[ i + 1 ];
-		buf[ k1k1 ] = first;
-
-		// add new values
-		final T w = in.get();
-
-		// center
-		tmp.set( w );
-		tmp.mul( kernel[ 0 ] );
-		buf[ k1 ].add( tmp );
-
-		// loop
-		for ( int j = 1; j < k1; ++j )
-		{
-			tmp.set( w );
-			tmp.mul( kernel[ j ] );
-			buf[ k1 + j ].add( tmp );
-			buf[ k1 - j ].add( tmp );
-		}
-
-		// outer-most
-		tmp.set( w );
-		tmp.mul( kernel[ k1 ] );
-		buf[ k1k1 ].set( tmp );
-
+		tmp.set(in.get());
+		final T t = buffer[0];
+		t.set(tmp);
+		t.mul(kernel[0]);
+		t.add(buffer[1]);
+		out.get().set(t);
+		process(tmp);
 		in.fwd( d );
+		out.fwd( d );
+	}
+
+	private void process(T tmp) {
+		for ( int i = 1; i < k1k; ++i ) {
+			final T t = buffer[i];
+			t.set(tmp);
+			t.mul(kernel[i]);
+			t.add(buffer[i+1]);
+		}
 	}
 
 	@Override
 	public void run()
 	{
 		for ( int i = 0; i < k1k1; ++i )
+			prefill();
+		for ( long i = 0; i < fill2; ++i )
 			next();
-		for ( long i = 0; i < linelen; ++i )
-		{
-			next();
-			tmp.add( buf[ 0 ] );
-			out.get().set( tmp );
-			out.fwd( d );
-		}
 	}
 }

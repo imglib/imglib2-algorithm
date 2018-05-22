@@ -52,6 +52,7 @@ import net.imglib2.type.numeric.RealType;
  * @param <T>
  *            output type
  */
+@Deprecated
 public final class FloatConvolverRealTypeBuffered< S extends RealType< S >, T extends RealType< T > > implements Runnable
 {
 	/**

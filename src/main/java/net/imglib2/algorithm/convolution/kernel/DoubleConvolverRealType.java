@@ -32,115 +32,80 @@
  * #L%
  */
 
-package net.imglib2.algorithm.gauss3;
+package net.imglib2.algorithm.convolution.kernel;
 
 import net.imglib2.RandomAccess;
+import net.imglib2.algorithm.convolution.ConvolverFactory;
 import net.imglib2.type.numeric.RealType;
 
 /**
  * A 1-dimensional line convolver that operates on all {@link RealType}. It
- * implemented using a line buffer that is stored in a double[] array that is
- * (approximately) as big as one output line. This works for images, where a
- * single line has no more than {@link Integer#MAX_VALUE} elements. For larger
- * images {@link DoubleConvolverRealType} can be used.
- * 
+ * implemented using a shifting window buffer that is stored in a small double[]
+ * array.
+ *
  * @author Tobias Pietzsch
  * @see ConvolverFactory
- * 
- * @param <S>
- *            input type
- * @param <T>
- *            output type
  */
-@Deprecated
-public final class DoubleConvolverRealTypeBuffered< S extends RealType< S >, T extends RealType< T > > implements Runnable
+public final class DoubleConvolverRealType implements Runnable
 {
-	/**
-	 * @return a {@link ConvolverFactory} producing
-	 *         {@link DoubleConvolverRealTypeBuffered}.
-	 */
-	public static < S extends RealType< S >, T extends RealType< T > > ConvolverFactory< S, T > factory()
-	{
-		return new ConvolverFactory< S, T >()
-		{
-			@Override
-			public Runnable create( final double[] halfkernel, final RandomAccess< S > in, final RandomAccess< T > out, final int d, final long lineLength )
-			{
-				return new DoubleConvolverRealTypeBuffered< S, T >( halfkernel, in, out, d, lineLength );
-			}
-		};
-	}
 
 	final private double[] kernel;
 
-	final private RandomAccess< S > in;
+	final private RandomAccess< ? extends RealType<?> > in;
 
-	final private RandomAccess< T > out;
+	final private RandomAccess< ? extends RealType<?> > out;
 
 	final private int d;
 
-	final private int k;
-
-	final private int k1;
-
 	final private int k1k1;
 
-	final private int buflen;
+	final private int k1k;
 
-	final private double[] buf;
+	final private long fill2;
 
-	private DoubleConvolverRealTypeBuffered( final double[] kernel, final RandomAccess< S > in, final RandomAccess< T > out, final int d, final long lineLength )
+	final private double[] buffer;
+
+	public DoubleConvolverRealType(final Kernel1D kernel, final RandomAccess< ? extends RealType<?> > in, final RandomAccess< ? extends RealType<?> > out, final int d, final long lineLength, Object dummy )
 	{
-		this.kernel = kernel;
+		// NB: This constructor is used in ConvolverFactories. It needs to be public and have this exact signature.
 		this.in = in;
 		this.out = out;
 		this.d = d;
+		this.kernel = kernel.fullKernel().clone();
 
-		k = this.kernel.length;
-		k1 = k - 1;
-		k1k1 = k1 + k1;
+		k1k = this.kernel.length;
+		k1k1 = k1k - 1;
+		fill2 = lineLength;
+		buffer = new double[k1k + 1];
+	}
 
-		buflen = ( int ) lineLength + 2 * k1k1;
-		buf = new double[ buflen ];
+	private void prefill()
+	{
+		final double w = in.get().getRealDouble();
+		process(w);
+		in.fwd( d );
+	}
+
+	private void next()
+	{
+		final double w = in.get().getRealDouble();
+		out.get().setReal( w * kernel[ 0 ] + buffer[ 1 ] );
+		process(w);
+		in.fwd( d );
+		out.fwd( d );
+	}
+
+	private void process(double w) {
+		for ( int i = 1; i < k1k; ++i )
+			buffer[ i ] = w * kernel[ i ] + buffer[ i + 1 ];
 	}
 
 	@Override
 	public void run()
 	{
-		final int max = buflen - k1;
-		for ( int i = k1; i < max; ++i )
-		{
-			final double w = in.get().getRealDouble();
-
-			// center
-			buf[ i ] += w * kernel[ 0 ];
-
-			// loop
-			for ( int j = 1; j < k1; ++j )
-			{
-				final double wk = w * kernel[ j ];
-				buf[ i + j ] += wk;
-				buf[ i - j ] += wk;
-			}
-
-			// outer-most
-			final double wk = w * kernel[ k1 ];
-			buf[ i - k1 ] += wk;
-			buf[ i + k1 ] = wk;
-
-			in.fwd( d );
-		}
-
-		writeLine();
-	}
-
-	private void writeLine()
-	{
-		final int max = buflen - k1k1;
-		for ( int i = k1k1; i < max; ++i )
-		{
-			out.get().setReal( buf[ i ] );
-			out.fwd( d );
-		}
+		for ( int i = 0; i < k1k1; ++i )
+			prefill();
+		for ( long i = 0; i < fill2; ++i )
+			next();
 	}
 }

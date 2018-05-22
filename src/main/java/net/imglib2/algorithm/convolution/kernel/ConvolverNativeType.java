@@ -32,136 +32,116 @@
  * #L%
  */
 
-package net.imglib2.algorithm.gauss3;
-
-import java.lang.reflect.Array;
+package net.imglib2.algorithm.convolution.kernel;
 
 import net.imglib2.RandomAccess;
+import net.imglib2.algorithm.convolution.ConvolverFactory;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 
 /**
- * A 1-dimensional line convolver that operates on all {@link NumericType}. It
- * implemented using a shifting window buffer that is stored in a T[] array.
- * 
+ * A 1-dimensional line convolver that operates on all {@link NumericType} with
+ * {@link NativeType} representation. It implemented using a shifting window
+ * buffer that is stored in a small {@link NativeType} image.
+ *
  * @author Tobias Pietzsch
  * @see ConvolverFactory
  * 
  * @param <T>
  *            input and output type
  */
-@Deprecated
-public class ConvolverNumericType< T extends NumericType< T > > implements Runnable
+public final class ConvolverNativeType< T extends NumericType< T > & NativeType< T > > implements Runnable
 {
-	/**
-	 * @return a {@link ConvolverFactory} producing {@link ConvolverNumericType}
-	 *         .
-	 */
-	public static < T extends NumericType< T > > ConvolverNumericTypeFactory< T > factory( final T type )
-	{
-		return new ConvolverNumericTypeFactory< T >( type );
-	}
-
-	public static final class ConvolverNumericTypeFactory< T extends NumericType< T > > implements ConvolverFactory< T, T >
-	{
-		final private T type;
-
-		public ConvolverNumericTypeFactory( final T type )
-		{
-			this.type = type;
-		}
-
-		@Override
-		public Runnable create( final double[] halfkernel, final RandomAccess< T > in, final RandomAccess< T > out, final int d, final long lineLength )
-		{
-			return new ConvolverNumericType< T >( halfkernel, in, out, d, lineLength, type );
-		}
-	}
 
 	final private double[] kernel;
 
-	final private RandomAccess< T > in;
+	final private RandomAccess< ? extends T > in;
 
-	final private RandomAccess< T > out;
+	final private RandomAccess< ? extends T > out;
 
 	final private int d;
 
-	final private int k;
-
-	final private int k1;
+	private final int k1k;
 
 	final private int k1k1;
 
 	final private long linelen;
 
-	final T[] buf;
+	final T b1;
+
+	final T b2;
 
 	final T tmp;
 
-	@SuppressWarnings( "unchecked" )
-	private ConvolverNumericType( final double[] kernel, final RandomAccess< T > in, final RandomAccess< T > out, final int d, final long lineLength, final T type )
+	public ConvolverNativeType(final Kernel1D kernel, final RandomAccess< ? extends T > in, final RandomAccess< ? extends T > out, final int d, final long lineLength, final T type )
 	{
-		this.kernel = kernel;
+		// NB: This constructor is used in ConvolverFactories. It needs to be public and have this exact signature.
 		this.in = in;
 		this.out = out;
 		this.d = d;
+		this.kernel = kernel.fullKernel().clone();
 
-		k = kernel.length;
-		k1 = k - 1;
-		k1k1 = k1 + k1;
+		k1k = this.kernel.length;
+		k1k1 = k1k - 1;
 		linelen = lineLength;
 
-		final int buflen = 2 * k - 1;
-		buf = ( T[] ) Array.newInstance( type.getClass(), buflen );
-		for ( int i = 0; i < buflen; ++i )
-			buf[ i ] = type.createVariable();
+		final ArrayImg< T, ? > buf = new ArrayImgFactory< T >().create( new long[] {k1k}, type );
+		b1 = buf.randomAccess().get();
+		b2 = buf.randomAccess().get();
 
 		tmp = type.createVariable();
 	}
 
-	private void next()
+	private void prefill()
 	{
-		// move buf contents down
-		final T first = buf[ 0 ];
-		for ( int i = 0; i < k1k1; ++i )
-			buf[ i ] = buf[ i + 1 ];
-		buf[ k1k1 ] = first;
-
 		// add new values
 		final T w = in.get();
+		process(w);
+		in.fwd( d );
+	}
 
-		// center
-		tmp.set( w );
-		tmp.mul( kernel[ 0 ] );
-		buf[ k1 ].add( tmp );
+	private void next()
+	{
+		// add new values
+		final T w = in.get();
+		process(w);
+		in.fwd( d );
+		b1.updateIndex( 0 );
+		out.get().set( b1 );
+		out.fwd( d );
+	}
+
+	private void process(T w)
+	{
+		// move buf contents down
+		for ( int i = 0; i < k1k1; ++i )
+		{
+			b2.updateIndex( i + 1 );
+			b1.updateIndex( i );
+			b1.set( b2 );
+		}
+
+		b1.updateIndex(k1k1);
+		b1.setZero();
 
 		// loop
-		for ( int j = 1; j < k1; ++j )
+		for (int j = 0; j < k1k; ++j )
 		{
 			tmp.set( w );
 			tmp.mul( kernel[ j ] );
-			buf[ k1 + j ].add( tmp );
-			buf[ k1 - j ].add( tmp );
+			b1.updateIndex( j );
+			b1.add( tmp );
 		}
-
-		// outer-most
-		tmp.set( w );
-		tmp.mul( kernel[ k1 ] );
-		buf[ k1k1 ].set( tmp );
-
-		in.fwd( d );
 	}
 
 	@Override
 	public void run()
 	{
 		for ( int i = 0; i < k1k1; ++i )
-			next();
+			prefill();
 		for ( long i = 0; i < linelen; ++i )
-		{
 			next();
-			tmp.add( buf[ 0 ] );
-			out.get().set( tmp );
-			out.fwd( d );
-		}
 	}
 }
