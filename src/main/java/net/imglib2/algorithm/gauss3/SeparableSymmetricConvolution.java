@@ -35,6 +35,7 @@
 package net.imglib2.algorithm.gauss3;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -46,7 +47,7 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.convolution.Kernel1D;
+import net.imglib2.algorithm.convolution.kernel.Kernel1D;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgFactory;
@@ -71,7 +72,7 @@ import net.imglib2.view.Views;
 public final class SeparableSymmetricConvolution
 {
 	/**
-	 * @deprecated Use {@link net.imglib2.algorithm.convolution.SeparableConvolution#convolve(Kernel1D[], RandomAccessible, RandomAccessibleInterval, ExecutorService)}
+	 * @deprecated Use {@link net.imglib2.algorithm.convolution.kernel.SeparableKernelConvolution#convolve(Kernel1D[], RandomAccessible, RandomAccessibleInterval, ExecutorService)}
 	 * <p>
 	 * Convolve source with a separable symmetric kernel and write the result to
 	 * output. In-place operation (source==target) is supported.
@@ -209,7 +210,7 @@ public final class SeparableSymmetricConvolution
 	}
 
 	/**
-	 * @deprecated use {@link net.imglib2.algorithm.convolution.SeparableConvolutionHelper#convolve1d(Kernel1D, int, RandomAccessible, RandomAccessibleInterval)}
+	 * @deprecated use {@link net.imglib2.algorithm.convolution.Convolution#convolve1d(net.imglib2.algorithm.convolution.ConvolverFactory, RandomAccessible, RandomAccessibleInterval, int)}
 	 */
 	@Deprecated
 	public static < S, T > void convolve1d( final double[] halfkernel,
@@ -222,7 +223,7 @@ public final class SeparableSymmetricConvolution
 	}
 
 	/**
-	 * @deprecated use {@link net.imglib2.algorithm.convolution.SeparableConvolutionHelper#convolve(Kernel1D[], RandomAccessible, RandomAccessibleInterval)}
+	 * @deprecated use {@link net.imglib2.algorithm.convolution.Convolution#convolve(List, ImgFactory, RandomAccessible, RandomAccessibleInterval)}
 	 * <p>
 	 * Convolve source with a separable symmetric kernel and write the result to
 	 * output. In-place operation (source==target) is supported. Calculations

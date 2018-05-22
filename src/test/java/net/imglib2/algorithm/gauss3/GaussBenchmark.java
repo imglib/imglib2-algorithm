@@ -2,7 +2,6 @@ package net.imglib2.algorithm.gauss3;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.gradient.PartialDerivative;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.cell.CellImgFactory;
@@ -31,7 +30,7 @@ import java.util.concurrent.Executors;
 public class GaussBenchmark {
 
 	private final long[] dim = {1000, 1000};
-	private final long[] dim2 = {1000, 10, 100};
+	private final long[] dim2 = {10, 10, 1};
 
 	private RandomAccessibleInterval<DoubleType> in = ArrayImgs.doubles(dim);
 	private RandomAccessibleInterval<DoubleType> out = shrink(ArrayImgs.doubles(dim), 50);
@@ -41,6 +40,15 @@ public class GaussBenchmark {
 	private PlanarImgFactory<DoubleType> planerFactory = new PlanarImgFactory<>();
 	private RandomAccessible<DoubleType> planarIn = Views.extendBorder(planerFactory.create(dim2, new DoubleType()));
 	private RandomAccessibleInterval<DoubleType> planarOut = planerFactory.create(dim2, new DoubleType());
+
+	public GaussBenchmark() {
+		gauss();
+		deprecated();
+		gaussOnCellImg();
+		deprecatedOnCellImg();
+		gaussOnPlanarImg();
+		deprecatedOnPlanarImg();
+	}
 
 	private RandomAccessibleInterval<DoubleType> shrink(RandomAccessibleInterval<DoubleType> img, int border) {
 		return Views.interval(img, Intervals.expand(img, -border));
