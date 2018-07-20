@@ -52,6 +52,43 @@ public class LoopMathTest
 		return 100 * 100 * 100 * 10 == sum;
 	}
 	
+	protected static void comparePerformance() {
+		final long[] dims = new long[]{ 1024, 1024, 100 };
+		
+		final ArrayImg< ARGBType, ? > rgb = new ArrayImgFactory< ARGBType >( new ARGBType() ).create( dims );
+		
+		final RandomAccessibleInterval< UnsignedByteType >
+			red = Converters.argbChannel( rgb, 1 ),
+			green = Converters.argbChannel( rgb, 2 ),
+			blue = Converters.argbChannel( rgb, 3 );
+		
+		for ( final UnsignedByteType t : Views.iterable(red) ) t.set( 10 );
+		for ( final UnsignedByteType t : Views.iterable(green) ) t.set( 30 );
+		for ( final UnsignedByteType t : Views.iterable(blue) ) t.set( 20 );
+		
+		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
+		
+		final int n_iterations = 100;
+		
+		final long t0 = System.nanoTime();
+		
+		for (int i=0; i < n_iterations; ++i) {
+			try {
+				LoopMath.compute( brightness, new Div( new Max( red, new Max( green, blue ) ), 3.0 ) );
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		final long t1 = System.nanoTime();
+		
+		for (int i=0; i < n_iterations; ++i) {
+			
+			// TODO regular manual looping
+		}
+	}
+	
+	
 	@Test
 	public void test() {
 		assertTrue( testLoopMath1() );

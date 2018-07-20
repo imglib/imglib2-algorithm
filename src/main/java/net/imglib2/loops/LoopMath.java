@@ -32,18 +32,17 @@ public class LoopMath
 
 	private LoopMath() {}
 	
-	static public < O extends RealType< O > > void compute( final RandomAccessibleInterval< O > target,  final Function< O > function ) throws Exception 
-	{
-		// Check compatible iteration order
-		
+	static public < O extends RealType< O > > void compute( final RandomAccessibleInterval< O > target,  final IFunction< O > function ) throws Exception 
+	{	
 		// Recursive copy: initializes interval iterators
-		final Function< O > f = function.copy();
+		final IFunction< O > f = function.copy();
 		// Set temporary computation holders
 		final O scrap = target.randomAccess().get().createVariable();
 		f.setScrap( scrap );
 		
 		final LinkedList< RandomAccessibleInterval< ? > > images = findImages( f );
 		
+		// Check compatible iteration order and dimensions
 		checkCompatibility( images );
 		
 		// Evaluate function for every pixel
@@ -54,7 +53,7 @@ public class LoopMath
 	}
 	
 	@SuppressWarnings("rawtypes")
-	static public LinkedList< RandomAccessibleInterval< ? > > findImages(final Function< ? > f)
+	static public LinkedList< RandomAccessibleInterval< ? > > findImages(final IFunction< ? > f)
 	{
 		final LinkedList< Object > ops = new LinkedList<>();
 		ops.add( f );
@@ -66,14 +65,14 @@ public class LoopMath
 		{
 			final Object op = ops.removeFirst();
 			
-			if ( op instanceof IterableOp )
+			if ( op instanceof IterableImgSource )
 			{
-				images.addLast( ( ( IterableOp )op ).rai );
+				images.addLast( ( ( IterableImgSource )op ).rai );
 			}
-			else if ( op instanceof BinaryOp )
+			else if ( op instanceof BinaryFunction )
 			{
-				ops.addLast( ( ( BinaryOp )op ).a );
-				ops.addLast( ( ( BinaryOp )op ).b );
+				ops.addLast( ( ( BinaryFunction )op ).a );
+				ops.addLast( ( ( BinaryFunction )op ).b );
 			}
 		}
 		
@@ -88,7 +87,7 @@ public class LoopMath
 	 * @return
 	 * @throws Exception When images have different dimensions.
 	 */
-	static private boolean checkCompatibility( final LinkedList< RandomAccessibleInterval< ? > > images ) throws Exception
+	static public boolean checkCompatibility( final LinkedList< RandomAccessibleInterval< ? > > images ) throws Exception
 	{
 		if ( images.isEmpty() )
 		{
@@ -135,21 +134,21 @@ public class LoopMath
 		return true;
 	}
 	
-	static public interface Function< O extends RealType< O > >
+	static public interface IFunction< O extends RealType< O > >
 	{
 		public void eval( O output );
 		
-		public Function< O > copy();
+		public IFunction< O > copy();
 		
 		public void setScrap( O output );
 	}
 	
-	static protected class IterableOp< I extends RealType< I >, O extends RealType< O > > implements Function< O >
+	static protected class IterableImgSource< I extends RealType< I >, O extends RealType< O > > implements IFunction< O >
 	{
 		private final RandomAccessibleInterval< I > rai;
 		private final Iterator<I> it;
 
-		public IterableOp( final RandomAccessibleInterval< I > rai )
+		public IterableImgSource( final RandomAccessibleInterval< I > rai )
 		{
 			this.rai = rai;
 			this.it = Views.iterable( rai ).iterator();
@@ -161,20 +160,20 @@ public class LoopMath
 		}
 
 		@Override
-		public IterableOp< I, O > copy()
+		public IterableImgSource< I, O > copy()
 		{
-			return new IterableOp< I, O >( this.rai );
+			return new IterableImgSource< I, O >( this.rai );
 		}
 
 		@Override
 		public void setScrap(O output) {}
 	}
 	
-	static protected class NumberOp< O extends RealType< O > > implements Function< O >
+	static protected class NumberSource< O extends RealType< O > > implements IFunction< O >
 	{
 		private final double number;
 		
-		public NumberOp( final Number number ) {
+		public NumberSource( final Number number ) {
 			this.number = number.doubleValue();
 		}
 
@@ -184,31 +183,31 @@ public class LoopMath
 		}
 
 		@Override
-		public NumberOp< O > copy()
+		public NumberSource< O > copy()
 		{
-			return new NumberOp< O >( this.number );
+			return new NumberSource< O >( this.number );
 		}
 
 		@Override
 		public void setScrap(O output) {}
 	}
 	
-	static abstract public class Op< O extends RealType< O> >
+	static abstract public class Function< O extends RealType< O> >
 	{
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-		public Function< O > wrap( final Object o )
+		public IFunction< O > wrap( final Object o )
 		{
 			if ( o instanceof RandomAccessibleInterval< ? > )
 			{
-				return new IterableOp( (RandomAccessibleInterval) o );
+				return new IterableImgSource( (RandomAccessibleInterval) o );
 			}
 			else if ( o instanceof Number )
 			{
-				return new NumberOp( ( (Number) o ).doubleValue() );
+				return new NumberSource( ( (Number) o ).doubleValue() );
 			}
-			else if ( o instanceof Function )
+			else if ( o instanceof IFunction )
 			{
-				return ( (Function) o ).copy();
+				return ( (IFunction) o ).copy();
 			}
 			
 			// Make it fail
@@ -216,13 +215,13 @@ public class LoopMath
 		}
 	}
 
-	static abstract public class BinaryOp< O extends RealType< O > > extends Op< O > implements Function< O >
+	static abstract public class BinaryFunction< O extends RealType< O > > extends Function< O > implements IFunction< O >
 	{
-		protected final Function< O > a, b;
+		protected final IFunction< O > a, b;
 
 		protected O scrap;
 		
-		public BinaryOp( final Object o1, final Object o2 )
+		public BinaryFunction( final Object o1, final Object o2 )
 		{
 			this.a = this.wrap( o1 );
 			this.b = this.wrap( o2 );
@@ -237,7 +236,7 @@ public class LoopMath
 		}
 	}
 	
-	static public class Mul< O extends RealType< O > > extends BinaryOp< O >
+	static public class Mul< O extends RealType< O > > extends BinaryFunction< O >
 	{
 
 		public Mul( final Object o1, final Object o2 )
@@ -260,7 +259,7 @@ public class LoopMath
 		}
 	}
 	
-	static public class Div< O extends RealType< O > > extends BinaryOp< O > implements Function< O >
+	static public class Div< O extends RealType< O > > extends BinaryFunction< O > implements IFunction< O >
 	{
 
 		public Div( final Object o1, final Object o2 )
@@ -283,7 +282,7 @@ public class LoopMath
 		}
 	}
 	
-	static public class Max< O extends RealType< O > > extends BinaryOp< O > implements Function< O >
+	static public class Max< O extends RealType< O > > extends BinaryFunction< O > implements IFunction< O >
 	{
 
 		public Max( final Object o1, final Object o2 )
@@ -307,7 +306,7 @@ public class LoopMath
 		}
 	}
 	
-	static public class Min< O extends RealType< O > > extends BinaryOp< O >
+	static public class Min< O extends RealType< O > > extends BinaryFunction< O >
 	{
 
 		public Min( final Object o1, final Object o2 )
@@ -331,7 +330,7 @@ public class LoopMath
 		}
 	}
 	
-	static public class Add< O extends RealType< O > > extends BinaryOp< O >
+	static public class Add< O extends RealType< O > > extends BinaryFunction< O >
 	{
 
 		public Add( final Object o1, final Object o2 )
@@ -354,7 +353,7 @@ public class LoopMath
 		}
 	}
 	
-	static public class Sub< O extends RealType< O > > extends BinaryOp< O >
+	static public class Sub< O extends RealType< O > > extends BinaryFunction< O >
 	{
 
 		public Sub( final Object o1, final Object o2 )
