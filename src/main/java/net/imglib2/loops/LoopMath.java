@@ -5,6 +5,7 @@ import java.util.LinkedList;
 
 import net.imglib2.IterableRealInterval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
@@ -32,7 +33,27 @@ public class LoopMath
 
 	private LoopMath() {}
 	
-	static public < O extends RealType< O > > void compute( final RandomAccessibleInterval< O > target,  final IFunction< O > function ) throws Exception 
+	static public < I extends RealType< I >, O extends RealType< O > > void compute(
+			final RandomAccessibleInterval< O > target,
+			final IFunction< O > function
+			) throws Exception 
+	{
+		final Converter< I, O > converter = new Converter<I, O>()
+		{
+			@Override
+			public final void convert( final I input, final O output) {
+				output.setReal( input.getRealDouble() );
+			}
+		};
+
+		compute( target, function, converter );
+	}
+	
+	static public < I extends RealType< I >, O extends RealType< O > > void compute(
+			final RandomAccessibleInterval< O > target,
+			final IFunction< O > function,
+			final Converter<I, O> converter
+			) throws Exception 
 	{	
 		// Recursive copy: initializes interval iterators
 		final IFunction< O > f = function.copy();
@@ -40,7 +61,7 @@ public class LoopMath
 		final O scrap = target.randomAccess().get().createVariable();
 		f.setScrap( scrap );
 		
-		final LinkedList< RandomAccessibleInterval< ? > > images = findImages( f );
+		final LinkedList< RandomAccessibleInterval< ? > > images = findAndPrepareImages( f, converter );
 		
 		// Check compatible iteration order and dimensions
 		checkCompatibility( images );
@@ -52,8 +73,8 @@ public class LoopMath
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
-	static public LinkedList< RandomAccessibleInterval< ? > > findImages(final IFunction< ? > f)
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	static public LinkedList< RandomAccessibleInterval< ? > > findAndPrepareImages( final IFunction< ? > f, final Converter< ?, ? > converter )
 	{
 		final LinkedList< Object > ops = new LinkedList<>();
 		ops.add( f );
@@ -67,7 +88,10 @@ public class LoopMath
 			
 			if ( op instanceof IterableImgSource )
 			{
-				images.addLast( ( ( IterableImgSource )op ).rai );
+				final IterableImgSource iis = ( IterableImgSource )op;
+				// Side effect: set the converter from input to output types
+				iis.setConverter( converter );
+				images.addLast( iis.rai );
 			}
 			else if ( op instanceof BinaryFunction )
 			{
@@ -83,7 +107,7 @@ public class LoopMath
 	 * Returns true if images have the same dimensions and iterator order.
 	 * Returns false when the iteration order is incompatible.
 	 * 
-	 * @param f
+	 * @param images
 	 * @return
 	 * @throws Exception When images have different dimensions.
 	 */
@@ -147,6 +171,7 @@ public class LoopMath
 	{
 		private final RandomAccessibleInterval< I > rai;
 		private final Iterator<I> it;
+		private Converter< RealType< ? >, O > converter;
 
 		public IterableImgSource( final RandomAccessibleInterval< I > rai )
 		{
@@ -156,7 +181,7 @@ public class LoopMath
 
 		@Override
 		public void eval( final O output ) {
-			output.setReal( this.it.next().getRealDouble() );
+			this.converter.convert( this.it.next(), output );
 		}
 
 		@Override
@@ -167,6 +192,10 @@ public class LoopMath
 
 		@Override
 		public void setScrap(O output) {}
+		
+		public void setConverter( final Converter< RealType< ? >, O > converter ) {
+			this.converter = converter;
+		}
 	}
 	
 	static protected class NumberSource< O extends RealType< O > > implements IFunction< O >
