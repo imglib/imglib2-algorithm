@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.array.ArrayImg;
@@ -52,8 +53,8 @@ public class LoopMathTest
 		return 100 * 100 * 100 * 10 == sum;
 	}
 	
-	protected static void comparePerformance() {
-		final long[] dims = new long[]{ 1024, 1024, 100 };
+	protected static boolean comparePerformance( final int n_iterations ) {
+		final long[] dims = new long[]{ 1024, 1024 };
 		
 		final ArrayImg< ARGBType, ? > rgb = new ArrayImgFactory< ARGBType >( new ARGBType() ).create( dims );
 		
@@ -67,34 +68,72 @@ public class LoopMathTest
 		for ( final UnsignedByteType t : Views.iterable(blue) ) t.set( 20 );
 		
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
+
+		long minLM = Long.MAX_VALUE,
+			 maxLM = 0;
+		double meanLM = 0;
 		
-		final int n_iterations = 100;
-		
-		final long t0 = System.nanoTime();
-		
-		for (int i=0; i < n_iterations; ++i) {
+		for ( int i=0; i < n_iterations; ++i ) {
+			final long t0 = System.nanoTime();
 			try {
 				LoopMath.compute( brightness, new Div( new Max( red, new Max( green, blue ) ), 3.0 ) );
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
-		
-		final long t1 = System.nanoTime();
-		
-		for (int i=0; i < n_iterations; ++i) {
+			final long t1 = System.nanoTime();
 			
-			// TODO regular manual looping
+			minLM = Math.min(minLM, t1 - t0);
+			maxLM = Math.max(maxLM, t1 - t0);
+			meanLM += (t1 - t0) / (double)(n_iterations);
 		}
+		
+		System.out.println("LoopMath: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
+
+		
+		
+		// Reset
+		minLM = Long.MAX_VALUE;
+		maxLM = 0;
+		meanLM = 0;
+		
+		for ( int i=0; i < n_iterations; ++i ) {
+			final long t0 = System.nanoTime();
+			final Cursor< FloatType > co = brightness.cursor();
+			final Cursor< UnsignedByteType > cr = Views.iterable(red).cursor();
+			final Cursor< UnsignedByteType > cg = Views.iterable(green).cursor();
+			final Cursor< UnsignedByteType > cb = Views.iterable(blue).cursor();
+			while ( co.hasNext() )
+			{
+				co.fwd();
+				cr.fwd();
+				cg.fwd();
+				cb.fwd();
+				co.get().setReal( Math.max(cr.get().get(), Math.max( cg.get().get(), cb.get().get() ) ) / 3.0 );
+			}
+			final long t1 = System.nanoTime();
+			
+			minLM = Math.min(minLM, t1 - t0);
+			maxLM = Math.max(maxLM, t1 - t0);
+			meanLM += (t1 - t0) / (double)(n_iterations);
+		}
+		
+		System.out.println("Low-level math: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
+
+		return true;
 	}
 	
 	
 	@Test
-	public void test() {
+	public void test1() {
 		assertTrue( testLoopMath1() );
 	}
 	
+	@Test
+	public void test2() {
+		assertTrue ( comparePerformance( 30 ) );
+	}
+	
 	static public void main(String[] args) {
-		new LoopMathTest().test();
+		new LoopMathTest().test1();
 	}
 }
