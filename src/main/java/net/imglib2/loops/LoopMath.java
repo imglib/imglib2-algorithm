@@ -3,7 +3,10 @@ package net.imglib2.loops;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import net.imglib2.Cursor;
 import net.imglib2.IterableRealInterval;
+import net.imglib2.Localizable;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
@@ -64,12 +67,23 @@ public class LoopMath
 		final LinkedList< RandomAccessibleInterval< ? > > images = findAndPrepareImages( f, converter );
 		
 		// Check compatible iteration order and dimensions
-		checkCompatibility( images );
-		
-		// Evaluate function for every pixel
-		for ( final O output : Views.iterable( target ) )
+		if ( compatibleIterationOrder( images ) )
 		{
-			f.eval( output );
+			// Evaluate function for every pixel
+			for ( final O output : Views.iterable( target ) )
+				f.eval( output );
+		}
+		else
+		{
+			// Incompatible iteration order
+			final Cursor< O > cursor = Views.iterable( target ).cursor();
+			
+			while ( cursor.hasNext() )
+			{
+				cursor.fwd();
+				f.eval( cursor.get(), cursor );
+			}
+			
 		}
 	}
 	
@@ -111,27 +125,19 @@ public class LoopMath
 	 * @return
 	 * @throws Exception When images have different dimensions.
 	 */
-	static public boolean checkCompatibility( final LinkedList< RandomAccessibleInterval< ? > > images ) throws Exception
+	static public boolean compatibleIterationOrder( final LinkedList< RandomAccessibleInterval< ? > > images ) throws Exception
 	{
 		if ( images.isEmpty() )
 		{
 			// Purely numeric operations
 			return true;
 		}
-		
-		for ( final RandomAccessibleInterval< ? > rai : images )
-		{
-			if ( ! ( rai instanceof IterableRealInterval ) )
-			{
-				// Can't flat-iterate
-				return false;
-			}
-		}
-		
+
 		final Iterator< RandomAccessibleInterval< ? > > it = images.iterator();
 		final RandomAccessibleInterval< ? > first = it.next();
 		final Object order = ( (IterableRealInterval< ? >)first ).iterationOrder();
 		
+		boolean same_iteration_order = true;
 		
 		while ( it.hasNext() )
 		{
@@ -151,16 +157,19 @@ public class LoopMath
 			
 			if ( ! order.equals( ( (IterableRealInterval< ? >) other ).iterationOrder() ) )
 			{
-				return false;
+				// Images differ in their iteration order
+				same_iteration_order = false;
 			}
 		}
 		
-		return true;
+		return same_iteration_order;
 	}
 	
 	static public interface IFunction< O extends RealType< O > >
 	{
 		public void eval( O output );
+		
+		public void eval( O output, Localizable loc );
 		
 		public IFunction< O > copy();
 		
@@ -170,18 +179,26 @@ public class LoopMath
 	static protected class IterableImgSource< I extends RealType< I >, O extends RealType< O > > implements IFunction< O >
 	{
 		private final RandomAccessibleInterval< I > rai;
-		private final Iterator<I> it;
+		private final Iterator< I > it;
+		private final RandomAccess< I > ra;
 		private Converter< RealType< ? >, O > converter;
 
 		public IterableImgSource( final RandomAccessibleInterval< I > rai )
 		{
 			this.rai = rai;
 			this.it = Views.iterable( rai ).iterator();
+			this.ra = rai.randomAccess();
 		}
 
 		@Override
 		public void eval( final O output ) {
 			this.converter.convert( this.it.next(), output );
+		}
+
+		@Override
+		public void eval( final O output, final Localizable loc ) {
+			this.ra.setPosition( loc );
+			this.converter.convert( this.ra.get(), output );
 		}
 
 		@Override
@@ -208,6 +225,11 @@ public class LoopMath
 
 		@Override
 		public void eval( final O output ) {
+			output.setReal( this.number );
+		}
+
+		@Override
+		public void eval( final O output, final Localizable loc) {
 			output.setReal( this.number );
 		}
 
@@ -281,6 +303,13 @@ public class LoopMath
 		}
 
 		@Override
+		public void eval( final O output, final Localizable loc) {
+			this.a.eval( output, loc );
+			this.b.eval( this.scrap, loc );
+			output.mul( this.scrap );
+		}
+
+		@Override
 		public Mul< O > copy() {
 			final Mul< O > f = new Mul< O >( this.a.copy(), this.b.copy() );
 			f.setScrap( this.scrap );
@@ -300,6 +329,13 @@ public class LoopMath
 		public void eval( final O output ) {
 			this.a.eval( output );
 			this.b.eval( this.scrap );
+			output.div( this.scrap );
+		}
+		
+		@Override
+		public void eval( final O output, final Localizable loc) {
+			this.a.eval( output, loc );
+			this.b.eval( this.scrap, loc );
 			output.div( this.scrap );
 		}
 
@@ -323,6 +359,14 @@ public class LoopMath
 		public void eval( final O output ) {
 			this.a.eval( output );
 			this.b.eval( this.scrap );
+			if ( -1 == output.compareTo( this.scrap ) )
+				output.set( this.scrap );
+		}
+		
+		@Override
+		public void eval( final O output, final Localizable loc) {
+			this.a.eval( output, loc );
+			this.b.eval( this.scrap, loc );
 			if ( -1 == output.compareTo( this.scrap ) )
 				output.set( this.scrap );
 		}
@@ -350,6 +394,14 @@ public class LoopMath
 			if ( 1 == output.compareTo( this.scrap ) )
 				output.set( this.scrap );
 		}
+		
+		@Override
+		public void eval( final O output, final Localizable loc) {
+			this.a.eval( output, loc );
+			this.b.eval( this.scrap, loc );
+			if ( 1 == output.compareTo( this.scrap ) )
+				output.set( this.scrap );
+		}
 
 		@Override
 		public Min< O > copy() {
@@ -373,6 +425,13 @@ public class LoopMath
 			this.b.eval( this.scrap );
 			output.add( this.scrap );
 		}
+		
+		@Override
+		public void eval( final O output, final Localizable loc ) {
+			this.a.eval( output, loc );
+			this.b.eval( this.scrap, loc );
+			output.add( this.scrap );
+		}
 
 		@Override
 		public Add< O > copy() {
@@ -394,6 +453,13 @@ public class LoopMath
 		public void eval( final O output ) {
 			this.a.eval( output );
 			this.b.eval( this.scrap );
+			output.sub( this.scrap );
+		}
+		
+		@Override
+		public void eval( final O output, final Localizable loc ) {
+			this.a.eval( output, loc );
+			this.b.eval( this.scrap, loc );
 			output.sub( this.scrap );
 		}
 
