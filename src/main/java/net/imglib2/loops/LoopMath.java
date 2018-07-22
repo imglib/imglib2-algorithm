@@ -1,5 +1,6 @@
 package net.imglib2.loops;
 
+import java.lang.reflect.Constructor;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -10,6 +11,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 
 /**
@@ -135,7 +137,7 @@ public class LoopMath
 
 		final Iterator< RandomAccessibleInterval< ? > > it = images.iterator();
 		final RandomAccessibleInterval< ? > first = it.next();
-		final Object order = ( (IterableRealInterval< ? >)first ).iterationOrder();
+		final Object order = Views.iterable( (RandomAccessibleInterval< ? >)first ).iterationOrder();
 		
 		boolean same_iteration_order = true;
 		
@@ -246,7 +248,7 @@ public class LoopMath
 	static abstract public class Function< O extends RealType< O> >
 	{
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-		public IFunction< O > wrap( final Object o )
+		final public IFunction< O > wrap( final Object o )
 		{
 			if ( o instanceof RandomAccessibleInterval< ? > )
 			{
@@ -264,6 +266,37 @@ public class LoopMath
 			// Make it fail
 			return null;
 		}
+		
+		@SuppressWarnings("unchecked")
+		final public < F extends BinaryFunction< O > > Pair< IFunction< O >, IFunction< O > > wrapMap( final Object[] obs )
+		{	
+			try {
+				final Constructor< ? > constructor = this.getClass().getConstructor( new Class[]{ Object.class, Object.class } );
+				BinaryFunction< O > a = ( BinaryFunction< O > )constructor.newInstance( obs[0], obs[1] );
+				BinaryFunction< O > b;
+
+				for ( int i = 2; i < obs.length -1; ++i )
+				{
+					b = ( BinaryFunction< O > )constructor.newInstance( a, obs[i] );
+					a = b;
+				}
+				
+				final BinaryFunction< O > f = a;
+				
+				return new Pair< LoopMath.IFunction< O >, LoopMath.IFunction< O > >()
+				{
+					@Override
+					public IFunction<O> getA() { return f; }
+
+					@Override
+					public IFunction<O> getB() { return f.wrap( obs[ obs.length - 1 ] ); }
+				};
+				
+			} catch (Exception e)
+			{
+				throw new RuntimeException( "Error with the constructor for class " + this.getClass(), e );
+			}
+		}
 	}
 
 	static abstract public class BinaryFunction< O extends RealType< O > > extends Function< O > implements IFunction< O >
@@ -276,6 +309,13 @@ public class LoopMath
 		{
 			this.a = this.wrap( o1 );
 			this.b = this.wrap( o2 );
+		}
+		
+		public BinaryFunction( final Object... obs )
+		{
+			final Pair< IFunction< O >, IFunction< O > > p = this.wrapMap( obs );
+			this.a = p.getA();
+			this.b = p.getB();
 		}
 		
 		public void setScrap( final O output )
@@ -293,6 +333,11 @@ public class LoopMath
 		public Mul( final Object o1, final Object o2 )
 		{
 			super( o1, o2 );
+		}
+		
+		public Mul( final Object... obs )
+		{
+			super( obs );
 		}
 
 		@Override
@@ -324,6 +369,11 @@ public class LoopMath
 		{
 			super( o1, o2 );
 		}
+		
+		public Div( final Object... obs )
+		{
+			super( obs );
+		}
 
 		@Override
 		public void eval( final O output ) {
@@ -353,6 +403,11 @@ public class LoopMath
 		public Max( final Object o1, final Object o2 )
 		{
 			super( o1, o2 );
+		}
+		
+		public Max( final Object... obs )
+		{
+			super( obs );
 		}
 
 		@Override
@@ -386,6 +441,11 @@ public class LoopMath
 		{
 			super( o1, o2 );
 		}
+		
+		public Min( final Object... obs )
+		{
+			super( obs );
+		}
 
 		@Override
 		public void eval( final O output ) {
@@ -418,6 +478,11 @@ public class LoopMath
 		{
 			super( o1, o2 );
 		}
+		
+		public Add( final Object... obs )
+		{
+			super( obs );
+		}
 
 		@Override
 		public void eval( final O output ) {
@@ -447,6 +512,11 @@ public class LoopMath
 		public Sub( final Object o1, final Object o2 )
 		{
 			super( o1, o2 );
+		}
+		
+		public Sub( final Object... obs )
+		{
+			super( obs );
 		}
 
 		@Override

@@ -33,11 +33,11 @@ public class LoopMathTest
 		final ArrayImg< ARGBType, ? > rgb = new ArrayImgFactory< ARGBType >( new ARGBType() ).create( dims );
 		
 		final IterableInterval< UnsignedByteType >
-			red = Views.iterable( Converters.argbChannel( rgb, 1 ) ),
-			green = Views.iterable( Converters.argbChannel( rgb, 2 ) ),
-			blue = Views.iterable( Converters.argbChannel( rgb, 3 ) );
+	    red = Views.iterable( Converters.argbChannel( rgb, 1 ) ),
+		green = Views.iterable( Converters.argbChannel( rgb, 2 ) ),
+		blue = Views.iterable( Converters.argbChannel( rgb, 3 ) );
 		
-		for ( final UnsignedByteType t : red) t.set( 10 );
+		for ( final UnsignedByteType t : red ) t.set( 10 );
 		for ( final UnsignedByteType t : green ) t.set( 30 );
 		for ( final UnsignedByteType t : blue) t.set( 20 );
 		
@@ -162,6 +162,38 @@ public class LoopMathTest
 		return true;
 	}
 	
+	protected static boolean testVarags() {
+		final long[] dims = new long[]{ 100, 100, 100 };
+		
+		final ArrayImg< ARGBType, ? > rgb = new ArrayImgFactory< ARGBType >( new ARGBType() ).create( dims );
+		
+		final IterableInterval< UnsignedByteType >
+		    red = Views.iterable( Converters.argbChannel( rgb, 1 ) ),
+			green = Views.iterable( Converters.argbChannel( rgb, 2 ) ),
+			blue = Views.iterable( Converters.argbChannel( rgb, 3 ) );
+		
+		for ( final UnsignedByteType t : red ) t.set( 10 );
+		for ( final UnsignedByteType t : green ) t.set( 30 );
+		for ( final UnsignedByteType t : blue) t.set( 20 );
+		
+		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
+		
+		try {
+			LoopMath.compute( brightness, new Div( new Max( red, green, blue ), 3.0 ) );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		double sum = 0;
+		
+		for ( final FloatType t: brightness )
+			sum += t.getRealDouble();
+		
+		System.out.println( "Sum: " + sum );
+
+		return 100 * 100 * 100 * 10 == sum;
+	}
+	
 	
 	@Test
 	public void test1() {
@@ -173,9 +205,14 @@ public class LoopMathTest
 		assertTrue( testIterationOrder() );
 	}
 	
-	@Test
+	//@Test
 	public void test3() {
 		assertTrue ( comparePerformance( 30 ) );
+	}
+	
+	@Test
+	public void test4() {
+		assertTrue( testVarags() );
 	}
 	
 	static public void main(String[] args) {
