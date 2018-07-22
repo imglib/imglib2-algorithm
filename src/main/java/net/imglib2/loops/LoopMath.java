@@ -540,4 +540,12 @@ public class LoopMath
 			return f;
 		}
 	}
+	
+	static public class Neg< O extends RealType< O > > extends Sub< O >
+	{
+		public Neg( final Object o )
+		{
+			super( 0, o );
+		}
+	}
 }

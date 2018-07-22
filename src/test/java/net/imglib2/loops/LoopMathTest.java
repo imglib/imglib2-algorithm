@@ -23,6 +23,8 @@ import net.imglib2.view.Views;
 
 import static net.imglib2.loops.LoopMath.Max;
 import static net.imglib2.loops.LoopMath.Div;
+import static net.imglib2.loops.LoopMath.Neg;
+
 
 public class LoopMathTest
 {
@@ -194,6 +196,29 @@ public class LoopMathTest
 		return 100 * 100 * 100 * 10 == sum;
 	}
 	
+	static protected boolean testNeg() {
+		final ArrayImg< FloatType, ? > in = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
+		for ( final FloatType t : in )
+			t.setOne();
+		final ArrayImg< FloatType, ? > out = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
+		
+		try {
+			LoopMath.compute( out, new Neg( in ) );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		double sum = 0;
+		
+		for ( final FloatType t: out )
+			sum += t.getRealDouble();
+		
+		System.out.println( "Sum Neg: " + sum );
+
+		
+		return out.dimension( 0 ) * out.dimension( 1 ) == -sum;
+	}
+	
 	
 	@Test
 	public void test1() {
@@ -213,6 +238,11 @@ public class LoopMathTest
 	@Test
 	public void test4() {
 		assertTrue( testVarags() );
+	}
+	
+	@Test
+	public void test5() {
+		assertTrue( testNeg() );
 	}
 	
 	static public void main(String[] args) {
