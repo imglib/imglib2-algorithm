@@ -229,12 +229,12 @@ public class LoopMath
 		}
 
 		@Override
-		public void eval( final O output ) {
+		public final void eval( final O output ) {
 			this.converter.convert( this.it.next(), output );
 		}
 
 		@Override
-		public void eval( final O output, final Localizable loc ) {
+		public final void eval( final O output, final Localizable loc ) {
 			this.ra.setPosition( loc );
 			this.converter.convert( this.ra.get(), output );
 		}
@@ -398,14 +398,14 @@ public class LoopMath
 		}
 
 		@Override
-		public void eval( final O output ) {
+		public final void eval( final O output ) {
 			this.a.eval( output );
 			this.b.eval( this.scrap );
 			output.mul( this.scrap );
 		}
 
 		@Override
-		public void eval( final O output, final Localizable loc) {
+		public final void eval( final O output, final Localizable loc) {
 			this.a.eval( output, loc );
 			this.b.eval( this.scrap, loc );
 			output.mul( this.scrap );
@@ -443,14 +443,14 @@ public class LoopMath
 		}
 
 		@Override
-		public void eval( final O output ) {
+		public final void eval( final O output ) {
 			this.a.eval( output );
 			this.b.eval( this.scrap );
 			output.div( this.scrap );
 		}
 		
 		@Override
-		public void eval( final O output, final Localizable loc) {
+		public final void eval( final O output, final Localizable loc) {
 			this.a.eval( output, loc );
 			this.b.eval( this.scrap, loc );
 			output.div( this.scrap );
@@ -488,7 +488,7 @@ public class LoopMath
 		}
 
 		@Override
-		public void eval( final O output ) {
+		public final void eval( final O output ) {
 			this.a.eval( output );
 			this.b.eval( this.scrap );
 			if ( -1 == output.compareTo( this.scrap ) )
@@ -496,7 +496,7 @@ public class LoopMath
 		}
 		
 		@Override
-		public void eval( final O output, final Localizable loc) {
+		public final void eval( final O output, final Localizable loc) {
 			this.a.eval( output, loc );
 			this.b.eval( this.scrap, loc );
 			if ( -1 == output.compareTo( this.scrap ) )
@@ -535,7 +535,7 @@ public class LoopMath
 		}
 
 		@Override
-		public void eval( final O output ) {
+		public final void eval( final O output ) {
 			this.a.eval( output );
 			this.b.eval( this.scrap );
 			if ( 1 == output.compareTo( this.scrap ) )
@@ -543,7 +543,7 @@ public class LoopMath
 		}
 		
 		@Override
-		public void eval( final O output, final Localizable loc) {
+		public final void eval( final O output, final Localizable loc) {
 			this.a.eval( output, loc );
 			this.b.eval( this.scrap, loc );
 			if ( 1 == output.compareTo( this.scrap ) )
@@ -582,14 +582,14 @@ public class LoopMath
 		}
 
 		@Override
-		public void eval( final O output ) {
+		public final void eval( final O output ) {
 			this.a.eval( output );
 			this.b.eval( this.scrap );
 			output.add( this.scrap );
 		}
 		
 		@Override
-		public void eval( final O output, final Localizable loc ) {
+		public final void eval( final O output, final Localizable loc ) {
 			this.a.eval( output, loc );
 			this.b.eval( this.scrap, loc );
 			output.add( this.scrap );
@@ -627,14 +627,14 @@ public class LoopMath
 		}
 
 		@Override
-		public void eval( final O output ) {
+		public final void eval( final O output ) {
 			this.a.eval( output );
 			this.b.eval( this.scrap );
 			output.sub( this.scrap );
 		}
 		
 		@Override
-		public void eval( final O output, final Localizable loc ) {
+		public final void eval( final O output, final Localizable loc ) {
 			this.a.eval( output, loc );
 			this.b.eval( this.scrap, loc );
 			output.sub( this.scrap );
