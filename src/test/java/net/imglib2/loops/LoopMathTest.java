@@ -111,6 +111,8 @@ public class LoopMathTest
 		
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 
+		
+		// Test 1: LoopMath with Type-based math
 		long minLM = Long.MAX_VALUE,
 			 maxLM = 0;
 		double meanLM = 0;
@@ -132,7 +134,29 @@ public class LoopMathTest
 		System.out.println("LoopMath: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 
 		
+		// Test 2: LoopMath with evalDouble
+		// Reset
+		minLM = Long.MAX_VALUE;
+		maxLM = 0;
+		meanLM = 0;
 		
+		for ( int i=0; i < n_iterations; ++i ) {
+			final long t0 = System.nanoTime();
+			try {
+				LoopMath.compute( brightness, new Div( new Max( red, new Max( green, blue ) ), 3.0 ), true );
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			final long t1 = System.nanoTime();
+			
+			minLM = Math.min(minLM, t1 - t0);
+			maxLM = Math.max(maxLM, t1 - t0);
+			meanLM += (t1 - t0) / (double)(n_iterations);
+		}
+		
+		System.out.println("LoopMath in_doubles: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
+		
+		// Test 3: plain low-level math
 		// Reset
 		minLM = Long.MAX_VALUE;
 		maxLM = 0;
@@ -230,7 +254,7 @@ public class LoopMathTest
 		assertTrue( testIterationOrder() );
 	}
 	
-	//@Test
+	@Test
 	public void test3() {
 		assertTrue ( comparePerformance( 30 ) );
 	}
