@@ -157,7 +157,7 @@ public class LoopMath
 				}
 			}
 			
-			if ( ! order.equals( ( (IterableRealInterval< ? >) other ).iterationOrder() ) )
+			if ( ! order.equals( ( Views.iterable( other ) ).iterationOrder() ) )
 			{
 				// Images differ in their iteration order
 				same_iteration_order = false;

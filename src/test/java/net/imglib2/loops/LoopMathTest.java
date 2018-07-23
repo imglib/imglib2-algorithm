@@ -34,14 +34,14 @@ public class LoopMathTest
 		
 		final ArrayImg< ARGBType, ? > rgb = new ArrayImgFactory< ARGBType >( new ARGBType() ).create( dims );
 		
-		final IterableInterval< UnsignedByteType >
-	    red = Views.iterable( Converters.argbChannel( rgb, 1 ) ),
-		green = Views.iterable( Converters.argbChannel( rgb, 2 ) ),
-		blue = Views.iterable( Converters.argbChannel( rgb, 3 ) );
+		final RandomAccessibleInterval< UnsignedByteType >
+	    	red =  Converters.argbChannel( rgb, 1 ),
+	    	green = Converters.argbChannel( rgb, 2 ),
+	    	blue = Converters.argbChannel( rgb, 3 );
 		
-		for ( final UnsignedByteType t : red ) t.set( 10 );
-		for ( final UnsignedByteType t : green ) t.set( 30 );
-		for ( final UnsignedByteType t : blue) t.set( 20 );
+		for ( final UnsignedByteType t : Views.iterable( red ) ) t.set( 10 );
+		for ( final UnsignedByteType t : Views.iterable( green ) ) t.set( 30 );
+		for ( final UnsignedByteType t : Views.iterable( blue) ) t.set( 20 );
 		
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
