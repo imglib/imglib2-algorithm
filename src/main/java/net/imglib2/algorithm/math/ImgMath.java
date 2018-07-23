@@ -66,7 +66,7 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 		this.converter = converter;
 	}
 	
-	public void into( final RandomAccessibleInterval< O > target )
+	public RandomAccessibleInterval< O > into( final RandomAccessibleInterval< O > target )
 	{
 		// Recursive copy: initializes interval iterators
 		final IFunction< O > f = this.operation.copy();
@@ -95,6 +95,8 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 			}
 			
 		}
+		
+		return target;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
