@@ -43,15 +43,6 @@ public class LoopMath
 			final IFunction< O > function
 			) throws Exception 
 	{
-		compute( target, function, false );
-	}
-	
-	static public < I extends RealType< I >, O extends RealType< O > > void compute(
-			final RandomAccessibleInterval< O > target,
-			final IFunction< O > function,
-			final boolean in_doubles
-			) throws Exception 
-	{
 		final Converter< I, O > converter = new Converter<I, O>()
 		{
 			@Override
@@ -60,23 +51,13 @@ public class LoopMath
 			}
 		};
 
-		compute( target, function, converter, in_doubles );
+		compute( target, function, converter );
 	}
 	
 	static public < I extends RealType< I >, O extends RealType< O > > void compute(
 			final RandomAccessibleInterval< O > target,
 			final IFunction< O > function,
 			final Converter<I, O> converter
-			) throws Exception 
-	{	
-		compute( target, function, converter, false );
-	}
-	
-	static public < I extends RealType< I >, O extends RealType< O > > void compute(
-			final RandomAccessibleInterval< O > target,
-			final IFunction< O > function,
-			final Converter<I, O> converter,
-			final boolean in_doubles
 			) throws Exception 
 	{	
 		// Recursive copy: initializes interval iterators
@@ -90,34 +71,21 @@ public class LoopMath
 		// Check compatible iteration order and dimensions
 		if ( compatibleIterationOrder( images ) )
 		{
-			if ( in_doubles )
-			{
-				for ( final O output : Views.iterable( target ) )
-					output.setReal( f.evalDouble() );
-			} else {
-				for ( final O output : Views.iterable( target ) )
-					f.eval( output );
-			}
+			// Evaluate function for every pixel
+			for ( final O output : Views.iterable( target ) )
+				f.eval( output );
 		}
 		else
 		{
 			// Incompatible iteration order
 			final Cursor< O > cursor = Views.iterable( target ).cursor();
 			
-			if ( in_doubles )
+			while ( cursor.hasNext() )
 			{
-				while ( cursor.hasNext() )
-				{
-					cursor.fwd();
-					cursor.get().setReal( f.evalDouble( cursor ) );
-				}
-			} else {
-				while ( cursor.hasNext() )
-				{
-					cursor.fwd();
-					f.eval( cursor.get(), cursor );
-				}
+				cursor.fwd();
+				f.eval( cursor.get(), cursor );
 			}
+			
 		}
 	}
 	
@@ -205,10 +173,6 @@ public class LoopMath
 		
 		public void eval( O output, Localizable loc );
 		
-		public double evalDouble();
-		
-		public double evalDouble( Localizable loc );
-		
 		public IFunction< O > copy();
 		
 		public void setScrap( O output );
@@ -237,17 +201,6 @@ public class LoopMath
 		public final void eval( final O output, final Localizable loc ) {
 			this.ra.setPosition( loc );
 			this.converter.convert( this.ra.get(), output );
-		}
-		
-		@Override
-		public final double evalDouble() {
-			return this.it.next().getRealDouble();
-		}
-		
-		@Override
-		public final double evalDouble( final Localizable loc ) {
-			this.ra.setPosition( loc );
-			return this.ra.get().getRealDouble();
 		}
 
 		@Override
@@ -280,16 +233,6 @@ public class LoopMath
 		@Override
 		public void eval( final O output, final Localizable loc) {
 			output.setReal( this.number );
-		}
-		
-		@Override
-		public final double evalDouble() {
-			return this.number;
-		}
-		
-		@Override
-		public final double evalDouble( final Localizable loc ) {
-			return this.number;
 		}
 
 		@Override
@@ -410,16 +353,6 @@ public class LoopMath
 			this.b.eval( this.scrap, loc );
 			output.mul( this.scrap );
 		}
-		
-		@Override
-		public final double evalDouble() {
-			return this.a.evalDouble() * this.b.evalDouble();
-		}
-		
-		@Override
-		public final double evalDouble( final Localizable loc ) {
-			return this.a.evalDouble( loc ) * this.b.evalDouble( loc );
-		}
 
 		@Override
 		public Mul< O > copy() {
@@ -454,16 +387,6 @@ public class LoopMath
 			this.a.eval( output, loc );
 			this.b.eval( this.scrap, loc );
 			output.div( this.scrap );
-		}
-		
-		@Override
-		public final double evalDouble() {
-			return this.a.evalDouble() / this.b.evalDouble();
-		}
-		
-		@Override
-		public final double evalDouble( final Localizable loc ) {
-			return this.a.evalDouble( loc ) / this.b.evalDouble( loc );
 		}
 
 		@Override
@@ -502,16 +425,6 @@ public class LoopMath
 			if ( -1 == output.compareTo( this.scrap ) )
 				output.set( this.scrap );
 		}
-		
-		@Override
-		public final double evalDouble() {
-			return Math.max( this.a.evalDouble(),  this.b.evalDouble() );
-		}
-		
-		@Override
-		public final double evalDouble( final Localizable loc ) {
-			return Math.max( this.a.evalDouble( loc ), this.b.evalDouble( loc ) );
-		}
 
 		@Override
 		public Max< O > copy() {
@@ -549,16 +462,6 @@ public class LoopMath
 			if ( 1 == output.compareTo( this.scrap ) )
 				output.set( this.scrap );
 		}
-		
-		@Override
-		public final double evalDouble() {
-			return Math.min( this.a.evalDouble(),  this.b.evalDouble() );
-		}
-		
-		@Override
-		public final double evalDouble( final Localizable loc ) {
-			return Math.min( this.a.evalDouble( loc ),  this.b.evalDouble( loc ) );
-		}
 
 		@Override
 		public Min< O > copy() {
@@ -594,16 +497,6 @@ public class LoopMath
 			this.b.eval( this.scrap, loc );
 			output.add( this.scrap );
 		}
-		
-		@Override
-		public final double evalDouble() {
-			return this.a.evalDouble() + this.b.evalDouble();
-		}
-		
-		@Override
-		public final double evalDouble( final Localizable loc ) {
-			return this.a.evalDouble( loc ) + this.b.evalDouble( loc );
-		}
 
 		@Override
 		public Add< O > copy() {
@@ -638,16 +531,6 @@ public class LoopMath
 			this.a.eval( output, loc );
 			this.b.eval( this.scrap, loc );
 			output.sub( this.scrap );
-		}
-		
-		@Override
-		public final double evalDouble() {
-			return this.a.evalDouble() - this.b.evalDouble();
-		}
-		
-		@Override
-		public final double evalDouble( final Localizable loc ) {
-			return this.a.evalDouble( loc ) - this.b.evalDouble( loc );
 		}
 
 		@Override
