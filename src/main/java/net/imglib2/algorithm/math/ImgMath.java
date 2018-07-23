@@ -1,4 +1,4 @@
-package net.imglib2.loops;
+package net.imglib2.algorithm.math;
 
 import java.lang.reflect.Constructor;
 import java.util.Iterator;

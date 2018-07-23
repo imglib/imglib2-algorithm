@@ -1,5 +1,8 @@
-package net.imglib2.loops;
+package net.imglib2.algorithm.math;
 
+import static net.imglib2.algorithm.math.ImgMath.Div;
+import static net.imglib2.algorithm.math.ImgMath.Max;
+import static net.imglib2.algorithm.math.ImgMath.Neg;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -8,12 +11,12 @@ import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.math.ImgMath;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
-import net.imglib2.loops.ImgMath;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -21,14 +24,10 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 
-import static net.imglib2.loops.ImgMath.Max;
-import static net.imglib2.loops.ImgMath.Div;
-import static net.imglib2.loops.ImgMath.Neg;
-
 
 public class ImgMathTest
 {
-	protected static boolean testLoopMath1( )
+	protected static boolean testImgMath1( )
 	{	
 		final long[] dims = new long[]{ 100, 100, 100 };
 		
@@ -129,7 +128,7 @@ public class ImgMathTest
 			meanLM += (t1 - t0) / (double)(n_iterations);
 		}
 		
-		System.out.println("LoopMath: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
+		System.out.println("ImgMath: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 
 		
 		
@@ -222,7 +221,7 @@ public class ImgMathTest
 	
 	@Test
 	public void test1() {
-		assertTrue( testLoopMath1() );
+		assertTrue( testImgMath1() );
 	}
 	
 	@Test
