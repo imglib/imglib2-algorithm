@@ -178,7 +178,7 @@ public class LoopMath
 		public void setScrap( O output );
 	}
 	
-	static protected class IterableImgSource< I extends RealType< I >, O extends RealType< O > > implements IFunction< O >
+	static protected final class IterableImgSource< I extends RealType< I >, O extends RealType< O > > implements IFunction< O >
 	{
 		private final RandomAccessibleInterval< I > rai;
 		private final Iterator< I > it;
@@ -217,7 +217,7 @@ public class LoopMath
 		}
 	}
 	
-	static protected class NumberSource< O extends RealType< O > > implements IFunction< O >
+	static protected final class NumberSource< O extends RealType< O > > implements IFunction< O >
 	{
 		private final double number;
 		
