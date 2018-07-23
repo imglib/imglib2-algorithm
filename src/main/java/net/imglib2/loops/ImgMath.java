@@ -17,6 +17,8 @@ import net.imglib2.view.Views;
  * An easy yet relatively high performance way to perform pixel-wise math
  * on one or more {@link RandomAccessibleInterval} instances.
  * 
+ * An example in java:
+ * 
  * <pre>
  * {@code
  * RandomAccessibleInterval<A> img1 = ...
@@ -25,9 +27,13 @@ import net.imglib2.view.Views;
  * 
  * RandomAccessibleInterval<O> result = ...
  * 
- * new LoopMath( Div( Max( img1, img2, img3 ), 3.0 ) ).into( result );
+ * new ImgMath<A, O>( Div<O>( Max<O>( img1, img2, img3 ), 3.0 ) ).into( result );
  * }
  * </pre>
+ * 
+ * While java compilation cares about exact types, the type erasure that happens
+ * at compile time means that input types can be mixed, as long as all of them
+ * extend RealType.
  * 
  * @author Albert Cardona
  *
