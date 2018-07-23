@@ -13,7 +13,7 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
-import net.imglib2.loops.LoopMath;
+import net.imglib2.loops.ImgMath;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -21,12 +21,12 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 
-import static net.imglib2.loops.LoopMath.Max;
-import static net.imglib2.loops.LoopMath.Div;
-import static net.imglib2.loops.LoopMath.Neg;
+import static net.imglib2.loops.ImgMath.Max;
+import static net.imglib2.loops.ImgMath.Div;
+import static net.imglib2.loops.ImgMath.Neg;
 
 
-public class LoopMathTest
+public class ImgMathTest
 {
 	protected static boolean testLoopMath1( )
 	{	
@@ -46,7 +46,7 @@ public class LoopMathTest
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
 		try {
-			LoopMath.compute( brightness, new Div( new Max( red, new Max( green, blue ) ), 3.0 ) );
+			new ImgMath< UnsignedByteType, FloatType >( new Div< FloatType >( new Max< FloatType >( red, new Max< FloatType >( green, blue ) ), 3.0 ) ).into( brightness );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -82,7 +82,7 @@ public class LoopMathTest
 		// Divide pixels from each other (better than subtract: zero sum would be the default in case of error)
 		final ArrayImg< LongType, ? > img3 = new ArrayImgFactory<>( new LongType() ).create( img1 );
 		try {
-			LoopMath.compute( img3, new Div( img1, img2 ) );
+			new ImgMath< UnsignedByteType, LongType >( new Div< LongType >( img1, img2 ) ).into( img3 );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -118,7 +118,7 @@ public class LoopMathTest
 		for ( int i=0; i < n_iterations; ++i ) {
 			final long t0 = System.nanoTime();
 			try {
-				LoopMath.compute( brightness, new Div( new Max( red, new Max( green, blue ) ), 3.0 ) );
+				new ImgMath< UnsignedByteType, FloatType >( new Div< FloatType >( new Max< FloatType >( red, new Max< FloatType >( green, blue ) ), 3.0 ) ).into( brightness );
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -181,7 +181,7 @@ public class LoopMathTest
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
 		try {
-			LoopMath.compute( brightness, new Div( new Max( red, green, blue ), 3.0 ) );
+			new ImgMath< UnsignedByteType, FloatType >( new Div< FloatType >( new Max< FloatType >( red, green, blue ), 3.0 ) ).into( brightness );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -203,7 +203,7 @@ public class LoopMathTest
 		final ArrayImg< FloatType, ? > out = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
 		
 		try {
-			LoopMath.compute( out, new Neg( in ) );
+			new ImgMath< FloatType, FloatType >( new Neg< FloatType >( in ) ).into( out );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -230,7 +230,7 @@ public class LoopMathTest
 		assertTrue( testIterationOrder() );
 	}
 	
-	//@Test
+	@Test
 	public void test3() {
 		assertTrue ( comparePerformance( 30 ) );
 	}
@@ -246,6 +246,6 @@ public class LoopMathTest
 	}
 	
 	static public void main(String[] args) {
-		new LoopMathTest().test1();
+		new ImgMathTest().test1();
 	}
 }

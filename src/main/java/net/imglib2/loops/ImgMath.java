@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import net.imglib2.Cursor;
-import net.imglib2.IterableRealInterval;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
@@ -26,42 +25,45 @@ import net.imglib2.view.Views;
  * 
  * RandomAccessibleInterval<O> result = ...
  * 
- * LoopMath.compute( result, Div( Max( Max( img1, img2 ), img3 ), 3.0 ) );
+ * new LoopMath( Div( Max( img1, img2, img3 ), 3.0 ) ).into( result );
  * }
  * </pre>
  * 
  * @author Albert Cardona
  *
  */
-public class LoopMath
+public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 {
-
-	private LoopMath() {}
+	private final IFunction< O > operation;
+	private final Converter< I, O > converter;
 	
-	static public < I extends RealType< I >, O extends RealType< O > > void compute(
-			final RandomAccessibleInterval< O > target,
-			final IFunction< O > function
+	public ImgMath(
+			final IFunction< O > operation
 			) throws Exception 
 	{
-		final Converter< I, O > converter = new Converter<I, O>()
+		this( operation,
+			  new Converter<I, O>()
 		{
 			@Override
 			public final void convert( final I input, final O output) {
 				output.setReal( input.getRealDouble() );
 			}
-		};
-
-		compute( target, function, converter );
+		});
 	}
 	
-	static public < I extends RealType< I >, O extends RealType< O > > void compute(
-			final RandomAccessibleInterval< O > target,
-			final IFunction< O > function,
+	public ImgMath(
+			final IFunction< O > operation,
 			final Converter<I, O> converter
 			) throws Exception 
-	{	
+	{
+		this.operation = operation;
+		this.converter = converter;
+	}
+	
+	public void into( final RandomAccessibleInterval< O > target )
+	{
 		// Recursive copy: initializes interval iterators
-		final IFunction< O > f = function.copy();
+		final IFunction< O > f = this.operation.copy();
 		// Set temporary computation holders
 		final O scrap = target.randomAccess().get().createVariable();
 		f.setScrap( scrap );
@@ -127,7 +129,7 @@ public class LoopMath
 	 * @return
 	 * @throws Exception When images have different dimensions.
 	 */
-	static public boolean compatibleIterationOrder( final LinkedList< RandomAccessibleInterval< ? > > images ) throws Exception
+	static public boolean compatibleIterationOrder( final LinkedList< RandomAccessibleInterval< ? > > images )
 	{
 		if ( images.isEmpty() )
 		{
@@ -146,14 +148,14 @@ public class LoopMath
 			final RandomAccessibleInterval< ? > other = it.next();
 			if ( other.numDimensions() != first.numDimensions() )
 			{
-				throw new Exception( "Images have different number of dimensions" );
+				throw new RuntimeException( "Images have different number of dimensions" );
 			}
 			
 			for ( int d = 0; d < first.numDimensions(); ++d )
 			{
 				if ( first.realMin( d ) != other.realMin( d ) || first.realMax( d ) != other.realMax( d ) )
 				{
-					throw new Exception( "Images have different sizes" );
+					throw new RuntimeException( "Images have different sizes" );
 				}
 			}
 			
@@ -260,7 +262,7 @@ public class LoopMath
 			}
 			else if ( o instanceof IFunction )
 			{
-				return ( (IFunction) o ).copy();
+				return ( (IFunction) o );
 			}
 			
 			// Make it fail
@@ -283,7 +285,7 @@ public class LoopMath
 				
 				final BinaryFunction< O > f = a;
 				
-				return new Pair< LoopMath.IFunction< O >, LoopMath.IFunction< O > >()
+				return new Pair< ImgMath.IFunction< O >, ImgMath.IFunction< O > >()
 				{
 					@Override
 					public IFunction<O> getA() { return f; }
