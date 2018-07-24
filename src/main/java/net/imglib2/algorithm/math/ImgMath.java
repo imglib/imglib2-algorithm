@@ -119,10 +119,14 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 				iis.setConverter( converter );
 				images.addLast( iis.rai );
 			}
-			else if ( op instanceof BinaryFunction )
+			else if ( op instanceof IUnaryFunction )
 			{
-				ops.addLast( ( ( BinaryFunction )op ).a );
-				ops.addLast( ( ( BinaryFunction )op ).b );
+				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
+				
+				if ( op instanceof IBinaryFunction )
+				{
+					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+				}
 			}
 		}
 		
@@ -186,6 +190,16 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 		public IFunction< O > copy();
 		
 		public void setScrap( O output );
+	}
+	
+	static public interface IUnaryFunction< O extends RealType< O > > extends IFunction< O >
+	{
+		public IFunction< O > getFirst();
+	}
+	
+	static public interface IBinaryFunction< O extends RealType< O > > extends IUnaryFunction< O >
+	{
+		public IFunction< O > getSecond();
 	}
 	
 	static protected final class IterableImgSource< I extends RealType< I >, O extends RealType< O > > implements IFunction< O >
@@ -255,28 +269,28 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 		public void setScrap(O output) {}
 	}
 	
-	static abstract public class Function< O extends RealType< O> >
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	static final private < O extends RealType< O > > IFunction< O > wrap( final Object o )
 	{
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		final public IFunction< O > wrap( final Object o )
+		if ( o instanceof RandomAccessibleInterval< ? > )
 		{
-			if ( o instanceof RandomAccessibleInterval< ? > )
-			{
-				return new IterableImgSource( (RandomAccessibleInterval) o );
-			}
-			else if ( o instanceof Number )
-			{
-				return new NumberSource( ( (Number) o ).doubleValue() );
-			}
-			else if ( o instanceof IFunction )
-			{
-				return ( (IFunction) o );
-			}
-			
-			// Make it fail
-			return null;
+			return new IterableImgSource( (RandomAccessibleInterval) o );
+		}
+		else if ( o instanceof Number )
+		{
+			return new NumberSource( ( (Number) o ).doubleValue() );
+		}
+		else if ( o instanceof IFunction )
+		{
+			return ( (IFunction) o );
 		}
 		
+		// Make it fail
+		return null;
+	}
+	
+	static abstract public class Function< O extends RealType< O> >
+	{	
 		@SuppressWarnings("unchecked")
 		final public < F extends BinaryFunction< O > > Pair< IFunction< O >, IFunction< O > > wrapMap( final Object[] obs )
 		{	
@@ -296,10 +310,10 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 				return new Pair< ImgMath.IFunction< O >, ImgMath.IFunction< O > >()
 				{
 					@Override
-					public IFunction<O> getA() { return f; }
+					public IFunction< O > getA() { return f; }
 
 					@Override
-					public IFunction<O> getB() { return f.wrap( obs[ obs.length - 1 ] ); }
+					public IFunction< O > getB() { return wrap( obs[ obs.length - 1 ] ); }
 				};
 				
 			} catch (Exception e)
@@ -308,8 +322,33 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 			}
 		}
 	}
+	
+	
+	static abstract public class UnaryFunction< O extends RealType< O > > extends Function< O > implements IUnaryFunction< O >
+	{
+		protected final IFunction< O > a;
 
-	static abstract public class BinaryFunction< O extends RealType< O > > extends Function< O > implements IFunction< O >
+		protected O scrap;
+		
+		public UnaryFunction( final Object o1 )
+		{
+			this.a = wrap( o1 );
+		}
+		
+		public IFunction< O > getFirst()
+		{
+			return this.a;
+		}
+		
+		public void setScrap( final O output )
+		{
+			if ( null == output ) return; 
+			this.scrap = output.copy();
+			this.a.setScrap( output );
+		}
+	}
+
+	static abstract public class BinaryFunction< O extends RealType< O > > extends Function< O > implements IBinaryFunction< O >
 	{
 		protected final IFunction< O > a, b;
 
@@ -317,8 +356,8 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 		
 		public BinaryFunction( final Object o1, final Object o2 )
 		{
-			this.a = this.wrap( o1 );
-			this.b = this.wrap( o2 );
+			this.a = wrap( o1 );
+			this.b = wrap( o2 );
 		}
 		
 		public BinaryFunction( final Object... obs )
@@ -326,6 +365,16 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 			final Pair< IFunction< O >, IFunction< O > > p = this.wrapMap( obs );
 			this.a = p.getA();
 			this.b = p.getB();
+		}
+		
+		public final IFunction< O > getFirst()
+		{
+			return this.a;
+		}
+		
+		public final IFunction< O > getSecond()
+		{
+			return this.b;
 		}
 		
 		public void setScrap( final O output )
@@ -558,4 +607,178 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 			super( 0, o );
 		}
 	}
+	
+	static public final class Let< O extends RealType< O > > implements IFunction< O >, IBinaryFunction< O >
+	{
+		private final String varName;
+		private final IFunction< O > varValue;
+		private final IFunction< O > body;
+		private O scrap;
+		
+		public Let( final String varName, final Object varValue, final Object body )
+		{
+			this.varName = varName;
+			this.varValue = wrap( varValue );
+			this.body = wrap( body );
+		}
+		
+		public Let( final Object[] pairs, final Object body )
+		{
+			if ( pairs.length < 2 || 0 != pairs.length % 2 )
+				throw new RuntimeException( "Let: need an even number of var-value pairs." );
+			
+			this.varName = ( String )pairs[0];
+			this.varValue = wrap( pairs[1] );
+			
+			if ( 2 == pairs.length )
+			{
+				this.body = wrap( body );
+			} else
+			{
+				final Object[] pairs2 = new Object[ pairs.length - 2 ];
+				System.arraycopy( pairs, 2, pairs2, 0, pairs2.length );
+				this.body = new Let< O >( pairs2, body );
+			}
+		}
+		
+		public Let( final Object... obs )
+		{
+			this( fixAndValidate( obs ), obs[ obs.length - 1] );
+		}
+		
+		static private final Object[] fixAndValidate( final Object[] obs )
+		{
+			if ( obs.length < 3 || 0 == obs.length % 2 )
+				throw new RuntimeException( "Let: need an even number of var-value pairs plus the body at the end." );
+			final Object[] obs2 = new Object[ obs.length - 1];
+			System.arraycopy( obs, 0, obs2, 0, obs2.length );
+			return obs2;
+		}
+		
+		/**
+		 * Recursive search for Var instances of this.varName
+		 * 
+		 * @param o
+		 */
+		@SuppressWarnings("unchecked")
+		private final void setupVars( final IFunction< O > o )
+		{
+			if ( o instanceof IUnaryFunction )
+			{
+				final IUnaryFunction< O > uf = ( IUnaryFunction< O > )o;
+				
+				if ( uf.getFirst() instanceof Var )
+				{
+					final Var< O > var = ( Var< O > )uf.getFirst();
+					if ( var.name == this.varName )
+						var.setScrap( this.scrap );
+				} else
+				{
+					setupVars( uf.getFirst() );
+				}
+				
+				if ( o instanceof IBinaryFunction )
+				{
+					final IBinaryFunction< O > bf = ( IBinaryFunction< O > )o;
+					
+					if ( bf.getSecond() instanceof Var )
+					{
+						final Var< O > var = ( Var< O > )bf.getSecond();
+						if ( var.name == this.varName )
+							var.setScrap( this.scrap );
+					} else
+					{
+						setupVars( bf.getSecond() );
+					}
+				}
+			}
+		}
+		
+
+		@Override
+		public void eval( final O output ) {
+			// Evaluate the varValue into this.scrap, which is shared with all Vars of varName
+			this.varValue.eval( this.scrap );
+			// The body may contain Vars that will use this.varValue via this.scrap
+			this.body.eval( output );
+		}
+
+		@Override
+		public void eval( final O output, final Localizable loc) {
+			this.varValue.eval( this.scrap, loc );
+			this.body.eval( output, loc );
+		}
+
+		@Override
+		public Let< O > copy() {
+			final Let< O > copy = new Let< O >( this.varName, this.varValue.copy(), this.body.copy() );
+			copy.setScrap( this.scrap );
+			return copy;
+		}
+
+		@Override
+		public void setScrap( final O output ) {
+			if ( null == output ) return;
+			this.scrap = output.copy();
+			this.varValue.setScrap( output );
+			this.body.setScrap( output );
+			setupVars( this.body );
+		}
+
+		@Override
+		public IFunction< O > getFirst() {
+			return this.varValue;
+		}
+
+		@Override
+		public IFunction< O > getSecond() {
+			return this.body;
+		}
+	}
+
+	static public final class Var< O extends RealType< O > > implements IFunction< O >
+	{
+		private final String name;
+		private O scrap;
+
+		public Var( final String name ) {
+			this.name = name;
+		}
+
+		@Override
+		public void eval( final O output ) {
+			output.set( this.scrap );
+		}
+
+		@Override
+		public void eval( final O output, final Localizable loc) {
+			output.set( this.scrap );
+		}
+
+		@Override
+		public Var< O > copy() {
+			return new Var< O >( this.name );
+		}
+
+		@Override
+		public void setScrap( final O output ) {
+			this.scrap = output;
+		}
+	}
+	
+	/*
+	static public interface BooleanFunction< O extends RealType< O > >
+	{
+		public boolean eval( final O output );
+		
+		public boolean eval( final O output, final Localizable loc );
+	}
+	
+	static public class Equals< O extends RealType O > extends BooleanFunction< O >
+	{
+		
+		
+		... TODO  Equals, LessThan, GreaterThan
+	}
+	*/
 }

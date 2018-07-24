@@ -1,8 +1,14 @@
 package net.imglib2.algorithm.math;
 
+import static net.imglib2.algorithm.math.ImgMath.Add;
+import static net.imglib2.algorithm.math.ImgMath.Sub;
+import static net.imglib2.algorithm.math.ImgMath.Mul;
 import static net.imglib2.algorithm.math.ImgMath.Div;
 import static net.imglib2.algorithm.math.ImgMath.Max;
+import static net.imglib2.algorithm.math.ImgMath.Min;
 import static net.imglib2.algorithm.math.ImgMath.Neg;
+import static net.imglib2.algorithm.math.ImgMath.Let;
+import static net.imglib2.algorithm.math.ImgMath.Var;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -218,30 +224,144 @@ public class ImgMathTest
 		return out.dimension( 0 ) * out.dimension( 1 ) == -sum;
 	}
 	
+	protected boolean testLetOneLevel() {
+		
+		final ArrayImg< FloatType, ? > img = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
+		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img );
+		
+		try {
+			new ImgMath( new Let( "one", 1, new Add( img, new Var( "one" ) ) ) ).into( target );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		double sum = 0;
+		for ( final FloatType t : target )
+			sum += t.getRealDouble();
+		
+		System.out.println( "Sum Let: " + sum );
+		
+		return 100 == sum;
+	}
 	
-	@Test
+	protected boolean testLetTwoLevels() {
+		
+		final ArrayImg< FloatType, ? > img = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
+		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img );
+		
+		try {
+			new ImgMath( new Add( new Let( "one", 1,
+					                       new Add( img, new Var( "one" ) ) ),
+					              new Let( "two", 2,
+					            		   new Add( new Var( "two" ), 0 ) ) ) ).into( target );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		double sum = 0;
+		for ( final FloatType t : target )
+			sum += t.getRealDouble();
+		
+		System.out.println( "Two-level Let sum: " + sum );
+		
+		return 300 == sum;
+	}
+	
+	protected boolean testMultiLet() {
+		
+		final ArrayImg< FloatType, ? > img = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
+		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img );
+		
+		for ( final FloatType t : img )
+			t.setReal( 100.0d );
+		
+		try {
+			new ImgMath( new Let( "pixel", img,
+					              "constant", 10.0d,
+					              new Add( new Var( "pixel"), new Var( "constant" ) ) ) ).into( target );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		double sum = 0;
+		for ( final FloatType t : target )
+			sum += t.getRealDouble();
+		
+		System.out.println( "Multi Let sum: " + sum );
+		
+		return (100 + 10) * 100 == sum;
+	}
+	
+	protected boolean testNestedMultiLet() {
+		
+		final ArrayImg< FloatType, ? > img = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
+		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img );
+		
+		for ( final FloatType t : img )
+			t.setReal( 100.0d );
+		
+		try {
+			new ImgMath( new Let( "pixel", img,
+					              "constant", 10.0d,
+					              new Add( new Var( "pixel"), new Let( "pixel2", img,
+					            		                           new Sub( new Var( "pixel2" ), new Var( "constant" ) ) ) ) ) ).into( target );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		double sum = 0;
+		for ( final FloatType t : target )
+			sum += t.getRealDouble();
+		
+		System.out.println( "Nested multi Let sum: " + sum );
+		
+		return (100 + 100 - 10) * 100 == sum;
+	}
+	
+	
+	//@Test
 	public void test1() {
 		assertTrue( testImgMath1() );
 	}
 	
-	@Test
+	//@Test
 	public void test2() {
 		assertTrue( testIterationOrder() );
 	}
 	
-	@Test
+	//@Test
 	public void test3() {
 		assertTrue ( comparePerformance( 30 ) );
 	}
 	
-	@Test
+	//@Test
 	public void test4() {
 		assertTrue( testVarags() );
 	}
 	
-	@Test
+	//@Test
 	public void test5() {
 		assertTrue( testNeg() );
+	}
+	
+	@Test
+	public void testLet1Simple() {
+		assertTrue( testLetOneLevel() );
+	}
+	
+	@Test
+	public void testLet2Advanced() {
+		assertTrue( testLetTwoLevels() );
+	}
+	
+	@Test
+	public void testLet3MultiVar() {
+		assertTrue ( testMultiLet() );
+	}
+	
+	@Test
+	public void testLet4NestedMultiLet() {
+		assertTrue ( testNestedMultiLet() );
 	}
 	
 	static public void main(String[] args) {
