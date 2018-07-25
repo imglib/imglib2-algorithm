@@ -1,14 +1,13 @@
 package net.imglib2.algorithm.math;
 
-import static net.imglib2.algorithm.math.ImgMath.Add;
-import static net.imglib2.algorithm.math.ImgMath.Sub;
-import static net.imglib2.algorithm.math.ImgMath.Mul;
-import static net.imglib2.algorithm.math.ImgMath.Div;
-import static net.imglib2.algorithm.math.ImgMath.Max;
-import static net.imglib2.algorithm.math.ImgMath.Min;
-import static net.imglib2.algorithm.math.ImgMath.Neg;
-import static net.imglib2.algorithm.math.ImgMath.Let;
-import static net.imglib2.algorithm.math.ImgMath.Var;
+import static net.imglib2.algorithm.math.ImgMath.add;
+import static net.imglib2.algorithm.math.ImgMath.sub;
+import static net.imglib2.algorithm.math.ImgMath.mul;
+import static net.imglib2.algorithm.math.ImgMath.div;
+import static net.imglib2.algorithm.math.ImgMath.max;
+import static net.imglib2.algorithm.math.ImgMath.min;
+import static net.imglib2.algorithm.math.ImgMath.let;
+import static net.imglib2.algorithm.math.ImgMath.var;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -51,7 +50,7 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
 		try {
-			new ImgMath( new Div( new Max( red, new Max( green, blue ) ), 3.0 ) ).into( brightness );
+			new ImgMath( div( max( red, max( green, blue ) ), 3.0 ) ).into( brightness );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -87,7 +86,7 @@ public class ImgMathTest
 		// Divide pixels from each other (better than subtract: zero sum would be the default in case of error)
 		final ArrayImg< LongType, ? > img3 = new ArrayImgFactory<>( new LongType() ).create( img1 );
 		try {
-			new ImgMath( new Div( img1, img2 ) ).into( img3 );
+			new ImgMath( div( img1, img2 ) ).into( img3 );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -123,7 +122,7 @@ public class ImgMathTest
 		for ( int i=0; i < n_iterations; ++i ) {
 			final long t0 = System.nanoTime();
 			try {
-				new ImgMath( new Div( new Max( red, new Max( green, blue ) ), 3.0 ) ).into( brightness );
+				new ImgMath( div( max( red, max( green, blue ) ), 3.0 ) ).into( brightness );
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -186,7 +185,7 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
 		try {
-			new ImgMath( new Div( new Max( red, green, blue ), 3.0 ) ).into( brightness );
+			new ImgMath( div( max( red, green, blue ), 3.0 ) ).into( brightness );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -201,36 +200,13 @@ public class ImgMathTest
 		return 100 * 100 * 100 * 10 == sum;
 	}
 	
-	static protected boolean testNeg() {
-		final ArrayImg< FloatType, ? > in = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
-		for ( final FloatType t : in )
-			t.setOne();
-		final ArrayImg< FloatType, ? > out = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
-		
-		try {
-			new ImgMath( new Neg( in ) ).into( out );
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		double sum = 0;
-		
-		for ( final FloatType t: out )
-			sum += t.getRealDouble();
-		
-		System.out.println( "Sum Neg: " + sum );
-
-		
-		return out.dimension( 0 ) * out.dimension( 1 ) == -sum;
-	}
-	
 	protected boolean testLetOneLevel() {
 		
 		final ArrayImg< FloatType, ? > img = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
 		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img );
 		
 		try {
-			new ImgMath( new Let( "one", 1, new Add( img, new Var( "one" ) ) ) ).into( target );
+			new ImgMath( let( "one", 1, add( img, var( "one" ) ) ) ).into( target );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -250,10 +226,10 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img );
 		
 		try {
-			new ImgMath( new Add( new Let( "one", 1,
-					                       new Add( img, new Var( "one" ) ) ),
-					              new Let( "two", 2,
-					            		   new Add( new Var( "two" ), 0 ) ) ) ).into( target );
+			new ImgMath( add( let( "one", 1,
+					               add( img, var( "one" ) ) ),
+					               let( "two", 2,
+					            		add( var( "two" ), 0 ) ) ) ).into( target );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -276,9 +252,9 @@ public class ImgMathTest
 			t.setReal( 100.0d );
 		
 		try {
-			new ImgMath( new Let( "pixel", img,
-					              "constant", 10.0d,
-					              new Add( new Var( "pixel"), new Var( "constant" ) ) ) ).into( target );
+			new ImgMath( let( "pixel", img,
+					          "constant", 10.0d,
+					          add( var( "pixel"), var( "constant" ) ) ) ).into( target );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -301,10 +277,10 @@ public class ImgMathTest
 			t.setReal( 100.0d );
 		
 		try {
-			new ImgMath( new Let( "pixel", img,
-					              "constant", 10.0d,
-					              new Add( new Var( "pixel"), new Let( "pixel2", img,
-					            		                           new Sub( new Var( "pixel2" ), new Var( "constant" ) ) ) ) ) ).into( target );
+			new ImgMath( let( "pixel", img,
+					          "constant", 10.0d,
+					          add( var( "pixel"), let( "pixel2", img,
+					            		                sub( var( "pixel2" ), var( "constant" ) ) ) ) ) ).into( target );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -319,29 +295,24 @@ public class ImgMathTest
 	}
 	
 	
-	//@Test
+	@Test
 	public void test1() {
 		assertTrue( testImgMath1() );
 	}
 	
-	//@Test
+	@Test
 	public void test2() {
 		assertTrue( testIterationOrder() );
 	}
 	
-	//@Test
+	@Test
 	public void test3() {
 		assertTrue ( comparePerformance( 30 ) );
 	}
 	
-	//@Test
+	@Test
 	public void test4() {
 		assertTrue( testVarags() );
-	}
-	
-	//@Test
-	public void test5() {
-		assertTrue( testNeg() );
 	}
 	
 	@Test

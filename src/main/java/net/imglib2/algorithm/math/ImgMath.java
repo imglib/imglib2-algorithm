@@ -216,6 +216,87 @@ public class ImgMath
 		return same_iteration_order;
 	}
 	
+	static public final Add add( final Object o1, final Object o2 )
+	{
+		return new Add( o1, o2 );
+	}
+	
+	static public final Add add( final Object... obs )
+	{
+		return new Add( obs );
+	}
+	
+	static public final Sub sub( final Object o1, final Object o2 )
+	{
+		return new Sub( o1, o2 );
+	}
+	
+	static public final Sub sub( final Object... obs )
+	{
+		return new Sub( obs );
+	}
+	
+	static public final Mul mul( final Object o1, final Object o2 )
+	{
+		return new Mul( o1, o2 );
+	}
+	
+	static public final Mul mul( final Object... obs )
+	{
+		return new Mul( obs );
+	}
+	
+	static public final Div div( final Object o1, final Object o2 )
+	{
+		return new Div( o1, o2 );
+	}
+	
+	static public final Div div( final Object... obs )
+	{
+		return new Div( obs );
+	}
+	
+	static public final Max max( final Object o1, final Object o2 )
+	{
+		return new Max( o1, o2 );
+	}
+	
+	static public final Max max( final Object... obs )
+	{
+		return new Max( obs );
+	}
+	
+	static public final Min min( final Object o1, final Object o2 )
+	{
+		return new Min( o1, o2 );
+	}
+	
+	static public final Min min( final Object... obs )
+	{
+		return new Min( obs );
+	}
+	
+	static public final Let let( final String varName, final Object varValue, final Object body )
+	{
+		return new Let( varName, varValue, body );
+	}
+	
+	static public final Let let( final Object[] pairs, final Object body )
+	{
+		return new Let( pairs, body );
+	}
+	
+	static public final Let let( final Object... obs )
+	{
+		return new Let( obs );
+	}
+	
+	static public final Var var( final String name )
+	{
+		return new Var( name );
+	}
+	
+	
 	static public interface IFunction
 	{
 		public void eval( RealType< ? > output );
@@ -237,7 +318,7 @@ public class ImgMath
 		public IFunction getSecond();
 	}
 	
-	static protected final class IterableImgSource< I extends RealType< I > > implements IFunction
+	static private final class IterableImgSource< I extends RealType< I > > implements IFunction
 	{
 		private final RandomAccessibleInterval< I > rai;
 		private final Iterator< I > it;
@@ -276,7 +357,7 @@ public class ImgMath
 		}
 	}
 	
-	static protected final class NumberSource implements IFunction
+	static private final class NumberSource implements IFunction
 	{
 		private final double number;
 		
@@ -410,7 +491,7 @@ public class ImgMath
 		}
 	}
 	
-	static public class Mul extends BinaryFunction
+	static private final class Mul extends BinaryFunction
 	{
 		public Mul( final Object o1, final Object o2 )
 		{
@@ -446,7 +527,7 @@ public class ImgMath
 		}
 	}
 	
-	static public class Div extends BinaryFunction implements IFunction
+	static private final class Div extends BinaryFunction implements IFunction
 	{
 
 		public Div( final Object o1, final Object o2 )
@@ -483,7 +564,7 @@ public class ImgMath
 		}
 	}
 	
-	static public class Max extends BinaryFunction implements IFunction
+	static private final class Max extends BinaryFunction implements IFunction
 	{
 
 		public Max( final Object o1, final Object o2 )
@@ -522,7 +603,7 @@ public class ImgMath
 		}
 	}
 	
-	static public class Min extends BinaryFunction
+	static private final class Min extends BinaryFunction
 	{
 
 		public Min( final Object o1, final Object o2 )
@@ -561,7 +642,7 @@ public class ImgMath
 		}
 	}
 	
-	static public class Add extends BinaryFunction
+	static private final class Add extends BinaryFunction
 	{
 
 		public Add( final Object o1, final Object o2 )
@@ -598,7 +679,7 @@ public class ImgMath
 		}
 	}
 	
-	static public class Sub extends BinaryFunction
+	static private final class Sub extends BinaryFunction
 	{
 
 		public Sub( final Object o1, final Object o2 )
@@ -632,14 +713,6 @@ public class ImgMath
 			final Sub f = new Sub( this.a.copy(), this.b.copy() );
 			f.setScrap( this.scrap );
 			return f;
-		}
-	}
-	
-	static public class Neg extends Sub
-	{
-		public Neg( final Object o )
-		{
-			super( 0, o );
 		}
 	}
 	
