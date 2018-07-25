@@ -1,6 +1,8 @@
 package net.imglib2.algorithm.math;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -74,10 +76,10 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 		final O scrap = target.randomAccess().get().createVariable();
 		f.setScrap( scrap );
 		
-		final LinkedList< RandomAccessibleInterval< ? > > images = findAndPrepareImages( f, converter );
+		final boolean compatible_iteration_order = setup( f, converter );
 		
 		// Check compatible iteration order and dimensions
-		if ( compatibleIterationOrder( images ) )
+		if ( compatible_iteration_order )
 		{
 			// Evaluate function for every pixel
 			for ( final O output : Views.iterable( target ) )
@@ -93,24 +95,34 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 				cursor.fwd();
 				f.eval( cursor.get(), cursor );
 			}
-			
 		}
 		
 		return target;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	static public LinkedList< RandomAccessibleInterval< ? > > findAndPrepareImages( final IFunction< ? > f, final Converter< ?, ? > converter )
-	{
-		final LinkedList< Object > ops = new LinkedList<>();
+	static public boolean setup( final IFunction< ? > f, final Converter< ?, ? > converter )
+	{	
+		final LinkedList< IFunction< ? > > ops = new LinkedList<>();
 		ops.add( f );
 		
+		// child-parent map
+		final HashMap< IFunction< ? >, IFunction< ? > > cp = new HashMap<>();
+		
+		// Collect images to later check their iteration order
 		final LinkedList< RandomAccessibleInterval< ? > > images = new LinkedList<>();
 		
-		// Find images
+		// Collect Var instances to check that each corresponds to an upstream Let
+		final ArrayList< Var< ? > > vars = new ArrayList<>();
+		
+		IFunction< ? > parent = null;
+		
+		// Iterate into the nested operations
 		while ( ! ops.isEmpty() )
 		{
-			final Object op = ops.removeFirst();
+			final IFunction< ? >  op = ops.removeFirst();
+			cp.put( op, parent );
+			parent = op;
 			
 			if ( op instanceof IterableImgSource )
 			{
@@ -128,9 +140,33 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
 				}
 			}
+			else if ( op instanceof Var )
+			{
+				final Var< ? > var = ( Var )op;
+				vars.add( var );
+			}
 		}
 		
-		return images;
+		// Check Vars: are they all using names declared in upstream Lets
+		all: for ( final Var< ? > var : vars )
+		{
+			parent = var;
+			while ( null != ( parent = cp.get( parent ) ) )
+			{
+				if ( parent instanceof Let )
+				{
+					Let< ? > let = ( Let< ? > )parent;
+					if ( let.varName != var.name )
+						continue;
+					// Else, found: Var is in use
+					continue all;
+				}
+			}
+			// No upstream Let found
+			throw new RuntimeException( "The Var(\"" + var.name + "\") does not read from any upstream Let. " );
+		}		
+		
+		return compatibleIterationOrder( images );
 	}
 	
 	/**
@@ -660,8 +696,7 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 		 * 
 		 * @param o
 		 */
-		@SuppressWarnings("unchecked")
-		private final void setupVars( final IFunction< O > o )
+		private final void setupVars( final IFunction< O > o, final boolean[] used )
 		{
 			if ( o instanceof IUnaryFunction )
 			{
@@ -671,10 +706,13 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 				{
 					final Var< O > var = ( Var< O > )uf.getFirst();
 					if ( var.name == this.varName )
+					{
 						var.setScrap( this.scrap );
+						used[0] = true;
+					}
 				} else
 				{
-					setupVars( uf.getFirst() );
+					setupVars( uf.getFirst(), used );
 				}
 				
 				if ( o instanceof IBinaryFunction )
@@ -685,10 +723,13 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 					{
 						final Var< O > var = ( Var< O > )bf.getSecond();
 						if ( var.name == this.varName )
+						{
 							var.setScrap( this.scrap );
+							used[0] = true;
+						}
 					} else
 					{
-						setupVars( bf.getSecond() );
+						setupVars( bf.getSecond(), used );
 					}
 				}
 			}
@@ -722,7 +763,13 @@ public class ImgMath< I extends RealType< I >, O extends RealType< O > >
 			this.scrap = output.copy();
 			this.varValue.setScrap( output );
 			this.body.setScrap( output );
-			setupVars( this.body );
+			
+			// Setup Var instances that read this varName's value
+			// and ensure that it is read at least once
+			final boolean[] used = new boolean[]{ false };
+			setupVars( this.body, used );
+			if ( ! used[0] )
+				throw new RuntimeException( "Let-declared variable \"" + this.varName + "\" is never read by a Var(\"" + this.varName + "\")." );
 		}
 
 		@Override
