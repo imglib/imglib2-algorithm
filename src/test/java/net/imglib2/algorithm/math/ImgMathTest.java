@@ -51,7 +51,7 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
 		try {
-			new ImgMath< UnsignedByteType, FloatType >( new Div< FloatType >( new Max< FloatType >( red, new Max< FloatType >( green, blue ) ), 3.0 ) ).into( brightness );
+			new ImgMath( new Div( new Max( red, new Max( green, blue ) ), 3.0 ) ).into( brightness );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -87,7 +87,7 @@ public class ImgMathTest
 		// Divide pixels from each other (better than subtract: zero sum would be the default in case of error)
 		final ArrayImg< LongType, ? > img3 = new ArrayImgFactory<>( new LongType() ).create( img1 );
 		try {
-			new ImgMath< UnsignedByteType, LongType >( new Div< LongType >( img1, img2 ) ).into( img3 );
+			new ImgMath( new Div( img1, img2 ) ).into( img3 );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -123,7 +123,7 @@ public class ImgMathTest
 		for ( int i=0; i < n_iterations; ++i ) {
 			final long t0 = System.nanoTime();
 			try {
-				new ImgMath< UnsignedByteType, FloatType >( new Div< FloatType >( new Max< FloatType >( red, new Max< FloatType >( green, blue ) ), 3.0 ) ).into( brightness );
+				new ImgMath( new Div( new Max( red, new Max( green, blue ) ), 3.0 ) ).into( brightness );
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -186,7 +186,7 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
 		try {
-			new ImgMath< UnsignedByteType, FloatType >( new Div< FloatType >( new Max< FloatType >( red, green, blue ), 3.0 ) ).into( brightness );
+			new ImgMath( new Div( new Max( red, green, blue ), 3.0 ) ).into( brightness );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -208,7 +208,7 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > out = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
 		
 		try {
-			new ImgMath< FloatType, FloatType >( new Neg< FloatType >( in ) ).into( out );
+			new ImgMath( new Neg( in ) ).into( out );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
