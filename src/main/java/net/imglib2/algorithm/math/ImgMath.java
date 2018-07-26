@@ -137,6 +137,11 @@ public class ImgMath
 				if ( op instanceof IBinaryFunction )
 				{
 					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+					
+					if ( op instanceof ITrinaryFunction )
+					{
+						ops.addLast( ( ( ITrinaryFunction )op ).getThird() );
+					}
 				}
 			}
 			else if ( op instanceof Var )
@@ -296,6 +301,31 @@ public class ImgMath
 		return new Var( name );
 	}
 	
+	static public final Equal EQ( final Object o1, final Object o2 )
+	{
+		return new Equal( o1, o2 );
+	}
+	
+	static public final NotEqual NEQ( final Object o1, final Object o2 )
+	{
+		return new NotEqual( o1, o2 );
+	}
+	
+	static public final LessThan LT( final Object o1, final Object o2 )
+	{
+		return new LessThan( o1, o2 );
+	}
+	
+	static public final GreaterThan GT( final Object o1, final Object o2 )
+	{
+		return new GreaterThan( o1, o2 );
+	}
+	
+	static public final If IF( final Object o1, final Object o2, final Object o3 )
+	{
+		return new If( o1, o2, o3 );
+	}
+	
 	
 	static public interface IFunction
 	{
@@ -316,6 +346,11 @@ public class ImgMath
 	static public interface IBinaryFunction extends IUnaryFunction
 	{
 		public IFunction getSecond();
+	}
+	
+	static public interface ITrinaryFunction extends IBinaryFunction
+	{
+		public IFunction getThird();
 	}
 	
 	static private final class IterableImgSource< I extends RealType< I > > implements IFunction
@@ -488,6 +523,44 @@ public class ImgMath
 			this.scrap = output.copy();
 			this.a.setScrap( output );
 			this.b.setScrap( output );
+		}
+	}
+	
+	static abstract public class TrinaryFunction extends Function implements ITrinaryFunction
+	{
+		protected final IFunction a, b ,c;
+
+		protected RealType< ? > scrap;
+		
+		public TrinaryFunction( final Object o1, final Object o2, final Object o3 )
+		{
+			this.a = wrap( o1 );
+			this.b = wrap( o2 );
+			this.c = wrap( o3 );
+		}
+		
+		public final IFunction getFirst()
+		{
+			return this.a;
+		}
+		
+		public final IFunction getSecond()
+		{
+			return this.b;
+		}
+		
+		public final IFunction getThird()
+		{
+			return this.c;
+		}
+		
+		public void setScrap( final RealType< ? > output )
+		{
+			if ( null == output ) return; 
+			this.scrap = output.copy();
+			this.a.setScrap( output );
+			this.b.setScrap( output );
+			this.c.setScrap( output );
 		}
 	}
 	
@@ -803,6 +876,24 @@ public class ImgMath
 					{
 						setupVars( bf.getSecond(), used );
 					}
+					
+					if ( o instanceof ITrinaryFunction )
+					{
+						final TrinaryFunction tf = ( TrinaryFunction )o;
+						
+						if ( tf.getThird() instanceof Var )
+						{
+							final Var var = ( Var )tf.getThird();
+							if ( var.name == this.varName )
+							{
+								var.setScrap( this.scrap );
+								used[0] = true;
+							}
+						} else
+						{
+							setupVars( tf.getThird(), used );
+						}
+					}
 				}
 			}
 		}
@@ -887,19 +978,157 @@ public class ImgMath
 		}
 	}
 	
-	/*
-	static public interface BooleanFunction< O extends RealType< O > >
+	static private abstract class Compare extends BinaryFunction
 	{
-		public boolean eval( final O output );
+		public Compare( final Object o1, final Object o2) {
+			super( o1, o2 );
+		}
 		
-		public boolean eval( final O output, final Localizable loc );
+		abstract protected boolean compare( final RealType<?> t1, final RealType<?> t2 );
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public void eval( final RealType output ) {
+			this.a.eval( this.scrap );
+			this.b.eval( output );
+			if ( this.compare( this.scrap, output ) )
+				output.setOne();
+			else
+				output.setZero();
+		}
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public void eval( final RealType output, final Localizable loc) {
+			this.a.eval( this.scrap, loc );
+			this.b.eval( output, loc );
+			if ( this.compare( this.scrap, output ) )
+				output.setOne();
+			else
+				output.setZero();
+		}
 	}
 	
-	static public class Equals< O extends RealType O > extends BooleanFunction< O >
+	static private final class Equal extends Compare
 	{
+		public Equal( final Object o1, final Object o2) {
+			super( o1, o2 );
+		}
 		
-		
-		... TODO  Equals, LessThan, GreaterThan
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public final boolean compare( final RealType t1, final RealType t2 )
+		{
+			return 0 == t1.compareTo( t2 );
+		}
+
+		@Override
+		public Equal copy() {
+			final Equal copy = new Equal( this.a.copy(), this.b.copy() );
+			copy.setScrap( this.scrap );
+			return copy;
+		}
 	}
-	*/
+	
+	static private final class NotEqual extends Compare
+	{
+		public NotEqual( final Object o1, final Object o2) {
+			super( o1, o2 );
+		}
+		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public final boolean compare( final RealType t1, final RealType t2 )
+		{
+			return 0 != t1.compareTo( t2 );
+		}
+
+		@Override
+		public NotEqual copy() {
+			final NotEqual copy = new NotEqual( this.a.copy(), this.b.copy() );
+			copy.setScrap( this.scrap );
+			return copy;
+		}
+	}
+	
+	static private final class LessThan extends Compare
+	{
+		public LessThan( final Object o1, final Object o2) {
+			super( o1, o2 );
+		}
+		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public final boolean compare( final RealType t1, final RealType t2 )
+		{
+			return -1 == t1.compareTo( t2 );
+		}
+
+		@Override
+		public LessThan copy() {
+			final LessThan copy = new LessThan( this.a.copy(), this.b.copy() );
+			copy.setScrap( this.scrap );
+			return copy;
+		}
+	}
+	
+	static private final class GreaterThan extends Compare
+	{
+		public GreaterThan( final Object o1, final Object o2) {
+			super(o1, o2);
+		}
+		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public final boolean compare( final RealType t1, final RealType t2 )
+		{
+			return 1 == t1.compareTo( t2 );
+		}
+
+		@Override
+		public GreaterThan copy() {
+			final GreaterThan copy = new GreaterThan( this.a.copy(), this.b.copy() );
+			copy.setScrap( this.scrap );
+			return copy;
+		}
+	}
+	
+	static private final class If extends TrinaryFunction
+	{
+		public If( final Object o1, final Object o2, final Object o3 )
+		{
+			super( o1, o2, o3 );
+		}
+
+		@Override
+		public final void eval( final RealType<?> output ) {
+			this.a.eval( this.scrap );
+			if ( 0.0f != this.scrap.getRealFloat() )
+			{
+				// Then
+				this.b.eval( output );
+			} else
+			{
+				// Else
+				this.c.eval( output );
+			}
+		}
+
+		@Override
+		public final void eval( final RealType<?> output, final Localizable loc ) {
+			this.a.eval( this.scrap, loc );
+			if ( 0.0f != this.scrap.getRealFloat() )
+			{
+				// Then
+				this.b.eval( output, loc );
+			} else
+			{
+				// Else
+				this.c.eval( output, loc );
+			}
+		}
+
+		@Override
+		public If copy() {
+			final If copy = new If( this.a.copy(), this.b.copy(), this.c.copy() );
+			copy.setScrap( this.scrap );
+			return copy;
+		}
+	}
 }
