@@ -1,0 +1,27 @@
+package net.imglib2.algorithm.math.abstractions;
+
+import net.imglib2.type.numeric.RealType;
+
+abstract public class AUnaryFunction extends AFunction implements IUnaryFunction
+{
+	protected final IFunction a;
+
+	protected RealType< ? > scrap;
+	
+	public AUnaryFunction( final Object o1 )
+	{
+		this.a = Util.wrap( o1 );
+	}
+	
+	public IFunction getFirst()
+	{
+		return this.a;
+	}
+	
+	public void setScrap( final RealType< ? > output )
+	{
+		if ( null == output ) return; 
+		this.scrap = output.copy();
+		this.a.setScrap( output );
+	}
+}
