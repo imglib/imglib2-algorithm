@@ -157,4 +157,14 @@ public class ImgMath
 	{
 		return new If( o1, o2, o3 );
 	}
+	
+	static public final Then THEN( final Object o )
+	{
+		return new Then( o );
+	}
+	
+	static public final Else ELSE( final Object o )
+	{
+		return new Else( o );
+	}
 }

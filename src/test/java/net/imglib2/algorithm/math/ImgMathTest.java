@@ -10,6 +10,8 @@ import static net.imglib2.algorithm.math.ImgMath.min;
 import static net.imglib2.algorithm.math.ImgMath.let;
 import static net.imglib2.algorithm.math.ImgMath.var;
 import static net.imglib2.algorithm.math.ImgMath.IF;
+import static net.imglib2.algorithm.math.ImgMath.THEN;
+import static net.imglib2.algorithm.math.ImgMath.ELSE;
 import static net.imglib2.algorithm.math.ImgMath.EQ;
 import static net.imglib2.algorithm.math.ImgMath.NEQ;
 import static net.imglib2.algorithm.math.ImgMath.LT;
@@ -397,6 +399,31 @@ public class ImgMathTest
 
 		if ( print ) System.out.println("ImgMath 2 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 
+		// Reset
+				minLM = Long.MAX_VALUE;
+				maxLM = 0;
+				meanLM = 0;
+						
+				for ( int i=0; i < n_iterations; ++i ) {
+					final long t0 = System.nanoTime();
+
+					// Compute saturation: slightly faster than above (surprisingly), and easier to read
+					compute( let( "max", max( red, green, blue ),
+								  "min", min( red, green, blue ),
+								  IF ( EQ( 0, var( "max" ) ),
+									   THEN( 0 ),
+									   ELSE ( div( sub( var( "max" ), var( "min" ) ),
+										           var( "max" ) ) ) ) ) )
+						.into( saturation );
+
+					final long t1 = System.nanoTime();
+					minLM = Math.min(minLM, t1 - t0);
+					maxLM = Math.max(maxLM, t1 - t0);
+					meanLM += (t1 - t0) / (double)(n_iterations);
+				}
+
+				if ( print ) System.out.println("ImgMath 3 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
+
 		
 		// Reset
 		minLM = Long.MAX_VALUE;
@@ -444,7 +471,7 @@ public class ImgMathTest
 		assertTrue( testIterationOrder() );
 	}
 	
-	@Test
+	//@Test
 	public void test3() {
 		assertTrue ( comparePerformance( 30, false ) ); // warm up
 		assertTrue ( comparePerformance( 30, true ) );
