@@ -2,6 +2,7 @@ package net.imglib2.algorithm.math;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import net.imglib2.Cursor;
@@ -43,13 +44,13 @@ public class Compute
 	
 	public < O extends RealType< O > > RandomAccessibleInterval< O > into( final RandomAccessibleInterval< O > target )
 	{
-		// Recursive copy: initializes interval iterators
-		final IFunction f = this.operation.copy();
-		// Set temporary computation holders
-		final O scrap = target.randomAccess().get().createVariable();
-		f.setScrap( scrap );
+		// Recursive copy: initializes interval iterators and sets temporary computation holder
+		final IFunction f = this.operation.reInit(
+				target.randomAccess().get().createVariable(),
+				new HashMap< String, RealType< ? > >(),
+				converter );
 		
-		final boolean compatible_iteration_order = this.setup( f, converter );
+		final boolean compatible_iteration_order = this.setup( f );
 		
 		// Check compatible iteration order and dimensions
 		if ( compatible_iteration_order )
@@ -74,7 +75,7 @@ public class Compute
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private boolean setup( final IFunction f, final Converter< ?, ? > converter )
+	private boolean setup( final IFunction f )
 	{	
 		final LinkedList< IFunction > ops = new LinkedList<>();
 		ops.add( f );
@@ -88,6 +89,9 @@ public class Compute
 		// Collect Var instances to check that each corresponds to an upstream Let
 		final ArrayList< Var > vars = new ArrayList<>();
 		
+		// Collect Let instances to check that their declared variables are used
+		final HashSet< Let > lets = new HashSet<>();
+		
 		IFunction parent = null;
 		
 		// Iterate into the nested operations
@@ -100,8 +104,6 @@ public class Compute
 			if ( op instanceof IterableImgSource )
 			{
 				final IterableImgSource iis = ( IterableImgSource )op;
-				// Side effect: set the converter from input to output types
-				iis.setConverter( converter );
 				images.addLast( iis.rai );
 			}
 			else if ( op instanceof IUnaryFunction )
@@ -111,6 +113,11 @@ public class Compute
 				if ( op instanceof IBinaryFunction )
 				{
 					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+					
+					if ( op instanceof Let )
+					{
+						lets.add( ( Let )op );
+					}
 					
 					if ( op instanceof ITrinaryFunction )
 					{
@@ -126,6 +133,7 @@ public class Compute
 		}
 		
 		// Check Vars: are they all using names declared in upstream Lets
+		final HashSet< Let > used = new HashSet<>();
 		all: for ( final Var var : vars )
 		{
 			parent = var;
@@ -134,15 +142,27 @@ public class Compute
 				if ( parent instanceof Let )
 				{
 					Let let = ( Let )parent;
-					if ( let.varName != var.name )
+					if ( let.getVarName() != var.getName() )
 						continue;
 					// Else, found: Var is in use
+					used.add( let );
 					continue all;
 				}
 			}
 			// No upstream Let found
-			throw new RuntimeException( "The Var(\"" + var.name + "\") does not read from any upstream Let. " );
-		}		
+			throw new RuntimeException( "The Var(\"" + var.getName() + "\") does not read from any upstream Let. " );
+		}
+		
+		// Check Lets: are their declared variables used in downstream Vars?
+		if ( lets.size() != used.size() )
+		{
+			lets.removeAll( used );
+			String msg = "The Let-declared variable" + ( 1 == lets.size() ? "" : "s" );
+			for ( final Let let : lets )
+				msg += " \"" + let.getVarName() + "\"";
+			msg += " " + ( 1 == lets.size() ? "is" : "are") + " not used by any downstream Var.";
+			throw new RuntimeException( msg );
+		}
 		
 		return Util.compatibleIterationOrder( images );
 	}

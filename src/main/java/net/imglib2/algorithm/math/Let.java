@@ -1,26 +1,28 @@
 package net.imglib2.algorithm.math;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.imglib2.Localizable;
-import net.imglib2.algorithm.math.abstractions.ATrinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IBinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
-import net.imglib2.algorithm.math.abstractions.ITrinaryFunction;
-import net.imglib2.algorithm.math.abstractions.IUnaryFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
+import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
 public final class Let implements IFunction, IBinaryFunction
 {
-	final String varName;
+	private final String varName;
 	private final IFunction varValue;
 	private final IFunction body;
-	private RealType< ? > scrap;
+	private final RealType< ? > scrap;
 	
 	public Let( final String varName, final Object varValue, final Object body )
 	{
 		this.varName = varName;
 		this.varValue = Util.wrap( varValue );
 		this.body = Util.wrap( body );
+		this.scrap = null;
 	}
 	
 	public Let( final Object[] pairs, final Object body )
@@ -40,6 +42,8 @@ public final class Let implements IFunction, IBinaryFunction
 			System.arraycopy( pairs, 2, pairs2, 0, pairs2.length );
 			this.body = new Let( pairs2, body );
 		}
+		
+		this.scrap = null;
 	}
 	
 	public Let( final Object... obs )
@@ -56,71 +60,17 @@ public final class Let implements IFunction, IBinaryFunction
 		return obs2;
 	}
 	
-	/**
-	 * Recursive search for Var instances of this.varName
-	 * 
-	 * @param o
-	 */
-	private final void setupVars( final IFunction o, final boolean[] used )
+	private Let( final RealType< ? > scrap, final String varName, final IFunction varValue, final IFunction body )
 	{
-		if ( o instanceof IUnaryFunction )
-		{
-			final IUnaryFunction uf = ( IUnaryFunction )o;
-			
-			if ( uf.getFirst() instanceof Var )
-			{
-				final Var var = ( Var )uf.getFirst();
-				if ( var.name == this.varName )
-				{
-					var.setScrap( this.scrap );
-					used[0] = true;
-				}
-			} else
-			{
-				setupVars( uf.getFirst(), used );
-			}
-			
-			if ( o instanceof IBinaryFunction )
-			{
-				final IBinaryFunction bf = ( IBinaryFunction )o;
-				
-				if ( bf.getSecond() instanceof Var )
-				{
-					final Var var = ( Var )bf.getSecond();
-					if ( var.name == this.varName )
-					{
-						var.setScrap( this.scrap );
-						used[0] = true;
-					}
-				} else
-				{
-					setupVars( bf.getSecond(), used );
-				}
-				
-				if ( o instanceof ITrinaryFunction )
-				{
-					final ATrinaryFunction tf = ( ATrinaryFunction )o;
-					
-					if ( tf.getThird() instanceof Var )
-					{
-						final Var var = ( Var )tf.getThird();
-						if ( var.name == this.varName )
-						{
-							var.setScrap( this.scrap );
-							used[0] = true;
-						}
-					} else
-					{
-						setupVars( tf.getThird(), used );
-					}
-				}
-			}
-		}
+		this.scrap = scrap;
+		this.varName = varName;
+		this.varValue = varValue;
+		this.body = body;
 	}
-	
 
 	@Override
-	public void eval( final RealType< ? > output ) {
+	public void eval( final RealType< ? > output )
+	{
 		// Evaluate the varValue into this.scrap, which is shared with all Vars of varName
 		this.varValue.eval( this.scrap );
 		// The body may contain Vars that will use this.varValue via this.scrap
@@ -128,40 +78,35 @@ public final class Let implements IFunction, IBinaryFunction
 	}
 
 	@Override
-	public void eval( final RealType< ? > output, final Localizable loc) {
+	public void eval( final RealType< ? > output, final Localizable loc)
+	{
 		this.varValue.eval( this.scrap, loc );
 		this.body.eval( output, loc );
 	}
 
 	@Override
-	public Let copy() {
-		final Let copy = new Let( this.varName, this.varValue.copy(), this.body.copy() );
-		copy.setScrap( this.scrap );
-		return copy;
+	public Let reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter )
+	{
+		final RealType< ? > scrap = tmp.copy();
+		final Map< String, RealType< ? > > rebind = new HashMap<>( bindings );
+		rebind.put( this.varName, scrap );
+		return new Let( scrap, this.varName, this.varValue.reInit( tmp, rebind, converter ), this.body.reInit( tmp, rebind, converter ) );
 	}
 
 	@Override
-	public void setScrap( final RealType< ? > output ) {
-		if ( null == output ) return;
-		this.scrap = output.copy();
-		this.varValue.setScrap( output );
-		this.body.setScrap( output );
-		
-		// Setup Var instances that read this varName's value
-		// and ensure that it is read at least once
-		final boolean[] used = new boolean[]{ false };
-		setupVars( this.body, used );
-		if ( ! used[0] )
-			throw new RuntimeException( "Let-declared variable \"" + this.varName + "\" is never read by a Var(\"" + this.varName + "\")." );
-	}
-
-	@Override
-	public IFunction getFirst() {
+	public IFunction getFirst()
+	{
 		return this.varValue;
 	}
 
 	@Override
-	public IFunction getSecond() {
+	public IFunction getSecond()
+	{
 		return this.body;
+	}
+	
+	public String getVarName()
+	{
+		return this.varName;
 	}
 }

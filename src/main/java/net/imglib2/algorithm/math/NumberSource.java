@@ -1,7 +1,10 @@
 package net.imglib2.algorithm.math;
 
+import java.util.Map;
+
 import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
 public class NumberSource implements IFunction
@@ -23,11 +26,8 @@ public class NumberSource implements IFunction
 	}
 
 	@Override
-	public NumberSource copy()
+	public NumberSource reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter)
 	{
 		return new NumberSource( this.number );
 	}
-
-	@Override
-	public void setScrap( final RealType< ? > output) {}
 }

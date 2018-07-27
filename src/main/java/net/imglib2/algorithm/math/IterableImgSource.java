@@ -1,6 +1,7 @@
 package net.imglib2.algorithm.math;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccess;
@@ -19,32 +20,33 @@ public class IterableImgSource< I extends RealType< I > > implements IFunction
 
 	public IterableImgSource( final RandomAccessibleInterval< I > rai )
 	{
+		this( null, rai );
+	}
+	
+	private IterableImgSource( final Converter< RealType< ? >, RealType< ? > > converter, final RandomAccessibleInterval< I > rai )
+	{
 		this.rai = rai;
 		this.it = Views.iterable( rai ).iterator();
 		this.ra = rai.randomAccess();
+		this.converter = converter;
 	}
 
 	@Override
-	public void eval( final RealType< ? > output ) {
+	public void eval( final RealType< ? > output )
+	{
 		this.converter.convert( this.it.next(), output );
 	}
 
 	@Override
-	public void eval( final RealType< ? > output, final Localizable loc ) {
+	public void eval( final RealType< ? > output, final Localizable loc )
+	{
 		this.ra.setPosition( loc );
 		this.converter.convert( this.ra.get(), output );
 	}
 
 	@Override
-	public IterableImgSource< I > copy()
+	public IterableImgSource< I > reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter )
 	{
-		return new IterableImgSource< I >( this.rai );
-	}
-
-	@Override
-	public void setScrap( final RealType< ? > output) {}
-	
-	public void setConverter( final Converter< RealType< ? >, RealType< ? > > converter ) {
-		this.converter = converter;
+		return new IterableImgSource< I >( converter, this.rai );
 	}
 }

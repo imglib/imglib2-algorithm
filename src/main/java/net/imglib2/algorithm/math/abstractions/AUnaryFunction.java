@@ -17,11 +17,4 @@ abstract public class AUnaryFunction extends AFunction implements IUnaryFunction
 	{
 		return this.a;
 	}
-	
-	public void setScrap( final RealType< ? > output )
-	{
-		if ( null == output ) return; 
-		this.scrap = output.copy();
-		this.a.setScrap( output );
-	}
 }

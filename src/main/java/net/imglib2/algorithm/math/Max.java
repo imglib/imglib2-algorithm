@@ -1,8 +1,11 @@
 package net.imglib2.algorithm.math;
 
+import java.util.Map;
+
 import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.ABinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
 public final class Max extends ABinaryFunction implements IFunction
@@ -15,6 +18,11 @@ public final class Max extends ABinaryFunction implements IFunction
 	public Max( final Object... obs )
 	{
 		super( obs );
+	}
+
+	private Max( final RealType< ? > scrap, final IFunction f1, final IFunction f2 )
+	{
+		super( scrap, f1, f2 );
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -36,9 +44,7 @@ public final class Max extends ABinaryFunction implements IFunction
 	}
 
 	@Override
-	public Max copy() {
-		final Max f = new Max( this.a.copy(), this.b.copy() );
-		f.setScrap( this.scrap );
-		return f;
+	public Max reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter ) {
+		return new Max( tmp.copy(), this.a.reInit( tmp, bindings, converter ), this.b.reInit( tmp, bindings, converter ) );
 	}
 }

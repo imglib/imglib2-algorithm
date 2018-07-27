@@ -1,7 +1,11 @@
 package net.imglib2.algorithm.math;
 
+import java.util.Map;
+
 import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.ABinaryFunction;
+import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
 public final class Mul extends ABinaryFunction
@@ -14,6 +18,11 @@ public final class Mul extends ABinaryFunction
 	public Mul( final Object... obs )
 	{
 		super( obs );
+	}
+
+	private Mul(  final RealType< ? > scrap, final IFunction f1, final IFunction f2 )
+	{
+		super( scrap, f1, f2 );
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -33,9 +42,7 @@ public final class Mul extends ABinaryFunction
 	}
 
 	@Override
-	public Mul copy() {
-		final Mul f = new Mul( this.a.copy(), this.b.copy() );
-		f.setScrap( this.scrap );
-		return f;
+	public Mul reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter ) {
+		return new Mul( tmp.copy(), this.a.reInit( tmp, bindings, converter ), this.b.reInit( tmp, bindings, converter ) );
 	}
 }

@@ -382,7 +382,7 @@ public class ImgMathTest
 		for ( int i=0; i < n_iterations; ++i ) {
 			final long t0 = System.nanoTime();
 
-			// Compute saturation: slightly faster than above (surprisingly), and easier to read
+			// Compute saturation: very slightly slower than with vars (unsurprisingly), but easier to read
 			compute( let( "max", max( red, green, blue ),
 						  "min", min( red, green, blue ),
 						  IF ( EQ( 0, var( "max" ) ),
@@ -407,7 +407,7 @@ public class ImgMathTest
 				for ( int i=0; i < n_iterations; ++i ) {
 					final long t0 = System.nanoTime();
 
-					// Compute saturation: slightly faster than above (surprisingly), and easier to read
+					// Compute saturation: slightly slower than with vars (unsurprisingly), but easier to read
 					compute( let( "max", max( red, green, blue ),
 								  "min", min( red, green, blue ),
 								  IF ( EQ( 0, var( "max" ) ),
@@ -507,7 +507,7 @@ public class ImgMathTest
 		assertTrue ( testIfThenElse() );
 	}
 	
-	@Test
+	//@Test
 	public void test1IfThenElsePerformance() {
 		assertTrue ( testSaturationPerformance( 30, false ) ); // warm-up
 		assertTrue ( testSaturationPerformance( 30, true ) );

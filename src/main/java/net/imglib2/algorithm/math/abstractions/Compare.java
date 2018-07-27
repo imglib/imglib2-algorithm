@@ -9,6 +9,11 @@ abstract public class Compare extends ABinaryFunction
 		super( o1, o2 );
 	}
 	
+	protected Compare( final RealType< ? > scrap, final IFunction f1, final IFunction f2 )
+	{
+		super( scrap, f1, f2 );
+	}
+	
 	abstract protected boolean compare( final RealType<?> t1, final RealType<?> t2 );
 
 	@SuppressWarnings("rawtypes")

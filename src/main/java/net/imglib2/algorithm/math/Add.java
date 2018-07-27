@@ -1,7 +1,11 @@
 package net.imglib2.algorithm.math;
 
+import java.util.Map;
+
 import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.ABinaryFunction;
+import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
 public final class Add extends ABinaryFunction
@@ -15,10 +19,16 @@ public final class Add extends ABinaryFunction
 	{
 		super( obs );
 	}
+	
+	private Add( final RealType< ? > scrap, final IFunction f1, final IFunction f2 )
+	{
+		super( scrap, f1, f2 );
+	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public final void eval( final RealType output ) {
+	public final void eval( final RealType output )
+	{
 		this.a.eval( output );
 		this.b.eval( this.scrap );
 		output.add( this.scrap );
@@ -26,16 +36,16 @@ public final class Add extends ABinaryFunction
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public final void eval( final RealType output, final Localizable loc ) {
+	public final void eval( final RealType output, final Localizable loc )
+	{
 		this.a.eval( output, loc );
 		this.b.eval( this.scrap, loc );
 		output.add( this.scrap );
 	}
 
 	@Override
-	public Add copy() {
-		final Add f = new Add( this.a.copy(), this.b.copy() );
-		f.setScrap( this.scrap );
-		return f;
+	public Add reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter )
+	{
+		return new Add( tmp.copy(), this.a.reInit( tmp, bindings, converter ), this.b.reInit( tmp, bindings, converter ) );
 	}
 }

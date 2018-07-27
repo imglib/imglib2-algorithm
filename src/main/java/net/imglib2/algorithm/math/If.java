@@ -1,7 +1,11 @@
 package net.imglib2.algorithm.math;
 
+import java.util.Map;
+
 import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.ATrinaryFunction;
+import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
 public final class If extends ATrinaryFunction
@@ -10,9 +14,15 @@ public final class If extends ATrinaryFunction
 	{
 		super( o1, o2, o3 );
 	}
+	
+	private If( final RealType< ? > scrap, final IFunction f1, final IFunction f2, final IFunction f3 )
+	{
+		super ( scrap, f1, f2, f3 );
+	}
 
 	@Override
-	public final void eval( final RealType<?> output ) {
+	public final void eval( final RealType<?> output )
+	{
 		this.a.eval( this.scrap );
 		if ( 0.0f != this.scrap.getRealFloat() )
 		{
@@ -26,7 +36,8 @@ public final class If extends ATrinaryFunction
 	}
 
 	@Override
-	public final void eval( final RealType<?> output, final Localizable loc ) {
+	public final void eval( final RealType<?> output, final Localizable loc )
+	{
 		this.a.eval( this.scrap, loc );
 		if ( 0.0f != this.scrap.getRealFloat() )
 		{
@@ -40,9 +51,8 @@ public final class If extends ATrinaryFunction
 	}
 
 	@Override
-	public If copy() {
-		final If copy = new If( this.a.copy(), this.b.copy(), this.c.copy() );
-		copy.setScrap( this.scrap );
-		return copy;
+	public If reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter )
+	{
+		return new If( tmp.copy(), this.a.reInit( tmp, bindings, converter ), this.b.reInit( tmp, bindings, converter ), this.c.reInit( tmp, bindings, converter ) );
 	}
 }

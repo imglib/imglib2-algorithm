@@ -1,20 +1,9 @@
 package net.imglib2.algorithm.math;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-
-import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.math.abstractions.IBinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
-import net.imglib2.algorithm.math.abstractions.ITrinaryFunction;
-import net.imglib2.algorithm.math.abstractions.IUnaryFunction;
-import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.Views;
 
 /**
  * An easy yet relatively high performance way to perform pixel-wise math
