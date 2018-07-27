@@ -92,12 +92,32 @@ public class ImgMath
 		return new Max( obs );
 	}
 	
+	static public final Max maximum( final Object o1, final Object o2 )
+	{
+		return new Max( o1, o2 );
+	}
+	
+	static public final Max maximum( final Object... obs )
+	{
+		return new Max( obs );
+	}
+	
 	static public final Min min( final Object o1, final Object o2 )
 	{
 		return new Min( o1, o2 );
 	}
 	
 	static public final Min min( final Object... obs )
+	{
+		return new Min( obs );
+	}
+	
+	static public final Min minimum( final Object o1, final Object o2 )
+	{
+		return new Min( o1, o2 );
+	}
+	
+	static public final Min minimum( final Object... obs )
 	{
 		return new Min( obs );
 	}
