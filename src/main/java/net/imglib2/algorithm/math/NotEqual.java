@@ -25,7 +25,7 @@ public final class NotEqual extends Compare
 	}
 
 	@Override
-	public NotEqual reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter ) {
+	public NotEqual reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter ) {
 		return new NotEqual( tmp.copy(), this.a.reInit( tmp, bindings, converter ), this.b.reInit( tmp, bindings, converter ) );
 	}
 }
