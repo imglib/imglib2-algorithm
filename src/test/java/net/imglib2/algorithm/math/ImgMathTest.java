@@ -1,5 +1,6 @@
 package net.imglib2.algorithm.math;
 
+import static net.imglib2.algorithm.math.ImgMath.compute;
 import static net.imglib2.algorithm.math.ImgMath.add;
 import static net.imglib2.algorithm.math.ImgMath.sub;
 import static net.imglib2.algorithm.math.ImgMath.mul;
@@ -58,7 +59,7 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
 		try {
-			new ImgMath( div( max( red, max( green, blue ) ), 3.0 ) ).into( brightness );
+			compute( div( max( red, max( green, blue ) ), 3.0 ) ).into( brightness );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -93,11 +94,7 @@ public class ImgMathTest
 		
 		// Divide pixels from each other (better than subtract: zero sum would be the default in case of error)
 		final ArrayImg< LongType, ? > img3 = new ArrayImgFactory<>( new LongType() ).create( img1 );
-		try {
-			new ImgMath( div( img1, img2 ) ).into( img3 );
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		compute( div( img1, img2 ) ).into( img3 );
 		
 		// Sum of pixels should add up to n_pixels
 		long sum = 0;
@@ -129,11 +126,7 @@ public class ImgMathTest
 		
 		for ( int i=0; i < n_iterations; ++i ) {
 			final long t0 = System.nanoTime();
-			try {
-				new ImgMath( div( max( red, max( green, blue ) ), 3.0 ) ).into( brightness );
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			compute( div( max( red, max( green, blue ) ), 3.0 ) ).into( brightness );
 			final long t1 = System.nanoTime();
 			
 			minLM = Math.min(minLM, t1 - t0);
@@ -192,11 +185,7 @@ public class ImgMathTest
 		
 		final ArrayImg< FloatType, ? > brightness = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
-		try {
-			new ImgMath( div( max( red, green, blue ), 3.0 ) ).into( brightness );
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		compute( div( max( red, green, blue ), 3.0 ) ).into( brightness );
 		
 		double sum = 0;
 		
@@ -213,11 +202,7 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > img = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
 		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img );
 		
-		try {
-			new ImgMath( let( "one", 1, add( img, var( "one" ) ) ) ).into( target );
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		compute( let( "one", 1, add( img, var( "one" ) ) ) ).into( target );
 		
 		double sum = 0;
 		for ( final FloatType t : target )
@@ -233,14 +218,10 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > img = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
 		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img );
 		
-		try {
-			new ImgMath( add( let( "one", 1,
-					               add( img, var( "one" ) ) ),
-					               let( "two", 2,
-					            		add( var( "two" ), 0 ) ) ) ).into( target );
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		compute( add( let( "one", 1,
+					        add( img, var( "one" ) ) ),
+					             let( "two", 2,
+					                  add( var( "two" ), 0 ) ) ) ).into( target );
 		
 		double sum = 0;
 		for ( final FloatType t : target )
@@ -259,13 +240,9 @@ public class ImgMathTest
 		for ( final FloatType t : img )
 			t.setReal( 100.0d );
 		
-		try {
-			new ImgMath( let( "pixel", img,
-					          "constant", 10.0d,
-					          add( var( "pixel"), var( "constant" ) ) ) ).into( target );
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		compute( let( "pixel", img,
+					  "constant", 10.0d,
+					  add( var( "pixel"), var( "constant" ) ) ) ).into( target );
 		
 		double sum = 0;
 		for ( final FloatType t : target )
@@ -284,14 +261,10 @@ public class ImgMathTest
 		for ( final FloatType t : img )
 			t.setReal( 100.0d );
 		
-		try {
-			new ImgMath( let( "pixel", img,
-					          "constant", 10.0d,
-					          add( var( "pixel"), let( "pixel2", img,
-					            		                sub( var( "pixel2" ), var( "constant" ) ) ) ) ) ).into( target );
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		compute( let( "pixel", img,
+					  "constant", 10.0d,
+					  add( var( "pixel"), let( "pixel2", img,
+					            		       sub( var( "pixel2" ), var( "constant" ) ) ) ) ) ).into( target );
 		
 		double sum = 0;
 		for ( final FloatType t : target )
@@ -327,21 +300,16 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > saturation = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
 		// Compute saturation
-		try {
-			new ImgMath( let( "red", red,
-					          "green", green,
-					          "blue", blue,
-					          "max", max( var( "red" ), var( "green" ), var( "blue" ) ),
-					          "min", min( var( "red" ), var( "green" ), var( "blue" ) ),
-					          IF ( EQ( 0, var( "max" ) ),
-					        	   0,
-					        	   div( sub( var( "max" ), var( "min" ) ),
-					        			var( "max" ) ) ) ) )
+		compute( let( "red", red,
+					  "green", green,
+					  "blue", blue,
+					  "max", max( var( "red" ), var( "green" ), var( "blue" ) ),
+					  "min", min( var( "red" ), var( "green" ), var( "blue" ) ),
+					  IF ( EQ( 0, var( "max" ) ),
+					       0,
+					       div( sub( var( "max" ), var( "min" ) ),
+					        	var( "max" ) ) ) ) )
 			.into( saturation );
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		
 		float sum = 0;
 		
@@ -385,21 +353,16 @@ public class ImgMathTest
 			final long t0 = System.nanoTime();
 
 			// Compute saturation
-			try {
-				new ImgMath( let( "red", red,
-						"green", green,
-						"blue", blue,
-						"max", max( var( "red" ), var( "green" ), var( "blue" ) ),
-						"min", min( var( "red" ), var( "green" ), var( "blue" ) ),
-						IF ( EQ( 0, var( "max" ) ),
-								0,
-								div( sub( var( "max" ), var( "min" ) ),
-										var( "max" ) ) ) ) )
+			compute( let( "red", red,
+						  "green", green,
+						  "blue", blue,
+						  "max", max( var( "red" ), var( "green" ), var( "blue" ) ),
+						  "min", min( var( "red" ), var( "green" ), var( "blue" ) ),
+						  IF ( EQ( 0, var( "max" ) ),
+							   0,
+							   div( sub( var( "max" ), var( "min" ) ),
+									var( "max" ) ) ) ) )
 				.into( saturation );
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 
 			final long t1 = System.nanoTime();
 			minLM = Math.min(minLM, t1 - t0);
@@ -418,18 +381,13 @@ public class ImgMathTest
 			final long t0 = System.nanoTime();
 
 			// Compute saturation: slightly faster than above (surprisingly), and easier to read
-			try {
-				new ImgMath( let( "max", max( red, green, blue ),
-								  "min", min( red, green, blue ),
-								  IF ( EQ( 0, var( "max" ) ),
-									   0,
-								       div( sub( var( "max" ), var( "min" ) ),
-										    var( "max" ) ) ) ) )
+			compute( let( "max", max( red, green, blue ),
+						  "min", min( red, green, blue ),
+						  IF ( EQ( 0, var( "max" ) ),
+							   0,
+							   div( sub( var( "max" ), var( "min" ) ),
+								    var( "max" ) ) ) ) )
 				.into( saturation );
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 
 			final long t1 = System.nanoTime();
 			minLM = Math.min(minLM, t1 - t0);
