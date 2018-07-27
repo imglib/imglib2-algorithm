@@ -45,6 +45,7 @@ import net.imglib2.RandomAccess;
  * @param <S>
  * @param <T>
  */
+@Deprecated
 public interface ConvolverFactory< S, T >
 {
 	/**

@@ -54,6 +54,7 @@ import net.imglib2.type.numeric.NumericType;
  * @param <T>
  *            input and output type
  */
+@Deprecated
 public final class ConvolverNativeTypeBuffered< T extends NumericType< T > & NativeType< T > > implements Runnable
 {
 	/**
