@@ -11,12 +11,11 @@ import net.imglib2.view.Views;
 public class Util
 {
 	/**
-	 * Returns true if images have the same dimensions and iterator order.
-	 * Returns false when the iteration order is incompatible.
+	 * Check for compatibility among the iteration order of the images, and
+	 * throws a RuntimeException When images have different dimensions.
 	 * 
 	 * @param images
-	 * @return
-	 * @throws Exception When images have different dimensions.
+	 * @return Returns true if images have the same dimensions and iterator order, and false when the iteration order is incompatible.
 	 */
 	static public boolean compatibleIterationOrder( final LinkedList< RandomAccessibleInterval< ? > > images )
 	{
