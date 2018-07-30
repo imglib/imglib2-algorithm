@@ -11,6 +11,7 @@ import net.imglib2.algorithm.math.abstractions.IBinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.ITrinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IUnaryFunction;
+import net.imglib2.algorithm.math.abstractions.ImgSource;
 import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
@@ -21,18 +22,35 @@ public class Compute
 	private final IFunction operation;
 	private final Converter< RealType< ? >, RealType< ? > > converter;
 	
+	/**
+	 * Prepare the operation for computation with a default converter.
+	 * The converter will be used only if necessary, that is, only if
+	 * the input image type is not the same or a sublclass of the output
+	 * image type as specified in the {@link Compute#into(RandomAccessibleInterval)}.
+	 * 
+	 * @param operation
+	 */
 	public Compute( final IFunction operation )
 	{
-		this( operation,
-			  new Converter< RealType< ? >, RealType< ? > >()
+		this( operation, new Converter< RealType< ? >, RealType< ? > >()
 		{
 			@Override
-			public final void convert( final RealType< ? > input, final RealType< ? > output) {
+			public final void convert( final RealType<?> input, RealType<?> output)
+			{
 				output.setReal( input.getRealDouble() );
 			}
 		});
 	}
 	
+	/**
+	 * Prepare the operation for computation.
+	 * The converter will be used only if necessary, that is, only if
+	 * the input image type is not the same or a sublclass of the output
+	 * image type as specified in the {@link Compute#into(RandomAccessibleInterval)}.
+	 * 
+	 * @param operation
+	 * @param converter
+	 */
 	public Compute(
 			final IFunction operation,
 			final Converter< RealType< ? >, RealType< ? > > converter
@@ -42,13 +60,14 @@ public class Compute
 		this.converter = converter;
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public < O extends RealType< O > > RandomAccessibleInterval< O > into( final RandomAccessibleInterval< O > target )
 	{
 		// Recursive copy: initializes interval iterators and sets temporary computation holder
 		final IFunction f = this.operation.reInit(
 				target.randomAccess().get().createVariable(),
 				new HashMap< String, RealType< ? > >(),
-				converter );
+				this.converter );
 		
 		final boolean compatible_iteration_order = this.setup( f );
 		
@@ -56,25 +75,26 @@ public class Compute
 		if ( compatible_iteration_order )
 		{
 			// Evaluate function for every pixel
-			for ( final O output : Views.iterable( target ) )
-				f.eval( output );
+			for ( final RealType output : Views.iterable( target ) )
+				output.set( f.eval() );
 		}
 		else
 		{
 			// Incompatible iteration order
-			final Cursor< O > cursor = Views.iterable( target ).cursor();
+			final Cursor< RealType > cursor = ( Cursor< RealType > )Views.iterable( target ).cursor();
 			
 			while ( cursor.hasNext() )
 			{
 				cursor.fwd();
-				f.eval( cursor.get(), cursor );
+				final RealType output = cursor.get();
+				output.set( f.eval( cursor ) );
 			}
 		}
 		
 		return target;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes" })
 	private boolean setup( final IFunction f )
 	{	
 		final LinkedList< IFunction > ops = new LinkedList<>();
@@ -101,10 +121,9 @@ public class Compute
 			cp.put( op, parent );
 			parent = op;
 			
-			if ( op instanceof IterableImgSource )
+			if ( op instanceof ImgSource )
 			{
-				final IterableImgSource iis = ( IterableImgSource )op;
-				images.addLast( iis.rai );
+				images.addLast( ( ( ImgSource )op ).getRandomAccessibleInterval() );
 			}
 			else if ( op instanceof IUnaryFunction )
 			{

@@ -26,22 +26,22 @@ public final class Div extends ABinaryFunction implements IFunction
 		super( scrap, f1, f2 );
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public final void eval( final RealType output )
+	public final RealType< ? > eval()
 	{
-		this.a.eval( output );
-		this.b.eval( this.scrap );
-		output.div( this.scrap );
+		this.scrap.set( this.a.eval() );
+		this.scrap.div( this.b.eval() );
+		return this.scrap;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public final void eval( final RealType output, final Localizable loc)
+	public final RealType< ? > eval( final Localizable loc )
 	{
-		this.a.eval( output, loc );
-		this.b.eval( this.scrap, loc );
-		output.div( this.scrap );
+		this.scrap.set( this.a.eval( loc ) );
+		this.scrap.div( this.b.eval( loc ) );
+		return this.scrap;
 	}
 
 	@Override

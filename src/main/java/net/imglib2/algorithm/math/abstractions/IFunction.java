@@ -8,9 +8,9 @@ import net.imglib2.type.numeric.RealType;
 
 public interface IFunction
 {
-	public void eval( RealType< ? > output );
+	public RealType< ? > eval();
 	
-	public void eval( RealType< ? > output, Localizable loc );
+	public RealType< ? > eval( Localizable loc );
 	
 	public IFunction reInit(
 			RealType<?> tmp,

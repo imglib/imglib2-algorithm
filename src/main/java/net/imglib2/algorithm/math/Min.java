@@ -27,24 +27,25 @@ public final class Min extends ABinaryFunction
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public final void eval( final RealType output ) {
-		this.a.eval( output );
-		this.b.eval( this.scrap );
-		if ( 1 == output.compareTo( this.scrap ) )
-			output.set( this.scrap );
+	public final RealType< ? > eval()
+	{
+		final RealType x = this.a.eval();
+		final RealType y = this.b.eval();
+		return x.compareTo( y ) < 0 ? x : y;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public final void eval( final RealType output, final Localizable loc) {
-		this.a.eval( output, loc );
-		this.b.eval( this.scrap, loc );
-		if ( 1 == output.compareTo( this.scrap ) )
-			output.set( this.scrap );
+	public final RealType< ? > eval( final Localizable loc)
+	{
+		final RealType x = this.a.eval( loc );
+		final RealType y = this.b.eval( loc );
+		return x.compareTo( y ) < 0 ? x : y;
 	}
 
 	@Override
-	public Min reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter ) {
+	public Min reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter )
+	{
 		return new Min( tmp.copy(), this.a.reInit(tmp, bindings, converter), this.b.reInit(tmp, bindings, converter) );
 	}
 }

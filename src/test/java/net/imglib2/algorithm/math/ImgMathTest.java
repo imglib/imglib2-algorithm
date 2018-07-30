@@ -45,7 +45,7 @@ public class ImgMathTest
 {
 	protected static boolean testImgMath1( )
 	{	
-		final long[] dims = new long[]{ 100, 100, 100 };
+		final long[] dims = new long[]{ 2, 2, 2 };
 		
 		final ArrayImg< ARGBType, ? > rgb = new ArrayImgFactory< ARGBType >( new ARGBType() ).create( dims );
 		
@@ -73,7 +73,7 @@ public class ImgMathTest
 		
 		System.out.println( "Sum: " + sum );
 
-		return 100 * 100 * 100 * 10 == sum;
+		return 2 * 2 * 2 * 10 == sum;
 	}
 	
 	protected static boolean testIterationOrder() {
@@ -215,21 +215,21 @@ public class ImgMathTest
 		return 100 == sum;
 	}
 	
-	protected boolean testLetTwoLevels() {
+	protected boolean testLetTwoLets() {
 		
 		final ArrayImg< FloatType, ? > img = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
 		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img );
 		
 		compute( add( let( "one", 1,
-					        add( img, var( "one" ) ) ),
-					             let( "two", 2,
-					                  add( var( "two" ), 0 ) ) ) ).into( target );
+					       add( img, var( "one" ) ) ),
+					  let( "two", 2,
+					       add( var( "two" ), 0 ) ) ) ).into( target );
 		
 		double sum = 0;
 		for ( final FloatType t : target )
 			sum += t.getRealDouble();
 		
-		System.out.println( "Two-level Let sum: " + sum );
+		System.out.println( "Two Let sum: " + sum );
 		
 		return 300 == sum;
 	}
@@ -400,30 +400,104 @@ public class ImgMathTest
 		if ( print ) System.out.println("ImgMath 2 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 
 		// Reset
-				minLM = Long.MAX_VALUE;
-				maxLM = 0;
-				meanLM = 0;
+		minLM = Long.MAX_VALUE;
+		maxLM = 0;
+		meanLM = 0;
 						
-				for ( int i=0; i < n_iterations; ++i ) {
-					final long t0 = System.nanoTime();
+		for ( int i=0; i < n_iterations; ++i ) {
+			final long t0 = System.nanoTime();
 
-					// Compute saturation: slightly slower than with vars (unsurprisingly), but easier to read
-					compute( let( "max", max( red, green, blue ),
-								  "min", min( red, green, blue ),
-								  IF ( EQ( 0, var( "max" ) ),
-									   THEN( 0 ),
-									   ELSE ( div( sub( var( "max" ), var( "min" ) ),
-										           var( "max" ) ) ) ) ) )
-						.into( saturation );
+			// Compute saturation: slightly slower than with vars (unsurprisingly), but easier to read
+			compute( let( "max", max( red, green, blue ),
+						  "min", min( red, green, blue ),
+						  IF ( EQ( 0, var( "max" ) ),
+					        THEN( 0 ),
+						    ELSE ( div( sub( var( "max" ), var( "min" ) ),
+							            var( "max" ) ) ) ) ) )
+			.into( saturation );
 
-					final long t1 = System.nanoTime();
-					minLM = Math.min(minLM, t1 - t0);
-					maxLM = Math.max(maxLM, t1 - t0);
-					meanLM += (t1 - t0) / (double)(n_iterations);
-				}
+			final long t1 = System.nanoTime();
+			minLM = Math.min(minLM, t1 - t0);
+			maxLM = Math.max(maxLM, t1 - t0);
+			meanLM += (t1 - t0) / (double)(n_iterations);
+		}
 
-				if ( print ) System.out.println("ImgMath 3 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
+		if ( print ) System.out.println("ImgMath 3 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 
+		// Reset
+		minLM = Long.MAX_VALUE;
+		maxLM = 0;
+		meanLM = 0;
+		
+		// Make color channels of the same type as output image
+		{
+			final ArrayImg< FloatType, ? >
+				redF = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims ),
+				greenF = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims ),
+				blueF = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
+			final Cursor< FloatType >
+				cr = redF.cursor(),
+				cg = greenF.cursor(),
+				cb = blueF.cursor();
+			final Cursor< UnsignedByteType >
+				c = red.cursor(),
+				g = green.cursor(),
+				b = blue.cursor();
+			while ( cr.hasNext() ) {
+				cr.next().setReal( c.next().getRealDouble() );
+				cg.next().setReal( g.next().getRealDouble() );
+				cb.next().setReal( b.next().getRealDouble() );
+			}
+
+			for ( int i=0; i < n_iterations; ++i ) {
+				final long t0 = System.nanoTime();
+
+				// Compute saturation: slightly slower than with vars (unsurprisingly), but easier to read
+				compute( let( "max", max( redF, greenF, blueF ),
+							  "min", min( redF, greenF, blueF ),
+							  IF ( EQ( 0, var( "max" ) ),
+								  THEN( 0 ),
+								  ELSE ( div( sub( var( "max" ), var( "min" ) ),
+										 var( "max" ) ) ) ) ) )
+				.into( saturation );
+
+				final long t1 = System.nanoTime();
+				minLM = Math.min(minLM, t1 - t0);
+				maxLM = Math.max(maxLM, t1 - t0);
+				meanLM += (t1 - t0) / (double)(n_iterations);
+			}
+			
+			if ( print ) System.out.println("ImgMath 4 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
+		
+			// Reset
+			minLM = Long.MAX_VALUE;
+			maxLM = 0;
+			meanLM = 0;
+			
+			for ( int i=0; i < n_iterations; ++i ) {
+				final long t0 = System.nanoTime();
+
+				// Compute saturation: slightly slower than with vars (unsurprisingly), but easier to read
+				compute( let( "red", redF,
+						      "green", greenF,
+						      "blue", blueF,
+						      "max", max( var("red"), var("green"), var("blue") ),
+						      "min", min( var("red"), var("green"), var("blue") ),
+						      IF ( EQ( 0, var( "max" ) ),
+						    	THEN( 0 ),
+						    	ELSE ( div( sub( var( "max" ), var( "min" ) ),
+						    		   var( "max" ) ) ) ) ) )
+				.into( saturation );
+
+				final long t1 = System.nanoTime();
+				minLM = Math.min(minLM, t1 - t0);
+				maxLM = Math.max(maxLM, t1 - t0);
+				meanLM += (t1 - t0) / (double)(n_iterations);
+			}
+			
+			if ( print ) System.out.println("ImgMath 5 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
+		
+		}
 		
 		// Reset
 		minLM = Long.MAX_VALUE;
@@ -471,7 +545,7 @@ public class ImgMathTest
 		assertTrue( testIterationOrder() );
 	}
 	
-	//@Test
+	@Test
 	public void test3() {
 		assertTrue ( comparePerformance( 30, false ) ); // warm up
 		assertTrue ( comparePerformance( 30, true ) );
@@ -489,7 +563,7 @@ public class ImgMathTest
 	
 	@Test
 	public void testLet2Advanced() {
-		assertTrue( testLetTwoLevels() );
+		assertTrue( testLetTwoLets() );
 	}
 	
 	@Test
@@ -507,10 +581,10 @@ public class ImgMathTest
 		assertTrue ( testIfThenElse() );
 	}
 	
-	//@Test
+	@Test
 	public void test1IfThenElsePerformance() {
-		assertTrue ( testSaturationPerformance( 30, false ) ); // warm-up
-		assertTrue ( testSaturationPerformance( 30, true ) );
+		assertTrue ( testSaturationPerformance( 50, false ) ); // warm-up
+		assertTrue ( testSaturationPerformance( 50, true ) );
 
 	}
 	

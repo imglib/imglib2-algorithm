@@ -13,8 +13,7 @@ public final class Var implements IFunction
 	private final RealType< ? > scrap;
 
 	public Var( final String name ) {
-		this.scrap = null;
-		this.name = name;
+		this( null, name );
 	}
 	
 	private Var( final RealType< ? > scrap, final String name )
@@ -28,22 +27,20 @@ public final class Var implements IFunction
 		return this.name;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void eval( final RealType output )
+	public final RealType< ? > eval()
 	{
-		output.set( this.scrap );
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public void eval( final RealType output, final Localizable loc)
-	{
-		output.set( this.scrap );
+		return this.scrap;
 	}
 
 	@Override
-	public Var reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter )
+	public final RealType< ? > eval( final Localizable loc )
+	{
+		return this.scrap;
+	}
+
+	@Override
+	public Var reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter )
 	{
 		return new Var( bindings.get( this.name ), this.name );
 	}

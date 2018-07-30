@@ -5,7 +5,7 @@ import net.imglib2.type.numeric.RealType;
 
 public interface IBooleanFunction
 {
-	public boolean evalBoolean( final RealType< ? > output );
+	public boolean evalBoolean();
 	
-	public boolean evalBoolean( final RealType< ? > output, final Localizable loc );
+	public boolean evalBoolean( final Localizable loc );
 }

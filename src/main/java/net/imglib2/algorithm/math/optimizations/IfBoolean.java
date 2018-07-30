@@ -1,53 +1,42 @@
-package net.imglib2.algorithm.math;
+package net.imglib2.algorithm.math.optimizations;
 
 import java.util.Map;
 
 import net.imglib2.Localizable;
+import net.imglib2.algorithm.math.abstractions.ATrinaryFunction;
 import net.imglib2.algorithm.math.abstractions.Compare;
 import net.imglib2.algorithm.math.abstractions.IBooleanFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public class IfBoolean extends If
+public class IfBoolean extends ATrinaryFunction
 {
 	/**
 	 * Same as this.a, to avoid casting.
 	 */
-	final IBooleanFunction abool;
+	private final IBooleanFunction abool;
 	
-	protected IfBoolean( final RealType< ? > scrap, final Compare f1, final IFunction f2, final IFunction f3 )
+	public IfBoolean( final RealType< ? > scrap, final Compare f1, final IFunction f2, final IFunction f3 )
 	{
 		super ( scrap, f1, f2, f3 );
 		this.abool = f1; // same as this.a
 	}
 
 	@Override
-	public final void eval( final RealType< ? > output )
+	public final RealType< ? > eval()
 	{
-		if ( this.abool.evalBoolean( this.scrap ) )
-		{
-			// Then
-			this.b.eval( output );
-		} else
-		{
-			// Else
-			this.c.eval( output );
-		}
+		return this.abool.evalBoolean() ?
+				this.b.eval()
+				: this.c.eval();
 	}
 
 	@Override
-	public final void eval( final RealType< ? > output, final Localizable loc )
+	public final RealType< ? > eval( final Localizable loc )
 	{
-		if ( this.abool.evalBoolean( output, loc ) )
-		{
-			// Then
-			this.b.eval( output, loc );
-		} else
-		{
-			// Else
-			this.c.eval( output, loc );
-		}
+		return this.abool.evalBoolean( loc ) ?
+				this.b.eval( loc )
+				: this.c.eval( loc );
 	}
 
 	@Override

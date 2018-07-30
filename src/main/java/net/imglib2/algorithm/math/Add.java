@@ -25,26 +25,26 @@ public final class Add extends ABinaryFunction
 		super( scrap, f1, f2 );
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public final void eval( final RealType output )
+	public final RealType< ? > eval()
 	{
-		this.a.eval( output );
-		this.b.eval( this.scrap );
-		output.add( this.scrap );
+		this.scrap.set( this.a.eval() );
+		this.scrap.add( this.b.eval() );
+		return this.scrap;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public final void eval( final RealType output, final Localizable loc )
+	public final RealType< ? > eval( final Localizable loc )
 	{
-		this.a.eval( output, loc );
-		this.b.eval( this.scrap, loc );
-		output.add( this.scrap );
+		this.scrap.set( this.a.eval( loc ) );
+		this.scrap.add( this.b.eval( loc ) );
+		return this.scrap;
 	}
 
 	@Override
-	public Add reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter )
+	public Add reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter<RealType<?>, RealType<?>> converter )
 	{
 		return new Add( tmp.copy(), this.a.reInit( tmp, bindings, converter ), this.b.reInit( tmp, bindings, converter ) );
 	}

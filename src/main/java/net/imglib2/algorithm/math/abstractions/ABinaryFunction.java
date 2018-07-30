@@ -6,7 +6,8 @@ abstract public class ABinaryFunction extends AFunction implements IBinaryFuncti
 {
 	protected final IFunction a, b;
 
-	protected final RealType< ? > scrap;
+	@SuppressWarnings("rawtypes")
+	protected final RealType scrap;
 	
 	public ABinaryFunction( final Object o1, final Object o2 )
 	{

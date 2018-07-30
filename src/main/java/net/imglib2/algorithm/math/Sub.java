@@ -25,20 +25,22 @@ public final class Sub extends ABinaryFunction
 		super( scrap, f1, f2 );
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public final void eval( final RealType output ) {
-		this.a.eval( output );
-		this.b.eval( this.scrap );
-		output.sub( this.scrap );
+	public final RealType< ? > eval()
+	{
+		this.scrap.set( this.a.eval() );
+		this.scrap.sub( this.b.eval() );
+		return this.scrap;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public final void eval( final RealType output, final Localizable loc ) {
-		this.a.eval( output, loc );
-		this.b.eval( this.scrap, loc );
-		output.sub( this.scrap );
+	public final RealType< ? > eval( final Localizable loc )
+	{
+		this.scrap.set( this.a.eval( loc ) );
+		this.scrap.sub( this.b.eval( loc ) );
+		return this.scrap;
 	}
 
 	@Override

@@ -15,7 +15,8 @@ public final class Let implements IFunction, IBinaryFunction
 	private final String varName;
 	private final IFunction varValue;
 	private final IFunction body;
-	private final RealType< ? > scrap;
+	@SuppressWarnings("rawtypes")
+	private final RealType scrap;
 	
 	public Let( final String varName, final Object varValue, final Object body )
 	{
@@ -68,24 +69,28 @@ public final class Let implements IFunction, IBinaryFunction
 		this.body = body;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void eval( final RealType< ? > output )
+	public final RealType< ? > eval()
 	{
 		// Evaluate the varValue into this.scrap, which is shared with all Vars of varName
-		this.varValue.eval( this.scrap );
+		this.scrap.set( this.varValue.eval() );
 		// The body may contain Vars that will use this.varValue via this.scrap
-		this.body.eval( output );
+		return this.body.eval();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void eval( final RealType< ? > output, final Localizable loc)
+	public final RealType< ? > eval( final Localizable loc)
 	{
-		this.varValue.eval( this.scrap, loc );
-		this.body.eval( output, loc );
+		// Evaluate the varValue into this.scrap, which is shared with all Vars of varName
+		this.scrap.set( this.varValue.eval( loc ) );
+		// The body may contain Vars that will use this.varValue via this.scrap
+		return this.body.eval( loc );
 	}
 
 	@Override
-	public Let reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter )
+	public Let reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter )
 	{
 		final RealType< ? > scrap = tmp.copy();
 		final Map< String, RealType< ? > > rebind = new HashMap<>( bindings );

@@ -6,6 +6,7 @@ import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.ATrinaryFunction;
 import net.imglib2.algorithm.math.abstractions.Compare;
 import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.algorithm.math.optimizations.IfBoolean;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
@@ -22,37 +23,27 @@ public class If extends ATrinaryFunction
 	}
 
 	@Override
-	public void eval( final RealType< ? > output )
+	public RealType< ? > eval()
 	{
-		this.a.eval( this.scrap );
-		if ( 0 != this.scrap.getRealFloat() )
-		{
+		return 0 != this.a.eval().getRealFloat() ?
 			// Then
-			this.b.eval( output );
-		} else
-		{
+			this.b.eval()
 			// Else
-			this.c.eval( output );
-		}
+			: this.c.eval();
 	}
 
 	@Override
-	public void eval( final RealType< ? > output, final Localizable loc )
+	public RealType< ? > eval( final Localizable loc )
 	{
-		this.a.eval( this.scrap, loc );
-		if ( 0 != this.scrap.getRealFloat() )
-		{
-			// Then
-			this.b.eval( output, loc );
-		} else
-		{
-			// Else
-			this.c.eval( output, loc );
-		}
+		return 0 != this.a.eval().getRealFloat() ?
+				// Then
+				this.b.eval()
+				// Else
+				: this.c.eval();
 	}
 
 	@Override
-	public If reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter )
+	public If reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter<RealType<?>, RealType<?>> converter )
 	{
 		// Optimization: reInit as IfBoolean if the first argument is a Compare.
 		//               Avoids having to set the output to 1 (true) or 0 (false), 

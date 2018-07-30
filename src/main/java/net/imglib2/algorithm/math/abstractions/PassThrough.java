@@ -7,7 +7,7 @@ import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
 /**
- * Does nothing: the copy method returns a copy of the encapsulated IFunction
+ * Does nothing: the reInit method returns a copy of the encapsulated IFunction
  */
 public class PassThrough extends AUnaryFunction
 {
@@ -17,13 +17,17 @@ public class PassThrough extends AUnaryFunction
 	}
 
 	@Override
-	public void eval( final RealType<?> output ) {}
+	public RealType< ? > eval() {
+		return null;
+	}
 
 	@Override
-	public void eval( final RealType<?> output, final Localizable loc ) {}
+	public RealType< ? > eval( final Localizable loc ) {
+		return null;
+	}
 
 	@Override
-	public IFunction reInit(RealType<?> tmp, Map<String, RealType<?>> bindings, Converter<RealType<?>, RealType<?>> converter) {
+	public IFunction reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter) {
 		return this.a.reInit(tmp, bindings, converter);
 	}
 }
