@@ -2,6 +2,7 @@ package net.imglib2.algorithm.convolution;
 
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
+import net.imglib2.algorithm.convolution.fast_gauss.FastGaussConvolverRealType;
 import net.imglib2.algorithm.convolution.kernel.Kernel1D;
 import net.imglib2.algorithm.convolution.kernel.KernelConvolverFactory;
 import net.imglib2.algorithm.gauss3.DoubleConvolverRealType;
@@ -50,6 +51,14 @@ public class ConvolverBenchmark
 	public void symmetricKernelConvolver()
 	{
 		Runnable runnable = DoubleConvolverRealType.< DoubleType, DoubleType >factory().create( halfKernel, in(), out(), d, lineLength );
+		runnable.run();
+	}
+
+	@Benchmark
+	public void fastGaussConvolver()
+	{
+		Runnable runnable = new FastGaussConvolverRealType( sigma )
+				.getConvolver( in(), out(), d, lineLength );
 		runnable.run();
 	}
 
