@@ -13,8 +13,9 @@ public interface IFunction
 	public RealType< ? > eval( Localizable loc );
 	
 	public IFunction reInit(
-			RealType<?> tmp,
-			Map<String, RealType<?>> bindings,
-			Converter<RealType<?>, RealType<?>> converter
+			RealType< ? > tmp,
+			Map< String, RealType< ? > > bindings,
+			Converter< RealType< ? >, RealType< ? > > converter,
+			Map< IVar, IFunction > imgSources
 			);
 }

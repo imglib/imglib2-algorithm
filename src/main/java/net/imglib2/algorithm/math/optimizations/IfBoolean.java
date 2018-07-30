@@ -7,6 +7,7 @@ import net.imglib2.algorithm.math.abstractions.ATrinaryFunction;
 import net.imglib2.algorithm.math.abstractions.Compare;
 import net.imglib2.algorithm.math.abstractions.IBooleanFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.algorithm.math.abstractions.IVar;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
@@ -40,8 +41,12 @@ public class IfBoolean extends ATrinaryFunction
 	}
 
 	@Override
-	public IfBoolean reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter )
+	public IfBoolean reInit(
+			final RealType< ? > tmp,
+			final Map< String, RealType< ? > > bindings,
+			final Converter< RealType< ? >, RealType< ? > > converter,
+			final Map< IVar, IFunction > imgSources )
 	{
-		return new IfBoolean( tmp.copy(), ( Compare ) this.a.reInit( tmp, bindings, converter ), this.b.reInit( tmp, bindings, converter ), this.c.reInit( tmp, bindings, converter ) );
+		return new IfBoolean( tmp.copy(), ( Compare ) this.a.reInit( tmp, bindings, converter, imgSources ), this.b.reInit( tmp, bindings, converter, imgSources ), this.c.reInit( tmp, bindings, converter, imgSources ) );
 	}
 }

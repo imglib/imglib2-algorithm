@@ -7,13 +7,14 @@ import net.imglib2.Localizable;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.algorithm.math.abstractions.IVar;
 import net.imglib2.algorithm.math.abstractions.ImgSource;
 import net.imglib2.algorithm.math.optimizations.IterableImgSourceDirect;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
-public final class IterableImgSourceDirect< I extends RealType< I > > implements IFunction, ImgSource< I >
+public final class IterableImgSourceDirect< I extends RealType< I > > implements ImgSource< I >
 {
 	private final RandomAccessibleInterval< I > rai;
 	private final Iterator< I > it;
@@ -40,7 +41,11 @@ public final class IterableImgSourceDirect< I extends RealType< I > > implements
 	}
 
 	@Override
-	public IterableImgSourceDirect< I > reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter )
+	public IterableImgSourceDirect< I > reInit(
+			final RealType< ? > tmp,
+			final Map< String, RealType< ? > > bindings,
+			final Converter< RealType< ? >, RealType< ? > > converter,
+			Map< IVar, IFunction > imgSources )
 	{
 		return new IterableImgSourceDirect< I >( this.rai );
 	}

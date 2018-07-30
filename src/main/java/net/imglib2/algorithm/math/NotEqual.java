@@ -4,6 +4,7 @@ import java.util.Map;
 
 import net.imglib2.algorithm.math.abstractions.Compare;
 import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.algorithm.math.abstractions.IVar;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
@@ -25,7 +26,12 @@ public final class NotEqual extends Compare
 	}
 
 	@Override
-	public NotEqual reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter<RealType<?>, RealType<?>> converter ) {
-		return new NotEqual( tmp.copy(), this.a.reInit( tmp, bindings, converter ), this.b.reInit( tmp, bindings, converter ) );
+	public NotEqual reInit(
+			final RealType< ? > tmp,
+			final Map< String, RealType< ? > > bindings,
+			final Converter< RealType< ? >, RealType< ? > > converter,
+			final Map< IVar, IFunction > imgSources )
+	{
+		return new NotEqual( tmp.copy(), this.a.reInit( tmp, bindings, converter, imgSources ), this.b.reInit( tmp, bindings, converter, imgSources ) );
 	}
 }

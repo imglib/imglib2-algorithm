@@ -4,10 +4,11 @@ import java.util.Map;
 
 import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.algorithm.math.abstractions.IVar;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public final class Var implements IFunction
+public final class Var implements IVar
 {
 	private final String name;
 	private final RealType< ? > scrap;
@@ -16,15 +17,22 @@ public final class Var implements IFunction
 		this( null, name );
 	}
 	
-	private Var( final RealType< ? > scrap, final String name )
+	public Var( final RealType< ? > scrap, final String name )
 	{
 		this.scrap = scrap;
 		this.name = name;
 	}
 	
+	@Override
 	public String getName()
 	{
 		return this.name;
+	}
+	
+	@Override
+	public RealType< ? > getScrap()
+	{
+		return this.scrap;
 	}
 
 	@Override
@@ -40,7 +48,11 @@ public final class Var implements IFunction
 	}
 
 	@Override
-	public Var reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter )
+	public Var reInit(
+			final RealType< ? > tmp,
+			final Map< String, RealType< ? > > bindings,
+			final Converter< RealType< ? >, RealType< ? > > converter,
+			final Map< IVar, IFunction > imgSources )
 	{
 		return new Var( bindings.get( this.name ), this.name );
 	}

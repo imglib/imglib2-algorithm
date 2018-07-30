@@ -27,7 +27,12 @@ public class PassThrough extends AUnaryFunction
 	}
 
 	@Override
-	public IFunction reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter) {
-		return this.a.reInit(tmp, bindings, converter);
+	public IFunction reInit(
+			final RealType< ? > tmp,
+			final Map< String, RealType< ? > > bindings,
+			final Converter< RealType< ? >, RealType< ? > > converter,
+			final Map< IVar, IFunction > imgSources )
+	{
+		return this.a.reInit(tmp, bindings, converter, imgSources);
 	}
 }

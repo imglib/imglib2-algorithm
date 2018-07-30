@@ -6,6 +6,7 @@ import java.util.Map;
 import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.IBinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.algorithm.math.abstractions.IVar;
 import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
@@ -61,7 +62,7 @@ public final class Let implements IFunction, IBinaryFunction
 		return obs2;
 	}
 	
-	private Let( final RealType< ? > scrap, final String varName, final IFunction varValue, final IFunction body )
+	protected Let( final RealType< ? > scrap, final String varName, final IFunction varValue, final IFunction body )
 	{
 		this.scrap = scrap;
 		this.varName = varName;
@@ -90,12 +91,16 @@ public final class Let implements IFunction, IBinaryFunction
 	}
 
 	@Override
-	public Let reInit( final RealType< ? > tmp, final Map< String, RealType< ? > > bindings, final Converter< RealType< ? >, RealType< ? > > converter )
+	public Let reInit(
+			final RealType< ? > tmp,
+			final Map< String, RealType< ? > > bindings,
+			final Converter< RealType< ? >, RealType< ? > > converter,
+			final Map< IVar, IFunction > imgSources )
 	{
 		final RealType< ? > scrap = tmp.copy();
 		final Map< String, RealType< ? > > rebind = new HashMap<>( bindings );
 		rebind.put( this.varName, scrap );
-		return new Let( scrap, this.varName, this.varValue.reInit( tmp, rebind, converter ), this.body.reInit( tmp, rebind, converter ) );
+		return new Let( scrap, this.varName, this.varValue.reInit( tmp, rebind, converter, imgSources ), this.body.reInit( tmp, rebind, converter, imgSources ) );
 	}
 
 	@Override

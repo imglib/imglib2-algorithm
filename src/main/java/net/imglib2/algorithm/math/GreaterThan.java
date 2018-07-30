@@ -4,6 +4,7 @@ import java.util.Map;
 
 import net.imglib2.algorithm.math.abstractions.Compare;
 import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.algorithm.math.abstractions.IVar;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
@@ -25,8 +26,12 @@ public final class GreaterThan extends Compare
 	}
 
 	@Override
-	public GreaterThan reInit( final RealType<?> tmp, final Map<String, RealType<?>> bindings, final Converter<RealType<?>, RealType<?>> converter )
+	public GreaterThan reInit(
+			final RealType<?> tmp,
+			final Map<String, RealType<?>> bindings,
+			final Converter<RealType<?>, RealType<?>> converter,
+			Map< IVar, IFunction > imgSources )
 	{
-		return new GreaterThan( tmp.copy(), this.a.reInit( tmp, bindings, converter ), this.b.reInit( tmp, bindings, converter ) );
+		return new GreaterThan( tmp.copy(), this.a.reInit( tmp, bindings, converter, imgSources ), this.b.reInit( tmp, bindings, converter, imgSources ) );
 	}
 }

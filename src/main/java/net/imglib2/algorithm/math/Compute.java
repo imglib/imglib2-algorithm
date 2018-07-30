@@ -67,7 +67,7 @@ public class Compute
 		final IFunction f = this.operation.reInit(
 				target.randomAccess().get().createVariable(),
 				new HashMap< String, RealType< ? > >(),
-				this.converter );
+				this.converter, null );
 		
 		final boolean compatible_iteration_order = this.setup( f );
 		
@@ -182,6 +182,8 @@ public class Compute
 			msg += " " + ( 1 == lets.size() ? "is" : "are") + " not used by any downstream Var.";
 			throw new RuntimeException( msg );
 		}
+		
+		// Check ImgSource: if they are downstream of an If statement, they should be declared in a Let before that
 		
 		return Util.compatibleIterationOrder( images );
 	}
