@@ -11,15 +11,15 @@ import net.imglib2.type.numeric.RealType;
 public final class Var implements IVar
 {
 	private final String name;
-	private final RealType< ? > scrap;
+	private final RealType< ? > value;
 
 	public Var( final String name ) {
 		this( null, name );
 	}
 	
-	public Var( final RealType< ? > scrap, final String name )
+	public Var( final RealType< ? > value, final String name )
 	{
-		this.scrap = scrap;
+		this.value = value;
 		this.name = name;
 	}
 	
@@ -32,19 +32,19 @@ public final class Var implements IVar
 	@Override
 	public RealType< ? > getScrap()
 	{
-		return this.scrap;
+		return this.value;
 	}
 
 	@Override
 	public final RealType< ? > eval()
 	{
-		return this.scrap;
+		return this.value;
 	}
 
 	@Override
 	public final RealType< ? > eval( final Localizable loc )
 	{
-		return this.scrap;
+		return this.value;
 	}
 
 	@Override
