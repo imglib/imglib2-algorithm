@@ -61,7 +61,7 @@ public class Compute
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public < O extends RealType< O > > RandomAccessibleInterval< O > into( final RandomAccessibleInterval< O > target )
+	public RandomAccessibleInterval< ? extends RealType< ? > > into( final RandomAccessibleInterval< ? extends RealType< ? > > target )
 	{
 		// Recursive copy: initializes interval iterators and sets temporary computation holder
 		final IFunction f = this.operation.reInit(
@@ -81,7 +81,7 @@ public class Compute
 		else
 		{
 			// Incompatible iteration order
-			final Cursor< RealType > cursor = ( Cursor< RealType > )Views.iterable( target ).cursor();
+			final Cursor< ? extends RealType< ? > > cursor = Views.iterable( target ).cursor();
 			
 			while ( cursor.hasNext() )
 			{
