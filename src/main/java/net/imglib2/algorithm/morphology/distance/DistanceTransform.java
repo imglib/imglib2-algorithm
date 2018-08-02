@@ -93,11 +93,13 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using squared Euclidian (L2) or L1
-	 * distance. Intermediate and final results will be stored in source (@{link
-	 * DoubleType} recommended). The distance can be weighted (individually for
-	 * each dimension, if desired) against the image values via the weights
-	 * parameter.
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using squared Euclidian
+	 * (L2) or L1 distance. Intermediate and final results will be stored in
+	 * source (@{link DoubleType} recommended). The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -117,11 +119,13 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using squared Euclidian (L2) or L1
-	 * distance. Intermediate and final results will be stored in source (@{link
-	 * DoubleType} recommended). The distance can be weighted (individually for
-	 * each dimension, if desired) against the image values via the weights
-	 * parameter.
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using squared Euclidian
+	 * (L2) or L1 distance. Intermediate and final results will be stored in
+	 * source (@{link DoubleType} recommended). The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -149,11 +153,13 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using squared Euclidian (L2) or L1
-	 * distance. Intermediate results will be stored in target (@{link
-	 * DoubleType} recommended). The distance can be weighted (individually for
-	 * each dimension, if desired) against the image values via the weights
-	 * parameter.
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using squared Euclidian
+	 * (L2) or L1 distance. Intermediate results will be stored in target
+	 * (@{link DoubleType} recommended). The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -176,11 +182,13 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using squared Euclidian (L2) or L1
-	 * distance. Intermediate results will be stored in target (@{link
-	 * DoubleType} recommended). The distance can be weighted (individually for
-	 * each dimension, if desired) against the image values via the weights
-	 * parameter.
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using squared Euclidian
+	 * (L2) or L1 distance. Intermediate results will be stored in target
+	 * (@{link DoubleType} recommended). The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -211,11 +219,13 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using squared Euclidian (L2) or L1
-	 * distance. Intermediate results will be stored in tmp (@{link DoubleType}
-	 * recommended). The output will be written into target. The distance can be
-	 * weighted (individually for each dimension, if desired) against the image
-	 * values via the weights parameter.
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using squared Euclidian
+	 * (L2) or L1 distance. Intermediate results will be stored in tmp (@{link
+	 * DoubleType} recommended). The output will be written into target. The
+	 * distance can be weighted (individually for each dimension, if desired)
+	 * against the image values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -255,11 +265,13 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using squared Euclidian (L2) or L1
-	 * distance. Intermediate results will be stored in tmp (@{link DoubleType}
-	 * recommended). The output will be written into target. The distance can be
-	 * weighted (individually for each dimension, if desired) against the image
-	 * values via the weights parameter.
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using squared Euclidian
+	 * (L2) or L1 distance. Intermediate results will be stored in tmp (@{link
+	 * DoubleType} recommended). The output will be written into target. The
+	 * distance can be weighted (individually for each dimension, if desired)
+	 * against the image values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -307,9 +319,11 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using arbitrary {@link Distance} d.
-	 * Intermediate and final results will be stored in source (@{link
-	 * DoubleType} recommended).
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using arbitrary
+	 * {@link Distance} d. Intermediate and final results will be stored in
+	 * source (@{link DoubleType} recommended).
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -324,9 +338,11 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using arbitrary {@link Distance} d.
-	 * Intermediate and final results will be stored in source (@{link
-	 * DoubleType} recommended).
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using arbitrary
+	 * {@link Distance} d. Intermediate and final results will be stored in
+	 * source (@{link DoubleType} recommended).
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -349,9 +365,11 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using arbitrary {@link Distance} d.
-	 * Intermediate and final results will be stored in target (@{link
-	 * DoubleType} recommended).
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using arbitrary
+	 * {@link Distance} d. Intermediate and final results will be stored in
+	 * target (@{link DoubleType} recommended).
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -369,9 +387,11 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using arbitrary {@link Distance} d.
-	 * Intermediate and final results will be stored in target (@{link
-	 * DoubleType} recommended).
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using arbitrary
+	 * {@link Distance} d. Intermediate and final results will be stored in
+	 * target (@{link DoubleType} recommended).
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -395,9 +415,11 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using arbitrary {@link Distance} d.
-	 * Intermediate results will be stored in tmp (@{link DoubleType}
-	 * recommended). The output will be written into target.
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using arbitrary
+	 * {@link Distance} d. Intermediate results will be stored in tmp (@{link
+	 * DoubleType} recommended). The output will be written into target.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -436,9 +458,11 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using arbitrary {@link Distance} d.
-	 * Intermediate results will be stored in tmp (@{link DoubleType}
-	 * recommended). The output will be written into target.
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using arbitrary
+	 * {@link Distance} d. Intermediate results will be stored in tmp (@{link
+	 * DoubleType} recommended). The output will be written into target.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -469,6 +493,7 @@ public class DistanceTransform
 		final int lastDim = nDim - 1;
 
 		if ( nDim == 1 )
+		{
 			transformAlongDimensionParallel(
 					( RandomAccessible< T > ) Views.addDimension( source ),
 					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
@@ -476,22 +501,33 @@ public class DistanceTransform
 					0,
 					es,
 					nTasks );
+		}
 		else
+		{
 			transformAlongDimensionParallel( source, tmp, d, 0, es, nTasks );
+		}
 
 		for ( int dim = 1; dim < nDim; ++dim )
+		{
 			if ( dim == lastDim )
+			{
 				transformAlongDimensionParallel( tmp, target, d, dim, es, nTasks );
+			}
 			else
+			{
 				transformAlongDimensionParallel( tmp, tmp, d, dim, es, nTasks );
+			}
+		}
 	}
 
 	/**
-	 * Create distance transform of source using L1 distance. Intermediate
-	 * results will be stored in tmp (@{link DoubleType} recommended). The
-	 * output will be written into target. The distance can be weighted
-	 * (individually for each dimension, if desired) against the image values
-	 * via the weights parameter.
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using L1 distance.
+	 * Intermediate results will be stored in tmp (@{link DoubleType}
+	 * recommended). The output will be written into target. The distance can be
+	 * weighted (individually for each dimension, if desired) against the image
+	 * values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -530,11 +566,13 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using L1 distance. Intermediate
-	 * results will be stored in tmp (@{link DoubleType} recommended). The
-	 * output will be written into target. The distance can be weighted
-	 * (individually for each dimension, if desired) against the image values
-	 * via the weights parameter.
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using L1 distance.
+	 * Intermediate results will be stored in tmp (@{link DoubleType}
+	 * recommended). The output will be written into target. The distance can be
+	 * weighted (individually for each dimension, if desired) against the image
+	 * values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
