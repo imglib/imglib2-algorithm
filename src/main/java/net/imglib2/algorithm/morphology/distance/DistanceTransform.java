@@ -92,18 +92,25 @@ public class DistanceTransform
 	 */
 	public static enum DISTANCE_TYPE
 	{
+	/**
+	 * Squared Euclidian distance using {@link EuclidianDistanceIsotropic} or
+	 * {@link EuclidianDistanceAnisotropic}.
+	 */
 	EUCLIDIAN,
+	/**
+	 * L1 distance using special case implementation.
+	 */
 	L1
 	}
 
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using squared Euclidian
-	 * (L2) or L1 distance. Intermediate and final results will be stored in
-	 * source ({@link DoubleType} recommended). The distance can be weighted
-	 * (individually for each dimension, if desired) against the image values
-	 * via the weights parameter.
+	 * transforms of sampled functions</a> on {@code source} using squared
+	 * Euclidian (L2) or L1 distance. Intermediate and final results will be
+	 * stored in {@code source} ({@link DoubleType} recommended). The distance
+	 * can be weighted (individually for each dimension, if desired) against the
+	 * image values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -113,6 +120,8 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and distance (when using squared Euclidian distance, weights
 	 *            should be squared, too).
+	 * @param <T>
+	 *            {@link RealType} input
 	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
@@ -125,11 +134,11 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using squared Euclidian
-	 * (L2) or L1 distance. Intermediate and final results will be stored in
-	 * source ({@link DoubleType} recommended). The distance can be weighted
-	 * (individually for each dimension, if desired) against the image values
-	 * via the weights parameter.
+	 * transforms of sampled functions</a> on {@code source} using squared
+	 * Euclidian (L2) or L1 distance. Intermediate and final results will be
+	 * stored in {@code source} ({@link DoubleType} recommended). The distance
+	 * can be weighted (individually for each dimension, if desired) against the
+	 * image values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -143,8 +152,15 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and distance (when using squared Euclidian distance, weights
 	 *            should be squared, too).
+	 * @param <T>
+	 *            {@link RealType} input
 	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
 	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
@@ -159,11 +175,11 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using squared Euclidian
-	 * (L2) or L1 distance. Intermediate results will be stored in target
-	 * ({@link DoubleType} recommended). The distance can be weighted
-	 * (individually for each dimension, if desired) against the image values
-	 * via the weights parameter.
+	 * transforms of sampled functions</a> on {@code source} using squared
+	 * Euclidian (L2) or L1 distance. Intermediate results will be stored in
+	 * {@code target} ({@link DoubleType} recommended). The distance can be
+	 * weighted (individually for each dimension, if desired) against the image
+	 * values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -175,6 +191,10 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and distance (when using squared Euclidian distance, weights
 	 *            should be squared, too).
+	 * @param <T>
+	 *            {@link RealType} input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
@@ -188,11 +208,11 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using squared Euclidian
-	 * (L2) or L1 distance. Intermediate results will be stored in target
-	 * ({@link DoubleType} recommended). The distance can be weighted
-	 * (individually for each dimension, if desired) against the image values
-	 * via the weights parameter.
+	 * transforms of sampled functions</a> on {@code source} using squared
+	 * Euclidian (L2) or L1 distance. Intermediate results will be stored in
+	 * {@code target} ({@link DoubleType} recommended). The distance can be
+	 * weighted (individually for each dimension, if desired) against the image
+	 * values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -208,8 +228,17 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and distance (when using squared Euclidian distance, weights
 	 *            should be squared, too).
+	 * @param <T>
+	 *            {@link RealType} input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
 	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
 	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
@@ -225,11 +254,12 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using squared Euclidian
-	 * (L2) or L1 distance. Intermediate results will be stored in tmp
-	 * ({@link DoubleType} recommended). The output will be written into target.
-	 * The distance can be weighted (individually for each dimension, if
-	 * desired) against the image values via the weights parameter.
+	 * transforms of sampled functions</a> on {@code source} using squared
+	 * Euclidian (L2) or L1 distance. Intermediate results will be stored in
+	 * {@code tmp} ({@link DoubleType} recommended). The output will be written
+	 * into {@code target}. The distance can be weighted (individually for each
+	 * dimension, if desired) against the image values via the weights
+	 * parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -243,6 +273,12 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and distance (when using squared Euclidian distance, weights
 	 *            should be squared, too).
+	 * @param <T>
+	 *            {@link RealType} input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @param <V>
+	 *            {@link RealType} output
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
@@ -271,11 +307,12 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using squared Euclidian
-	 * (L2) or L1 distance. Intermediate results will be stored in tmp
-	 * ({@link DoubleType} recommended). The output will be written into target.
-	 * The distance can be weighted (individually for each dimension, if
-	 * desired) against the image values via the weights parameter.
+	 * transforms of sampled functions</a> on {@code source} using squared
+	 * Euclidian (L2) or L1 distance. Intermediate results will be stored in
+	 * {@code tmp} ({@link DoubleType} recommended). The output will be written
+	 * into {@code target}. The distance can be weighted (individually for each
+	 * dimension, if desired) against the image values via the weights
+	 * parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -293,8 +330,19 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and distance (when using squared Euclidian distance, weights
 	 *            should be squared, too).
+	 * @param <T>
+	 *            {@link RealType} input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @param <V>
+	 *            {@link RealType} output
 	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
 	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
@@ -325,14 +373,16 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using arbitrary
+	 * transforms of sampled functions</a> on {@code source} using arbitrary
 	 * {@link Distance} d. Intermediate and final results will be stored in
-	 * source ({@link DoubleType} recommended).
+	 * {@code source} ({@link DoubleType} recommended).
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
 	 * @param d
 	 *            {@link Distance} between two points.
+	 * @param <T>
+	 *            {@link RealType} input
 	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
@@ -344,9 +394,9 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using arbitrary
+	 * transforms of sampled functions</a> on {@code source} using arbitrary
 	 * {@link Distance} d. Intermediate and final results will be stored in
-	 * source ({@link DoubleType} recommended).
+	 * {@code source} ({@link DoubleType} recommended).
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -356,8 +406,15 @@ public class DistanceTransform
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
 	 *            Number of tasks/parallelism
+	 * @param <T>
+	 *            {@link RealType} input
 	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
 	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
@@ -371,9 +428,9 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using arbitrary
+	 * transforms of sampled functions</a> on {@code source} using arbitrary
 	 * {@link Distance} d. Intermediate and final results will be stored in
-	 * target ({@link DoubleType} recommended).
+	 * {@code target} ({@link DoubleType} recommended).
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -381,6 +438,10 @@ public class DistanceTransform
 	 *            Final result of distance transform.
 	 * @param d
 	 *            {@link Distance} between two points.
+	 * @param <T>
+	 *            {@link RealType} input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
@@ -393,9 +454,9 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using arbitrary
+	 * transforms of sampled functions</a> on {@code source} using arbitrary
 	 * {@link Distance} d. Intermediate and final results will be stored in
-	 * target ({@link DoubleType} recommended).
+	 * {@code target} ({@link DoubleType} recommended).
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -407,6 +468,17 @@ public class DistanceTransform
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
 	 *            Number of tasks/parallelism
+	 * @param <T>
+	 *            {@link RealType} input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
+	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
@@ -421,9 +493,10 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using arbitrary
-	 * {@link Distance} d. Intermediate results will be stored in tmp
-	 * ({@link DoubleType} recommended). The output will be written into target.
+	 * transforms of sampled functions</a> on {@code source} using arbitrary
+	 * {@link Distance} d. Intermediate results will be stored in {@code tmp}
+	 * ({@link DoubleType} recommended). The output will be written into
+	 * {@code target}.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -433,6 +506,12 @@ public class DistanceTransform
 	 *            Final result of distance transform.
 	 * @param d
 	 *            {@link Distance} between two points.
+	 * @param <T>
+	 *            {@link RealType} input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @param <V>
+	 *            {@link RealType} output
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
@@ -474,9 +553,10 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using arbitrary
-	 * {@link Distance} d. Intermediate results will be stored in tmp
-	 * ({@link DoubleType} recommended). The output will be written into target.
+	 * transforms of sampled functions</a> on {@code source} using arbitrary
+	 * {@link Distance} d. Intermediate results will be stored in {@code tmp}
+	 * ({@link DoubleType} recommended). The output will be written into
+	 * {@code target}.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -490,8 +570,19 @@ public class DistanceTransform
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
 	 *            Number of tasks/parallelism
+	 * @param <T>
+	 *            {@link RealType} input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @param <V>
+	 *            {@link RealType} output
 	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
 	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
@@ -535,11 +626,11 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create binary distance transform on source using squared Euclidian (L2)
-	 * or L1 distance. Intermediate results will be stored in target
-	 * ({@link DoubleType} recommended). The distance can be weighted
-	 * (individually for each dimension, if desired) against the image values
-	 * via the weights parameter.
+	 * Create binary distance transform on {@code source} using squared
+	 * Euclidian (L2) or L1 distance. Intermediate results will be stored in
+	 * {@code target} ({@link DoubleType} recommended). The distance can be
+	 * weighted (individually for each dimension, if desired) against the image
+	 * values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -551,6 +642,10 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and distance (when using squared Euclidian distance, weights
 	 *            should be squared, too).
+	 * @param <B>
+	 *            {@link BooleanType} binary mask input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -562,11 +657,11 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create binary distance transform on source using squared Euclidian (L2)
-	 * or L1 distance. Intermediate results will be stored in target
-	 * ({@link DoubleType} recommended). The distance can be weighted
-	 * (individually for each dimension, if desired) against the image values
-	 * via the weights parameter.
+	 * Create binary distance transform on {@code source} using squared
+	 * Euclidian (L2) or L1 distance. Intermediate results will be stored in
+	 * {@code target} ({@link DoubleType} recommended). The distance can be
+	 * weighted (individually for each dimension, if desired) against the image
+	 * values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -582,8 +677,17 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and distance (when using squared Euclidian distance, weights
 	 *            should be squared, too).
+	 * @param <B>
+	 *            {@link BooleanType} binary mask input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
 	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
 	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -597,11 +701,12 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create binary distance transform on source using squared Euclidian (L2)
-	 * or L1 distance. Intermediate results will be stored in tmp
-	 * ({@link DoubleType} recommended). The output will be written into target.
-	 * The distance can be weighted (individually for each dimension, if
-	 * desired) against the image values via the weights parameter.
+	 * Create binary distance transform on {@code source} using squared
+	 * Euclidian (L2) or L1 distance. Intermediate results will be stored in
+	 * {@code tmp} ({@link DoubleType} recommended). The output will be written
+	 * into {@code target}. The distance can be weighted (individually for each
+	 * dimension, if desired) against the image values via the weights
+	 * parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -615,6 +720,12 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and distance (when using squared Euclidian distance, weights
 	 *            should be squared, too).
+	 * @param <B>
+	 *            {@link BooleanType} binary mask input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @param <V>
+	 *            {@link RealType} output
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -632,11 +743,12 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create binary distance transform on source using squared Euclidian (L2)
-	 * or L1 distance. Intermediate results will be stored in tmp
-	 * ({@link DoubleType} recommended). The output will be written into target.
-	 * The distance can be weighted (individually for each dimension, if
-	 * desired) against the image values via the weights parameter.
+	 * Create binary distance transform on {@code source} using squared
+	 * Euclidian (L2) or L1 distance. Intermediate results will be stored in
+	 * {@code tmp} ({@link DoubleType} recommended). The output will be written
+	 * into {@code target}. The distance can be weighted (individually for each
+	 * dimension, if desired) against the image values via the weights
+	 * parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -654,8 +766,19 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and distance (when using squared Euclidian distance, weights
 	 *            should be squared, too).
+	 * @param <B>
+	 *            {@link BooleanType} binary mask input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @param <V>
+	 *            {@link RealType} output
 	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
 	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -674,7 +797,7 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create binary distance transform on source using arbitrary
+	 * Create binary distance transform on {@code source} using arbitrary
 	 * {@link Distance} d. Intermediate and final results will be stored in
 	 * source ({@link DoubleType} recommended).
 	 *
@@ -686,8 +809,15 @@ public class DistanceTransform
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
 	 *            Number of tasks/parallelism
+	 * @param <B>
+	 *            {@link BooleanType} binary mask input
 	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
 	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < B extends BooleanType< B > > void binaryTransform(
 			final RandomAccessibleInterval< B > source,
@@ -699,9 +829,9 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create binary distance transform on source using arbitrary
+	 * Create binary distance transform on {@code source} using arbitrary
 	 * {@link Distance} d. Intermediate and final results will be stored in
-	 * target ({@link DoubleType} recommended).
+	 * {@code target} ({@link DoubleType} recommended).
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -709,6 +839,10 @@ public class DistanceTransform
 	 *            Final result of distance transform.
 	 * @param d
 	 *            {@link Distance} between two points.
+	 * @param <B>
+	 *            {@link BooleanType} binary mask input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -719,9 +853,9 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create binary distance transform on source using arbitrary
+	 * Create binary distance transform on {@code source} using arbitrary
 	 * {@link Distance} d. Intermediate and final results will be stored in
-	 * target ({@link DoubleType} recommended).
+	 * {@code target} ({@link DoubleType} recommended).
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -733,6 +867,17 @@ public class DistanceTransform
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
 	 *            Number of tasks/parallelism
+	 * @param <B>
+	 *            {@link BooleanType} binary mask input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
+	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -745,9 +890,10 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create binary distance transform on source using arbitrary
-	 * {@link Distance} d. Intermediate results will be stored in tmp
-	 * ({@link DoubleType} recommended). The output will be written into target.
+	 * Create binary distance transform on {@code source} using arbitrary
+	 * {@link Distance} d. Intermediate results will be stored in {@code tmp}
+	 * ({@link DoubleType} recommended). The output will be written into
+	 * {@code target}.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -757,6 +903,12 @@ public class DistanceTransform
 	 *            Final result of distance transform.
 	 * @param d
 	 *            {@link Distance} between two points.
+	 * @param <B>
+	 *            {@link BooleanType} binary mask input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @param <V>
+	 *            {@link RealType} output
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -772,11 +924,10 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create
-	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using arbitrary
-	 * {@link Distance} d. Intermediate results will be stored in tmp
-	 * ({@link DoubleType} recommended). The output will be written into target.
+	 * Create binary distance transform on {@code source} using arbitrary
+	 * {@link Distance} d. Intermediate results will be stored in {@code tmp}
+	 * ({@link DoubleType} recommended). The output will be written into
+	 * {@code target}.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -790,8 +941,19 @@ public class DistanceTransform
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
 	 *            Number of tasks/parallelism
+	 * @param <B>
+	 *            {@link BooleanType} binary mask input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @param <V>
+	 *            {@link RealType} output
 	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
 	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -809,13 +971,11 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create
-	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using L1 distance.
-	 * Intermediate results will be stored in tmp ({@link DoubleType}
-	 * recommended). The output will be written into target. The distance can be
-	 * weighted (individually for each dimension, if desired) against the image
-	 * values via the weights parameter.
+	 * Create binary distance transform on {@code source} using L1 distance.
+	 * Intermediate results will be stored in {@code tmp} ({@link DoubleType}
+	 * recommended). The output will be written into {@code target}. The
+	 * distance can be weighted (individually for each dimension, if desired)
+	 * against the image values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -826,6 +986,10 @@ public class DistanceTransform
 	 * @param weights
 	 *            Individual weights for each dimension, balancing image values
 	 *            and L1 distance.
+	 * @param <B>
+	 *            {@link BooleanType} binary mask input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
 	 */
 	private static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transformL1(
 			final RandomAccessible< T > source,
@@ -866,11 +1030,11 @@ public class DistanceTransform
 	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on source using L1 distance.
-	 * Intermediate results will be stored in tmp ({@link DoubleType}
-	 * recommended). The output will be written into target. The distance can be
-	 * weighted (individually for each dimension, if desired) against the image
-	 * values via the weights parameter.
+	 * transforms of sampled functions</a> on {@code source} using L1 distance.
+	 * Intermediate results will be stored in {@code tmp} ({@link DoubleType}
+	 * recommended). The output will be written into {@code target}. The
+	 * distance can be weighted (individually for each dimension, if desired)
+	 * against the image values via the weights parameter.
 	 *
 	 * @param source
 	 *            Input function on which distance transform should be computed.
@@ -886,7 +1050,12 @@ public class DistanceTransform
 	 *            Individual weights for each dimension, balancing image values
 	 *            and L1 distance.
 	 * @throws InterruptedException
+	 *             if interrupted while waiting, in which case unfinished tasks
+	 *             are cancelled (distance transform may be computed only
+	 *             partially)
 	 * @throws ExecutionException
+	 *             if the computation threw an exception (distance transform may
+	 *             be computed only partially)
 	 */
 	private static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transformL1(
 			final RandomAccessible< T > source,
@@ -1156,6 +1325,11 @@ public class DistanceTransform
 	/**
 	 * Convenience method to find largest dimension of {@link Interval}
 	 * interval.
+	 *
+	 * @param interval
+	 *            input
+	 * @return Return the largest dimension of {@code interval} (not the size of
+	 *         that dimension).
 	 */
 	public static int getLargestDimension( final Interval interval )
 	{

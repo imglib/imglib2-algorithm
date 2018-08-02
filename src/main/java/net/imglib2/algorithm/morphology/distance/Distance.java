@@ -45,7 +45,7 @@ package net.imglib2.algorithm.morphology.distance;
  * {@code d' = f(x - x0) + y0}, must have exactly one intersection point (for
  * each dimension):
  * </p>
- * 
+ *
  * <pre>
  * |{ x : f(x) = f(x -x0) + y0 }| = 1
  * </pre>
@@ -55,7 +55,7 @@ package net.imglib2.algorithm.morphology.distance;
  * <p>
  * {@code D( p ) = min_q f(q) + d(p,q)} where p,q are points on a grid/image.
  * </p>
- * 
+ *
  * @author Philipp Hanslovsky
  *
  */
@@ -63,16 +63,39 @@ public interface Distance
 {
 
 	/**
-	 * Evaluate function with family parameters xShift and yShift at position x
-	 * in dimension dim.
+	 * Evaluate function with family parameters {@code xShift} and
+	 * {@code yShift} at position {@code x} in dimension dim.
+	 *
+	 * @param x
+	 *            position on x-axis at which function is evaluated
+	 * @param xShift
+	 *            shift along the x-axis
+	 * @param yShift
+	 *            shift along y-axis
+	 * @param dim
+	 *            dimension in which to evaluate
+	 * @return Function value at position {@code x}
 	 */
 	double evaluate( double x, double xShift, double yShift, int dim );
 
 	/**
 	 *
 	 * Determine the intersection point in dimension dim of two members of the
-	 * function family. The members are parameterized by xShift1, yShift1,
-	 * xShift2, yShift2, with xShift1 &lt; xShift2.
+	 * function family. The members are parameterized by {@code xShift1},
+	 * {@code yShift1}, {@code xShift2}, {@code yShift2}, with {@code xShift1 >
+	 * xShift2}.
+	 *
+	 * @param xShift1
+	 *            shift along the x-axis
+	 * @param yShift1
+	 *            shift along the y-axis
+	 * @param xShift2
+	 *            shift along the x-axis
+	 * @param yShift2
+	 *            shift along the y-axis
+	 * @param dim
+	 *            dimension in which to evaluate
+	 * @return intersection point along axis defined by {@code dim}
 	 */
 	double intersect( double xShift1, double yShift1, double xShift2, double yShift2, int dim );
 

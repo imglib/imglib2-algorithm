@@ -59,6 +59,10 @@ public class EuclidianDistanceAnisotropic implements Distance
 	 * is twice as long along the y-axis, the weight for the y-axis should be
 	 * four times as big as the weight for the x-axis.
 	 *
+	 * @param weights
+	 *            multiply squared difference between {@code x} and
+	 *            {@code xShift} with {@code weight} (one weight per dimension)
+	 *
 	 */
 	public EuclidianDistanceAnisotropic( final double... weights )
 	{
@@ -67,6 +71,16 @@ public class EuclidianDistanceAnisotropic implements Distance
 		this.oneOverTwoTimesWeights = Arrays.stream( weights ).map( w -> 0.5 / w ).toArray();
 	}
 
+	/**
+	 *
+	 * Use the same weight for each dimension
+	 *
+	 * @param nDim
+	 *            number of dimensions
+	 * @param weight
+	 *            multiply squared difference between {@code x} and
+	 *            {@code xShift} with {@code weight}
+	 */
 	public EuclidianDistanceAnisotropic( final int nDim, final double weight )
 	{
 		this( DoubleStream.generate( () -> weight ).limit( nDim ).toArray() );
