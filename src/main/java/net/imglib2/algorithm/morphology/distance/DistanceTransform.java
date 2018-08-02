@@ -88,13 +88,13 @@ public class DistanceTransform
 	 */
 	public static enum DISTANCE_TYPE
 	{
-		EUCLIDIAN,
-		L1
+	EUCLIDIAN,
+	L1
 	}
 
 	/**
-	 * Create distance transform of source using Euclidian (L2) or L1 distance.
-	 * Intermediate and final results will be stored in source (@{link
+	 * Create distance transform of source using squared Euclidian (L2) or L1
+	 * distance. Intermediate and final results will be stored in source (@{link
 	 * DoubleType} recommended). The distance can be weighted (individually for
 	 * each dimension, if desired) against the image values via the weights
 	 * parameter.
@@ -102,10 +102,11 @@ public class DistanceTransform
 	 * @param source
 	 *            Input function on which distance transform should be computed.
 	 * @param distanceType
-	 *            Defines distance to be used: Euclidian or L1
+	 *            Defines distance to be used: squared Euclidian or L1
 	 * @param weights
 	 *            Individual weights for each dimension, balancing image values
-	 *            and Euclidian distance.
+	 *            and distance (when using squared Euclidian distance, weights
+	 *            should be squared, too).
 	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
@@ -116,8 +117,8 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using Euclidian (L2) or L1 distance.
-	 * Intermediate and final results will be stored in source (@{link
+	 * Create distance transform of source using squared Euclidian (L2) or L1
+	 * distance. Intermediate and final results will be stored in source (@{link
 	 * DoubleType} recommended). The distance can be weighted (individually for
 	 * each dimension, if desired) against the image values via the weights
 	 * parameter.
@@ -125,14 +126,15 @@ public class DistanceTransform
 	 * @param source
 	 *            Input function on which distance transform should be computed.
 	 * @param distanceType
-	 *            Defines distance to be used: Euclidian or L1
+	 *            Defines distance to be used: squared Euclidian or L1
 	 * @param es
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
 	 *            Number of tasks/parallelism
 	 * @param weights
 	 *            Individual weights for each dimension, balancing image values
-	 *            and Euclidian distance.
+	 *            and distance (when using squared Euclidian distance, weights
+	 *            should be squared, too).
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
@@ -147,10 +149,10 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using Euclidian (L2) or L1 distance.
-	 * Intermediate results will be stored in target (@{link DoubleType}
-	 * recommended). The distance can be weighted (individually for each
-	 * dimension, if desired) against the image values via the weights
+	 * Create distance transform of source using squared Euclidian (L2) or L1
+	 * distance. Intermediate results will be stored in target (@{link
+	 * DoubleType} recommended). The distance can be weighted (individually for
+	 * each dimension, if desired) against the image values via the weights
 	 * parameter.
 	 *
 	 * @param source
@@ -158,10 +160,11 @@ public class DistanceTransform
 	 * @param target
 	 *            Intermediate and final results of distance transform.
 	 * @param distanceType
-	 *            Defines distance to be used: Euclidian or L1
+	 *            Defines distance to be used: squared Euclidian or L1
 	 * @param weights
 	 *            Individual weights for each dimension, balancing image values
-	 *            and Euclidian distance.
+	 *            and distance (when using squared Euclidian distance, weights
+	 *            should be squared, too).
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
@@ -173,10 +176,10 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using Euclidian (L2) or L1 distance.
-	 * Intermediate results will be stored in target (@{link DoubleType}
-	 * recommended). The distance can be weighted (individually for each
-	 * dimension, if desired) against the image values via the weights
+	 * Create distance transform of source using squared Euclidian (L2) or L1
+	 * distance. Intermediate results will be stored in target (@{link
+	 * DoubleType} recommended). The distance can be weighted (individually for
+	 * each dimension, if desired) against the image values via the weights
 	 * parameter.
 	 *
 	 * @param source
@@ -184,14 +187,15 @@ public class DistanceTransform
 	 * @param target
 	 *            Intermediate and final results of distance transform.
 	 * @param distanceType
-	 *            Defines distance to be used: Euclidian or L1
+	 *            Defines distance to be used: squared Euclidian or L1
 	 * @param es
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
 	 *            Number of tasks/parallelism
 	 * @param weights
 	 *            Individual weights for each dimension, balancing image values
-	 *            and Euclidian distance.
+	 *            and distance (when using squared Euclidian distance, weights
+	 *            should be squared, too).
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
@@ -207,8 +211,8 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using Euclidian (L2) or L1 distance.
-	 * Intermediate results will be stored in tmp (@{link DoubleType}
+	 * Create distance transform of source using squared Euclidian (L2) or L1
+	 * distance. Intermediate results will be stored in tmp (@{link DoubleType}
 	 * recommended). The output will be written into target. The distance can be
 	 * weighted (individually for each dimension, if desired) against the image
 	 * values via the weights parameter.
@@ -220,10 +224,11 @@ public class DistanceTransform
 	 * @param target
 	 *            Final result of distance transform.
 	 * @param distanceType
-	 *            Defines distance to be used: Euclidian or L1
+	 *            Defines distance to be used: squared Euclidian or L1
 	 * @param weights
 	 *            Individual weights for each dimension, balancing image values
-	 *            and Euclidian distance.
+	 *            and distance (when using squared Euclidian distance, weights
+	 *            should be squared, too).
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
@@ -250,8 +255,8 @@ public class DistanceTransform
 	}
 
 	/**
-	 * Create distance transform of source using Euclidian (L2) or L1 distance.
-	 * Intermediate results will be stored in tmp (@{link DoubleType}
+	 * Create distance transform of source using squared Euclidian (L2) or L1
+	 * distance. Intermediate results will be stored in tmp (@{link DoubleType}
 	 * recommended). The output will be written into target. The distance can be
 	 * weighted (individually for each dimension, if desired) against the image
 	 * values via the weights parameter.
@@ -263,14 +268,15 @@ public class DistanceTransform
 	 * @param target
 	 *            Final result of distance transform.
 	 * @param distanceType
-	 *            Defines distance to be used: Euclidian or L1
+	 *            Defines distance to be used: squared Euclidian or L1
 	 * @param es
 	 *            {@link ExecutorService} for parallel execution.
 	 * @param nTasks
 	 *            Number of tasks/parallelism
 	 * @param weights
 	 *            Individual weights for each dimension, balancing image values
-	 *            and Euclidian distance.
+	 *            and distance (when using squared Euclidian distance, weights
+	 *            should be squared, too).
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
