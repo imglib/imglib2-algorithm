@@ -49,16 +49,20 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converter;
+import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.type.BooleanType;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.util.Intervals;
+import net.imglib2.util.Util;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.RealComposite;
@@ -531,6 +535,280 @@ public class DistanceTransform
 	}
 
 	/**
+	 * Create binary distance transform on source using squared Euclidian (L2)
+	 * or L1 distance. Intermediate results will be stored in target
+	 * ({@link DoubleType} recommended). The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Intermediate and final results of distance transform.
+	 * @param distanceType
+	 *            Defines distance to be used: squared Euclidian or L1
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and distance (when using squared Euclidian distance, weights
+	 *            should be squared, too).
+	 */
+	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
+			final RandomAccessible< B > source,
+			final RandomAccessibleInterval< U > target,
+			final DISTANCE_TYPE distanceType,
+			final double... weights )
+	{
+		binaryTransform( source, target, target, distanceType, weights );
+	}
+
+	/**
+	 * Create binary distance transform on source using squared Euclidian (L2)
+	 * or L1 distance. Intermediate results will be stored in target
+	 * ({@link DoubleType} recommended). The distance can be weighted
+	 * (individually for each dimension, if desired) against the image values
+	 * via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Intermediate and final results of distance transform.
+	 * @param distanceType
+	 *            Defines distance to be used: squared Euclidian or L1
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and distance (when using squared Euclidian distance, weights
+	 *            should be squared, too).
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
+	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
+			final RandomAccessible< B > source,
+			final RandomAccessibleInterval< U > target,
+			final DISTANCE_TYPE distanceType,
+			final ExecutorService es,
+			final int nTasks,
+			final double... weights ) throws InterruptedException, ExecutionException
+	{
+		binaryTransform( source, target, target, distanceType, es, nTasks, weights );
+	}
+
+	/**
+	 * Create binary distance transform on source using squared Euclidian (L2)
+	 * or L1 distance. Intermediate results will be stored in tmp
+	 * ({@link DoubleType} recommended). The output will be written into target.
+	 * The distance can be weighted (individually for each dimension, if
+	 * desired) against the image values via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param distanceType
+	 *            Defines distance to be used: squared Euclidian or L1
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and distance (when using squared Euclidian distance, weights
+	 *            should be squared, too).
+	 */
+	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
+			final RandomAccessible< B > source,
+			final RandomAccessibleInterval< U > tmp,
+			final RandomAccessibleInterval< V > target,
+			final DISTANCE_TYPE distanceType,
+			final double... weights )
+	{
+
+		final U maxVal = Util.getTypeFromInterval( tmp ).createVariable();
+		maxVal.setReal( maxVal.getMaxValue() );
+		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
+		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
+		transform( converted, tmp, target, distanceType, weights );
+	}
+
+	/**
+	 * Create binary distance transform on source using squared Euclidian (L2)
+	 * or L1 distance. Intermediate results will be stored in tmp
+	 * ({@link DoubleType} recommended). The output will be written into target.
+	 * The distance can be weighted (individually for each dimension, if
+	 * desired) against the image values via the weights parameter.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param distanceType
+	 *            Defines distance to be used: squared Euclidian or L1
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @param weights
+	 *            Individual weights for each dimension, balancing image values
+	 *            and distance (when using squared Euclidian distance, weights
+	 *            should be squared, too).
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
+	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
+			final RandomAccessible< B > source,
+			final RandomAccessibleInterval< U > tmp,
+			final RandomAccessibleInterval< V > target,
+			final DISTANCE_TYPE distanceType,
+			final ExecutorService es,
+			final int nTasks,
+			final double... weights ) throws InterruptedException, ExecutionException
+	{
+		final U maxVal = Util.getTypeFromInterval( tmp ).createVariable();
+		maxVal.setReal( maxVal.getMaxValue() );
+		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
+		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
+		transform( converted, tmp, target, distanceType, es, nTasks, weights );
+	}
+
+	/**
+	 * Create binary distance transform on source using arbitrary
+	 * {@link Distance} d. Intermediate and final results will be stored in
+	 * source ({@link DoubleType} recommended).
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
+	public static < B extends BooleanType< B > > void binaryTransform(
+			final RandomAccessibleInterval< B > source,
+			final Distance d,
+			final ExecutorService es,
+			final int nTasks ) throws InterruptedException, ExecutionException
+	{
+		binaryTransform( source, source, d, es, nTasks );
+	}
+
+	/**
+	 * Create binary distance transform on source using arbitrary
+	 * {@link Distance} d. Intermediate and final results will be stored in
+	 * target ({@link DoubleType} recommended).
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 */
+	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
+			final RandomAccessible< B > source,
+			final RandomAccessibleInterval< U > target,
+			final Distance d )
+	{
+		binaryTransform( source, target, target, d );
+	}
+
+	/**
+	 * Create binary distance transform on source using arbitrary
+	 * {@link Distance} d. Intermediate and final results will be stored in
+	 * target ({@link DoubleType} recommended).
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 */
+	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
+			final RandomAccessible< B > source,
+			final RandomAccessibleInterval< U > target,
+			final Distance d,
+			final ExecutorService es,
+			final int nTasks ) throws InterruptedException, ExecutionException
+	{
+		binaryTransform( source, target, target, d, es, nTasks );
+	}
+
+	/**
+	 * Create binary distance transform on source using arbitrary
+	 * {@link Distance} d. Intermediate results will be stored in tmp
+	 * ({@link DoubleType} recommended). The output will be written into target.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 */
+	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
+			final RandomAccessible< B > source,
+			final RandomAccessibleInterval< U > tmp,
+			final RandomAccessibleInterval< V > target,
+			final Distance d )
+	{
+		final U maxVal = Util.getTypeFromInterval( tmp ).createVariable();
+		maxVal.setReal( maxVal.getMaxValue() );
+		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
+		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
+		transform( converted, tmp, target, d );
+	}
+
+	/**
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on source using arbitrary
+	 * {@link Distance} d. Intermediate results will be stored in tmp
+	 * ({@link DoubleType} recommended). The output will be written into target.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param es
+	 *            {@link ExecutorService} for parallel execution.
+	 * @param nTasks
+	 *            Number of tasks/parallelism
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
+	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
+			final RandomAccessible< B > source,
+			final RandomAccessibleInterval< U > tmp,
+			final RandomAccessibleInterval< V > target,
+			final Distance d,
+			final ExecutorService es,
+			final int nTasks ) throws InterruptedException, ExecutionException
+	{
+		final U maxVal = Util.getTypeFromInterval( tmp ).createVariable();
+		maxVal.setReal( maxVal.getMaxValue() );
+		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
+		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
+		transform( converted, tmp, target, d, es, nTasks );
+	}
+
+	/**
 	 * Create
 	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
 	 * transforms of sampled functions</a> on source using L1 distance.
@@ -882,6 +1160,28 @@ public class DistanceTransform
 	public static int getLargestDimension( final Interval interval )
 	{
 		return IntStream.range( 0, interval.numDimensions() ).mapToObj( i -> new ValuePair<>( i, interval.dimension( i ) ) ).max( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
+	}
+
+	private static class BinaryMaskToCost< B extends BooleanType< B >, R extends RealType< R > > implements Converter< B, R >
+	{
+
+		private final R maxValForR;
+
+		private final R zero;
+
+		public BinaryMaskToCost( final R maxValForR )
+		{
+			this.maxValForR = maxValForR;
+			this.zero = maxValForR.createVariable();
+			zero.setZero();
+		}
+
+		@Override
+		public void convert( final B input, final R output )
+		{
+			output.set( input.get() ? zero : maxValForR );
+		}
+
 	}
 
 }
