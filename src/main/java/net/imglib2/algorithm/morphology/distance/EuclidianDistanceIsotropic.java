@@ -50,6 +50,11 @@ public class EuclidianDistanceIsotropic implements Distance
 
 	private final double oneOverTwoTimesWeight;
 
+	/**
+	 * @param weight
+	 *            multiply squared difference between {@code x} and
+	 *            {@code xShift} with {@code weight}
+	 */
 	public EuclidianDistanceIsotropic( final double weight )
 	{
 		super();
