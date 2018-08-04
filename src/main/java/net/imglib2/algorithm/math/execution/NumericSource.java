@@ -11,7 +11,10 @@ public class NumericSource< O extends RealType< O > > implements OFunction< O >
 	public NumericSource( final O scrap, final Number number )
 	{
 		this.value = scrap;
-		this.value.setReal( number.doubleValue() );
+		if ( number instanceof Float )
+			this.value.setReal( number.floatValue() );
+		else
+			this.value.setReal( number.doubleValue() );
 	}
 	
 	@Override
