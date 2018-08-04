@@ -2,14 +2,14 @@ package net.imglib2.algorithm.math;
 
 import java.util.Map;
 
-import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.ABinaryFunction;
-import net.imglib2.algorithm.math.abstractions.IFunction;
-import net.imglib2.algorithm.math.abstractions.IVar;
+import net.imglib2.algorithm.math.abstractions.OFunction;
+import net.imglib2.algorithm.math.execution.Division;
+import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public final class Div extends ABinaryFunction implements IFunction
+public final class Div extends ABinaryFunction
 {
 
 	public Div( final Object o1, final Object o2 )
@@ -21,37 +21,14 @@ public final class Div extends ABinaryFunction implements IFunction
 	{
 		super( obs );
 	}
-	
-	private Div( final RealType< ? > scrap, final IFunction f1, final IFunction f2 )
-	{
-		super( scrap, f1, f2 );
-	}
-
-	@SuppressWarnings({ "unchecked" })
-	@Override
-	public final RealType< ? > eval()
-	{
-		this.scrap.set( this.a.eval() );
-		this.scrap.div( this.b.eval() );
-		return this.scrap;
-	}
-	
-	@SuppressWarnings({ "unchecked" })
-	@Override
-	public final RealType< ? > eval( final Localizable loc )
-	{
-		this.scrap.set( this.a.eval( loc ) );
-		this.scrap.div( this.b.eval( loc ) );
-		return this.scrap;
-	}
 
 	@Override
-	public Div reInit(
-			final RealType<?> tmp,
-			final Map<String, RealType<?>> bindings,
-			final Converter<RealType<?>, RealType<?>> converter,
-			Map< IVar, IFunction > imgSources )
+	public < O extends RealType< O > > Division< O > reInit(
+			final O tmp,
+			final Map< String, O > bindings,
+			final Converter< RealType< ? >, O > converter,
+			Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return new Div( tmp.copy(), this.a.reInit( tmp, bindings, converter, imgSources ), this.b.reInit( tmp, bindings, converter, imgSources ) );
+		return new Division< O >( tmp.copy(), this.a.reInit( tmp, bindings, converter, imgSources ), this.b.reInit( tmp, bindings, converter, imgSources ) );
 	}
 }

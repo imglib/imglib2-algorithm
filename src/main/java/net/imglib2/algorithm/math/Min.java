@@ -2,10 +2,10 @@ package net.imglib2.algorithm.math;
 
 import java.util.Map;
 
-import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.ABinaryFunction;
-import net.imglib2.algorithm.math.abstractions.IFunction;
-import net.imglib2.algorithm.math.abstractions.IVar;
+import net.imglib2.algorithm.math.abstractions.OFunction;
+import net.imglib2.algorithm.math.execution.Minimum;
+import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
@@ -21,36 +21,13 @@ public final class Min extends ABinaryFunction
 		super( obs );
 	}
 	
-	private Min( final RealType< ? > scrap, final IFunction f1, final IFunction f2 )
-	{
-		super( scrap, f1, f2 );
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public final RealType< ? > eval()
+	public < O extends RealType< O > > Minimum< O > reInit(
+			final O tmp,
+			final Map< String, O > bindings,
+			final Converter< RealType< ? >, O > converter,
+			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		final RealType x = this.a.eval();
-		final RealType y = this.b.eval();
-		return x.compareTo( y ) < 0 ? x : y;
-	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public final RealType< ? > eval( final Localizable loc)
-	{
-		final RealType x = this.a.eval( loc );
-		final RealType y = this.b.eval( loc );
-		return x.compareTo( y ) < 0 ? x : y;
-	}
-
-	@Override
-	public Min reInit(
-			final RealType< ? > tmp,
-			final Map< String, RealType< ? > > bindings,
-			final Converter< RealType< ? >, RealType< ? > > converter,
-			final Map< IVar, IFunction > imgSources )
-	{
-		return new Min( tmp.copy(), this.a.reInit(tmp, bindings, converter, imgSources), this.b.reInit(tmp, bindings, converter, imgSources) );
+		return new Minimum< O >( this.a.reInit(tmp, bindings, converter, imgSources), this.b.reInit(tmp, bindings, converter, imgSources) );
 	}
 }

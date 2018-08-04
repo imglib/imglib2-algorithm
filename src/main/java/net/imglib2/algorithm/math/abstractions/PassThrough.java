@@ -2,7 +2,7 @@ package net.imglib2.algorithm.math.abstractions;
 
 import java.util.Map;
 
-import net.imglib2.Localizable;
+import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
@@ -17,21 +17,11 @@ public class PassThrough extends AUnaryFunction
 	}
 
 	@Override
-	public RealType< ? > eval() {
-		return null;
-	}
-
-	@Override
-	public RealType< ? > eval( final Localizable loc ) {
-		return null;
-	}
-
-	@Override
-	public IFunction reInit(
-			final RealType< ? > tmp,
-			final Map< String, RealType< ? > > bindings,
-			final Converter< RealType< ? >, RealType< ? > > converter,
-			final Map< IVar, IFunction > imgSources )
+	public < O extends RealType< O > > OFunction< O > reInit(
+			final O tmp,
+			final Map< String, O > bindings,
+			final Converter< RealType< ? >, O > converter,
+			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
 		return this.a.reInit(tmp, bindings, converter, imgSources);
 	}

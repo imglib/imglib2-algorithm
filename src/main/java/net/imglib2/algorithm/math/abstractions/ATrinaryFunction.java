@@ -2,7 +2,7 @@ package net.imglib2.algorithm.math.abstractions;
 
 import net.imglib2.type.numeric.RealType;
 
-abstract public class ATrinaryFunction extends AFunction implements ITrinaryFunction
+abstract public class ATrinaryFunction extends VarargsFunction implements ITrinaryFunction
 {
 	protected final IFunction a, b ,c;
 

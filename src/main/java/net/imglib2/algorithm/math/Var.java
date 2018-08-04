@@ -2,24 +2,18 @@ package net.imglib2.algorithm.math;
 
 import java.util.Map;
 
-import net.imglib2.Localizable;
-import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.IVar;
+import net.imglib2.algorithm.math.abstractions.OFunction;
+import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
 public final class Var implements IVar
 {
 	private final String name;
-	private final RealType< ? > value;
 
-	public Var( final String name ) {
-		this( null, name );
-	}
-	
-	public Var( final RealType< ? > value, final String name )
+	public Var( final String name )
 	{
-		this.value = value;
 		this.name = name;
 	}
 	
@@ -28,32 +22,14 @@ public final class Var implements IVar
 	{
 		return this.name;
 	}
-	
-	@Override
-	public RealType< ? > getScrap()
-	{
-		return this.value;
-	}
 
 	@Override
-	public final RealType< ? > eval()
+	public < O extends RealType< O > > Variable< O > reInit(
+			final O tmp,
+			final Map< String, O > bindings,
+			final Converter< RealType< ? >, O > converter,
+			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return this.value;
-	}
-
-	@Override
-	public final RealType< ? > eval( final Localizable loc )
-	{
-		return this.value;
-	}
-
-	@Override
-	public Var reInit(
-			final RealType< ? > tmp,
-			final Map< String, RealType< ? > > bindings,
-			final Converter< RealType< ? >, RealType< ? > > converter,
-			final Map< IVar, IFunction > imgSources )
-	{
-		return new Var( bindings.get( this.name ), this.name );
+		return new Variable< O >( this.name, bindings.get( this.name ) );
 	}
 }

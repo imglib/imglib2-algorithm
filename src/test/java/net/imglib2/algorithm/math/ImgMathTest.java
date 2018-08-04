@@ -25,11 +25,9 @@ import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.math.ImgMath;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.basictypeaccess.array.IntArray;
 import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.type.numeric.ARGBType;
@@ -37,7 +35,6 @@ import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.Fraction;
 import net.imglib2.view.Views;
 
 
@@ -294,10 +291,10 @@ public class ImgMathTest
 			t.set( leaf_crop_pix[ i++ ] );
 		}
 		
-		final IterableInterval< UnsignedByteType >
-		    red = Views.iterable( Converters.argbChannel( rgb, 1 ) ),
-			green = Views.iterable( Converters.argbChannel( rgb, 2 ) ),
-			blue = Views.iterable( Converters.argbChannel( rgb, 3 ) );
+		final RandomAccessibleInterval< UnsignedByteType >
+		    red = Converters.argbChannel( rgb, 1 ),
+			green = Converters.argbChannel( rgb, 2 ),
+			blue = Converters.argbChannel( rgb, 3 );
 		
 		final ArrayImg< FloatType, ? > saturation = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
@@ -407,7 +404,7 @@ public class ImgMathTest
 		for ( int i=0; i < n_iterations; ++i ) {
 			final long t0 = System.nanoTime();
 
-			// Compute saturation: slightly slower than with vars (unsurprisingly), but easier to read
+			// Compute saturation: easier to read without vars
 			compute( let( "max", max( red, green, blue ),
 						  "min", min( red, green, blue ),
 						  IF ( EQ( 0, var( "max" ) ),
@@ -452,7 +449,7 @@ public class ImgMathTest
 			for ( int i=0; i < n_iterations; ++i ) {
 				final long t0 = System.nanoTime();
 
-				// Compute saturation: slightly slower than with vars (unsurprisingly), but easier to read
+				// Compute saturation:
 				compute( let( "max", max( redF, greenF, blueF ),
 							  "min", min( redF, greenF, blueF ),
 							  IF ( EQ( 0, var( "max" ) ),
@@ -467,7 +464,7 @@ public class ImgMathTest
 				meanLM += (t1 - t0) / (double)(n_iterations);
 			}
 			
-			if ( print ) System.out.println("ImgMath 4 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
+			if ( print ) System.out.println("ImgMath 4 saturation without vars performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 		
 			// Reset
 			minLM = Long.MAX_VALUE;
@@ -477,7 +474,7 @@ public class ImgMathTest
 			for ( int i=0; i < n_iterations; ++i ) {
 				final long t0 = System.nanoTime();
 
-				// Compute saturation: slightly slower than with vars (unsurprisingly), but easier to read
+				// Compute saturation:
 				compute( let( "red", redF,
 						      "green", greenF,
 						      "blue", blueF,
@@ -495,7 +492,7 @@ public class ImgMathTest
 				meanLM += (t1 - t0) / (double)(n_iterations);
 			}
 			
-			if ( print ) System.out.println("ImgMath 5 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
+			if ( print ) System.out.println("ImgMath 5 saturation with vars performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 		
 		}
 		
@@ -534,6 +531,52 @@ public class ImgMathTest
 		return true;
 	}
 	
+	protected boolean testLT()
+	{
+		final ArrayImg< FloatType, ? > img1 = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
+		final ArrayImg< FloatType, ? > img2 = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
+
+		// Fill half the image only
+		for ( final FloatType t : Views.interval( img1, new long[]{ 0, 0 }, new long[] { 9, 4 } ) ) // inclusive
+			t.setReal( 5.0f );
+
+		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img1 );
+		
+		compute( LT( img2, img1 ) ).into( target );
+		
+		double sum = 0;
+		for ( final FloatType t : target )
+			sum += t.getRealDouble();
+		
+		System.out.println( "Sum LT 1/0: " + sum );
+		
+		// A "1" for every true comparison, one per pixel for half of all pixels
+		return 50 == sum;
+	}
+	
+	protected boolean testGT()
+	{
+		final ArrayImg< FloatType, ? > img1 = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
+		final ArrayImg< FloatType, ? > img2 = new ArrayImgFactory< FloatType >( new FloatType() ).create( new long[]{ 10, 10 } );
+
+		// Fill half the image only
+		for ( final FloatType t : Views.interval( img1, new long[]{ 0, 0 }, new long[] { 9, 4 } ) ) // inclusive
+			t.setReal( 5.0f );
+
+		final ArrayImg< FloatType, ? > target = new ArrayImgFactory< FloatType >(new FloatType() ).create( img1 );
+		
+		compute( GT( img1, img2 ) ).into( target );
+		
+		double sum = 0;
+		for ( final FloatType t : target )
+			sum += t.getRealDouble();
+		
+		System.out.println( "Sum GT 1/0: " + sum );
+		
+		// A "1" for every true comparison, one per pixel for half of all pixels
+		return 50 == sum;
+	}
+	
 	
 	@Test
 	public void test1() {
@@ -545,7 +588,7 @@ public class ImgMathTest
 		assertTrue( testIterationOrder() );
 	}
 	
-	@Test
+	//@Test
 	public void test3() {
 		assertTrue ( comparePerformance( 30, false ) ); // warm up
 		assertTrue ( comparePerformance( 30, true ) );
@@ -581,11 +624,20 @@ public class ImgMathTest
 		assertTrue ( testIfThenElse() );
 	}
 	
-	@Test
+	//@Test
 	public void test1IfThenElsePerformance() {
-		assertTrue ( testSaturationPerformance( 50, false ) ); // warm-up
-		assertTrue ( testSaturationPerformance( 50, true ) );
-
+		assertTrue ( testSaturationPerformance( 200, false ) ); // warm-up
+		assertTrue ( testSaturationPerformance( 200, true ) );
+	}
+	
+	@Test
+	public void test5LT() {
+		assertTrue( testLT() );
+	}
+	
+	@Test
+	public void test6GT() {
+		assertTrue( testGT() );
 	}
 	
 	static public void main(String[] args) {

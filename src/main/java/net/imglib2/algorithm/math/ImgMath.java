@@ -2,17 +2,26 @@ package net.imglib2.algorithm.math;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IFunction;
-import net.imglib2.converter.Converter;
-import net.imglib2.type.numeric.RealType;
 
 /**
- * An easy yet relatively high performance way to perform pixel-wise math
+ * An easy yet high performance way to perform pixel-wise math
  * on one or more {@link RandomAccessibleInterval} instances.
+ * 
+ * Peak performance is within 1.2X - 1.8X of manually writing a loop
+ * using ImgLib2's low-level {@code Cursor} or {@code RandomAccess} with
+ * native math {@code + / - *} and flow {@code if else} operators
+ * and in-loop variable declarations.
+ * 
+ * Input images can be of different {@code Type} as long as all of them
+ * extend RealType.
  * 
  * An example in java:
  * 
  * <pre>
  * {@code
+ * 
+ * import static net.imglib2.algorithm.math.ImgMath.*;
+ * 
  * RandomAccessibleInterval<A> img1 = ...
  * RandomAccessibleInterval<B> img2 = ...
  * RandomAccessibleInterval<C> img3 = ...
@@ -23,9 +32,36 @@ import net.imglib2.type.numeric.RealType;
  * }
  * </pre>
  * 
- * While java compilation cares about exact types, the type erasure that happens
- * at compile time means that input types can be mixed, as long as all of them
- * extend RealType.
+ * Another example, illustrating variable declaration with {@code Let}
+ * and also if/then/else flow control, to compute the saturation of
+ * an RGB image:
+ * 
+ * <pre>
+ * {@code
+ * import static net.imglib2.algorithm.math.ImgMath.*;
+ * 
+ * RandomAccessible< ARGBType > rgb = ...
+ * 
+ * final RandomAccessibleInterval< UnsignedByteType >
+ *		    red = Converters.argbChannel( rgb, 1 ),
+ *			green = Converters.argbChannel( rgb, 2 ),
+ *			blue = Converters.argbChannel( rgb, 3 );
+ * 
+ * RandomAccessibleInterval< FloatType > saturation = new ArrayImgFactory< FloatType >( new FloatType() ).create( rgb );
+ * 
+ * compute( let( "red", red,
+ *				 "green", green,
+ *				 "blue", blue,
+ *				 "max", max( var( "red" ), var( "green" ), var( "blue" ) ),
+ *				 "min", min( var( "red" ), var( "green" ), var( "blue" ) ),
+ *				 IF ( EQ( 0, var( "max" ) ),
+ *				   THEN( 0 ),
+ *				   ELSE( div( sub( var( "max" ), var( "min" ) ),
+ *					          var( "max" ) ) ) ) ) )
+ *		  .into( saturation );
+ * 
+ * }
+ * </pre>
  * 
  * @author Albert Cardona
  *
@@ -35,11 +71,6 @@ public class ImgMath
 	static public final Compute compute( final IFunction operation )
 	{
 		return new Compute( operation );
-	}
-	
-	static public final Compute compute( final IFunction operation, final Converter< RealType< ? >, RealType< ? > > converter )
-	{
-		return new Compute( operation, converter );
 	}
 	
 	static public final Add add( final Object o1, final Object o2 )

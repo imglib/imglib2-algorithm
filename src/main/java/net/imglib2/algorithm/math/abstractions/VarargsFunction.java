@@ -2,7 +2,7 @@ package net.imglib2.algorithm.math.abstractions;
 
 import java.lang.reflect.Constructor;
 
-abstract public class AFunction
+abstract public class VarargsFunction
 {
 	final public IFunction[] wrapMap( final Object[] obs )
 	{	

@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.math.IterableImgSource;
+import net.imglib2.algorithm.math.ImgSource;
 import net.imglib2.algorithm.math.NumberSource;
 import net.imglib2.view.Views;
 
@@ -62,7 +62,7 @@ public class Util
 	{
 		if ( o instanceof RandomAccessibleInterval< ? > )
 		{
-			return new IterableImgSource( (RandomAccessibleInterval) o );
+			return new ImgSource( (RandomAccessibleInterval) o );
 		}
 		else if ( o instanceof Number )
 		{

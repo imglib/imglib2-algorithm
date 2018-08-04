@@ -2,14 +2,14 @@ package net.imglib2.algorithm.math;
 
 import java.util.Map;
 
-import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.ABinaryFunction;
-import net.imglib2.algorithm.math.abstractions.IFunction;
-import net.imglib2.algorithm.math.abstractions.IVar;
+import net.imglib2.algorithm.math.abstractions.OFunction;
+import net.imglib2.algorithm.math.execution.Maximum;
+import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public final class Max extends ABinaryFunction implements IFunction
+public final class Max extends ABinaryFunction
 {
 	public Max( final Object o1, final Object o2 )
 	{
@@ -21,36 +21,13 @@ public final class Max extends ABinaryFunction implements IFunction
 		super( obs );
 	}
 
-	private Max( final RealType< ? > scrap, final IFunction f1, final IFunction f2 )
-	{
-		super( scrap, f1, f2 );
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public final RealType< ? > eval()
+	public < O extends RealType< O > > Maximum< O > reInit(
+			final O tmp,
+			final Map< String, O > bindings,
+			final Converter< RealType< ? >, O > converter,
+			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		final RealType x = this.a.eval();
-		final RealType y = this.b.eval();
-		return x.compareTo( y ) > 0 ? x : y;
-	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public final RealType< ? > eval( final Localizable loc)
-	{
-		final RealType x = this.a.eval( loc );
-		final RealType y = this.b.eval( loc );
-		return x.compareTo( y ) > 0 ? x : y;
-	}
-
-	@Override
-	public Max reInit(
-			final RealType< ? > tmp,
-			final Map< String, RealType< ? > > bindings,
-			final Converter< RealType< ? >, RealType< ? > > converter,
-			final Map< IVar, IFunction > imgSources )
-	{
-		return new Max( tmp.copy(), this.a.reInit( tmp, bindings, converter, imgSources ), this.b.reInit( tmp, bindings, converter, imgSources ) );
+		return new Maximum< O >( this.a.reInit( tmp, bindings, converter, imgSources ), this.b.reInit( tmp, bindings, converter, imgSources ) );
 	}
 }

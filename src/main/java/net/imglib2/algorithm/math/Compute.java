@@ -11,7 +11,7 @@ import net.imglib2.algorithm.math.abstractions.IBinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.ITrinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IUnaryFunction;
-import net.imglib2.algorithm.math.abstractions.ImgSource;
+import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
@@ -20,82 +20,95 @@ import net.imglib2.view.Views;
 public class Compute
 {
 	private final IFunction operation;
-	private final Converter< RealType< ? >, RealType< ? > > converter;
+	private final boolean compatible_iteration_order;
 	
 	/**
-	 * Prepare the operation for computation with a default converter.
-	 * The converter will be used only if necessary, that is, only if
-	 * the input image type is not the same or a sublclass of the output
-	 * image type as specified in the {@link Compute#into(RandomAccessibleInterval)}.
+	 * Validate the {@param operation}.
 	 * 
 	 * @param operation
 	 */
 	public Compute( final IFunction operation )
 	{
-		this( operation, new Converter< RealType< ? >, RealType< ? > >()
-		{
-			@Override
-			public final void convert( final RealType<?> input, RealType<?> output)
-			{
-				output.setReal( input.getRealDouble() );
-			}
-		});
+		this.operation = operation;
+		
+		// Throw RuntimeException as needed to indicate incorrect construction
+		this.compatible_iteration_order = this.validate( this.operation );
+	}
+
+	/**
+	 * Execute the computation and store the result into the {@code target}.
+	 * The computation is done using {@code Type}-based math, with the {@code Type}
+	 * of the {@code target} defining the specific math implementation and numerical
+	 * precision that will be used.
+	 * 
+	 * @param target The {@code {@link RandomAccessibleInterval} into which to store the computation;
+	 *               note its {@code Type} determines the precision of the computation and the specific
+	 *               implementation of the mathematical operations.
+	 * @return The {@code target}.
+	 */
+	public < O extends RealType< O > > RandomAccessibleInterval< O > into( final RandomAccessibleInterval< O > target )
+	{
+		return this.into( target, null );
 	}
 	
 	/**
-	 * Prepare the operation for computation.
-	 * The converter will be used only if necessary, that is, only if
-	 * the input image type is not the same or a sublclass of the output
-	 * image type as specified in the {@link Compute#into(RandomAccessibleInterval)}.
+	 * Execute the mathematical operations and store the result into the given {@code RandomAccessibleInterval}.
 	 * 
-	 * @param operation
-	 * @param converter
+	 * @param target The {@code {@link RandomAccessibleInterval} into which to store the computation;
+	 *               note its {@code Type} determines the precision of the computation and the specific
+	 *               implementation of the mathematical operations.
+	 * 
+	 * @param converter The {@code Converter} that transfers all input {@code Type} to the {@code Type}
+	 *                  of the {@code target}; when null, will create one that uses double floating-point
+	 *                  precision; but note that if the {@code Type} of an input {@code RandomAccessibleInterval}
+	 *                  is the same as that of the {@code target}, the converter will not be used.
+	 * 
+	 * @return The {@code target}.
 	 */
-	public Compute(
-			final IFunction operation,
-			final Converter< RealType< ? >, RealType< ? > > converter
+	public < O extends RealType< O > > RandomAccessibleInterval< O > into(
+			final RandomAccessibleInterval< O > target,
+			Converter< RealType< ? >, O > converter
 			)
 	{
-		this.operation = operation;
-		this.converter = converter;
-	}
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public RandomAccessibleInterval< ? extends RealType< ? > > into( final RandomAccessibleInterval< ? extends RealType< ? > > target )
-	{
-		// Recursive copy: initializes interval iterators and sets temporary computation holder
-		final IFunction f = this.operation.reInit(
-				target.randomAccess().get().createVariable(),
-				new HashMap< String, RealType< ? > >(),
-				this.converter, null );
+		if ( null == converter )
+			converter = new Converter< RealType< ? >, O >()
+			{
+				@Override
+				public final void convert( final RealType< ? > input, final O output)
+				{
+					output.setReal( input.getRealDouble() );
+				}
+			};
 		
-		final boolean compatible_iteration_order = this.setup( f );
+		// Recursive copy: initializes interval iterators and sets temporary computation holder
+		final OFunction< O > f = this.operation.reInit(
+				target.randomAccess().get().createVariable(),
+				new HashMap< String, O >(),
+				converter, null );
 		
 		// Check compatible iteration order and dimensions
 		if ( compatible_iteration_order )
 		{
 			// Evaluate function for every pixel
-			for ( final RealType output : Views.iterable( target ) )
+			for ( final O output : Views.iterable( target ) )
 				output.set( f.eval() );
 		}
 		else
 		{
 			// Incompatible iteration order
-			final Cursor< ? extends RealType< ? > > cursor = Views.iterable( target ).cursor();
+			final Cursor< O > cursor = Views.iterable( target ).cursor();
 			
 			while ( cursor.hasNext() )
 			{
 				cursor.fwd();
-				final RealType output = cursor.get();
-				output.set( f.eval( cursor ) );
+				cursor.get().set( f.eval( cursor ) );
 			}
 		}
 		
 		return target;
 	}
 	
-	@SuppressWarnings({ "rawtypes" })
-	private boolean setup( final IFunction f )
+	private boolean validate( final IFunction f )
 	{	
 		final LinkedList< IFunction > ops = new LinkedList<>();
 		ops.add( f );
@@ -123,7 +136,7 @@ public class Compute
 			
 			if ( op instanceof ImgSource )
 			{
-				images.addLast( ( ( ImgSource )op ).getRandomAccessibleInterval() );
+				images.addLast( ( ( ImgSource< ? > )op ).getRandomAccessibleInterval() );
 			}
 			else if ( op instanceof IUnaryFunction )
 			{
