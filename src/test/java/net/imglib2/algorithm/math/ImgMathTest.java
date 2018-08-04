@@ -19,6 +19,16 @@ import static net.imglib2.algorithm.math.ImgMath.GT;
 
 import static org.junit.Assert.assertTrue;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.PixelGrabber;
+import java.io.ByteArrayInputStream;
+import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+
+import javax.imageio.ImageIO;
+
 import org.junit.Test;
 
 import net.imglib2.Cursor;
@@ -31,6 +41,7 @@ import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -310,31 +321,75 @@ public class ImgMathTest
 					        	var( "max" ) ) ) ) )
 			.into( saturation );
 		
-		float sum = 0;
-		
-		for ( final FloatType t : saturation )
-			sum += t.get();
+		final long sum = sumAsInts( saturation, 255.0 );
 		
 		// Ignore floating-point error
-		System.out.println( "IfThenElse: saturation sum is " + (int)sum + ", expected: " + (int)(saturation_sum / 255.0f) );
+		System.out.println( "IfThenElse: saturation sum is " + sum + ", expected: " + saturation_sum );
 		
-		return (int)sum == (int)(saturation_sum / 255.0f);
+		return sum == saturation_sum;
 	}
 	
-	protected boolean testSaturationPerformance( final int n_iterations, final boolean print ) {
-		final int[] leaf_crop_pix = new int[]{-7430893, -6115530, -4275105, -3354241, -2960497, -3026034, -4012171, -4735905, -4538526, -3814794, -8219392, -7101930, -5589438, -3946389, -3223163, -3419766, -4538005, -5524656, -5589681, -4735134, -8153344, -7890174, -6773213, -5392819, -4406935, -4274320, -5260715, -6247114, -6444498, -6181573, -7890176, -8087552, -7562481, -6576333, -5590446, -5918133, -6509772, -7429350, -7495918, -7364580, -7955694, -8415744, -8349952, -8086528, -7626752, -7560684, -7955442, -8284407, -8218869, -7955692, -7692270, -8022011, -8219390, -8350201, -8022262, -8021490, -8350200, -8547579, -8481786, -8087283, -7561208, -7956218, -8351225, -8680439, -8812276, -8811001, -8876796, -8942336, -8744959, -8415994, -8087552, -8087552, -8679166, -9075199, -9536000, -9337600, -9271808, -9139968, -8876544, -8547584, -8679168, -8415744, -8415744, -9008384, -9666560, -9666816, -9534976, -9205760, -8942336, -8679168, -8548352, -8087552, -8086528, -8547328, -9074176, -9732608, -9534976, -9271552, -8942592, -8744960};
-		final long saturation_sum = 21367;
+	/**
+	 * Emulate what ImageJ ij.process.ColorProcessor does: multiply by 255.0d and cast to int.
+	 * 
+	 * @param rai
+	 * @param factor
+	 * @return
+	 */
+	static private final < O extends RealType< O > > long sumAsInts( final RandomAccessibleInterval< O > rai, final double factor )
+	{
+		long sum = 0;
 		
-		final long[] dims = new long[]{ 10, 10 };
+		for ( final O t : Views.iterable( rai ) )
+			sum += (int)(t.getRealFloat() * factor);
+		
+		return sum;
+	}
+	
+	protected boolean testSaturationPerformance( final int n_iterations, final boolean print )
+	{	
+		// Small cut out
+		//final int[] leaf_pix = new int[]{-7430893, -6115530, -4275105, -3354241, -2960497, -3026034, -4012171, -4735905, -4538526, -3814794, -8219392, -7101930, -5589438, -3946389, -3223163, -3419766, -4538005, -5524656, -5589681, -4735134, -8153344, -7890174, -6773213, -5392819, -4406935, -4274320, -5260715, -6247114, -6444498, -6181573, -7890176, -8087552, -7562481, -6576333, -5590446, -5918133, -6509772, -7429350, -7495918, -7364580, -7955694, -8415744, -8349952, -8086528, -7626752, -7560684, -7955442, -8284407, -8218869, -7955692, -7692270, -8022011, -8219390, -8350201, -8022262, -8021490, -8350200, -8547579, -8481786, -8087283, -7561208, -7956218, -8351225, -8680439, -8812276, -8811001, -8876796, -8942336, -8744959, -8415994, -8087552, -8087552, -8679166, -9075199, -9536000, -9337600, -9271808, -9139968, -8876544, -8547584, -8679168, -8415744, -8415744, -9008384, -9666560, -9666816, -9534976, -9205760, -8942336, -8679168, -8548352, -8087552, -8086528, -8547328, -9074176, -9732608, -9534976, -9271552, -8942592, -8744960};
+		//final int width = 10,
+		//          height = 10;
+		//final long saturation_sum = 21367;
+
+		// Full image 507x446 pixels
+		final int[] leaf_pix;
+		final int width = 507,
+				  height = 446;
+		final long saturation_sum = 23641758; // Sum of saturation values * 255.0, each cast to int.
+		
+		try {
+			final URL url = new URL( "https://imagej.nih.gov/ij/images/leaf.jpg" );
+			//final URL url = new URL( "http://127.0.0.1/images/leaf.jpg" );
+			final ReadableByteChannel rbc = Channels.newChannel( url.openStream() );
+			final byte[] bytes = new byte[ 36642 ];
+			final ByteBuffer bb = ByteBuffer.wrap( bytes );
+			rbc.read( bb );
+			
+			final BufferedImage bi = ImageIO.read( new ByteArrayInputStream( bytes ) );
+			leaf_pix = new int[width * height];
+			final PixelGrabber pg = new PixelGrabber( bi, 0, 0, width, height, leaf_pix, 0, width );
+			try {
+				pg.grabPixels();
+			} catch (InterruptedException e){};
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+		final long[] dims = new long[]{ width, height };
 		
 		// Fails, don't know why
-		//final ArrayImg< ARGBType, IntArray > rgb = new ArrayImg< ARGBType, IntArray >( new IntArray( leaf_crop_pix ), dims, new Fraction() );
+		//final ArrayImg< ARGBType, IntArray > rgb = new ArrayImg< ARGBType, IntArray >( new IntArray( leaf_pix ), dims, new Fraction() );
 		
 		final ArrayImg< ARGBType, ? > rgb = new ArrayImgFactory< ARGBType >( new ARGBType() ).create( dims );
 		int k = 0;
 		for ( final ARGBType t : rgb )
 		{
-			t.set( leaf_crop_pix[ k++ ] );
+			t.set( leaf_pix[ k++ ] );
 		}
 		
 		final IterableInterval< UnsignedByteType >
@@ -347,27 +402,33 @@ public class ImgMathTest
 		long minLM = Long.MAX_VALUE,
 			 maxLM = 0;
 		double meanLM = 0;
+		
+		// Compute saturation
+		final Compute op1 =
+		compute( let( "red", red,
+					  "green", green,
+					  "blue", blue,
+					  "max", max( var( "red" ), var( "green" ), var( "blue" ) ),
+					  "min", min( var( "red" ), var( "green" ), var( "blue" ) ),
+					  IF ( EQ( 0, var( "max" ) ),
+						   0,
+						   mul( div( sub( var( "max" ), var( "min" ) ),
+								     var( "max" ) ),
+								255.0f ) ) ) );
 			
-		for ( int i=0; i < n_iterations; ++i ) {
+		for ( int i=0; i < n_iterations; ++i )
+		{
 			final long t0 = System.nanoTime();
-
-			// Compute saturation
-			compute( let( "red", red,
-						  "green", green,
-						  "blue", blue,
-						  "max", max( var( "red" ), var( "green" ), var( "blue" ) ),
-						  "min", min( var( "red" ), var( "green" ), var( "blue" ) ),
-						  IF ( EQ( 0, var( "max" ) ),
-							   0,
-							   div( sub( var( "max" ), var( "min" ) ),
-									var( "max" ) ) ) ) )
-				.into( saturation );
+			
+			op1.into( saturation );
 
 			final long t1 = System.nanoTime();
 			minLM = Math.min(minLM, t1 - t0);
 			maxLM = Math.max(maxLM, t1 - t0);
 			meanLM += (t1 - t0) / (double)(n_iterations);
 		}
+		
+		assertTrue( "op1", sumAsInts( saturation, 1.0 ) == saturation_sum );
 
 		if ( print ) System.out.println("ImgMath 1 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 
@@ -375,24 +436,30 @@ public class ImgMathTest
 		minLM = Long.MAX_VALUE;
 		maxLM = 0;
 		meanLM = 0;
+		
+		// Compute saturation: very slightly slower than with vars (unsurprisingly), but easier to read
+		final Compute op2 =
+		compute( let( "max", max( red, green, blue ),
+					  "min", min( red, green, blue ),
+					  IF ( EQ( 0, var( "max" ) ),
+						   0,
+						   div( sub( var( "max" ), var( "min" ) ),
+							    var( "max" ) ) ) ) );
 				
 		for ( int i=0; i < n_iterations; ++i ) {
 			final long t0 = System.nanoTime();
 
-			// Compute saturation: very slightly slower than with vars (unsurprisingly), but easier to read
-			compute( let( "max", max( red, green, blue ),
-						  "min", min( red, green, blue ),
-						  IF ( EQ( 0, var( "max" ) ),
-							   0,
-							   div( sub( var( "max" ), var( "min" ) ),
-								    var( "max" ) ) ) ) )
-				.into( saturation );
+			op2.into( saturation );
 
 			final long t1 = System.nanoTime();
 			minLM = Math.min(minLM, t1 - t0);
 			maxLM = Math.max(maxLM, t1 - t0);
 			meanLM += (t1 - t0) / (double)(n_iterations);
 		}
+		
+		if ( print ) System.out.println( "Sum: " + sumAsInts( saturation, 255.0 ) + ", saturation_sum: " + saturation_sum );
+		
+		assertTrue( "op2", sumAsInts( saturation, 255.0 ) == saturation_sum );
 
 		if ( print ) System.out.println("ImgMath 2 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 
@@ -400,24 +467,28 @@ public class ImgMathTest
 		minLM = Long.MAX_VALUE;
 		maxLM = 0;
 		meanLM = 0;
-						
+
+		// Compute saturation: easier to read without vars
+		final Compute op3 =
+		compute( let( "max", max( red, green, blue ),
+					  "min", min( red, green, blue ),
+					  IF ( EQ( 0, var( "max" ) ),
+				        THEN( 0 ),
+					    ELSE ( div( sub( var( "max" ), var( "min" ) ),
+						            var( "max" ) ) ) ) ) );
+		
 		for ( int i=0; i < n_iterations; ++i ) {
 			final long t0 = System.nanoTime();
-
-			// Compute saturation: easier to read without vars
-			compute( let( "max", max( red, green, blue ),
-						  "min", min( red, green, blue ),
-						  IF ( EQ( 0, var( "max" ) ),
-					        THEN( 0 ),
-						    ELSE ( div( sub( var( "max" ), var( "min" ) ),
-							            var( "max" ) ) ) ) ) )
-			.into( saturation );
+			
+			op3.into( saturation );
 
 			final long t1 = System.nanoTime();
 			minLM = Math.min(minLM, t1 - t0);
 			maxLM = Math.max(maxLM, t1 - t0);
 			meanLM += (t1 - t0) / (double)(n_iterations);
 		}
+		
+		assertTrue( "op3", sumAsInts( saturation, 255.0 ) == saturation_sum );
 
 		if ( print ) System.out.println("ImgMath 3 saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 
@@ -446,23 +517,27 @@ public class ImgMathTest
 				cb.next().setReal( b.next().getRealDouble() );
 			}
 
+			// Compute saturation:
+			final Compute op4 =
+			compute( let( "max", max( redF, greenF, blueF ),
+						  "min", min( redF, greenF, blueF ),
+						  IF ( EQ( 0, var( "max" ) ),
+							  THEN( 0 ),
+							  ELSE ( div( sub( var( "max" ), var( "min" ) ),
+									 var( "max" ) ) ) ) ) );
+			
 			for ( int i=0; i < n_iterations; ++i ) {
 				final long t0 = System.nanoTime();
 
-				// Compute saturation:
-				compute( let( "max", max( redF, greenF, blueF ),
-							  "min", min( redF, greenF, blueF ),
-							  IF ( EQ( 0, var( "max" ) ),
-								  THEN( 0 ),
-								  ELSE ( div( sub( var( "max" ), var( "min" ) ),
-										 var( "max" ) ) ) ) ) )
-				.into( saturation );
+				op4.into( saturation );
 
 				final long t1 = System.nanoTime();
 				minLM = Math.min(minLM, t1 - t0);
 				maxLM = Math.max(maxLM, t1 - t0);
 				meanLM += (t1 - t0) / (double)(n_iterations);
 			}
+			
+			assertTrue( "op4", sumAsInts( saturation, 255.0 ) == saturation_sum );
 			
 			if ( print ) System.out.println("ImgMath 4 saturation without vars performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 		
@@ -470,27 +545,31 @@ public class ImgMathTest
 			minLM = Long.MAX_VALUE;
 			maxLM = 0;
 			meanLM = 0;
+
+			// Compute saturation:
+			final Compute op5 =
+			compute( let( "red", redF,
+					      "green", greenF,
+					      "blue", blueF,
+					      "max", max( var("red"), var("green"), var("blue") ),
+					      "min", min( var("red"), var("green"), var("blue") ),
+					      IF ( EQ( 0, var( "max" ) ),
+					    	THEN( 0 ),
+					    	ELSE ( div( sub( var( "max" ), var( "min" ) ),
+					    		   var( "max" ) ) ) ) ) );
 			
 			for ( int i=0; i < n_iterations; ++i ) {
 				final long t0 = System.nanoTime();
 
-				// Compute saturation:
-				compute( let( "red", redF,
-						      "green", greenF,
-						      "blue", blueF,
-						      "max", max( var("red"), var("green"), var("blue") ),
-						      "min", min( var("red"), var("green"), var("blue") ),
-						      IF ( EQ( 0, var( "max" ) ),
-						    	THEN( 0 ),
-						    	ELSE ( div( sub( var( "max" ), var( "min" ) ),
-						    		   var( "max" ) ) ) ) ) )
-				.into( saturation );
+				op5.into( saturation );
 
 				final long t1 = System.nanoTime();
 				minLM = Math.min(minLM, t1 - t0);
 				maxLM = Math.max(maxLM, t1 - t0);
 				meanLM += (t1 - t0) / (double)(n_iterations);
 			}
+			
+			assertTrue( "op5", sumAsInts( saturation, 255.0 ) == saturation_sum );
 			
 			if ( print ) System.out.println("ImgMath 5 saturation with vars performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 		
@@ -512,11 +591,11 @@ public class ImgMathTest
 			final Cursor< FloatType > cs = saturation.cursor(); 
 			
 			while (cs.hasNext()) {
-				final UnsignedByteType r = cr.next(),
-						               g = cg.next(),
-						               b = cb.next();
-				final float max = Math.max( r.get(), Math.max( g.get(), b.get() ) ),
-						    min = Math.min( r.get(), Math.min( g.get(), b.get() ) );
+				final int r = cr.next().getInteger(),
+						  g = cg.next().getInteger(),
+						  b = cb.next().getInteger();
+				final float max = Math.max( r, Math.max( g, b ) ),
+						    min = Math.min( r, Math.min( g, b ) );
 				cs.next().set( 0.0f == max ? 0.0f : (max - min) / max );
 			}
 
@@ -525,6 +604,8 @@ public class ImgMathTest
 			maxLM = Math.max(maxLM, t1 - t0);
 			meanLM += (t1 - t0) / (double)(n_iterations);
 		}
+		
+		assertTrue( "low-level", sumAsInts( saturation, 255.0 ) == saturation_sum );
 
 		if ( print ) System.out.println("Low-level saturation performance: min: " + (minLM / 1000.0) + " ms, max: " + (maxLM / 1000.0) + " ms, mean: " + (meanLM / 1000.0) + " ms");
 		
@@ -626,8 +707,8 @@ public class ImgMathTest
 	
 	//@Test
 	public void test1IfThenElsePerformance() {
-		assertTrue ( testSaturationPerformance( 200, false ) ); // warm-up
-		assertTrue ( testSaturationPerformance( 200, true ) );
+		//assertTrue ( testSaturationPerformance( 200, false ) ); // warm-up
+		assertTrue ( testSaturationPerformance( 30, true ) );
 	}
 	
 	@Test
