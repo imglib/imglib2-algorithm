@@ -23,7 +23,7 @@ public class Compute
 	private final boolean compatible_iteration_order;
 	
 	/**
-	 * Validate the {@param operation}.
+	 * Validate the {code operation}.
 	 * 
 	 * @param operation
 	 */
@@ -41,7 +41,7 @@ public class Compute
 	 * of the {@code target} defining the specific math implementation and numerical
 	 * precision that will be used.
 	 * 
-	 * @param target The {@code {@link RandomAccessibleInterval} into which to store the computation;
+	 * @param target The {@code RandomAccessibleInterval} into which to store the computation;
 	 *               note its {@code Type} determines the precision of the computation and the specific
 	 *               implementation of the mathematical operations.
 	 * @return The {@code target}.
@@ -54,7 +54,7 @@ public class Compute
 	/**
 	 * Execute the mathematical operations and store the result into the given {@code RandomAccessibleInterval}.
 	 * 
-	 * @param target The {@code {@link RandomAccessibleInterval} into which to store the computation;
+	 * @param target The {@code RandomAccessibleInterval} into which to store the computation;
 	 *               note its {@code Type} determines the precision of the computation and the specific
 	 *               implementation of the mathematical operations.
 	 * 
