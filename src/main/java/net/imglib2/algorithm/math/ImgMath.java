@@ -2,6 +2,11 @@ package net.imglib2.algorithm.math;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.algorithm.math.abstractions.Util;
+import net.imglib2.converter.Converter;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
 
 /**
  * An easy yet high performance way to perform pixel-wise math
@@ -71,6 +76,26 @@ public class ImgMath
 	static public final Compute compute( final IFunction operation )
 	{
 		return new Compute( operation );
+	}
+	
+	static public final RandomAccessibleInterval< FloatType > computeIntoFloat( final IFunction operation )
+	{
+		return new Compute( operation ).into( new ArrayImgFactory< FloatType >( new FloatType() ).create( Util.findImg( operation ).iterator().next() ) );
+	}
+	
+	static public final < O extends RealType< O > > RandomAccessibleInterval< O > computeInto(
+			final IFunction operation,
+			final RandomAccessibleInterval< O > target )
+	{
+		return new Compute( operation ).into( target );
+	}
+
+	static public final < O extends RealType< O > > RandomAccessibleInterval< O > computeInto(
+			final IFunction operation,
+			final RandomAccessibleInterval< O > target,
+			final Converter< RealType< ? >, O > converter )
+	{
+		return new Compute( operation ).into( target, converter );
 	}
 	
 	static public final Add add( final Object o1, final Object o2 )
