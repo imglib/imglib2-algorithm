@@ -1,7 +1,9 @@
 package net.imglib2.algorithm.math.abstractions;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Set;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.ImgSource;
@@ -75,5 +77,37 @@ public class Util
 		
 		// Make it fail
 		return null;
+	}
+	
+	static public final Set< RandomAccessibleInterval< ? > > findImg ( final IFunction f )
+	{
+		final Set< RandomAccessibleInterval< ? > > images = new HashSet<>();
+		final LinkedList< IFunction > ops = new LinkedList<>();
+		ops.add( f );
+		
+		// Iterate into the nested operations
+		while ( ! ops.isEmpty() )
+		{
+			final IFunction  op = ops.removeFirst();
+			
+			if ( op instanceof ImgSource )
+				images.add( ( ( ImgSource< ? > )op ).getRandomAccessibleInterval() );
+			else if ( op instanceof IUnaryFunction )
+			{
+				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
+				
+				if ( op instanceof IBinaryFunction )
+				{
+					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+					
+					if ( op instanceof ITrinaryFunction )
+					{
+						ops.addLast( ( ( ITrinaryFunction )op ).getThird() );
+					}
+				}
+			}
+		}
+		
+		return images;
 	}
 }
