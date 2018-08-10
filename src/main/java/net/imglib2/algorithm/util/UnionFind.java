@@ -61,8 +61,7 @@ public class UnionFind
 
 	/**
 	 *
-	 * @param Number
-	 *            of elements. (Initially, each element forms a single element
+	 * @param size Number of elements. (Initially, each element forms a single element
 	 *            subset)
 	 */
 	public UnionFind( final int size )
