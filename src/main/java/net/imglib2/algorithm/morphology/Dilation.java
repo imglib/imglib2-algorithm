@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Vector;
 
 import net.imglib2.Cursor;
+import net.imglib2.FinalDimensions;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
@@ -51,6 +52,7 @@ import net.imglib2.multithreading.SimpleMultiThreading;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Util;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -171,7 +173,7 @@ public class Dilation
 	 */
 	public static < T extends RealType< T >> Img< T > dilate( final Img< T > source, final Shape strel, final int numThreads )
 	{
-		final Img< T > target = source.factory().create( source, source.firstElement().copy() );
+		final Img< T > target = source.factory().create( source );
 		final T minVal = source.firstElement().createVariable();
 		minVal.setReal( minVal.getMinValue() );
 		final ExtendedRandomAccessibleInterval< T, Img< T >> extended = Views.extendValue( source, minVal );
@@ -217,7 +219,7 @@ public class Dilation
 	 */
 	public static < T extends Type< T > & Comparable< T > > Img< T > dilate( final Img< T > source, final Shape strel, final T minVal, final int numThreads )
 	{
-		final Img< T > target = source.factory().create( source, source.firstElement().copy() );
+		final Img< T > target = source.factory().create( source );
 		final ExtendedRandomAccessibleInterval< T, Img< T >> extended = Views.extendValue( source, minVal );
 		dilate( extended, target, strel, minVal, numThreads );
 		return target;
@@ -343,8 +345,8 @@ public class Dilation
 		}
 
 		// First shape -> write to enlarged temp.
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( targetDims, minVal );
-		Img< T > temp = factory.create( targetDims, minVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( new FinalDimensions( targetDims ), minVal );
+		Img< T > temp = factory.create( targetDims );
 		final IntervalView< T > translated = Views.translate( temp, translation );
 		dilate( source, translated, strels.get( 0 ), minVal, numThreads );
 
@@ -723,7 +725,7 @@ public class Dilation
 		final long[] targetDims = dimensionsAndOffset[ 0 ];
 		final long[] offset = dimensionsAndOffset[ 1 ];
 
-		final Img< T > target = source.factory().create( targetDims, source.firstElement().copy() );
+		final Img< T > target = source.factory().create( targetDims );
 		final IntervalView< T > offsetTarget = Views.offset( target, offset );
 		final T minVal = MorphologyUtils.createVariable( source, source );
 		minVal.setReal( minVal.getMinValue() );
@@ -789,7 +791,7 @@ public class Dilation
 		final long[] targetDims = dimensionsAndOffset[ 0 ];
 		final long[] offset = dimensionsAndOffset[ 1 ];
 
-		final Img< T > target = source.factory().create( targetDims, source.firstElement().copy() );
+		final Img< T > target = source.factory().create( targetDims );
 		final IntervalView< T > offsetTarget = Views.offset( target, offset );
 		final ExtendedRandomAccessibleInterval< T, Img< T >> extended = Views.extendValue( source, minVal );
 
@@ -929,8 +931,8 @@ public class Dilation
 		minVal.setReal( minVal.getMinValue() );
 		final ExtendedRandomAccessibleInterval< T, RandomAccessibleInterval< T >> extended = Views.extendValue( source, minVal );
 
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, minVal );
-		final Img< T > img = factory.create( interval, minVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, minVal );
+		final Img< T > img = factory.create( interval );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );
@@ -994,8 +996,8 @@ public class Dilation
 
 		final ExtendedRandomAccessibleInterval< T, RandomAccessibleInterval< T >> extended = Views.extendValue( source, minVal );
 
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, minVal );
-		final Img< T > img = factory.create( interval, minVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, minVal );
+		final Img< T > img = factory.create( interval );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );

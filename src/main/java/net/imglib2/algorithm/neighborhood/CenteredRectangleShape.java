@@ -40,6 +40,7 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.neighborhood.RectangleShape.NeighborhoodsAccessible;
 import net.imglib2.algorithm.neighborhood.RectangleShape.NeighborhoodsIterableInterval;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 
 /**
@@ -151,5 +152,18 @@ public class CenteredRectangleShape implements Shape
 			max[ d ] = span[ d ];
 		}
 		return new FinalInterval( min, max );
+	}
+
+	@Override
+	public Interval getStructuringElementBoundingBox(final int numDimensions) {
+		final long[] a = new long[numDimensions];
+		final long[] b = new long[numDimensions];
+
+		for (int i = 0; i < numDimensions; ++i) {
+			a[i] = span[i] * -1;
+			b[i] = span[i];
+		}
+
+		return Intervals.union(new FinalInterval(a, a), new FinalInterval(b, b));
 	}
 }

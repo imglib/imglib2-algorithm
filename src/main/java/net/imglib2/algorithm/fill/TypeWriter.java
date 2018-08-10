@@ -42,6 +42,7 @@ import net.imglib2.type.Type;
  * @author Philipp Hanslovsky
  * @author Stephan Saalfeld
  */
+@Deprecated
 public class TypeWriter< T extends Type< T > > implements Writer< T >
 {
 	@Override

@@ -101,7 +101,7 @@ public class IntegralImg< R extends NumericType< R >, T extends NumericType< T >
 		for ( int d = 0; d < numDimensions; ++d )
 			integralSize[ d ] = ( int ) img.dimension( d ) + 1;
 
-		final Img< T > integral = new ArrayImgFactory< T >().create( integralSize, type.createVariable() );
+		final Img< T > integral = new ArrayImgFactory<>( type ).create( integralSize );
 
 		// not enough RAM or disc space
 		if ( integral == null )

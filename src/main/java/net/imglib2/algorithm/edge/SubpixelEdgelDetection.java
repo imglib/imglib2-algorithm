@@ -111,7 +111,7 @@ public class SubpixelEdgelDetection
 		for ( int d = 0; d < n; ++d )
 			dim[ d ] = input.dimension( d );
 		dim[ n ] = n;
-		final Img< T > gradients = factory.create( dim, input.randomAccess().get() );
+		final Img< T > gradients = factory.create( dim );
 
 		// Compute partial derivatives of input in all dimension. This requires
 		// a border of 1 pixel with respect to the input image

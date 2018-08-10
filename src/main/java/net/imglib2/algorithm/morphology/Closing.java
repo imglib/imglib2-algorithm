@@ -44,6 +44,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.ImgFactory;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Util;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -303,8 +304,8 @@ public class Closing
 	public static < T extends Type< T > & Comparable< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		// Create temp image
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( target, maxVal );
-		final Img< T > img = factory.create( target, maxVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( target, maxVal );
+		final Img< T > img = factory.create( target );
 		final long[] min = new long[ target.numDimensions() ];
 		target.min( min );
 
@@ -409,8 +410,8 @@ public class Closing
 	public static < T extends Type< T > & Comparable< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{
 		// Create temp image
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( target, minVal );
-		final Img< T > img = factory.create( target, minVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( target, minVal );
+		final Img< T > img = factory.create( target );
 		final long[] min = new long[ target.numDimensions() ];
 		target.min( min );
 
@@ -620,8 +621,8 @@ public class Closing
 	{
 		final ExtendedRandomAccessibleInterval< T, RandomAccessibleInterval< T >> extended = Views.extendValue( source, maxVal );
 
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, maxVal );
-		final Img< T > img = factory.create( interval, maxVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, maxVal );
+		final Img< T > img = factory.create( interval );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );

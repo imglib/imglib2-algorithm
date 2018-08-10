@@ -33,8 +33,15 @@
  */
 package net.imglib2.algorithm.neighborhood;
 
+import static org.junit.Assert.assertTrue;
+
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
 import net.imglib2.algorithm.neighborhood.DiamondTipsShape;
 import net.imglib2.algorithm.neighborhood.Shape;
+import net.imglib2.util.Intervals;
+
+import org.junit.Test;
 
 public class DiamondTipsShapeTest extends AbstractShapeTest
 {
@@ -71,5 +78,13 @@ public class DiamondTipsShapeTest extends AbstractShapeTest
 			}
 		}
 		return false;
+	}
+
+	@Test
+	public void testStructuringElementBoundingBox() {
+		Interval boundingBox = shape.getStructuringElementBoundingBox(img
+			.numDimensions());
+		assertTrue(Intervals.equals(boundingBox, new FinalInterval(new long[] { -3,
+			-3, -3 }, new long[] { 3, 3, 3 })));
 	}
 }

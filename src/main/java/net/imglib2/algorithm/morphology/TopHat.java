@@ -46,6 +46,7 @@ import net.imglib2.img.ImgFactory;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.operators.Sub;
+import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
@@ -463,8 +464,8 @@ public class TopHat
 	{
 		// Prepare tmp holder
 		final T minVal = MorphologyUtils.createVariable( source, interval );
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, minVal );
-		final Img< T > img = factory.create( interval, minVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, minVal );
+		final Img< T > img = factory.create( interval );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );
@@ -525,8 +526,8 @@ public class TopHat
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void topHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		// Prepare tmp holder
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, minVal );
-		final Img< T > img = factory.create( interval, minVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, minVal );
+		final Img< T > img = factory.create( interval );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );
@@ -568,8 +569,8 @@ public class TopHat
 	{
 		// Prepare tmp holder
 		final T minVal = MorphologyUtils.createVariable( source, interval );
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, minVal );
-		final Img< T > img = factory.create( interval, minVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, minVal );
+		final Img< T > img = factory.create( interval );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );
@@ -625,8 +626,8 @@ public class TopHat
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void topHatInPlace( final RandomAccessible< T > source, final Interval interval, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{
 		// Prepare tmp holder
-		final ImgFactory< T > factory = MorphologyUtils.getSuitableFactory( interval, minVal );
-		final Img< T > img = factory.create( interval, minVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, minVal );
+		final Img< T > img = factory.create( interval );
 		final long[] min = new long[ interval.numDimensions() ];
 		interval.min( min );
 		final IntervalView< T > translated = Views.translate( img, min );

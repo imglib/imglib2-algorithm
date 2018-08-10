@@ -87,7 +87,7 @@ final class MserPartialComponentGenerator< T extends Type< T > > implements Part
 		this.maxValue = maxValue;
 		dimensions = new long[ input.numDimensions() ];
 		input.dimensions( dimensions );
-		linkedList = imgFactory.create( dimensions, new LongType() );
+		linkedList = imgFactory.create( dimensions );
 	}
 
 	@Override

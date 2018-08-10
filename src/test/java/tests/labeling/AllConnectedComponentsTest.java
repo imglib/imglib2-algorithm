@@ -62,10 +62,10 @@ public class AllConnectedComponentsTest
 	private void test2D( final boolean[][] input, final int[][] expected, final long[][] structuringElement, final int start, final int background )
 	{
 		final long[] dimensions = new long[] { input.length, input[ 0 ].length };
-		final ArrayImgFactory< BitType > imgFactory = new ArrayImgFactory< BitType >();
-		final ArrayImgFactory< IntType > labelingFactory = new ArrayImgFactory< IntType >();
-		final ArrayImg< BitType, ? > image = imgFactory.create( dimensions, new BitType() );
-		final NativeImgLabeling< Integer, IntType > labeling = new NativeImgLabeling< Integer, IntType >( labelingFactory.create( dimensions, new IntType() ) );
+		final ArrayImgFactory< BitType > imgFactory = new ArrayImgFactory<>( new BitType() );
+		final ArrayImgFactory< IntType > labelingFactory = new ArrayImgFactory<>( new IntType() );
+		final ArrayImg< BitType, ? > image = imgFactory.create( dimensions );
+		final NativeImgLabeling< Integer, IntType > labeling = new NativeImgLabeling<>( labelingFactory.create( dimensions ) );
 		/*
 		 * Fill the image.
 		 */

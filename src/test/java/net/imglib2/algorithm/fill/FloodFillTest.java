@@ -34,9 +34,6 @@
 
 package net.imglib2.algorithm.fill;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import net.imglib2.Cursor;
 import net.imglib2.Point;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
@@ -45,9 +42,11 @@ import net.imglib2.img.ImgFactory;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.LongType;
-import net.imglib2.util.Pair;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author Philipp Hanslovsky
@@ -61,9 +60,9 @@ public class FloodFillTest
 
 	private static final int[] N_DIMS = { 1, 2, 3, 4 };
 
-	private static final int SIZE_OF_EACH_DIM = 60;
+	private static final int SIZE_OF_EACH_DIM = 24;
 
-	private static < T extends IntegerType< T > > void runTest( final int nDim, final int sizeOfEachDim, final ImgFactory< T > imageFactory, final T t )
+	private static < T extends IntegerType< T > > void runTest( final int nDim, final int sizeOfEachDim, final ImgFactory< T > imageFactory )
 	{
 		final long[] dim = new long[ nDim ];
 		final long[] c = new long[ nDim ];
@@ -76,8 +75,8 @@ public class FloodFillTest
 
 		final long divisionLine = r / 3;
 
-		final Img< T > img = imageFactory.create( dim, t.copy() );
-		final Img< T > refImg = imageFactory.create( dim, t.copy() );
+		final Img< T > img = imageFactory.create( dim );
+		final Img< T > refImg = imageFactory.create( dim );
 
 		for ( Cursor< T > i = img.cursor(), ref = refImg.cursor(); i.hasNext(); )
 		{
@@ -107,21 +106,12 @@ public class FloodFillTest
 
 		}
 
-		final T fillLabel = t.createVariable();
+		final T fillLabel = imageFactory.type().createVariable();
 		fillLabel.setInteger( FILL_LABEL );
 
 		final ExtendedRandomAccessibleInterval< T, Img< T > > extendedImg = Views.extendValue( img, fillLabel );
 
-		final Filter< Pair< T, T >, Pair< T, T > > filter = new Filter< Pair< T, T >, Pair< T, T > >()
-		{
-			@Override
-			public boolean accept( final Pair< T, T > p1, final Pair< T, T > p2 )
-			{
-				return ( p1.getB().getIntegerLong() != p2.getB().getIntegerLong() ) && ( p1.getA().getIntegerLong() == p2.getA().getIntegerLong() );
-			}
-		};
-
-		FloodFill.fill( extendedImg, extendedImg, new Point( c ), fillLabel, new DiamondShape( 1 ), filter );
+		FloodFill.fill( extendedImg, extendedImg, new Point( c ), fillLabel, new DiamondShape( 1 ) );
 
 		for ( Cursor< T > imgCursor = img.cursor(), refCursor = refImg.cursor(); imgCursor.hasNext(); )
 		{
@@ -135,7 +125,7 @@ public class FloodFillTest
 	{
 		for ( final int nDim : N_DIMS )
 		{
-			runTest( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory< LongType >(), new LongType() );
+			runTest( nDim, SIZE_OF_EACH_DIM, new ArrayImgFactory<>( new LongType() ) );
 		}
 	}
 

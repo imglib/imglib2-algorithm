@@ -115,7 +115,7 @@ public final class ConvolverNativeType< T extends NumericType< T > & NativeType<
 		linelen = lineLength;
 
 		final int buflen = 2 * k - 1;
-		final ArrayImg< T, ? > buf = new ArrayImgFactory< T >().create( new long[] { buflen }, type );
+		final ArrayImg< T, ? > buf = new ArrayImgFactory<>( type ).create( buflen );
 		b1 = buf.randomAccess().get();
 		b2 = buf.randomAccess().get();
 

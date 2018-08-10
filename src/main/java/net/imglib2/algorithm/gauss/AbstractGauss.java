@@ -107,12 +107,12 @@ public abstract class AbstractGauss< T extends NumericType< T > >
 		final Interval intervalTmp = getTemporaryImgSize();
 
 		if ( numDimensions > 1 )
-			tmp1 = factory.create( intervalTmp, getProcessingType() );
+			tmp1 = factory.create( intervalTmp );
 		else
 			tmp1 = null;
 
 		if ( numDimensions > 2 )
-			tmp2 = factory.create( intervalTmp, getProcessingType() );
+			tmp2 = factory.create( intervalTmp );
 		else
 			tmp2 = null;
 	}

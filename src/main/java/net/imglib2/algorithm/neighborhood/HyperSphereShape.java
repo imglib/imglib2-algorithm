@@ -34,11 +34,13 @@
 
 package net.imglib2.algorithm.neighborhood;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.AbstractInterval;
 import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
 import net.imglib2.FlatIterationOrder;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
@@ -186,5 +188,16 @@ public class HyperSphereShape implements Shape
 		{
 			return new HyperSphereNeighborhoodRandomAccess< T >( source, radius, factory, interval );
 		}
+	}
+
+	@Override
+	public Interval getStructuringElementBoundingBox(final int numDimensions) {
+		final long[] min = new long[numDimensions];
+		Arrays.fill(min, -getRadius());
+
+		final long[] max = new long[numDimensions];
+		Arrays.fill(max, getRadius());
+
+		return new FinalInterval(min, max);
 	}
 }

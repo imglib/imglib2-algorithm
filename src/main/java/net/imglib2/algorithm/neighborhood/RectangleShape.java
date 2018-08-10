@@ -34,6 +34,7 @@
 
 package net.imglib2.algorithm.neighborhood;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 import net.imglib2.AbstractEuclideanSpace;
@@ -223,5 +224,17 @@ public class RectangleShape implements Shape
 		{
 			return new RectangleNeighborhoodRandomAccess< T >( source, span, factory, interval );
 		}
+	}
+
+	@Override
+	public Interval getStructuringElementBoundingBox( final int numDimensions )
+	{
+		final long[] min = new long[ numDimensions ];
+		Arrays.fill( min, -getSpan() );
+
+		final long[] max = new long[ numDimensions ];
+		Arrays.fill( max, getSpan() );
+
+		return new FinalInterval( min, max );
 	}
 }

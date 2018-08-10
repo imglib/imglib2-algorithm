@@ -170,7 +170,7 @@ public class ScaleAreaAveraging2d< T extends RealType< T >, R extends RealType< 
 	@Override
 	public boolean process()
 	{
-		scaled = imgFactory.create( size, targetType );
+		scaled = imgFactory.create( size );
 
 		final Cursor< R > cursor = scaled.cursor();
 		final RandomAccess< T > c2 = integralImg.randomAccess();

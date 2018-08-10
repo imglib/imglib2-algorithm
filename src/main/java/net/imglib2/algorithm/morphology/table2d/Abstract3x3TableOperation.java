@@ -82,7 +82,7 @@ public abstract class Abstract3x3TableOperation
 
 	protected < T extends BooleanType< T > > Img< T > calculate( final Img< T > source )
 	{
-		final Img< T > target = source.factory().create( source, source.firstElement().copy() );
+		final Img< T > target = source.factory().create( source );
 		final T extendedVal = source.firstElement().createVariable();
 		extendedVal.set( getExtendedValue() );
 		final ExtendedRandomAccessibleInterval< T, Img< T > > extended = Views.extendValue( source, extendedVal );

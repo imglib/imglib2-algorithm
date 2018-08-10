@@ -37,9 +37,7 @@ import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgFactory;
-import net.imglib2.img.list.ListImgFactory;
 import net.imglib2.type.BooleanType;
-import net.imglib2.type.NativeType;
 import net.imglib2.util.Util;
 
 /**
@@ -64,19 +62,13 @@ public class Spur
 		return new Spur2().calculate( new Spur1().calculate( source ) );
 	}
 
-	@SuppressWarnings( { "unchecked", "rawtypes" } )
 	public static < T extends BooleanType< T > > void spur( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
-		long[] targetDims = new long[] { target.dimension( 0 ), target.dimension( 1 ) };
 		final T extendedVal = target.firstElement().createVariable();
 		extendedVal.set( false );
 
-		final ImgFactory< T > factory;
-		if ( extendedVal instanceof NativeType )
-			factory = ( ImgFactory< T > ) Util.getArrayOrCellImgFactory( target, ( NativeType ) extendedVal );
-		else
-			factory = new ListImgFactory< T >();
-		Img< T > temp = factory.create( targetDims, extendedVal );
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( target, extendedVal );
+		final Img< T > temp = factory.create( target );
 
 		new Spur1().calculate( source, temp );
 		new Spur2().calculate( temp, target );

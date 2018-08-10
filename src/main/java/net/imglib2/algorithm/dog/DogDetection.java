@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import net.imagej.space.LinearSpace;
 import net.imglib2.Interval;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessible;
@@ -78,16 +77,6 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 	 **/
 	private ExecutorService executorService;
 
-	public < I extends RandomAccessibleInterval< T > & LinearSpace< ? > > DogDetection(
-			final I input,
-			final double sigmaSmaller,
-			final double sigmaLarger,
-			final ExtremaType extremaType,
-			final double minPeakValue )
-	{
-		this( Views.extendMirrorSingle( input ), input, getcalib( input ), sigmaSmaller, sigmaLarger, extremaType, minPeakValue, true );
-	}
-
 	public DogDetection(
 			final RandomAccessibleInterval< T > input,
 			final double[] calibration,
@@ -97,7 +86,7 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 			final double minPeakValue,
 			final boolean normalizeMinPeakValue )
 	{
-		this( Views.extendMirrorSingle( input ), input, calibration, sigmaSmaller, sigmaLarger, extremaType, minPeakValue, true );
+		this( Views.extendMirrorSingle( input ), input, calibration, sigmaSmaller, sigmaLarger, extremaType, minPeakValue, normalizeMinPeakValue );
 	}
 
 	/**
@@ -314,14 +303,6 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 		this.executorService = service;
 	}
 
-	private static double[] getcalib( final LinearSpace< ? > calib )
-	{
-		final double[] c = new double[ calib.numDimensions() ];
-		for ( int d = 0; d < c.length; ++d )
-			c[ d ] = calib.axis( d ).scale();
-		return c;
-	}
-
 	private static class DogComputationType< F extends RealType< F > & NativeType< F > >
 	{
 		private final F type;
@@ -363,7 +344,7 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 			else
 				service = executorService;
 
-			dogImg = Util.getArrayOrCellImgFactory( interval, type ).create( interval, type );
+			dogImg = Util.getArrayOrCellImgFactory( interval, type ).create( interval );
 			final long[] translation = new long[ interval.numDimensions() ];
 			interval.min( translation );
 			dogImg = Views.translate( dogImg, translation );

@@ -44,11 +44,9 @@ import net.imglib2.algorithm.labeling.AllConnectedComponents;
 import net.imglib2.algorithm.labeling.Watershed;
 import net.imglib2.img.NativeImg;
 import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.basictypeaccess.IntAccess;
 import net.imglib2.labeling.LabelingType;
 import net.imglib2.labeling.NativeImgLabeling;
 import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.util.Fraction;
 
 import org.junit.Test;
 
@@ -64,10 +62,10 @@ public class WatershedTest
 		final long[] imageDimensions = new long[] { image.length, image[ 0 ].length };
 		final long[] seedDimensions = new long[] { seeds.length, seeds[ 0 ].length };
 		final long[] outputDimensions = new long[] { expected.length, expected[ 0 ].length };
-		final NativeImgLabeling< Integer, IntType > seedLabeling = new NativeImgLabeling< Integer, IntType >( new ArrayImgFactory< IntType >().create( seedDimensions, new IntType() ) );
-		final NativeImgLabeling< Integer, IntType > outputLabeling = new NativeImgLabeling< Integer, IntType >( new ArrayImgFactory< IntType >().create( outputDimensions, new IntType() ) );
-		final NativeImg< IntType, ? extends IntAccess > imageImage = new ArrayImgFactory< IntType >().createIntInstance( imageDimensions, new Fraction() );
-		imageImage.setLinkedType( new IntType( imageImage ) );
+		final ArrayImgFactory< IntType > imgFactory = new ArrayImgFactory<>( new IntType() );
+		final NativeImgLabeling< Integer, IntType > seedLabeling = new NativeImgLabeling<>( imgFactory.create( seedDimensions ) );
+		final NativeImgLabeling< Integer, IntType > outputLabeling = new NativeImgLabeling<>( imgFactory.create( outputDimensions ) );
+		final NativeImg< IntType, ? > imageImage = imgFactory.create( imageDimensions );
 		/*
 		 * Fill the image.
 		 */
