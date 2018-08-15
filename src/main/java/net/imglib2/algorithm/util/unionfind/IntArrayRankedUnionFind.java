@@ -32,18 +32,18 @@
  * #L%
  */
 
-package net.imglib2.algorithm.util;
+package net.imglib2.algorithm.util.unionfind;
 
-import java.util.stream.IntStream;
+import java.util.Arrays;
 
 /**
  *
  * @author Philipp Hanslovsky
  *
- *         Array based implementation of the Union Find algorithm.
+ *         Array based implementation of the ranked Union Find algorithm.
  *
  */
-public class UnionFind
+public class IntArrayRankedUnionFind implements UnionFind
 {
 	private final int[] parents;
 
@@ -52,24 +52,16 @@ public class UnionFind
 	private int nSets;
 
 	/**
-	 * Create UnionFind without any elements.
-	 */
-	public UnionFind()
-	{
-		this( 0 );
-	}
-
-	/**
 	 *
 	 * @param size Number of elements. (Initially, each element forms a single element
 	 *            subset)
 	 */
-	public UnionFind( final int size )
+	public IntArrayRankedUnionFind( final int size )
 	{
-		this( IntStream.range( 0, size ).toArray(), new int[ size ], size );
+		this( intRange( new int[ size ] ), new int[ size ], size );
 	}
 
-	private UnionFind( final int[] parents, final int[] ranks, final int nSets )
+	private IntArrayRankedUnionFind( final int[] parents, final int[] ranks, final int nSets )
 	{
 		this.parents = parents;
 		this.ranks = ranks;
@@ -141,11 +133,35 @@ public class UnionFind
 
 	}
 
+	@Override
+	public long findRoot( long id )
+	{
+		return findRoot( ( int ) id );
+	}
+
+	@Override
+	public long join( long id1, long id2 )
+	{
+		return join( ( int ) id1, ( int ) id2 );
+	}
+
+	@Override
+	public long size()
+	{
+		return intSize();
+	}
+
+	@Override
+	public long setCount()
+	{
+		return intSetCount();
+	}
+
 	/**
 	 *
 	 * @return Number of elements.
 	 */
-	public int size()
+	public int intSize()
 	{
 		return parents.length;
 	}
@@ -154,15 +170,20 @@ public class UnionFind
 	 *
 	 * @return Number of sets.
 	 */
-	public int setCount()
+	public int intSetCount()
 	{
 		return nSets;
 	}
 
-	@Override
-	public UnionFind clone()
+	private static int[] intRange( int[] data )
 	{
-		return new UnionFind( parents.clone(), ranks.clone(), nSets );
+		return intRange( data, 0 );
+	}
+
+	private static int[] intRange( int[] data, final int offset )
+	{
+		Arrays.setAll( data, d -> d + offset );
+		return data;
 	}
 
 }

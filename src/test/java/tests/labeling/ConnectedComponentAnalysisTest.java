@@ -34,6 +34,7 @@
 
 package tests.labeling;
 
+import net.imglib2.view.Views;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -147,17 +148,19 @@ public class ConnectedComponentAnalysisTest
 
 	private final RandomAccessibleInterval< UnsignedLongType > maskStore2D = ArrayImgs.unsignedLongs( maskData2D, dims2D );
 
-	final RandomAccessibleInterval< BitType > mask2D = Converters.convert( maskStore2D, ( s, t ) -> t.set( s.get() == 1 ), new BitType() );
+	private final RandomAccessibleInterval< BitType > mask2D = Converters.convert( maskStore2D, ( s, t ) -> t.set( s.get() == 1 ), new BitType() );
 
 	private final RandomAccessibleInterval< UnsignedLongType > maskStore3D = ArrayImgs.unsignedLongs( maskData3D, dims3D );
 
-	final RandomAccessibleInterval< BitType > mask3D = Converters.convert( maskStore3D, ( s, t ) -> t.set( s.get() == 1 ), new BitType() );
+	private final RandomAccessibleInterval< BitType > mask3D = Converters.convert( maskStore3D, ( s, t ) -> t.set( s.get() == 1 ), new BitType() );
 
 	@Test
 	public void test2D()
 	{
 		testDiamondShapeUnitRadius2D();
 		testDiamondShapeDoubleRadius2D();
+
+		testDiamondShapeUnitRadius2DWithOffset( 5, 10 );
 
 		testRectangleShapeUnitRadius2D();
 		testRectangleShapeDoubleRadius2D();
@@ -175,21 +178,28 @@ public class ConnectedComponentAnalysisTest
 		testDefault3D();
 	}
 
-	private void testDiamondShapeUnitRadius2D()
+	private void testDiamondShapeUnitRadius2DWithOffset( long offX, long offY )
 	{
+		long[] offset = { offX, offY };
 		final long[] labelingStore = new long[ numElements2D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling = ArrayImgs.unsignedLongs( labelingStore, dims2D );
-		final int componentCount = ConnectedComponentAnalysis.connectedComponents( mask2D, labeling, new DiamondShape( 1 ) );
-		Assert.assertEquals( max( labelingDiamondShapeUnitRadius2D ), componentCount );
+		ConnectedComponentAnalysis.connectedComponents(
+				Views.translate( mask2D, offset ),
+				Views.translate( labeling, offset ),
+				new DiamondShape( 1 ) );
 		Assert.assertArrayEquals( labelingDiamondShapeUnitRadius2D, labelingStore );
+	}
+
+	private void testDiamondShapeUnitRadius2D()
+	{
+		testDiamondShapeUnitRadius2DWithOffset(0, 0);
 	}
 
 	private void testDiamondShapeDoubleRadius2D()
 	{
 		final long[] labelingStore = new long[ numElements2D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling = ArrayImgs.unsignedLongs( labelingStore, dims2D );
-		final int componentCount = ConnectedComponentAnalysis.connectedComponents( mask2D, labeling, new DiamondShape( 2 ) );
-		Assert.assertEquals( max( labelingDiamondShapeDoubleRadius2D ), componentCount );
+		ConnectedComponentAnalysis.connectedComponents( mask2D, labeling, new DiamondShape( 2 ) );
 		Assert.assertArrayEquals( labelingDiamondShapeDoubleRadius2D, labelingStore );
 	}
 
@@ -197,8 +207,7 @@ public class ConnectedComponentAnalysisTest
 	{
 		final long[] labelingStore = new long[ numElements2D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling = ArrayImgs.unsignedLongs( labelingStore, dims2D );
-		final int componentCount = ConnectedComponentAnalysis.connectedComponents( mask2D, labeling, new RectangleShape( 1, true ) );
-		Assert.assertEquals( max( labelingRectangleShapeUnitRadius2D ), componentCount );
+		ConnectedComponentAnalysis.connectedComponents( mask2D, labeling, new RectangleShape( 1, true ) );
 		Assert.assertArrayEquals( labelingRectangleShapeUnitRadius2D, labelingStore );
 	}
 
@@ -206,8 +215,7 @@ public class ConnectedComponentAnalysisTest
 	{
 		final long[] labelingStore = new long[ numElements2D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling = ArrayImgs.unsignedLongs( labelingStore, dims2D );
-		final int componentCount = ConnectedComponentAnalysis.connectedComponents( mask2D, labeling, new RectangleShape( 2, true ) );
-		Assert.assertEquals( max( labelingRectangleShapeDoubleRadius2D ), componentCount );
+		ConnectedComponentAnalysis.connectedComponents( mask2D, labeling, new RectangleShape( 2, true ) );
 		Assert.assertArrayEquals( labelingRectangleShapeDoubleRadius2D, labelingStore );
 	}
 
@@ -215,13 +223,12 @@ public class ConnectedComponentAnalysisTest
 	{
 		final long[] labelingStore1 = new long[ numElements2D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling1 = ArrayImgs.unsignedLongs( labelingStore1, dims2D );
-		final int componentCount1 = ConnectedComponentAnalysis.connectedComponents( mask2D, labeling1, new DiamondShape( 1 ) );
+		ConnectedComponentAnalysis.connectedComponents( mask2D, labeling1, new DiamondShape( 1 ) );
 
 		final long[] labelingStore2 = new long[ numElements2D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling2 = ArrayImgs.unsignedLongs( labelingStore2, dims2D );
-		final int componentCount2 = ConnectedComponentAnalysis.connectedComponents( mask2D, labeling2 );
+		ConnectedComponentAnalysis.connectedComponents( mask2D, labeling2 );
 
-		Assert.assertEquals( componentCount1, componentCount2 );
 		Assert.assertArrayEquals( labelingStore1, labelingStore2 );
 	}
 
@@ -229,8 +236,7 @@ public class ConnectedComponentAnalysisTest
 	{
 		final long[] labelingStore = new long[ numElements3D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling = ArrayImgs.unsignedLongs( labelingStore, dims3D );
-		final int componentCount = ConnectedComponentAnalysis.connectedComponents( mask3D, labeling, new DiamondShape( 1 ) );
-		Assert.assertEquals( max( labelingDiamondShapeUnitRadius3D ), componentCount );
+		ConnectedComponentAnalysis.connectedComponents( mask3D, labeling, new DiamondShape( 1 ) );
 		Assert.assertArrayEquals( labelingDiamondShapeUnitRadius3D, labelingStore );
 	}
 
@@ -238,8 +244,7 @@ public class ConnectedComponentAnalysisTest
 	{
 		final long[] labelingStore = new long[ numElements3D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling = ArrayImgs.unsignedLongs( labelingStore, dims3D );
-		final int componentCount = ConnectedComponentAnalysis.connectedComponents( mask3D, labeling, new RectangleShape( 1, true ) );
-		Assert.assertEquals( max( labelingRectangleShapeUnitRadius3D ), componentCount );
+		ConnectedComponentAnalysis.connectedComponents( mask3D, labeling, new RectangleShape( 1, true ) );
 		Assert.assertArrayEquals( labelingRectangleShapeUnitRadius3D, labelingStore );
 	}
 
@@ -247,26 +252,13 @@ public class ConnectedComponentAnalysisTest
 	{
 		final long[] labelingStore1 = new long[ numElements3D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling1 = ArrayImgs.unsignedLongs( labelingStore1, dims3D );
-		final int componentCount1 = ConnectedComponentAnalysis.connectedComponents( mask3D, labeling1, new DiamondShape( 1 ) );
+		ConnectedComponentAnalysis.connectedComponents( mask3D, labeling1, new DiamondShape( 1 ) );
 
 		final long[] labelingStore2 = new long[ numElements3D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling2 = ArrayImgs.unsignedLongs( labelingStore2, dims3D );
-		final int componentCount2 = ConnectedComponentAnalysis.connectedComponents( mask3D, labeling2 );
+		ConnectedComponentAnalysis.connectedComponents( mask3D, labeling2 );
 
-		Assert.assertEquals( componentCount1, componentCount2 );
 		Assert.assertArrayEquals( labelingStore1, labelingStore2 );
-	}
-
-	private static long max( final long[] array )
-	{
-		long max = array[ 0 ];
-		for ( int i = 1; i < array.length; ++i )
-		{
-			final long v = array[ i ];
-			if ( v > max )
-				max = v;
-		}
-		return max;
 	}
 
 }
