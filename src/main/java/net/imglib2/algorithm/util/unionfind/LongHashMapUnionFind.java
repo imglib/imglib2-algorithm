@@ -35,7 +35,6 @@
 package net.imglib2.algorithm.util.unionfind;
 
 import java.util.Arrays;
-import java.util.function.IntBinaryOperator;
 import java.util.function.LongBinaryOperator;
 
 import gnu.trove.map.hash.TLongLongHashMap;
@@ -62,12 +61,17 @@ public class LongHashMapUnionFind implements UnionFind
 	/**
 	 *
 	 *
-	 * @param parents assignments from id to representative of set
-	 * @param nSets number of sets in {@code parents}. This should be identical with {@code parents.valueCollection().size()}.
-	 * @param comparator When joining to sets, the new representative id will be determined by comparator:
-	 * {@code id = comparator.comparator(id1, id2) < 0 ? id1 : id2}
+	 * @param parents
+	 *            assignments from id to representative of set
+	 * @param nSets
+	 *            number of sets in {@code parents}. This should be identical
+	 *            with {@code parents.valueCollection().size()}.
+	 * @param comparator
+	 *            When joining to sets, the new representative id will be
+	 *            determined by comparator:
+	 *            {@code id = comparator.comparator(id1, id2) < 0 ? id1 : id2}
 	 */
-	public LongHashMapUnionFind(final TLongLongHashMap parents, final int nSets, final LongBinaryOperator comparator)
+	public LongHashMapUnionFind( final TLongLongHashMap parents, final int nSets, final LongBinaryOperator comparator )
 	{
 		this.parents = parents;
 		this.nSets = nSets;
@@ -88,10 +92,11 @@ public class LongHashMapUnionFind implements UnionFind
 		long startIndex2 = id;
 		long tmp = id;
 
-
 		// find root
 		while ( startIndex1 != parents.get( startIndex1 ) )
+		{
 			startIndex1 = parents.get( startIndex1 );
+		}
 
 		// label all positions on the way to root as parent
 		while ( startIndex2 != startIndex1 )
@@ -104,6 +109,7 @@ public class LongHashMapUnionFind implements UnionFind
 		return startIndex1;
 	}
 
+	@Override
 	public long join( final long id1, final long id2 )
 	{
 
@@ -120,11 +126,13 @@ public class LongHashMapUnionFind implements UnionFind
 		}
 
 		if ( id1 == id2 )
-			//			assert this.parents.contains( id1 ) && this.parents.contains( id2 );
+		{
+			// assert this.parents.contains( id1 ) && this.parents.contains( id2
+			// );
 			return id1;
+		}
 
 		--nSets;
-
 
 		if ( comparator.applyAsLong( id1, id2 ) < 0 )
 		{
@@ -158,12 +166,12 @@ public class LongHashMapUnionFind implements UnionFind
 		return new LongHashMapUnionFind( new TLongLongHashMap( this.parents ), nSets, comparator );
 	}
 
-	private static int[] intRange( int[] data )
+	private static int[] intRange( final int[] data )
 	{
 		return intRange( data, 0 );
 	}
 
-	private static int[] intRange( int[] data, final int offset )
+	private static int[] intRange( final int[] data, final int offset )
 	{
 		Arrays.setAll( data, d -> d + offset );
 		return data;

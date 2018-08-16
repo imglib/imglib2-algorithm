@@ -59,10 +59,13 @@ public class IntArrayUnionFind implements UnionFind
 
 	/**
 	 *
-	 * @param size Number of elements. (Initially, each element forms a single element
-	 *            subset)
-	 * @param comparator When joining to sets, the new representative id will be determined by comparator:
-	 * {@code id = comparator.comparator(id1, id2) < 0 ? id1 : id2}
+	 * @param size
+	 *            Number of elements. (Initially, each element forms a single
+	 *            element subset)
+	 * @param comparator
+	 *            When joining to sets, the new representative id will be
+	 *            determined by comparator:
+	 *            {@code id = comparator.comparator(id1, id2) < 0 ? id1 : id2}
 	 */
 	public IntArrayUnionFind( final int size, final IntBinaryOperator comparator )
 	{
@@ -91,7 +94,9 @@ public class IntArrayUnionFind implements UnionFind
 
 		// find root
 		while ( startIndex1 != parents[ startIndex1 ] )
+		{
 			startIndex1 = parents[ startIndex1 ];
+		}
 
 		// label all positions on the way to root as parent
 		while ( startIndex2 != startIndex1 )
@@ -117,8 +122,7 @@ public class IntArrayUnionFind implements UnionFind
 	public int join( final int id1, final int id2 )
 	{
 
-		if ( id1 == id2 )
-			return id1;
+		if ( id1 == id2 ) { return id1; }
 
 		--nSets;
 
@@ -137,13 +141,13 @@ public class IntArrayUnionFind implements UnionFind
 	}
 
 	@Override
-	public long findRoot( long id )
+	public long findRoot( final long id )
 	{
 		return findRoot( ( int ) id );
 	}
 
 	@Override
-	public long join( long id1, long id2 )
+	public long join( final long id1, final long id2 )
 	{
 		return join( ( int ) id1, ( int ) id2 );
 	}
@@ -184,12 +188,12 @@ public class IntArrayUnionFind implements UnionFind
 		return new IntArrayUnionFind( parents.clone(), nSets, comparator );
 	}
 
-	private static int[] intRange( int[] data )
+	private static int[] intRange( final int[] data )
 	{
 		return intRange( data, 0 );
 	}
 
-	private static int[] intRange( int[] data, final int offset )
+	private static int[] intRange( final int[] data, final int offset )
 	{
 		Arrays.setAll( data, d -> d + offset );
 		return data;

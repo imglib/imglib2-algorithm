@@ -71,11 +71,13 @@ public class ConnectedComponentAnalysis
 		private final TLongLongHashMap setMappings = new TLongLongHashMap();
 
 		@Override
-		public long applyAsLong(long root)
+		public long applyAsLong( final long root )
 		{
 
 			if ( !setMappings.containsKey( root ) )
+			{
 				setMappings.put( root, setMappings.size() + 1 );
+			}
 			return setMappings.get( root );
 		}
 
@@ -86,19 +88,19 @@ public class ConnectedComponentAnalysis
 
 		private final Interval interval;
 
-		private IdFromIntervalIndexerWithInterval( Interval interval )
+		private IdFromIntervalIndexerWithInterval( final Interval interval )
 		{
 			this.interval = interval;
 		}
 
 		@Override
-		public long applyAsLong( final Localizable l, final T t  )
+		public long applyAsLong( final Localizable l, final T t )
 		{
 			return IntervalIndexer.positionToIndexForInterval( l, interval );
 		}
 	}
 
-	public static < T > ToLongBiFunction< Localizable, T > idFromIntervalIndexer( Interval interval )
+	public static < T > ToLongBiFunction< Localizable, T > idFromIntervalIndexer( final Interval interval )
 	{
 		return new IdFromIntervalIndexerWithInterval<>( interval );
 	}
@@ -106,8 +108,9 @@ public class ConnectedComponentAnalysis
 	/**
 	 *
 	 * Implementation of connected component analysis that uses
-	 * {@link IntArrayRankedUnionFind} to find sets of pixels that are connected with respect
-	 * to a 4-neighborhood ({@link DiamondShape}) or the generalization for higher dimenions over a binary mask.
+	 * {@link IntArrayRankedUnionFind} to find sets of pixels that are connected
+	 * with respect to a 4-neighborhood ({@link DiamondShape}) or the
+	 * generalization for higher dimenions over a binary mask.
 	 *
 	 * @param mask
 	 *            Boolean mask to distinguish foreground ({@code true}) from
@@ -115,24 +118,22 @@ public class ConnectedComponentAnalysis
 	 * @param labeling
 	 *            Output parameter to store labeling: background pixels are
 	 *            labeled zero, foreground pixels are greater than zero: 1, 2,
-	 *            ..., N. Note that initially all pixels are expected to be zero as background
-	 *            values will not be written.
+	 *            ..., N. Note that initially all pixels are expected to be zero
+	 *            as background values will not be written.
 	 * @return Number of sets in {@code unionFind}.
 	 */
 	public static < B extends BooleanType< B >, L extends IntegerType< L > > void connectedComponents(
 			final RandomAccessibleInterval< B > mask,
-			final RandomAccessibleInterval< L > labeling)
+			final RandomAccessibleInterval< L > labeling )
 	{
 		connectedComponents( mask, labeling, new DiamondShape( 1 ) );
 	}
 
-
-
 	/**
 	 *
 	 * Implementation of connected component analysis that uses
-	 * {@link IntArrayRankedUnionFind} to find sets of pixels that are connected with respect
-	 * to a neighborhood ({@code shape}) over a binary mask.
+	 * {@link IntArrayRankedUnionFind} to find sets of pixels that are connected
+	 * with respect to a neighborhood ({@code shape}) over a binary mask.
 	 *
 	 * @param mask
 	 *            Boolean mask to distinguish foreground ({@code true}) from
@@ -140,23 +141,26 @@ public class ConnectedComponentAnalysis
 	 * @param labeling
 	 *            Output parameter to store labeling: background pixels are
 	 *            labeled zero, foreground pixels are greater than zero: 1, 2,
-	 *            ..., N. Note that initially all pixels are expected to be zero as background
-	 *            values will not be written.
+	 *            ..., N. Note that initially all pixels are expected to be zero
+	 *            as background values will not be written.
 	 * @param shape
-	 *            Connectivity of connected components, e.g. 4-neighborhood ({@link DiamondShape}), 8-neighborhood ({@link RectangleNeighborhood}) and their generalisations for higher dimensions.
+	 *            Connectivity of connected components, e.g. 4-neighborhood
+	 *            ({@link DiamondShape}), 8-neighborhood
+	 *            ({@link RectangleNeighborhood}) and their generalisations for
+	 *            higher dimensions.
 	 * @return Number of sets in {@code unionFind}.
 	 */
 	public static < B extends BooleanType< B >, L extends IntegerType< L > > void connectedComponents(
 			final RandomAccessibleInterval< B > mask,
 			final RandomAccessibleInterval< L > labeling,
-			final Shape shape)
+			final Shape shape )
 	{
 		assert Intervals.numElements( labeling ) < Integer.MAX_VALUE: "Cannot Image Using array union find.";
 		connectedComponents(
 				mask,
 				labeling,
 				shape,
-				n -> new IntArrayRankedUnionFind( (int) n ),
+				n -> new IntArrayRankedUnionFind( ( int ) n ),
 				idFromIntervalIndexer( labeling ),
 				new StartAtOneIdForNextSet() );
 	}
@@ -176,22 +180,29 @@ public class ConnectedComponentAnalysis
 	 *            ..., N. Note that this is expected to be zero as background
 	 *            values will not be written.
 	 * @param shape
-	 *            Connectivity of connected components, e.g. 4-neighborhood ({@link DiamondShape}), 8-neighborhood ({@link RectangleNeighborhood}) and their generalisations for higher dimensions.
+	 *            Connectivity of connected components, e.g. 4-neighborhood
+	 *            ({@link DiamondShape}), 8-neighborhood
+	 *            ({@link RectangleNeighborhood}) and their generalisations for
+	 *            higher dimensions.
 	 * @param unionFindFactory
-	 *            Creates appropriate {@link UnionFind} data structure for size of {@code labeling}, e.g. {@link IntArrayRankedUnionFind} of appropriate size.
+	 *            Creates appropriate {@link UnionFind} data structure for size
+	 *            of {@code labeling}, e.g. {@link IntArrayRankedUnionFind} of
+	 *            appropriate size.
 	 * @param idForPixel
-	 *            Create id from pixel location and value. Multiple calls with the same argument should always return the same result.
+	 *            Create id from pixel location and value. Multiple calls with
+	 *            the same argument should always return the same result.
 	 * @param idForSet
-	 *            Create id for a set from the root id of a set. Multiple calls with the same argument should always return the same result.
+	 *            Create id for a set from the root id of a set. Multiple calls
+	 *            with the same argument should always return the same result.
 	 * @return Number of sets in {@code unionFind}.
 	 */
 	public static < B extends BooleanType< B >, L extends IntegerType< L > > void connectedComponents(
 			final RandomAccessibleInterval< B > mask,
 			final RandomAccessibleInterval< L > labeling,
 			final Shape shape,
-			final LongFunction<UnionFind> unionFindFactory,
+			final LongFunction< UnionFind > unionFindFactory,
 			final ToLongBiFunction< Localizable, L > idForPixel,
-			final LongUnaryOperator idForSet)
+			final LongUnaryOperator idForSet )
 	{
 		assert Intervals.contains( mask, labeling ) && Intervals.contains( labeling, mask ): "Mask and labeling are not the same size.";
 		assert Intervals.numElements( labeling ) <= Integer.MAX_VALUE: "Too many pixels for integer based union find.";
@@ -207,11 +218,15 @@ public class ConnectedComponentAnalysis
 			final LongFunction< UnionFind > unionFindFactory,
 			final ToLongBiFunction< Localizable, L > idForPixel )
 	{
-		final UnionFind uf = unionFindFactory.apply( Intervals.numElements( labeling));
+		final UnionFind uf = unionFindFactory.apply( Intervals.numElements( labeling ) );
 		if ( shape instanceof DiamondShape && ( ( DiamondShape ) shape ).getRadius() == 1 )
+		{
 			connectedComponentsDiamondShape( mask, labeling, uf, idForPixel );
+		}
 		else
+		{
 			connectedComponentsGeneralShape( mask, labeling, shape, uf, idForPixel );
+		}
 		return uf;
 	}
 
@@ -247,7 +262,9 @@ public class ConnectedComponentAnalysis
 					final long r1 = uf.findRoot( id.applyAsLong( lowerL, lowerL.get() ) );
 					final long r2 = uf.findRoot( id.applyAsLong( upperL, upperL.get() ) );
 					if ( r1 != r2 )
+					{
 						uf.join( r1, r2 );
+					}
 				}
 			}
 		}
@@ -264,32 +281,34 @@ public class ConnectedComponentAnalysis
 		final RandomAccessible< Neighborhood< B > > maskNeighborhood = shape.neighborhoodsRandomAccessible( Views.extendZero( mask ) );
 		final RandomAccessible< Neighborhood< L > > labelingNeighborhood = shape.neighborhoodsRandomAccessible( Views.extendZero( labeling ) );
 
-		Cursor< Neighborhood< B > > mnhCursor = Views.flatIterable( Views.interval( maskNeighborhood, labeling ) ).cursor();
-		Cursor< Neighborhood< L > > lnhCursor = Views.flatIterable( Views.interval( labelingNeighborhood, labeling ) ).cursor();
-		Cursor< B > maskCursor = Views.flatIterable( mask ).cursor();
-		Cursor< L > labelCursor = Views.flatIterable( labeling ).localizingCursor();
+		final Cursor< Neighborhood< B > > mnhCursor = Views.flatIterable( Views.interval( maskNeighborhood, labeling ) ).cursor();
+		final Cursor< Neighborhood< L > > lnhCursor = Views.flatIterable( Views.interval( labelingNeighborhood, labeling ) ).cursor();
+		final Cursor< B > maskCursor = Views.flatIterable( mask ).cursor();
+		final Cursor< L > labelCursor = Views.flatIterable( labeling ).localizingCursor();
 
 		while ( maskCursor.hasNext() )
 		{
 			final B center = maskCursor.next();
 			final L label = labelCursor.next();
-			final Neighborhood<B> mnh = mnhCursor.next();
-			final Neighborhood<L> lnh = lnhCursor.next();
+			final Neighborhood< B > mnh = mnhCursor.next();
+			final Neighborhood< L > lnh = lnhCursor.next();
 			if ( center.get() )
 			{
 				final long index = id.applyAsLong( labelCursor, label );
 				final Cursor< L > lnhc = lnh.localizingCursor();
 				final Cursor< B > mnhc = mnh.cursor();
-				while( mnhc.hasNext() )
+				while ( mnhc.hasNext() )
 				{
 					final L l = lnhc.next();
 					final B m = mnhc.next();
 					if ( m.get() )
 					{
-						final long r1 = uf.findRoot( index) ;
+						final long r1 = uf.findRoot( index );
 						final long r2 = uf.findRoot( id.applyAsLong( lnhc, l ) );
-						if (r1 != r2)
-							uf.join(r1, r2);
+						if ( r1 != r2 )
+						{
+							uf.join( r1, r2 );
+						}
 					}
 				}
 			}

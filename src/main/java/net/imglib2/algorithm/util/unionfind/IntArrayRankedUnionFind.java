@@ -53,8 +53,9 @@ public class IntArrayRankedUnionFind implements UnionFind
 
 	/**
 	 *
-	 * @param size Number of elements. (Initially, each element forms a single element
-	 *            subset)
+	 * @param size
+	 *            Number of elements. (Initially, each element forms a single
+	 *            element subset)
 	 */
 	public IntArrayRankedUnionFind( final int size )
 	{
@@ -83,7 +84,9 @@ public class IntArrayRankedUnionFind implements UnionFind
 
 		// find root
 		while ( startIndex1 != parents[ startIndex1 ] )
+		{
 			startIndex1 = parents[ startIndex1 ];
+		}
 
 		// label all positions on the way to root as parent
 		while ( startIndex2 != startIndex1 )
@@ -109,8 +112,7 @@ public class IntArrayRankedUnionFind implements UnionFind
 	public int join( final int id1, final int id2 )
 	{
 
-		if ( id1 == id2 )
-			return id1;
+		if ( id1 == id2 ) { return id1; }
 
 		--nSets;
 
@@ -127,20 +129,22 @@ public class IntArrayRankedUnionFind implements UnionFind
 		{
 			parents[ id2 ] = id1;
 			if ( r1 == r2 )
+			{
 				ranks[ id1 ] = r1 + 1;
+			}
 			return id1;
 		}
 
 	}
 
 	@Override
-	public long findRoot( long id )
+	public long findRoot( final long id )
 	{
 		return findRoot( ( int ) id );
 	}
 
 	@Override
-	public long join( long id1, long id2 )
+	public long join( final long id1, final long id2 )
 	{
 		return join( ( int ) id1, ( int ) id2 );
 	}
@@ -175,12 +179,12 @@ public class IntArrayRankedUnionFind implements UnionFind
 		return nSets;
 	}
 
-	private static int[] intRange( int[] data )
+	private static int[] intRange( final int[] data )
 	{
 		return intRange( data, 0 );
 	}
 
-	private static int[] intRange( int[] data, final int offset )
+	private static int[] intRange( final int[] data, final int offset )
 	{
 		Arrays.setAll( data, d -> d + offset );
 		return data;

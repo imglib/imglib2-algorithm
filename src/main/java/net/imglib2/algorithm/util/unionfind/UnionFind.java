@@ -44,7 +44,6 @@ import net.imglib2.type.BooleanType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.view.Views;
 
-
 /**
  *
  * Data structure for the union find algorithm.
@@ -85,7 +84,8 @@ public interface UnionFind
 
 	/**
 	 *
-	 * Relabel all mask pixels into the representative id of their containing sets as defined by {@code unionFind}.
+	 * Relabel all mask pixels into the representative id of their containing
+	 * sets as defined by {@code unionFind}.
 	 *
 	 * @param mask
 	 *            Boolean mask to distinguish foreground ({@code true}) from
@@ -98,19 +98,21 @@ public interface UnionFind
 	 * @param unionFind
 	 *            {@link UnionFind}
 	 * @param idForPixel
-	 *            Create id from pixel location and value. Multiple calls with the same argument should always return the same result.
+	 *            Create id from pixel location and value. Multiple calls with
+	 *            the same argument should always return the same result.
 	 * @param idForSet
-	 *            Create id for a set from the root id of a set. Multiple calls with the same argument should always return the same result.
+	 *            Create id for a set from the root id of a set. Multiple calls
+	 *            with the same argument should always return the same result.
 	 */
-	static < B extends BooleanType< B >, L extends IntegerType< L >> void relabel(
+	static < B extends BooleanType< B >, L extends IntegerType< L > > void relabel(
 			final RandomAccessibleInterval< B > mask,
 			final RandomAccessibleInterval< L > labeling,
 			final UnionFind unionFind,
 			final ToLongBiFunction< Localizable, L > idForPixel,
-			final LongUnaryOperator idForSet)
+			final LongUnaryOperator idForSet )
 	{
-		final Cursor< L >      label       = Views.flatIterable( labeling).localizingCursor();
-		final Cursor< B >      maskCursor  = Views.flatIterable( Views.interval( mask, labeling ) ).cursor();
+		final Cursor< L > label = Views.flatIterable( labeling ).localizingCursor();
+		final Cursor< B > maskCursor = Views.flatIterable( Views.interval( mask, labeling ) ).cursor();
 		while ( label.hasNext() )
 		{
 			final B m = maskCursor.next();

@@ -32,14 +32,12 @@
  * #L%
  */
 
-package tests.labeling;
+package net.imglib2.algorithm.labeling;
 
-import net.imglib2.view.Views;
 import org.junit.Assert;
 import org.junit.Test;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.labeling.ConnectedComponentAnalysis;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.converter.Converters;
@@ -48,7 +46,13 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.LongArray;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.integer.UnsignedLongType;
+import net.imglib2.view.Views;
 
+/**
+ *
+ * @author Philipp Hanslovsky
+ *
+ */
 public class ConnectedComponentAnalysisTest
 {
 
@@ -178,9 +182,9 @@ public class ConnectedComponentAnalysisTest
 		testDefault3D();
 	}
 
-	private void testDiamondShapeUnitRadius2DWithOffset( long offX, long offY )
+	private void testDiamondShapeUnitRadius2DWithOffset( final long offX, final long offY )
 	{
-		long[] offset = { offX, offY };
+		final long[] offset = { offX, offY };
 		final long[] labelingStore = new long[ numElements2D ];
 		final ArrayImg< UnsignedLongType, LongArray > labeling = ArrayImgs.unsignedLongs( labelingStore, dims2D );
 		ConnectedComponentAnalysis.connectedComponents(
@@ -192,7 +196,7 @@ public class ConnectedComponentAnalysisTest
 
 	private void testDiamondShapeUnitRadius2D()
 	{
-		testDiamondShapeUnitRadius2DWithOffset(0, 0);
+		testDiamondShapeUnitRadius2DWithOffset( 0, 0 );
 	}
 
 	private void testDiamondShapeDoubleRadius2D()
