@@ -120,7 +120,6 @@ public class ConnectedComponentAnalysis
 	 *            labeled zero, foreground pixels are greater than zero: 1, 2,
 	 *            ..., N. Note that initially all pixels are expected to be zero
 	 *            as background values will not be written.
-	 * @return Number of sets in {@code unionFind}.
 	 */
 	public static < B extends BooleanType< B >, L extends IntegerType< L > > void connectedComponents(
 			final RandomAccessibleInterval< B > mask,
@@ -148,7 +147,6 @@ public class ConnectedComponentAnalysis
 	 *            ({@link DiamondShape}), 8-neighborhood
 	 *            ({@link RectangleNeighborhood}) and their generalisations for
 	 *            higher dimensions.
-	 * @return Number of sets in {@code unionFind}.
 	 */
 	public static < B extends BooleanType< B >, L extends IntegerType< L > > void connectedComponents(
 			final RandomAccessibleInterval< B > mask,
@@ -194,7 +192,6 @@ public class ConnectedComponentAnalysis
 	 * @param idForSet
 	 *            Create id for a set from the root id of a set. Multiple calls
 	 *            with the same argument should always return the same result.
-	 * @return Number of sets in {@code unionFind}.
 	 */
 	public static < B extends BooleanType< B >, L extends IntegerType< L > > void connectedComponents(
 			final RandomAccessibleInterval< B > mask,
