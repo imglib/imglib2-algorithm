@@ -110,7 +110,8 @@ public class ConnectedComponentAnalysis
 	 * Implementation of connected component analysis that uses
 	 * {@link IntArrayRankedUnionFind} to find sets of pixels that are connected
 	 * with respect to a 4-neighborhood ({@link DiamondShape}) or the
-	 * generalization for higher dimenions over a binary mask.
+	 * generalization for higher dimenions over a binary mask. {@code mask} and
+	 * {@code labeling} are expected to have equal min and max.
 	 *
 	 * @param mask
 	 *            Boolean mask to distinguish foreground ({@code true}) from
@@ -132,7 +133,8 @@ public class ConnectedComponentAnalysis
 	 *
 	 * Implementation of connected component analysis that uses
 	 * {@link IntArrayRankedUnionFind} to find sets of pixels that are connected
-	 * with respect to a neighborhood ({@code shape}) over a binary mask.
+	 * with respect to a neighborhood ({@code shape}) over a binary mask. {@code mask}
+	 * and {@code labeling} are expected to have equal min and max.
 	 *
 	 * @param mask
 	 *            Boolean mask to distinguish foreground ({@code true}) from
@@ -167,7 +169,8 @@ public class ConnectedComponentAnalysis
 	 *
 	 * Implementation of connected component analysis that uses
 	 * {@link UnionFind} to find sets of pixels that are connected with respect
-	 * to a neighborhood ({@code shape}) over a binary mask.
+	 * to a neighborhood ({@code shape}) over a binary mask. {@code mask} and
+	 * {@code labeling} are expected to have equal min and max.
 	 *
 	 * @param mask
 	 *            Boolean mask to distinguish foreground ({@code true}) from
