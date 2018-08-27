@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>net.imglib2</groupId>
 		<artifactId>pom-imglib2</artifactId>
-		<version>10.0.2</version>
+		<version>11.0.1</version>
 		<relativePath />
 	</parent>
 
@@ -203,7 +203,6 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<imglib2.version>5.1.0</imglib2.version>
 		<imglib2-realtransform.version>2.0.0-beta-39</imglib2-realtransform.version>
 		<jitk-tps.version>3.0.0</jitk-tps.version>
-		<ojalgo.version>43.0</ojalgo.version>
 	</properties>
 
 	<repositories>
@@ -241,7 +240,6 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>org.ojalgo</groupId>
 			<artifactId>ojalgo</artifactId>
-			<version>${ojalgo.version}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
