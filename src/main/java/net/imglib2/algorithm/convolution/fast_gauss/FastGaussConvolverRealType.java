@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 /**
  * Implementation of {@link LineConvolverFactory} that uses {@link FastGaussCalculator}
- * to calculate a fast gauss convolution.
+ * to calculate a fast Gauss transform.
  *
  * @author Vladimir Ulman
  * @author Matthias Arzt

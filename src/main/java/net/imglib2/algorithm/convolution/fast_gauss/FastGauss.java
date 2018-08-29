@@ -23,12 +23,14 @@ import java.util.stream.IntStream;
  * Faster alternative to {@link net.imglib2.algorithm.gauss3.Gauss3}.
  * It's especially faster if sigma is larger than 3.
  * <p>
- * It is normally expensive to calculate the exact result of the gauss convolution.
+ * It's expensive to calculate the exact result of the gaussian blur.
  * That's why approximations are almost always used.
  * {@link net.imglib2.algorithm.gauss3.Gauss3} does an approximation
- * by cutting of the gauss kernel at 3*sigma + 1.
- * {@link FastGauss} uses a different approach known as Fast Gauss
- * Transformation. The runtime is thereby independent of sigma.
+ * by cutting off the gauss kernel at 3*sigma + 1.
+ * {@link FastGauss} uses a different approach known as fast Gauss
+ * transformation. It's runtime is independent of sigma.
+ * <p>
+ * See {@link FastGaussCalculator} for more details.
  *
  * @author Vladimir Ulman
  * @author Matthias Arzt

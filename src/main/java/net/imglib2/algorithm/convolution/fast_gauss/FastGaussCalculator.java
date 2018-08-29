@@ -1,7 +1,14 @@
 package net.imglib2.algorithm.convolution.fast_gauss;
 
 /**
- * Fast algorithm to calculate an good approximation of the gauss convolution.
+ * This class implements the fast Gauss transform to calculate a gaussian blur.
+ * The approach is very different from an algorithm using a truncated convolution kernel.
+ * Especially the runtime is independent of sigma.
+ * <p>
+ * The implemented algorithm is described in detail in:
+ * Charalampidis, Dimitrios. "Recursive implementation of the Gaussian filter using
+ * truncated cosine functions." IEEE Transactions on Signal Processing 64.14
+ * (2016): 3554-3565.
  *
  * @author Vladimir Ulman
  * @author Matthias Arzt
