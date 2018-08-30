@@ -54,25 +54,25 @@ import net.imglib2.type.numeric.NumericType;
 public final class ConvolverNativeType< T extends NumericType< T > & NativeType< T > > implements Runnable
 {
 
-	final private double[] kernel;
+	private final double[] kernel;
 
-	final private RandomAccess< ? extends T > in;
+	private final RandomAccess< ? extends T > in;
 
-	final private RandomAccess< ? extends T > out;
+	private final RandomAccess< ? extends T > out;
 
-	final private int d;
+	private final int d;
 
 	private final int k1k;
 
-	final private int k1k1;
+	private final int k1k1;
 
-	final private long linelen;
+	private final long linelen;
 
-	final T b1;
+	private final T b1;
 
-	final T b2;
+	private final T b2;
 
-	final T tmp;
+	private final T tmp;
 
 	public ConvolverNativeType( final Kernel1D kernel, final RandomAccess< ? extends T > in, final RandomAccess< ? extends T > out, final int d, final long lineLength )
 	{
@@ -86,8 +86,8 @@ public final class ConvolverNativeType< T extends NumericType< T > & NativeType<
 		k1k1 = k1k - 1;
 		linelen = lineLength;
 
-		T type = out.get();
-		final ArrayImg< T, ? > buf = new ArrayImgFactory< T >( type ).create( new long[] { k1k } );
+		final T type = out.get();
+		final ArrayImg< T, ? > buf = new ArrayImgFactory<>( type ).create( new long[] { k1k } );
 		b1 = buf.randomAccess().get();
 		b2 = buf.randomAccess().get();
 
@@ -113,7 +113,7 @@ public final class ConvolverNativeType< T extends NumericType< T > & NativeType<
 		out.fwd( d );
 	}
 
-	private void process( T w )
+	private void process( final T w )
 	{
 		// move buf contents down
 		for ( int i = 0; i < k1k1; ++i )

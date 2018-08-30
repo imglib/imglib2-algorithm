@@ -50,21 +50,21 @@ import net.imglib2.type.numeric.RealType;
 public final class FloatConvolverRealType implements Runnable
 {
 
-	final private float[] kernel;
+	private final float[] kernel;
 
-	final private RandomAccess< ? extends RealType< ? > > in;
+	private final RandomAccess< ? extends RealType< ? > > in;
 
-	final private RandomAccess< ? extends RealType< ? > > out;
+	private final RandomAccess< ? extends RealType< ? > > out;
 
-	final private int d;
+	private final int d;
 
-	final private int k1k1;
+	private final int k1k;
 
-	final private int k1k;
+	private final int k1k1;
 
-	final private long fill2;
+	private final long linelen;
 
-	final private float[] buffer;
+	private final float[] buffer;
 
 	public FloatConvolverRealType( final Kernel1D kernel, final RandomAccess< ? extends RealType< ? > > in, final RandomAccess< ? extends RealType< ? > > out, final int d, final long lineLength )
 	{
@@ -76,7 +76,7 @@ public final class FloatConvolverRealType implements Runnable
 
 		k1k = this.kernel.length;
 		k1k1 = k1k - 1;
-		fill2 = lineLength;
+		linelen = lineLength;
 		buffer = new float[ k1k + 1 ];
 	}
 
@@ -115,7 +115,7 @@ public final class FloatConvolverRealType implements Runnable
 	{
 		for ( int i = 0; i < k1k1; ++i )
 			prefill();
-		for ( long i = 0; i < fill2; ++i )
+		for ( long i = 0; i < linelen; ++i )
 			next();
 	}
 }

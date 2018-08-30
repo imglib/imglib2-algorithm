@@ -52,23 +52,23 @@ import net.imglib2.type.numeric.NumericType;
 public final class ConvolverNumericType< T extends NumericType< T > > implements Runnable
 {
 
-	final private double[] kernel;
+	private final double[] kernel;
 
-	final private RandomAccess< ? extends T > in;
+	private final RandomAccess< ? extends T > in;
 
-	final private RandomAccess< ? extends T > out;
+	private final RandomAccess< ? extends T > out;
 
-	final private int d;
+	private final int d;
 
-	final private int k1k1;
+	private final int k1k;
 
-	final private int k1k;
+	private final int k1k1;
 
-	final private long fill2;
+	private final long linelen;
 
-	final private T[] buffer;
+	private final T[] buffer;
 
-	final private T tmp;
+	private final T tmp;
 
 	@SuppressWarnings( "unchecked" )
 	public ConvolverNumericType( final Kernel1D kernel, final RandomAccess< ? extends T > in, final RandomAccess< ? extends T > out, final int d, final long lineLength )
@@ -81,7 +81,7 @@ public final class ConvolverNumericType< T extends NumericType< T > > implements
 
 		k1k = this.kernel.length;
 		k1k1 = k1k - 1;
-		fill2 = lineLength;
+		linelen = lineLength;
 
 		T type = out.get();
 		buffer = ( T[] ) Array.newInstance( type.getClass(), k1k + 1 );
@@ -111,7 +111,7 @@ public final class ConvolverNumericType< T extends NumericType< T > > implements
 		out.fwd( d );
 	}
 
-	private void process( T tmp )
+	private void process( final T tmp )
 	{
 		for ( int i = 1; i < k1k; ++i )
 		{
@@ -127,7 +127,7 @@ public final class ConvolverNumericType< T extends NumericType< T > > implements
 	{
 		for ( int i = 0; i < k1k1; ++i )
 			prefill();
-		for ( long i = 0; i < fill2; ++i )
+		for ( long i = 0; i < linelen; ++i )
 			next();
 	}
 }
