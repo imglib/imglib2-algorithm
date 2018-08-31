@@ -8,6 +8,8 @@ import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gauss3.SeparableSymmetricConvolution;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.Views;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -54,14 +56,14 @@ public class GaussBenchmark
 	@Benchmark
 	public void benchmarkFastGauss()
 	{
-		FastGauss.convolve( sigma, inImage, outImage );
+		FastGauss.convolution( sigma ).process( inImage, outImage );
 	}
 
 	public static void main( String[] args ) throws RunnerException
 	{
 		Options opt = new OptionsBuilder()
 				.include( GaussBenchmark.class.getSimpleName() )
-				.forks( 0 )
+				.forks( 1 )
 				.warmupIterations( 4 )
 				.measurementIterations( 8 )
 				.warmupTime( TimeValue.milliseconds( 100 ) )

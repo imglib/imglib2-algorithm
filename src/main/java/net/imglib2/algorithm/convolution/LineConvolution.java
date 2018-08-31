@@ -53,21 +53,18 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 		return targetType;
 	}
 
-	@Override public void process( RandomAccessible< ? extends T > source, RandomAccessibleInterval< ? extends T > target )
+	@Override
+	protected void process( RandomAccessible< ? extends T > source, RandomAccessibleInterval< ? extends T > target, ExecutorService executorService, int numThreads )
 	{
-		internConvolve( factory, Views.interval( source, requiredSourceInterval( target ) ), target, direction );
-	}
-
-	private < T > void internConvolve( LineConvolverFactory< ? super T > factory, RandomAccessibleInterval< ? extends T > source, RandomAccessibleInterval< ? extends T > target, int d )
-	{
-		final long[] sourceMin = Intervals.minAsLongArray( source );
+		RandomAccessibleInterval< ? extends T > sourceInterval = Views.interval( source, requiredSourceInterval( target ) );
+		final long[] sourceMin = Intervals.minAsLongArray( sourceInterval );
 		final long[] targetMin = Intervals.minAsLongArray( target );
 
 		Supplier< Consumer< Localizable > > actionFactory = () -> {
 
-			final RandomAccess< ? extends T > in = source.randomAccess();
+			final RandomAccess< ? extends T > in = sourceInterval.randomAccess();
 			final RandomAccess< ? extends T > out = target.randomAccess();
-			final Runnable convolver = factory.getConvolver( in, out, d, target.dimension( d ) );
+			final Runnable convolver = factory.getConvolver( in, out, direction, target.dimension( direction ) );
 
 			return position -> {
 				in.setPosition( sourceMin );
@@ -79,12 +76,9 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 		};
 
 		final long[] dim = Intervals.dimensionsAsLongArray( target );
-		dim[ d ] = 1;
+		dim[ direction ] = 1;
 
-		// FIXME: is there a better way to determine the number of threads
-		final int numThreads = getNumThreads();
 		final int numTasks = numThreads > 1 ? numThreads * 4 : 1;
-		ExecutorService executorService = getExecutor();
 		LineConvolution.forEachIntervalElementInParallel( executorService, numTasks, new FinalInterval( dim ), actionFactory );
 	}
 
