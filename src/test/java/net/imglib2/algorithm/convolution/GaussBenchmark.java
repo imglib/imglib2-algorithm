@@ -44,7 +44,7 @@ public class GaussBenchmark
 	}
 
 	@Benchmark
-	public void benchmarkSeparableSymmertricConvolution()
+	public void benchmarkSeparableSymmetricConvolution()
 	{
 		double[][] halfKernels = Gauss3.halfkernels( new double[] { sigma, sigma, sigma } );
 		final int numthreads = Runtime.getRuntime().availableProcessors();

@@ -83,7 +83,7 @@ public class ConvolverBenchmark
 	}
 
 	@Benchmark
-	public void asymmetricNumericConvolve()
+	public void asymmetricNumericConvolver()
 	{
 		final Runnable runnable = new ConvolverNumericType<>( kernel, in(), out(), d, lineLength );
 		runnable.run();

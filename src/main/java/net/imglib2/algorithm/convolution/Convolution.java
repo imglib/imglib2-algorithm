@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutorService;
  * But also to query for the required input image size and preferred input image type.
  * The ExectorService can be set, to allow multi or single threaded operation.
  * <p>
- * Very imported multiple {@link Convolution}s can be easily concatenated.
+ * Very importantly, multiple {@link Convolution}s can be easily concatenated.
  *
  * @author Matthias Arzt
  */

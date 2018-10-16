@@ -85,7 +85,7 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 	/**
 	 * {@link #forEachIntervalElementInParallel(ExecutorService, int, Interval, Supplier)} executes a given action
 	 * for each position in a given interval. Therefor it starts the specified number of tasks. Each tasks calls
-	 * the action factory ones, to get an instance of the action that should be executed. The action is then called
+	 * the action factory once, to get an instance of the action that should be executed. The action is then called
 	 * multiple times by the task.
 	 *
 	 * @param service       {@link ExecutorService} used to create the tasks.
