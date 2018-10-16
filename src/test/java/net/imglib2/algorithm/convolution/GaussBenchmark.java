@@ -64,7 +64,7 @@ public class GaussBenchmark
 		Options opt = new OptionsBuilder()
 				.include( GaussBenchmark.class.getSimpleName() )
 				.forks( 1 )
-				.warmupIterations( 4 )
+				.warmupIterations( 8 )
 				.measurementIterations( 8 )
 				.warmupTime( TimeValue.milliseconds( 100 ) )
 				.measurementTime( TimeValue.milliseconds( 100 ) )

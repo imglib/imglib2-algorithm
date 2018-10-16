@@ -111,7 +111,7 @@ public class ConvolverBenchmark
 	{
 		Options opt = new OptionsBuilder()
 				.include( ConvolverBenchmark.class.getSimpleName() )
-				.forks( 0 )
+				.forks( 1 )
 				.warmupIterations( 8 )
 				.measurementIterations( 8 )
 				.warmupTime( TimeValue.milliseconds( 100 ) )
