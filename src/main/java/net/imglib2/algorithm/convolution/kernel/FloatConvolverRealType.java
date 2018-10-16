@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -45,6 +45,7 @@ import net.imglib2.type.numeric.RealType;
  *
  * @author Tobias Pietzsch
  * @author Matthias Arzt
+ *
  * @see LineConvolverFactory
  */
 public final class FloatConvolverRealType implements Runnable
@@ -80,9 +81,9 @@ public final class FloatConvolverRealType implements Runnable
 		buffer = new float[ k1k + 1 ];
 	}
 
-	private float[] doubleToFloat( double[] in )
+	private float[] doubleToFloat( final double[] in )
 	{
-		float[] out = new float[ in.length ];
+		final float[] out = new float[ in.length ];
 		for ( int i = 0; i < in.length; i++ )
 			out[ i ] = ( float ) in[ i ];
 		return out;
@@ -104,7 +105,7 @@ public final class FloatConvolverRealType implements Runnable
 		out.fwd( d );
 	}
 
-	private void process( float w )
+	private void process( final float w )
 	{
 		for ( int i = 1; i < k1k; ++i )
 			buffer[ i ] = w * kernel[ i ] + buffer[ i + 1 ];

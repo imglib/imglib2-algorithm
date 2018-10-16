@@ -2,13 +2,13 @@ package net.imglib2.algorithm.convolution.fast_gauss;
 
 /**
  * This class implements the fast Gauss transform to calculate a gaussian blur.
- * The approach is very different from an algorithm using a truncated convolution kernel.
- * Especially the runtime is independent of sigma.
+ * The approach is very different from an algorithm using a truncated
+ * convolution kernel. Especially the runtime is independent of sigma.
  * <p>
- * The implemented algorithm is described in detail in:
- * Charalampidis, Dimitrios. "Recursive implementation of the Gaussian filter using
- * truncated cosine functions." IEEE Transactions on Signal Processing 64.14
- * (2016): 3554-3565.
+ * The implemented algorithm is described in detail in: Charalampidis,
+ * Dimitrios. "Recursive implementation of the Gaussian filter using truncated
+ * cosine functions." IEEE Transactions on Signal Processing 64.14 (2016):
+ * 3554-3565.
  *
  * @author Vladimir Ulman
  * @author Matthias Arzt
@@ -16,18 +16,18 @@ package net.imglib2.algorithm.convolution.fast_gauss;
 public class FastGaussCalculator
 {
 	private final Parameters fc;
-	//we will utilize ring buffers whose current positions will be driven
-	//by the currently processed index inside the input array -- we will use
-	//bit masking to achieve fast the effect of the operation modulo, furthermore
-	//it does not suffer from sign effect: -5 % 8 = -5 in Java; I need it be +3
-	//to make it work nicely for the ring buffer (which cannot have negative indices)
-
-	//remember current plus last two results for every yk-term (there's M of them),
-	//so we need either 3*3 or 3*4=12 values => 4 bits = capacity for 16 values,
+	// we will utilize ring buffers whose current positions will be driven
+	// by the currently processed index inside the input array -- we will use
+	// bit masking to achieve fast the effect of the operation modulo, furthermore
+	// it does not suffer from sign effect: -5 % 8 = -5 in Java; I need it be +3
+	// to make it work nicely for the ring buffer (which cannot have negative indices)
+    //
+	// remember current plus last two results for every yk-term (there's M of them),
+	// so we need either 3*3 or 3*4=12 values => 4 bits = capacity for 16 values,
 	//
-	//actually, we will use 4 ring sub-buffers (each of length 4, 2 bits) for the
-	//individual yks...: y1, y3, y5, y7 (the order in which they are touched during
-	//the computation of the filter)
+	// actually, we will use 4 ring sub-buffers (each of length 4, 2 bits) for the
+	// individual yks...: y1, y3, y5, y7 (the order in which they are touched during
+	// the computation of the filter)
 	//
 	private final double[] yk0 = new double[ 4 ];
 
@@ -39,12 +39,12 @@ public class FastGaussCalculator
 
 	private int x;
 
-	public FastGaussCalculator( Parameters fc )
+	public FastGaussCalculator( final Parameters fc )
 	{
 		this.fc = fc;
 	}
 
-	public void initialize( double boundaryValue )
+	public void initialize( final double boundaryValue )
 	{
 		//calculate yk that one would get on constant signal of 1.0
 		//(Vlado's invention by solving eq. (35) assuming yk_n = yk_n-1 = yk_n-2)
@@ -62,7 +62,7 @@ public class FastGaussCalculator
 		yk3[ x & 3 ] = yk3[ ( x - 1 ) & 3 ] = boundaryValue * y7_mN;
 	}
 
-	public void update( double tmp )
+	public void update( final double tmp )
 	{
 		++x;
 		yk0[ x & 3 ] = fc.nk_2[ 0 ] * tmp - fc.dk_1[ 0 ] * yk0[ ( x - 1 ) & 3 ] - yk0[ ( x - 2 ) & 3 ];
@@ -77,23 +77,21 @@ public class FastGaussCalculator
 	}
 
 	/**
-	 * Collects all coefficients required to carry on the filtering, see eq. (35)
-	 * in the paper. If I(x) is your input array at offset x, and O(x) is supposed
-	 * to be the filtered output, one should do:
+	 * Collects all coefficients required to carry on the filtering, see eq.
+	 * (35) in the paper. If I(x) is your input array at offset x, and O(x) is
+	 * supposed to be the filtered output, one should do:
 	 * <p>
-	 * tmp = I(x-N-1) + I(x+N-1);
-	 * O(x)  = nk_2[0] * tmp  - dk_1[0] * yk(x-1)  - yk(x-2);
-	 * O(x) += nk_2[1] * tmp  - dk_1[1] * yk(x-1)  - yk(x-2);
-	 * O(x) += nk_2[2] * tmp  - dk_1[2] * yk(x-1)  - yk(x-2);
-	 * if M == 4:
-	 * O(x) += nk_2[3] * tmp  - dk_1[3] * yk(x-1)  - yk(x-2);
+	 * tmp = I(x-N-1) + I(x+N-1); O(x) = nk_2[0] * tmp - dk_1[0] * yk(x-1) -
+	 * yk(x-2); O(x) += nk_2[1] * tmp - dk_1[1] * yk(x-1) - yk(x-2); O(x) +=
+	 * nk_2[2] * tmp - dk_1[2] * yk(x-1) - yk(x-2); if M == 4: O(x) += nk_2[3] *
+	 * tmp - dk_1[3] * yk(x-1) - yk(x-2);
 	 * <p>
-	 * This way 2*M multiplications and 3*M additions are made per one 'x'.
-	 * Note that for-loop is not welcome as it involves comparison-test and
+	 * This way 2*M multiplications and 3*M additions are made per one 'x'. Note
+	 * that for-loop is not welcome as it involves comparison-test and
 	 * additional addition per one 'x'.
 	 * <p>
-	 * The class also stores Sigma for which the coefficients are valid
-	 * (as long as user is not changing values arbitrarily...).
+	 * The class also stores Sigma for which the coefficients are valid (as long
+	 * as user is not changing values arbitrarily...).
 	 */
 	public static class Parameters
 	{
@@ -127,8 +125,8 @@ public class FastGaussCalculator
 		}
 
 		/**
-		 * Construct with the same accuracy as the Gauss1D for which
-		 * you want to use it.
+		 * Construct with the same accuracy as the Gauss1D for which you want to
+		 * use it.
 		 */
 		private Parameters( final int _M, final double sigma )
 		{
@@ -139,10 +137,8 @@ public class FastGaussCalculator
 			dk_1 = new double[ 4 ];
 
 			// eq. (57), the filter width
-			final double N1 = ( int ) ( ( M == 3 ?
-					3.2795 * sigma + 0.25460 //M==3
-					:
-					3.7210 * sigma + 0.20157 //M==4
+			final double N1 = ( int ) ( ( M == 3 ? 3.2795 * sigma + 0.25460 // M==3
+					: 3.7210 * sigma + 0.20157 // M==4
 			) + 0.5 );
 
 			// Table I, 1st/top objective
@@ -163,7 +159,7 @@ public class FastGaussCalculator
 			final double r_5 = 1.0 * p_5 * p_5 / Math.sin( omega_5 );
 			final double r_7 = -1.0 * p_7 * p_7 / Math.sin( omega_7 );
 
-			//approximate rho_i:
+			// approximate rho_i:
 			// eq. (50) i=1,3,5,7
 			final double rho_1 = Math.exp( -0.5 * sigma * sigma * omega_1 * omega_1 ) / N1;
 			final double rho_3 = Math.exp( -0.5 * sigma * sigma * omega_3 * omega_3 ) / N1;
@@ -204,7 +200,7 @@ public class FastGaussCalculator
 			final double C_35 = D_51 / D_13;
 			final double C_37 = D_71 / D_13;
 
-			//get beta_k
+			// get beta_k
 			double beta_1, beta_3;
 			if ( M == 3 )
 			{
@@ -266,7 +262,7 @@ public class FastGaussCalculator
 			final double beta_5 = rho_5 + C_15 * ( rho_1 - beta_1 ) + C_35 * ( rho_3 - beta_3 );
 			final double beta_7 = rho_7 + C_17 * ( rho_1 - beta_1 ) + C_37 * ( rho_3 - beta_3 );
 
-			//fill the output container FilteringCoeffs
+			// fill the output container FilteringCoeffs
 			N = ( int ) N1;
 
 			nk_2[ 0 ] = -beta_1 * Math.cos( omega_1 * ( N1 + 1.0 ) );
@@ -281,12 +277,11 @@ public class FastGaussCalculator
 			{
 				nk_2[ 3 ] = -beta_7 * Math.cos( omega_7 * ( N1 + 1.0 ) );
 				dk_1[ 3 ] = -2.0 * Math.cos( omega_7 );
-				//NB: array length was guarded at the beginning of this function
+				// NB: array length was guarded at the beginning of this function
 			}
 
-			//declare to what sigma the coefficients belong to
+			// declare to what sigma the coefficients belong to
 			Sigma = sigma;
 		}
-
 	}
 }

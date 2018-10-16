@@ -1,5 +1,10 @@
 package net.imglib2.algorithm.convolution;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
@@ -11,11 +16,6 @@ import net.imglib2.util.Util;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-
 /**
  * Helper to implement {@link Convolution#concat}.
  *
@@ -26,18 +26,19 @@ class Concatenation< T > implements Convolution< T >
 
 	private final List< Convolution< T > > steps;
 
-	Concatenation( List< ? extends Convolution< T > > steps )
+	Concatenation( final List< ? extends Convolution< T > > steps )
 	{
 		this.steps = new ArrayList<>( steps );
 	}
 
-	@Override public void setExecutor( ExecutorService executor )
+	@Override
+	public void setExecutor( final ExecutorService executor )
 	{
 		steps.forEach( step -> step.setExecutor( executor ) );
 	}
 
 	@Override
-	public Interval requiredSourceInterval( Interval targetInterval )
+	public Interval requiredSourceInterval( final Interval targetInterval )
 	{
 		Interval result = targetInterval;
 		for ( int i = steps.size() - 1; i >= 0; i-- )
@@ -54,17 +55,17 @@ class Concatenation< T > implements Convolution< T >
 	}
 
 	@Override
-	public void process( RandomAccessible< ? extends T > source, RandomAccessibleInterval< ? extends T > target )
+	public void process( final RandomAccessible< ? extends T > source, final RandomAccessibleInterval< ? extends T > target )
 	{
-		List< Pair< T, Interval > > srcIntervals = tmpIntervals( Util.getTypeFromInterval( target ), target );
+		final List< Pair< T, Interval > > srcIntervals = tmpIntervals( Util.getTypeFromInterval( target ), target );
 		RandomAccessibleInterval< ? extends T > currentSource = Views.interval( source, srcIntervals.get( 0 ).getB() );
 		RandomAccessibleInterval< ? extends T > available = null;
 
 		for ( int i = 0; i < steps.size(); i++ )
 		{
-			Convolution< T > step = steps.get( i );
-			T targetType = srcIntervals.get( i + 1 ).getA();
-			Interval targetInterval = srcIntervals.get( i + 1 ).getB();
+			final Convolution< T > step = steps.get( i );
+			final T targetType = srcIntervals.get( i + 1 ).getA();
+			final Interval targetInterval = srcIntervals.get( i + 1 ).getB();
 			RandomAccessibleInterval< ? extends T > currentTarget =
 					( i == steps.size() - 1 ) ? target : null;
 
@@ -84,27 +85,28 @@ class Concatenation< T > implements Convolution< T >
 		}
 	}
 
-	private static < T extends NativeType< T > > RandomAccessibleInterval< T > createImage( T targetType, Interval targetInterval )
+	private static < T extends NativeType< T > > RandomAccessibleInterval< T > createImage( final T targetType, final Interval targetInterval )
 	{
-		long[] dimensions = Intervals.dimensionsAsLongArray( targetInterval );
-		Img< T > ts = Util.getArrayOrCellImgFactory( targetInterval, targetType ).create( dimensions );
+		final long[] dimensions = Intervals.dimensionsAsLongArray( targetInterval );
+		final Img< T > ts = Util.getArrayOrCellImgFactory( targetInterval, targetType ).create( dimensions );
 		return Views.translate( ts, Intervals.minAsLongArray( targetInterval ) );
 	}
 
-	private static < T > T uncheckedCast( Object in )
+	private static < T > T uncheckedCast( final Object in )
 	{
 		@SuppressWarnings( "unchecked" )
+		final
 		T in1 = ( T ) in;
 		return in1;
 	}
 
 	private List< Pair< T, Interval > > tmpIntervals( T type, Interval interval )
 	{
-		List< Pair< T, Interval > > result = new ArrayList<>( Collections.nCopies( steps.size() + 1, null ) );
+		final List< Pair< T, Interval > > result = new ArrayList<>( Collections.nCopies( steps.size() + 1, null ) );
 		result.set( steps.size(), new ValuePair<>( type, interval ) );
 		for ( int i = steps.size() - 1; i >= 0; i-- )
 		{
-			Convolution< T > step = steps.get( i );
+			final Convolution< T > step = steps.get( i );
 			interval = step.requiredSourceInterval( interval );
 			type = step.preferredSourceType( type );
 			result.set( i, new ValuePair<>( type, interval ) );

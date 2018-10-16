@@ -1,5 +1,14 @@
 package net.imglib2.algorithm.convolution;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
@@ -11,19 +20,9 @@ import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.LongStream;
-
 /**
- * This class can be used to implement a separable convolution.
- * It applies a {@link LineConvolverFactory} on the given images.
+ * This class can be used to implement a separable convolution. It applies a
+ * {@link LineConvolverFactory} on the given images.
  *
  * @author Matthias Arzt
  */
@@ -33,34 +32,36 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 
 	private final int direction;
 
-	public LineConvolution( LineConvolverFactory< ? super T > factory, int direction )
+	public LineConvolution( final LineConvolverFactory< ? super T > factory, final int direction )
 	{
 		this.factory = factory;
 		this.direction = direction;
 	}
 
-	@Override public Interval requiredSourceInterval( Interval targetInterval )
+	@Override
+	public Interval requiredSourceInterval( final Interval targetInterval )
 	{
-		long[] min = Intervals.minAsLongArray( targetInterval );
-		long[] max = Intervals.maxAsLongArray( targetInterval );
+		final long[] min = Intervals.minAsLongArray( targetInterval );
+		final long[] max = Intervals.maxAsLongArray( targetInterval );
 		min[ direction ] -= factory.getBorderBefore();
 		max[ direction ] += factory.getBorderAfter();
 		return new FinalInterval( min, max );
 	}
 
-	@Override public T preferredSourceType( T targetType )
+	@Override
+	public T preferredSourceType( final T targetType )
 	{
 		return targetType;
 	}
 
 	@Override
-	protected void process( RandomAccessible< ? extends T > source, RandomAccessibleInterval< ? extends T > target, ExecutorService executorService, int numThreads )
+	protected void process( final RandomAccessible< ? extends T > source, final RandomAccessibleInterval< ? extends T > target, final ExecutorService executorService, final int numThreads )
 	{
-		RandomAccessibleInterval< ? extends T > sourceInterval = Views.interval( source, requiredSourceInterval( target ) );
+		final RandomAccessibleInterval< ? extends T > sourceInterval = Views.interval( source, requiredSourceInterval( target ) );
 		final long[] sourceMin = Intervals.minAsLongArray( sourceInterval );
 		final long[] targetMin = Intervals.minAsLongArray( target );
 
-		Supplier< Consumer< Localizable > > actionFactory = () -> {
+		final Supplier< Consumer< Localizable > > actionFactory = () -> {
 
 			final RandomAccess< ? extends T > in = sourceInterval.randomAccess();
 			final RandomAccess< ? extends T > out = target.randomAccess();
@@ -83,23 +84,28 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 	}
 
 	/**
-	 * {@link #forEachIntervalElementInParallel(ExecutorService, int, Interval, Supplier)} executes a given action
-	 * for each position in a given interval. Therefor it starts the specified number of tasks. Each tasks calls
-	 * the action factory once, to get an instance of the action that should be executed. The action is then called
-	 * multiple times by the task.
+	 * {@link #forEachIntervalElementInParallel(ExecutorService, int, Interval, Supplier)}
+	 * executes a given action for each position in a given interval. Therefor
+	 * it starts the specified number of tasks. Each tasks calls the action
+	 * factory once, to get an instance of the action that should be executed.
+	 * The action is then called multiple times by the task.
 	 *
-	 * @param service       {@link ExecutorService} used to create the tasks.
-	 * @param numTasks      number of tasks to use.
-	 * @param interval      interval to iterate over.
-	 * @param actionFactory factory that returns the action to be executed.
+	 * @param service
+	 *            {@link ExecutorService} used to create the tasks.
+	 * @param numTasks
+	 *            number of tasks to use.
+	 * @param interval
+	 *            interval to iterate over.
+	 * @param actionFactory
+	 *            factory that returns the action to be executed.
 	 */
 	// TODO: move to a better place
-	public static void forEachIntervalElementInParallel( ExecutorService service, int numTasks, Interval interval,
-			Supplier< Consumer< Localizable > > actionFactory )
+	public static void forEachIntervalElementInParallel( final ExecutorService service, final int numTasks, final Interval interval,
+			final Supplier< Consumer< Localizable > > actionFactory )
 	{
-		long[] min = Intervals.minAsLongArray( interval );
-		long[] dim = Intervals.dimensionsAsLongArray( interval );
-		long size = Intervals.numElements( dim );
+		final long[] min = Intervals.minAsLongArray( interval );
+		final long[] dim = Intervals.dimensionsAsLongArray( interval );
+		final long size = Intervals.numElements( dim );
 		final long endIndex = size;
 		final long taskSize = ( size + numTasks - 1 ) / numTasks; // round up
 		final ArrayList< Callable< Void > > callables = new ArrayList<>();
@@ -109,7 +115,7 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 			final long myStartIndex = taskNum * taskSize;
 			final long myEndIndex = Math.min( endIndex, myStartIndex + taskSize );
 			final Callable< Void > r = () -> {
-				Consumer< Localizable > action = actionFactory.get();
+				final Consumer< Localizable > action = actionFactory.get();
 				final long[] position = new long[ dim.length ];
 				final Localizable localizable = Point.wrap( position );
 				for ( long index = myStartIndex; index < myEndIndex; ++index )
@@ -124,17 +130,17 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 		execute( service, callables );
 	}
 
-	private static void execute( ExecutorService service, ArrayList< Callable< Void > > callables )
+	private static void execute( final ExecutorService service, final ArrayList< Callable< Void > > callables )
 	{
 		try
 		{
-			List< Future< Void > > futures = service.invokeAll( callables );
-			for ( Future< Void > future : futures )
+			final List< Future< Void > > futures = service.invokeAll( callables );
+			for ( final Future< Void > future : futures )
 				future.get();
 		}
 		catch ( final InterruptedException | ExecutionException e )
 		{
-			Throwable cause = e.getCause();
+			final Throwable cause = e.getCause();
 			if ( cause instanceof RuntimeException )
 				throw ( RuntimeException ) cause;
 			throw new RuntimeException( e );

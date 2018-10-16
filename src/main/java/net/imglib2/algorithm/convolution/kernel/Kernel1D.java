@@ -5,8 +5,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * Kernel for a one dimensional convolution.
- * Multiple kernels could be used to specify a separable convolution.
+ * Kernel for a one dimensional convolution. Multiple kernels could be used to
+ * specify a separable convolution.
  *
  * @author Matthias Arzt
  */
@@ -20,22 +20,23 @@ public class Kernel1D
 	/**
 	 * Creates a one-dimensional symmetric convolution kernel.
 	 *
-	 * @param halfKernel the upper half (starting at the center pixel) of the symmetric
-	 *                   convolution kernel.
+	 * @param halfKernel
+	 *            the upper half (starting at the center pixel) of the symmetric
+	 *            convolution kernel.
 	 */
-	public static Kernel1D symmetric( double... halfKernel )
+	public static Kernel1D symmetric( final double... halfKernel )
 	{
 		Objects.requireNonNull( halfKernel );
 		return new Kernel1D(
 				halfToFullKernel( halfKernel ),
-				halfKernel.length - 1
-		);
+				halfKernel.length - 1 );
 	}
 
 	/**
-	 * Similar to {@link #symmetric(double[])} but creates an array of one-dimensional convolution kernels.
+	 * Similar to {@link #symmetric(double[])} but creates an array of
+	 * one-dimensional convolution kernels.
 	 */
-	public static Kernel1D[] symmetric( double[][] halfKernels )
+	public static Kernel1D[] symmetric( final double[][] halfKernels )
 	{
 		return Stream.of( halfKernels ).map( Kernel1D::symmetric ).toArray( Kernel1D[]::new );
 	}
@@ -43,46 +44,49 @@ public class Kernel1D
 	/**
 	 * Creates a one-dimensional asymmetric convolution kernel.
 	 *
-	 * @param fullKernel  an array containing the values of the kernel
-	 * @param originIndex the index of the array element which is the origin of the kernel
+	 * @param fullKernel
+	 *            an array containing the values of the kernel
+	 * @param originIndex
+	 *            the index of the array element which is the origin of the
+	 *            kernel
 	 */
-	public static Kernel1D asymmetric( double[] fullKernel, int originIndex )
+	public static Kernel1D asymmetric( final double[] fullKernel, final int originIndex )
 	{
 		Objects.requireNonNull( fullKernel );
 		return new Kernel1D(
 				fullKernel,
-				originIndex
-		);
+				originIndex );
 	}
 
 	/**
-	 * Creates a one-dimensional asymmetric convolution kernel,
-	 * where the origin of the kernel is in the middle.
+	 * Creates a one-dimensional asymmetric convolution kernel, where the origin
+	 * of the kernel is in the middle.
 	 */
-	public static Kernel1D centralAsymmetric( double... kernel )
+	public static Kernel1D centralAsymmetric( final double... kernel )
 	{
 		return asymmetric( kernel, ( kernel.length - 1 ) / 2 );
 	}
 
 	/**
-	 * Similar to {@link #asymmetric(double[], int)} but creates an array of one-dimensional convolution kernels.
+	 * Similar to {@link #asymmetric(double[], int)} but creates an array of
+	 * one-dimensional convolution kernels.
 	 */
-	public static Kernel1D[] asymmetric( double[][] fullKernels, int[] originIndices )
+	public static Kernel1D[] asymmetric( final double[][] fullKernels, final int[] originIndices )
 	{
 		return IntStream.range( 0, fullKernels.length ).mapToObj(
-				d -> asymmetric( fullKernels[ d ], originIndices[ d ] )
-		).toArray( Kernel1D[]::new );
+				d -> asymmetric( fullKernels[ d ], originIndices[ d ] ) ).toArray( Kernel1D[]::new );
 	}
 
 	/**
-	 * Similar to {@link #centralAsymmetric(double...)} but creates an array of one-dimensional convolution kernels.
+	 * Similar to {@link #centralAsymmetric(double...)} but creates an array of
+	 * one-dimensional convolution kernels.
 	 */
-	public static Kernel1D[] centralAsymmetric( double[][] kernels )
+	public static Kernel1D[] centralAsymmetric( final double[][] kernels )
 	{
 		return Stream.of( kernels ).map( Kernel1D::centralAsymmetric ).toArray( Kernel1D[]::new );
 	}
 
-	private Kernel1D( double[] fullKernel, int centralIndex )
+	private Kernel1D( final double[] fullKernel, final int centralIndex )
 	{
 		this.fullKernel = fullKernel;
 		this.centralIndex = centralIndex;
@@ -108,13 +112,13 @@ public class Kernel1D
 		return fullKernel().length;
 	}
 
-	// --  Helper methods --
+	// -- Helper methods --
 
-	public static double[] halfToFullKernel( double[] halfKernel )
+	public static double[] halfToFullKernel( final double[] halfKernel )
 	{
-		int k = halfKernel.length;
-		int k1 = k - 1;
-		double[] kernel = new double[ k1 + k ];
+		final int k = halfKernel.length;
+		final int k1 = k - 1;
+		final double[] kernel = new double[ k1 + k ];
 		for ( int i = 0; i < k; i++ )
 		{
 			kernel[ k1 - i ] = halfKernel[ i ];

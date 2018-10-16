@@ -35,7 +35,6 @@
 package net.imglib2.algorithm.gauss3;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -47,8 +46,6 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.convolution.Convolution;
-import net.imglib2.algorithm.convolution.LineConvolverFactory;
 import net.imglib2.algorithm.convolution.kernel.Kernel1D;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;

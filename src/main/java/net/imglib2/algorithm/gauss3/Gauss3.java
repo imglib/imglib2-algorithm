@@ -202,7 +202,7 @@ public final class Gauss3
 	public static < S extends NumericType< S >, T extends NumericType< T > > void gauss( final double[] sigma, final RandomAccessible< S > source, final RandomAccessibleInterval< T > target, final ExecutorService service ) throws IncompatibleTypeException
 	{
 		final double[][] halfkernels = halfkernels( sigma );
-		Convolution< NumericType< ? > > convolution = SeparableKernelConvolution.convolution( Kernel1D.symmetric( halfkernels ) );
+		final Convolution< NumericType< ? > > convolution = SeparableKernelConvolution.convolution( Kernel1D.symmetric( halfkernels ) );
 		convolution.setExecutor( service );
 		convolution.process( source, target );
 	}

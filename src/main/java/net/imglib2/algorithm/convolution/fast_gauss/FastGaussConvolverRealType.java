@@ -1,44 +1,46 @@
 package net.imglib2.algorithm.convolution.fast_gauss;
 
+import java.util.Arrays;
+
 import net.imglib2.RandomAccess;
 import net.imglib2.algorithm.convolution.LineConvolverFactory;
 import net.imglib2.loops.ClassCopyProvider;
 import net.imglib2.type.numeric.RealType;
 
-import java.util.Arrays;
-
 /**
- * Implementation of {@link LineConvolverFactory} that uses {@link FastGaussCalculator}
- * to calculate a fast Gauss transform.
+ * Implementation of {@link LineConvolverFactory} that uses
+ * {@link FastGaussCalculator} to calculate a fast Gauss transform.
  *
  * @author Vladimir Ulman
  * @author Matthias Arzt
  */
 public class FastGaussConvolverRealType implements LineConvolverFactory< RealType< ? > >
 {
-
 	private final FastGaussCalculator.Parameters fc;
 
 	private static final ClassCopyProvider< Runnable > provider = new ClassCopyProvider<>( MyConvolver.class, Runnable.class );
 
-	public FastGaussConvolverRealType( double sigma )
+	public FastGaussConvolverRealType( final double sigma )
 	{
 		this.fc = FastGaussCalculator.Parameters.exact( sigma );
 	}
 
-	@Override public long getBorderBefore()
+	@Override
+	public long getBorderBefore()
 	{
 		return fc.N + 1;
 	}
 
-	@Override public long getBorderAfter()
+	@Override
+	public long getBorderAfter()
 	{
 		return fc.N - 1;
 	}
 
-	@Override public Runnable getConvolver( RandomAccess< ? extends RealType< ? > > in, RandomAccess< ? extends RealType< ? > > out, int d, long lineLength )
+	@Override
+	public Runnable getConvolver( final RandomAccess< ? extends RealType< ? > > in, final RandomAccess< ? extends RealType< ? > > out, final int d, final long lineLength )
 	{
-		Object key = Arrays.asList( in.getClass(), out.getClass(), in.get().getClass(), out.get().getClass() );
+		final Object key = Arrays.asList( in.getClass(), out.getClass(), in.get().getClass(), out.get().getClass() );
 		return provider.newInstanceForKey( key, d, fc, in, out, lineLength );
 	}
 
@@ -58,7 +60,7 @@ public class FastGaussConvolverRealType implements LineConvolverFactory< RealTyp
 
 		private final double[] tmpE;
 
-		public MyConvolver( int d, FastGaussCalculator.Parameters fc, RandomAccess< ? extends RealType< ? > > in, RandomAccess< ? extends RealType< ? > > out, long lineLength )
+		public MyConvolver( final int d, final FastGaussCalculator.Parameters fc, final RandomAccess< ? extends RealType< ? > > in, final RandomAccess< ? extends RealType< ? > > out, final long lineLength )
 		{
 			if ( lineLength > Integer.MAX_VALUE )
 				throw new UnsupportedOperationException();
@@ -71,18 +73,19 @@ public class FastGaussConvolverRealType implements LineConvolverFactory< RealTyp
 			this.fg = new FastGaussCalculator( fc );
 		}
 
-		@Override public void run()
+		@Override
+		public void run()
 		{
-			//left boundary: x=-Nm1, such that tmp = I(0) + I(0),
-			//but we say x=-N to simplify the following code block a bit
+			// left boundary: x=-Nm1, such that tmp = I(0) + I(0),
+			// but we say x=-N to simplify the following code block a bit
 			for ( int i = 0; i < lineLength + offset; ++i )
 			{
-				tmpE[ i ] = in.get().getRealDouble(); //backward edge + forward edge
+				tmpE[ i ] = in.get().getRealDouble(); // backward edge + forward edge
 				in.fwd( d );
 			}
 
-			//cache...
-			double boundaryValue = tmpE[ 0 ];
+			// cache...
+			final double boundaryValue = tmpE[ 0 ];
 
 			fg.initialize( boundaryValue );
 			for ( int i = -offset; i < 0; ++i )
