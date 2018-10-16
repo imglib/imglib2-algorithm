@@ -40,7 +40,12 @@ public class GaussBenchmark
 	public void benchmarkSeparableKernelConvolution()
 	{
 		double[][] halfKernels = Gauss3.halfkernels( new double[] { sigma, sigma, sigma } );
-		SeparableKernelConvolution.convolution( Kernel1D.symmetric( halfKernels ) ).process( inImage, outImage );
+		final int numthreads = Runtime.getRuntime().availableProcessors();
+		final ExecutorService service = Executors.newFixedThreadPool( numthreads );
+		final Convolution< NumericType< ? > > convolution = SeparableKernelConvolution.convolution( Kernel1D.symmetric( halfKernels ) );
+		convolution.setExecutor( service );
+		convolution.process( inImage, outImage );
+		service.shutdown();
 	}
 
 	@Benchmark
