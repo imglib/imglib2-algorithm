@@ -99,7 +99,7 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 	{
 		long[] min = Intervals.minAsLongArray( interval );
 		long[] dim = Intervals.dimensionsAsLongArray( interval );
-		long size = LongStream.of( dim ).reduce( 1, ( a, b ) -> a * b );
+		long size = Intervals.numElements( dim );
 		final long endIndex = size;
 		final long taskSize = ( size + numTasks - 1 ) / numTasks; // round up
 		final ArrayList< Callable< Void > > callables = new ArrayList<>();
