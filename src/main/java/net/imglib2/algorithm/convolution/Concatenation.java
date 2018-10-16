@@ -1,13 +1,9 @@
 package net.imglib2.algorithm.convolution;
 
-import net.imglib2.Dimensions;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
-import net.imglib2.img.ImgFactory;
-import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
@@ -91,21 +87,8 @@ class Concatenation< T > implements Convolution< T >
 	private static < T extends NativeType< T > > RandomAccessibleInterval< T > createImage( T targetType, Interval targetInterval )
 	{
 		long[] dimensions = Intervals.dimensionsAsLongArray( targetInterval );
-		Img< T > ts = getImgFactory( targetInterval, targetType ).create( dimensions );
+		Img< T > ts = Util.getArrayOrCellImgFactory( targetInterval, targetType ).create( dimensions );
 		return Views.translate( ts, Intervals.minAsLongArray( targetInterval ) );
-	}
-
-	private static < T extends NativeType< T > > ImgFactory< T > getImgFactory( final Dimensions targetsize, final T type )
-	{
-		if ( canUseArrayImgFactory( targetsize ) )
-			return new ArrayImgFactory<>( type );
-		final int cellSize = ( int ) Math.pow( Integer.MAX_VALUE / type.getEntitiesPerPixel().getRatio(), 1.0 / targetsize.numDimensions() );
-		return new CellImgFactory<>( type, cellSize );
-	}
-
-	private static boolean canUseArrayImgFactory( final Dimensions targetsize )
-	{
-		return Intervals.numElements( targetsize ) <= Integer.MAX_VALUE;
 	}
 
 	private static < T > T uncheckedCast( Object in )
