@@ -87,6 +87,7 @@ public final class ConvolverNumericType< T extends NumericType< T > > implements
 		buffer = ( T[] ) Array.newInstance( type.getClass(), k1k + 1 );
 		for ( int i = 0; i < k1k + 1; ++i )
 			buffer[ i ] = type.createVariable();
+		buffer[ k1k ].setZero();
 
 		tmp = type.createVariable();
 	}
