@@ -72,8 +72,6 @@ public final class ConvolverNativeType< T extends NumericType< T > & NativeType<
 
 	private final T b2;
 
-	private final T tmp;
-
 	public ConvolverNativeType( final Kernel1D kernel, final RandomAccess< ? extends T > in, final RandomAccess< ? extends T > out, final int d, final long lineLength )
 	{
 		// NB: This constructor is used in ConvolverFactories. It needs to be public and have this exact signature.
@@ -87,11 +85,12 @@ public final class ConvolverNativeType< T extends NumericType< T > & NativeType<
 		linelen = lineLength;
 
 		final T type = out.get();
-		final ArrayImg< T, ? > buf = new ArrayImgFactory<>( type ).create( new long[] { k1k } );
+		final ArrayImg< T, ? > buf = new ArrayImgFactory<>( type ).create( k1k + 1 );
 		b1 = buf.randomAccess().get();
 		b2 = buf.randomAccess().get();
 
-		tmp = type.createVariable();
+		b1.updateIndex( k1k );
+		b1.setZero();
 	}
 
 	private void prefill()
@@ -116,23 +115,13 @@ public final class ConvolverNativeType< T extends NumericType< T > & NativeType<
 	private void process( final T w )
 	{
 		// move buf contents down
-		for ( int i = 0; i < k1k1; ++i )
+		for ( int i = 0; i < k1k; ++i )
 		{
-			b2.updateIndex( i + 1 );
 			b1.updateIndex( i );
-			b1.set( b2 );
-		}
-
-		b1.updateIndex( k1k1 );
-		b1.setZero();
-
-		// loop
-		for ( int j = 0; j < k1k; ++j )
-		{
-			tmp.set( w );
-			tmp.mul( kernel[ j ] );
-			b1.updateIndex( j );
-			b1.add( tmp );
+			b2.updateIndex( i + 1 );
+			b1.set( w );
+			b1.mul( kernel[ i ] );
+			b1.add( b2 );
 		}
 	}
 
