@@ -16,6 +16,10 @@ import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.Type;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
@@ -51,7 +55,7 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 	@Override
 	public T preferredSourceType( final T targetType )
 	{
-		return targetType;
+		return (T) factory.preferredSourceType( targetType );
 	}
 
 	@Override

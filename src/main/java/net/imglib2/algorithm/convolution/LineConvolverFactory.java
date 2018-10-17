@@ -1,6 +1,7 @@
 package net.imglib2.algorithm.convolution;
 
 import net.imglib2.RandomAccess;
+import net.imglib2.type.Type;
 
 /**
  * The interesting part of a separable convolution is how one line of the image
@@ -54,4 +55,6 @@ public interface LineConvolverFactory< T >
 	 *         getBorderAfter())
 	 */
 	Runnable getConvolver( RandomAccess< ? extends T > in, RandomAccess< ? extends T > out, int d, long lineLength );
+
+	T preferredSourceType( T targetType );
 }

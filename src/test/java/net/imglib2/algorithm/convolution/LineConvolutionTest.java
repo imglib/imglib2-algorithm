@@ -71,5 +71,11 @@ public class LineConvolutionTest
 				}
 			};
 		}
+
+		@Override
+		public UnsignedByteType preferredSourceType( UnsignedByteType targetType )
+		{
+			return new UnsignedByteType();
+		}
 	}
 }

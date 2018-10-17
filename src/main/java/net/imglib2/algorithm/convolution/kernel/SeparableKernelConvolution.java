@@ -37,7 +37,7 @@ public class SeparableKernelConvolution
 	 *
 	 * @see Convolution
 	 */
-	public static Convolution< NumericType< ? > > convolution( final Kernel1D[] kernels )
+	public static Convolution< NumericType< ? > > convolution( final Kernel1D... kernels )
 	{
 		final List< Convolution< NumericType< ? > > > steps = IntStream.range( 0, kernels.length )
 				.mapToObj( i -> convolution1d( kernels[ i ], i ) )

@@ -4,10 +4,12 @@ import net.imglib2.Cursor;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.exception.IncompatibleTypeException;
+import net.imglib2.algorithm.convolution.Convolution;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
@@ -19,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -122,4 +125,26 @@ public class SeparableKernelConvolutionTest
 		Views.interval( Views.pair( expected, actual ), expected ).forEach( p -> assertEquals( p.getA().getRealDouble(), p.getB().getRealDouble(), delta ) );
 	}
 
+	@Test
+	public void testPrecisionOfTemporaryImages() {
+		// NB: This test assures that for convolution on UnsignedByteType,
+		// the pixel type to store intermediate results can store 0.1, hence
+		// is FloatType or DoubleType.
+		final byte[] inputPixels = { 1 };
+		final byte[] outputPixels = new byte[ 1 ];
+		final Kernel1D[] kernels = { Kernel1D.symmetric( 0.1 ), Kernel1D.symmetric( 10 ) };
+		Img< UnsignedByteType > input = ArrayImgs.unsignedBytes( inputPixels, 1, 1 );
+		Img< UnsignedByteType > output = ArrayImgs.unsignedBytes( outputPixels, 1, 1 );
+		SeparableKernelConvolution.convolution( kernels ).process( input, output );
+		assertArrayEquals( inputPixels, outputPixels );
+	}
+
+	@Test
+	public void testPreferredSourceType() {
+		Convolution< NumericType< ? > > convolution = SeparableKernelConvolution.convolution( Kernel1D.symmetric( 1.0 ) );
+		assertTrue( convolution.preferredSourceType( new UnsignedByteType() ) instanceof FloatType );
+		assertTrue( convolution.preferredSourceType( new DoubleType() ) instanceof DoubleType );
+		assertTrue( convolution.preferredSourceType( new FloatType() ) instanceof FloatType );
+		assertTrue( convolution.preferredSourceType( new ARGBType() ) instanceof ARGBType );
+	}
 }

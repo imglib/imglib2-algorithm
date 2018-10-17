@@ -11,6 +11,7 @@ import net.imglib2.type.Type;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.real.FloatType;
 
 /**
  * Used by {@link SeparableKernelConvolution} as {@link LineConvolverFactory}
@@ -54,6 +55,16 @@ public class KernelConvolverFactory implements LineConvolverFactory< NumericType
 		final ClassCopyProvider< Runnable > provider = getProvider( sourceType, targetType );
 		final List< Class< ? > > key = Arrays.asList( in.getClass(), out.getClass(), sourceType.getClass(), targetType.getClass() );
 		return provider.newInstanceForKey( key, kernel, in, out, d, lineLength );
+	}
+
+	@Override
+	public NumericType< ? > preferredSourceType( NumericType< ? > targetType )
+	{
+		if (targetType instanceof DoubleType)
+			return targetType;
+		if (targetType instanceof RealType)
+			return new FloatType();
+		return targetType;
 	}
 
 	private ClassCopyProvider< Runnable > getProvider( final NumericType< ? > sourceType, final NumericType< ? > targetType )

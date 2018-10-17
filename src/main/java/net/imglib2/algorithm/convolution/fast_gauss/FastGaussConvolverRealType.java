@@ -6,6 +6,8 @@ import net.imglib2.RandomAccess;
 import net.imglib2.algorithm.convolution.LineConvolverFactory;
 import net.imglib2.loops.ClassCopyProvider;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.real.FloatType;
 
 /**
  * Implementation of {@link LineConvolverFactory} that uses
@@ -42,6 +44,12 @@ public class FastGaussConvolverRealType implements LineConvolverFactory< RealTyp
 	{
 		final Object key = Arrays.asList( in.getClass(), out.getClass(), in.get().getClass(), out.get().getClass() );
 		return provider.newInstanceForKey( key, d, fc, in, out, lineLength );
+	}
+
+	@Override
+	public RealType< ? > preferredSourceType( RealType< ? > targetType )
+	{
+		return (targetType instanceof DoubleType) ? targetType : new FloatType();
 	}
 
 	public static class MyConvolver implements Runnable
