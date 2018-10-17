@@ -23,65 +23,12 @@ public class KernelConvolverFactoryTest
 {
 
 	@Test
-	public void testDoubleConvolver()
-	{
-		testConvolver( DoubleConvolverRealType.class );
-	}
-
-	@Test
-	public void testFloatConvolver()
-	{
-		testConvolver( FloatConvolverRealType.class );
-	}
-
-	@Test
-	public void testNativeConvolver()
-	{
-		testConvolver( ConvolverNativeType.class );
-	}
-
-	@Test
-	public void testNumericConvolver()
-	{
-		testConvolver( ConvolverNumericType.class );
-	}
-
-	public void testConvolver( Class< ? extends Runnable > expectedConvolverClass )
-	{
-		try
-		{
-			double[] halfKernel = { 3, 2, 1 };
-			double[] in = { 5, 0, 1, 0, 0, 0, 0, 0, 0, 0 };
-			double[] expected = { 8, 2, 1, 0, 0, 0 };
-			int lineLength = in.length - 2 * ( halfKernel.length - 1 );
-			double[] actual = new double[ lineLength ];
-
-			Img< DoubleType > inImg = ArrayImgs.doubles( in, in.length );
-			Img< DoubleType > outImg = ArrayImgs.doubles( actual, actual.length );
-			Runnable convolver = expectedConvolverClass
-					.getConstructor( Kernel1D.class, RandomAccess.class, RandomAccess.class, int.class, long.class )
-					.newInstance( Kernel1D.symmetric( halfKernel ), inImg.randomAccess(), outImg.randomAccess(), 0, lineLength );
-			convolver.run();
-			assertArrayEquals( expected, actual, 0.0001 );
-		}
-		catch ( NoSuchMethodException e )
-		{
-			fail( "The class " + expectedConvolverClass.getSimpleName() + " misses the constructor needed for KernelConvolverFactory." );
-		}
-		catch ( IllegalAccessException | InstantiationException | InvocationTargetException e )
-		{
-			fail( "The constructor of class " + expectedConvolverClass.getSimpleName() + " must be public for class copying." );
-		}
-	}
-
-	@Test
 	public void test()
 	{
 		testFactoryTypeMatching( DoubleConvolverRealType.class, ArrayImgs.doubles( 1 ) );
 		testFactoryTypeMatching( FloatConvolverRealType.class, ArrayImgs.bytes( 1 ) );
 		testFactoryTypeMatching( ConvolverNativeType.class, ArrayImgs.argbs( 1 ) );
-		ListImg< ? extends NumericType< ? > > image = createImageOfNumericType();
-		testFactoryTypeMatching( ConvolverNumericType.class, image );
+		testFactoryTypeMatching( ConvolverNumericType.class, createImageOfNumericType() );
 	}
 
 	private ListImg< ? extends NumericType< ? > > createImageOfNumericType()
