@@ -2,54 +2,51 @@ package net.imglib2.algorithm.convolution.kernel;
 
 import static org.junit.Assert.assertArrayEquals;
 
+import net.imglib2.RandomAccess;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.real.DoubleType;
 
 import org.junit.Test;
 
 /**
+ * Tests {@link ConvolverNativeType}, {@link ConvolverNumericType},
+ * {@link DoubleConvolverRealType} and {@link FloatConvolverRealType}.
+ *
  * @author Tobias Pietzsch
  */
 public class ConvolverTest
 {
-	private final double[] kernel = { 1.0, 2.0, 3.0, 4.0 };
-	private final int center = 2;
-
-	private final double[] in = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 };
-
 	@Test
 	public void testConvolverNativeType()
 	{
-		final double[] out = new double[ kernel.length ];
-		final ConvolverNativeType< DoubleType > convolver = new ConvolverNativeType<>(
-				Kernel1D.asymmetric( kernel, center ),
-				ArrayImgs.doubles( in, in.length ).randomAccess(),
-				ArrayImgs.doubles( out, out.length ).randomAccess(),
-				0,
-				out.length );
-		convolver.run();
-		assertArrayEquals( kernel, out, 0 );
+		testConvolver( ConvolverNativeType::new );
 	}
 
 	@Test
 	public void testConvolverNumericType()
 	{
-		final double[] out = new double[ kernel.length ];
-		final ConvolverNumericType< DoubleType > convolver = new ConvolverNumericType<>(
-				Kernel1D.asymmetric( kernel, center ),
-				ArrayImgs.doubles( in, in.length ).randomAccess(),
-				ArrayImgs.doubles( out, out.length ).randomAccess(),
-				0,
-				out.length );
-		convolver.run();
-		assertArrayEquals( kernel, out, 0 );
+		testConvolver( ConvolverNumericType::new );
 	}
 
 	@Test
 	public void testDoubleConvolverRealType()
 	{
+		testConvolver( DoubleConvolverRealType::new );
+	}
+
+	@Test
+	public void testFloatConvolverRealType()
+	{
+		testConvolver( FloatConvolverRealType::new );
+	}
+
+	private void testConvolver( ConvolverConstructor< DoubleType > constructor )
+	{
+		final double[] kernel = { 1.0, 2.0, 3.0, 4.0 };
+		final int center = 2;
+		final double[] in = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 };
 		final double[] out = new double[ kernel.length ];
-		final DoubleConvolverRealType convolver = new DoubleConvolverRealType(
+		final Runnable convolver = constructor.create(
 				Kernel1D.asymmetric( kernel, center ),
 				ArrayImgs.doubles( in, in.length ).randomAccess(),
 				ArrayImgs.doubles( out, out.length ).randomAccess(),
@@ -59,17 +56,8 @@ public class ConvolverTest
 		assertArrayEquals( kernel, out, 0 );
 	}
 
-	@Test
-	public void testFloatConvolverRealType()
+	private interface ConvolverConstructor< T >
 	{
-		final double[] out = new double[ kernel.length ];
-		final FloatConvolverRealType convolver = new FloatConvolverRealType(
-				Kernel1D.asymmetric( kernel, center ),
-				ArrayImgs.doubles( in, in.length ).randomAccess(),
-				ArrayImgs.doubles( out, out.length ).randomAccess(),
-				0,
-				out.length );
-		convolver.run();
-		assertArrayEquals( kernel, out, 0 );
+		Runnable create( final Kernel1D kernel, final RandomAccess< ? extends T > in, final RandomAccess< ? extends T > out, final int d, final long lineLength );
 	}
 }
