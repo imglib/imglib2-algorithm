@@ -7,6 +7,7 @@ import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.test.ImgLib2Assert;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
@@ -15,9 +16,6 @@ import org.junit.Test;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Matthias Arzt
@@ -40,7 +38,7 @@ public class SeparableSymmetricConvolutionTest
 	{
 		RandomAccessibleInterval< DoubleType > target = createImg( expected );
 		SeparableSymmetricConvolution.convolve( halfKernels, getDirac( halfKernels.length ), target, service );
-		assertImagesEqual( expected, target, 0.0 );
+		ImgLib2Assert.assertImageEquals( expected, target );
 	}
 
 	@Test
@@ -50,7 +48,7 @@ public class SeparableSymmetricConvolutionTest
 		ConvolverFactory< DoubleType, DoubleType > factory = FloatConvolverRealType.factory();
 		SeparableSymmetricConvolution.convolve( halfKernels, getDirac( halfKernels.length ), target,
 				factory, factory, factory, factory, new ArrayImgFactory<>(), new DoubleType(), service );
-		assertImagesEqual( expected, target, 0.0 );
+		ImgLib2Assert.assertImageEquals( expected, target );
 	}
 
 	@Test
@@ -75,11 +73,5 @@ public class SeparableSymmetricConvolutionTest
 		// TODO: better name, move to ArrayImgs class
 		Img< DoubleType > image = ArrayImgs.doubles( Intervals.dimensionsAsLongArray( interval ) );
 		return Views.translate( image, Intervals.minAsLongArray( interval ) );
-	}
-
-	public static void assertImagesEqual( RandomAccessibleInterval< DoubleType > expected, RandomAccessibleInterval< DoubleType > actual, double delta )
-	{
-		assertTrue( Intervals.equals( expected, actual ) );
-		Views.interval( Views.pair( expected, actual ), expected ).forEach( p -> assertEquals( p.getA().getRealDouble(), p.getB().getRealDouble(), delta ) );
 	}
 }

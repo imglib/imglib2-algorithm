@@ -200,6 +200,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 
+		<imglib2.version>5.6.0</imglib2.version>
 		<imglib2-realtransform.version>2.0.0-beta-39</imglib2-realtransform.version>
 		<jitk-tps.version>3.0.0</jitk-tps.version>
 		<ojalgo.version>43.0</ojalgo.version>
