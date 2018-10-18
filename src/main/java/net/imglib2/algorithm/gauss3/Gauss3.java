@@ -39,6 +39,9 @@ import java.util.concurrent.Executors;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.convolution.Convolution;
+import net.imglib2.algorithm.convolution.kernel.Kernel1D;
+import net.imglib2.algorithm.convolution.kernel.SeparableKernelConvolution;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
@@ -161,9 +164,8 @@ public final class Gauss3
 	 */
 	public static < S extends NumericType< S >, T extends NumericType< T > > void gauss( final double[] sigma, final RandomAccessible< S > source, final RandomAccessibleInterval< T > target, final int numThreads ) throws IncompatibleTypeException
 	{
-		final double[][] halfkernels = halfkernels( sigma );
 		final ExecutorService service = Executors.newFixedThreadPool( numThreads );
-		SeparableSymmetricConvolution.convolve( halfkernels, source, target, service );
+		gauss( sigma, source, target, service );
 		service.shutdown();
 	}
 
@@ -200,7 +202,9 @@ public final class Gauss3
 	public static < S extends NumericType< S >, T extends NumericType< T > > void gauss( final double[] sigma, final RandomAccessible< S > source, final RandomAccessibleInterval< T > target, final ExecutorService service ) throws IncompatibleTypeException
 	{
 		final double[][] halfkernels = halfkernels( sigma );
-		SeparableSymmetricConvolution.convolve( halfkernels, source, target, service );
+		final Convolution< NumericType< ? > > convolution = SeparableKernelConvolution.convolution( Kernel1D.symmetric( halfkernels ) );
+		convolution.setExecutor( service );
+		convolution.process( source, target );
 	}
 
 	public static double[][] halfkernels( final double[] sigma )

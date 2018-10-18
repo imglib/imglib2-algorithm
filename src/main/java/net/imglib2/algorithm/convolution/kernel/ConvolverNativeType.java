@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,9 +32,10 @@
  * #L%
  */
 
-package net.imglib2.algorithm.gauss3;
+package net.imglib2.algorithm.convolution.kernel;
 
 import net.imglib2.RandomAccess;
+import net.imglib2.algorithm.convolution.LineConvolverFactory;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.NativeType;
@@ -43,137 +44,96 @@ import net.imglib2.type.numeric.NumericType;
 /**
  * A 1-dimensional line convolver that operates on all {@link NumericType} with
  * {@link NativeType} representation. It implemented using a shifting window
- * buffer that is stored in a small {@link NativeType} image. This is intented
- * for very large images, where a single line has more than
- * {@link Integer#MAX_VALUE} elements. For smaller images, the faster
- * {@link ConvolverNativeTypeBuffered} should be used.
- * 
- * @author Tobias Pietzsch
- * @see ConvolverFactory
- * 
+ * buffer that is stored in a small {@link NativeType} image.
+ *
  * @param <T>
  *            input and output type
+ *
+ * @author Tobias Pietzsch
+ * @author Matthias Arzt
+ *
+ * @see LineConvolverFactory
  */
-@Deprecated
 public final class ConvolverNativeType< T extends NumericType< T > & NativeType< T > > implements Runnable
 {
-	/**
-	 * @return a {@link ConvolverFactory} producing {@link ConvolverNativeType}.
-	 */
-	public static < T extends NumericType< T > & NativeType< T > > ConvolverFactoryNativeType< T > factory( final T type )
+
+	private final double[] kernel;
+
+	private final RandomAccess< ? extends T > in;
+
+	private final RandomAccess< ? extends T > out;
+
+	private final int d;
+
+	private final int k1k;
+
+	private final int k1k1;
+
+	private final long linelen;
+
+	private final T b1;
+
+	private final T b2;
+
+	public ConvolverNativeType( final Kernel1D kernel, final RandomAccess< ? extends T > in, final RandomAccess< ? extends T > out, final int d, final long lineLength )
 	{
-		return new ConvolverFactoryNativeType< T >( type );
-	}
-
-	public static final class ConvolverFactoryNativeType< T extends NumericType< T > & NativeType< T > > implements ConvolverFactory< T, T >
-	{
-		final private T type;
-
-		public ConvolverFactoryNativeType( final T type )
-		{
-			this.type = type;
-		}
-
-		@Override
-		public Runnable create( final double[] halfkernel, final RandomAccess< T > in, final RandomAccess< T > out, final int d, final long lineLength )
-		{
-			return new ConvolverNativeType< T >( halfkernel, in, out, d, lineLength, type );
-		}
-	}
-
-	final private double[] kernel;
-
-	final private RandomAccess< T > in;
-
-	final private RandomAccess< T > out;
-
-	final private int d;
-
-	final private int k;
-
-	final private int k1;
-
-	final private int k1k1;
-
-	final private long linelen;
-
-	final T b1;
-
-	final T b2;
-
-	final T tmp;
-
-	private ConvolverNativeType( final double[] kernel, final RandomAccess< T > in, final RandomAccess< T > out, final int d, final long lineLength, final T type )
-	{
-		this.kernel = kernel;
+		// NB: This constructor is used in ConvolverFactories. It needs to be public and have this exact signature.
 		this.in = in;
 		this.out = out;
 		this.d = d;
+		this.kernel = kernel.fullKernel().clone();
 
-		k = kernel.length;
-		k1 = k - 1;
-		k1k1 = k1 + k1;
+		k1k = this.kernel.length;
+		k1k1 = k1k - 1;
 		linelen = lineLength;
 
-		final int buflen = 2 * k - 1;
-		final ArrayImg< T, ? > buf = new ArrayImgFactory<>( type ).create( buflen );
+		final T type = out.get();
+		final ArrayImg< T, ? > buf = new ArrayImgFactory<>( type ).create( k1k + 1 );
 		b1 = buf.randomAccess().get();
 		b2 = buf.randomAccess().get();
 
-		tmp = type.createVariable();
+		b1.updateIndex( k1k );
+		b1.setZero();
+	}
+
+	private void prefill()
+	{
+		// add new values
+		final T w = in.get();
+		process( w );
+		in.fwd( d );
 	}
 
 	private void next()
 	{
-		// move buf contents down
-		for ( int i = 0; i < k1k1; ++i )
-		{
-			b2.updateIndex( i + 1 );
-			b1.updateIndex( i );
-			b1.set( b2 );
-		}
-
 		// add new values
 		final T w = in.get();
-
-		// center
-		tmp.set( w );
-		tmp.mul( kernel[ 0 ] );
-		b1.updateIndex( k1 );
-		b1.add( tmp );
-
-		// loop
-		for ( int j = 1; j < k1; ++j )
-		{
-			tmp.set( w );
-			tmp.mul( kernel[ j ] );
-			b1.updateIndex( k1 + j );
-			b1.add( tmp );
-			b1.updateIndex( k1 - j );
-			b1.add( tmp );
-		}
-
-		// outer-most
-		tmp.set( w );
-		tmp.mul( kernel[ k1 ] );
-		b1.updateIndex( k1k1 );
-		b1.set( tmp );
-
+		process( w );
 		in.fwd( d );
+		b1.updateIndex( 0 );
+		out.get().set( b1 );
+		out.fwd( d );
+	}
+
+	private void process( final T w )
+	{
+		// move buf contents down
+		for ( int i = 0; i < k1k; ++i )
+		{
+			b1.updateIndex( i );
+			b2.updateIndex( i + 1 );
+			b1.set( w );
+			b1.mul( kernel[ i ] );
+			b1.add( b2 );
+		}
 	}
 
 	@Override
 	public void run()
 	{
 		for ( int i = 0; i < k1k1; ++i )
-			next();
+			prefill();
 		for ( long i = 0; i < linelen; ++i )
-		{
 			next();
-			b1.updateIndex( 0 );
-			b1.add( tmp );
-			out.get().set( b1 );
-			out.fwd( d );
-		}
 	}
 }

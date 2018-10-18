@@ -200,7 +200,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 
-		<imglib2.version>5.1.0</imglib2.version>
+		<imglib2.version>5.6.0</imglib2.version>
 		<imglib2-realtransform.version>2.0.0-beta-39</imglib2-realtransform.version>
 		<jitk-tps.version>3.0.0</jitk-tps.version>
 	</properties>
@@ -246,6 +246,18 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-core</artifactId>
+			<version>1.19</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-generator-annprocess</artifactId>
+			<version>1.19</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

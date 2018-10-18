@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,45 +32,83 @@
  * #L%
  */
 
-package net.imglib2.algorithm.gauss3;
+package net.imglib2.algorithm.convolution.kernel;
 
 import net.imglib2.RandomAccess;
+import net.imglib2.algorithm.convolution.LineConvolverFactory;
+import net.imglib2.type.numeric.RealType;
 
 /**
- * {@link ConvolverFactory} creates 1-dimensional line convolvers. See
- * {@link #create(double[], RandomAccess, RandomAccess, int, long)}.
- * 
+ * A 1-dimensional line convolver that operates on all {@link RealType}. It
+ * implemented using a shifting window buffer that is stored in a small double[]
+ * array.
+ *
  * @author Tobias Pietzsch
- * 
- * @param <S>
- * @param <T>
+ * @author Matthias Arzt
+ *
+ * @see LineConvolverFactory
  */
-@Deprecated
-public interface ConvolverFactory< S, T >
+public final class DoubleConvolverRealType implements Runnable
 {
-	/**
-	 * Create a 1-dimensional line convolver. A line convolver has an input and
-	 * an output {@link RandomAccess}. They are moved forwards a long a line in
-	 * dimension d, reading source values from the input and writing convolved
-	 * values to the output. The line convolver is a Runnable. The idea is to
-	 * put the input and an output {@link RandomAccess} to the start of a line,
-	 * then call {@link Runnable#run()} to do the convolution. Then the input
-	 * and an output {@link RandomAccess} are moved to the next line,
-	 * {@link Runnable#run()} is called again, and so on.
-	 * 
-	 * @param halfkernel
-	 *            the upper half (starting at the center pixel) of the symmetric
-	 *            convolution kernel.
-	 * @param in
-	 *            {@link RandomAccess} on the source values.
-	 * @param out
-	 *            {@link RandomAccess} on the target (convolved) values.
-	 * @param d
-	 *            dimension in which to convolve.
-	 * @param lineLength
-	 *            how many convolved values to produce in one
-	 *            {@link Runnable#run()}.
-	 * @return a line convolver.
-	 */
-	public Runnable create( final double[] halfkernel, final RandomAccess< S > in, final RandomAccess< T > out, final int d, final long lineLength );
+
+	private final double[] kernel;
+
+	private final RandomAccess< ? extends RealType< ? > > in;
+
+	private final RandomAccess< ? extends RealType< ? > > out;
+
+	private final int d;
+
+	private final int k1k;
+
+	private final int k1k1;
+
+	private final long linelen;
+
+	private final double[] buffer;
+
+	public DoubleConvolverRealType( final Kernel1D kernel, final RandomAccess< ? extends RealType< ? > > in, final RandomAccess< ? extends RealType< ? > > out, final int d, final long lineLength )
+	{
+		// NB: This constructor is used in ConvolverFactories. It needs to be public and have this exact signature.
+		this.in = in;
+		this.out = out;
+		this.d = d;
+		this.kernel = kernel.fullKernel().clone();
+
+		k1k = this.kernel.length;
+		k1k1 = k1k - 1;
+		linelen = lineLength;
+		buffer = new double[ k1k + 1 ];
+	}
+
+	private void prefill()
+	{
+		final double w = in.get().getRealDouble();
+		process( w );
+		in.fwd( d );
+	}
+
+	private void next()
+	{
+		final double w = in.get().getRealDouble();
+		out.get().setReal( w * kernel[ 0 ] + buffer[ 1 ] );
+		process( w );
+		in.fwd( d );
+		out.fwd( d );
+	}
+
+	private void process( final double w )
+	{
+		for ( int i = 1; i < k1k; ++i )
+			buffer[ i ] = w * kernel[ i ] + buffer[ i + 1 ];
+	}
+
+	@Override
+	public void run()
+	{
+		for ( int i = 0; i < k1k1; ++i )
+			prefill();
+		for ( long i = 0; i < linelen; ++i )
+			next();
+	}
 }
