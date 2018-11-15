@@ -68,7 +68,9 @@ public final class Let implements IFunction, IBinaryFunction
 		final O scrap = tmp.copy();
 		final Map< String, O > rebind = new HashMap<>( bindings );
 		rebind.put( this.varName, scrap );
-		return new LetBinding< O >( scrap, this.varName, this.varValue.reInit( tmp, rebind, converter, imgSources ), this.body.reInit( tmp, rebind, converter, imgSources ) );
+		return new LetBinding< O >( scrap, this.varName,
+				this.varValue.reInit( tmp, rebind, converter, imgSources ),
+				this.body.reInit( tmp, rebind, converter, imgSources ) );
 	}
 
 	@Override

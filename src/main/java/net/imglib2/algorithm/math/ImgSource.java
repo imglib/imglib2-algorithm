@@ -29,7 +29,9 @@ public class ImgSource< I extends RealType< I > > implements IFunction
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
 		// Optimization: if input image type is the same or a subclass of
-		// the output image type (represented here by tmp), then avoid the converter.
+		// the output image type (represented here by tmp), then avoid the converter
+		// but only if the targetImg is different than this.rai: otherwise, an intermediate
+		// computation result holder must be used (the scrap).
 		final OFunction< O > s;
 		if ( tmp.getClass().isAssignableFrom( this.rai.randomAccess().get().getClass() ) )
 			s = new ImgSourceIterableDirect< O >( ( RandomAccessibleInterval< O > )this.rai );

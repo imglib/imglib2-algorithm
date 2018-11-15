@@ -5,8 +5,11 @@ import java.lang.reflect.Constructor;
 abstract public class VarargsFunction
 {
 	final public IFunction[] wrapMap( final Object[] obs )
-	{	
+	{
 		try {
+			if ( 2 == obs.length )
+				return new IFunction[]{ Util.wrap( obs[ 0 ] ), Util.wrap( obs[ 1 ]) };
+			
 			final Constructor< ? > constructor = this.getClass().getConstructor( new Class[]{ Object.class, Object.class } );
 			ABinaryFunction a = ( ABinaryFunction )constructor.newInstance( obs[0], obs[1] );
 			ABinaryFunction b;

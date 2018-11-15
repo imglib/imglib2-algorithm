@@ -21,8 +21,10 @@ public final class GreaterThan extends Compare
 			final O tmp,
 			final Map< String, O > bindings,
 			final Converter< RealType< ? >, O > converter,
-			Map< Variable< O >, OFunction< O > > imgSources )
+			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return new IsGreaterThan< O >( tmp.copy(), this.a.reInit( tmp, bindings, converter, imgSources ), this.b.reInit( tmp, bindings, converter, imgSources ) );
+		return new IsGreaterThan< O >( tmp.copy(),
+				this.a.reInit( tmp, bindings, converter, imgSources ),
+				this.b.reInit( tmp, bindings, converter, imgSources ) );
 	}
 }

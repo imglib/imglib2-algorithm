@@ -22,6 +22,8 @@ public final class NotEqual extends Compare
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return new NotEquality< O >( tmp.copy(), this.a.reInit( tmp, bindings, converter, imgSources ), this.b.reInit( tmp, bindings, converter, imgSources ) );
+		return new NotEquality< O >( tmp.copy(),
+				this.a.reInit( tmp, bindings, converter, imgSources ),
+				this.b.reInit( tmp, bindings, converter, imgSources ) );
 	}
 }
