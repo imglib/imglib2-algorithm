@@ -232,4 +232,14 @@ public class ImgMath
 	{
 		return new Else( o );
 	}
+	
+	static public final < T extends RealType< T > > ImgSource< T > img( final RandomAccessibleInterval< T > rai )
+	{
+		return new ImgSource< T >( rai );
+	}
+	
+	static public final NumberSource number( final Number number )
+	{
+		return new NumberSource( number );
+	}
 }

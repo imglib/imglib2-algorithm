@@ -28,6 +28,8 @@ public final class Min extends ABinaryFunction
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return new Minimum< O >( this.a.reInit(tmp, bindings, converter, imgSources), this.b.reInit(tmp, bindings, converter, imgSources) );
+		return new Minimum< O >(
+				this.a.reInit( tmp, bindings, converter, imgSources ),
+				this.b.reInit( tmp, bindings, converter, imgSources ) );
 	}
 }

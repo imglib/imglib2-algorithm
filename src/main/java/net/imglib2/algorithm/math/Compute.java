@@ -79,7 +79,7 @@ public class Compute
 					output.setReal( input.getRealDouble() );
 				}
 			};
-		
+			
 		// Recursive copy: initializes interval iterators and sets temporary computation holder
 		final OFunction< O > f = this.operation.reInit(
 				target.randomAccess().get().createVariable(),
@@ -87,7 +87,7 @@ public class Compute
 				converter, null );
 		
 		// Check compatible iteration order and dimensions
-		if ( compatible_iteration_order )
+		if ( this.compatible_iteration_order )
 		{
 			// Evaluate function for every pixel
 			for ( final O output : Views.iterable( target ) )

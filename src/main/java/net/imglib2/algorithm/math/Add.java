@@ -26,8 +26,10 @@ public final class Add extends ABinaryFunction
 			final O tmp,
 			final Map< String, O > bindings,
 			final Converter< RealType< ? >, O > converter,
-			Map< Variable< O >, OFunction< O > > imgSources )
+			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return new Addition< O >( tmp.copy(), this.a.reInit( tmp, bindings, converter, imgSources ), this.b.reInit( tmp, bindings, converter, imgSources ) );
+		return new Addition< O >( tmp.copy(),
+				this.a.reInit( tmp, bindings, converter, imgSources ),
+				this.b.reInit( tmp, bindings, converter, imgSources ) );
 	}
 }
