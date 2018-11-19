@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IBinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
@@ -13,6 +14,9 @@ import net.imglib2.algorithm.math.abstractions.ITrinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IUnaryFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
+import net.imglib2.algorithm.math.execution.FunctionCursor;
+import net.imglib2.algorithm.math.execution.FunctionCursorIncompatibleOrder;
+import net.imglib2.algorithm.math.execution.FunctionRandomAccess;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
@@ -71,14 +75,7 @@ public class Compute
 			)
 	{
 		if ( null == converter )
-			converter = new Converter< RealType< ? >, O >()
-			{
-				@Override
-				public final void convert( final RealType< ? > input, final O output)
-				{
-					output.setReal( input.getRealDouble() );
-				}
-			};
+			converter = Util.genericRealTypeConverter();
 			
 		// Recursive copy: initializes interval iterators and sets temporary computation holder
 		final OFunction< O > f = this.operation.reInit(
@@ -199,5 +196,44 @@ public class Compute
 		// Check ImgSource: if they are downstream of an If statement, they should be declared in a Let before that
 		
 		return Util.compatibleIterationOrder( images );
+	}
+	
+	public < O extends RealType< O > > RandomAccess< O > randomAccess( final O outputType, final Converter< RealType< ? >, O > converter )
+	{
+		return new FunctionRandomAccess< O >( this.operation, outputType, converter );
+	}
+	
+	public < O extends RealType< O > > RandomAccess< O > randomAccess( final O outputType )
+	{
+		return new FunctionRandomAccess< O >( this.operation, outputType, Util.genericRealTypeConverter() );
+	}
+	
+	/** Returns a {@link RandomAccess} with the same type as the first input image found. */
+	public < O extends RealType< O > > RandomAccess< O > randomAccess()
+	{
+		@SuppressWarnings("unchecked")
+		final RandomAccessibleInterval< O > img = ( RandomAccessibleInterval< O > )Util.findFirstImg( operation );
+		final O outputType = img.randomAccess().get().createVariable();
+		return new FunctionRandomAccess< O >( this.operation, outputType, Util.genericRealTypeConverter() );
+	}
+	
+	public < O extends RealType< O > > Cursor< O > cursor( final O outputType, final Converter< RealType< ? >, O > converter )
+	{
+		if ( this.compatible_iteration_order )
+			return new FunctionCursor< O >( this.operation, outputType, converter );
+		return new FunctionCursorIncompatibleOrder< O >( this.operation, outputType, converter );
+	}
+	
+	public < O extends RealType< O > > Cursor< O > cursor( final O outputType )
+	{
+		return this.cursor( outputType, Util.genericRealTypeConverter() );
+	}
+	
+	/** Returns a {@link Cursor} with the same type as the first input image found. */
+	public < O extends RealType< O > > Cursor< O > cursor()
+	{
+		@SuppressWarnings("unchecked")
+		final RandomAccessibleInterval< O > img = ( RandomAccessibleInterval< O > )Util.findFirstImg( operation );
+		return this.cursor( img.randomAccess().get().createVariable() );
 	}
 }

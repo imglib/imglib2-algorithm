@@ -5,13 +5,14 @@ import java.util.Map;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
+import net.imglib2.algorithm.math.abstractions.ViewableFunction;
 import net.imglib2.algorithm.math.execution.ImgSourceIterable;
 import net.imglib2.algorithm.math.execution.ImgSourceIterableDirect;
 import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public class ImgSource< I extends RealType< I > > implements IFunction
+public class ImgSource< I extends RealType< I > > extends ViewableFunction implements IFunction
 {
 	private final RandomAccessibleInterval< I > rai;
 

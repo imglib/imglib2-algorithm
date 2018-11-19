@@ -2,7 +2,7 @@ package net.imglib2.algorithm.math.abstractions;
 
 import net.imglib2.type.numeric.RealType;
 
-abstract public class AUnaryFunction implements IUnaryFunction
+abstract public class AUnaryFunction extends ViewableFunction implements IUnaryFunction
 {
 	protected final IFunction a;
 

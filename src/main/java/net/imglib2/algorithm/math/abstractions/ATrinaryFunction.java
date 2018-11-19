@@ -1,6 +1,6 @@
 package net.imglib2.algorithm.math.abstractions;
 
-abstract public class ATrinaryFunction implements ITrinaryFunction
+abstract public class ATrinaryFunction extends ViewableFunction implements ITrinaryFunction
 {
 	protected final IFunction a, b ,c;
 	

@@ -7,12 +7,13 @@ import net.imglib2.algorithm.math.abstractions.IBinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
+import net.imglib2.algorithm.math.abstractions.ViewableFunction;
 import net.imglib2.algorithm.math.execution.LetBinding;
 import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public final class Let implements IFunction, IBinaryFunction
+public final class Let extends ViewableFunction implements IFunction, IBinaryFunction
 {
 	private final String varName;
 	private final IFunction varValue;

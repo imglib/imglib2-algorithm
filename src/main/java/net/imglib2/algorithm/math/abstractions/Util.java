@@ -1,14 +1,18 @@
 package net.imglib2.algorithm.math.abstractions;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.ImgSource;
 import net.imglib2.algorithm.math.NumberSource;
+import net.imglib2.converter.Converter;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
 public class Util
@@ -111,7 +115,37 @@ public class Util
 		
 		return images;
 	}
-
+	
+	static public final RandomAccessibleInterval< ? > findFirstImg ( final IFunction f )
+	{
+		final LinkedList< IFunction > ops = new LinkedList<>();
+		ops.add( f );
+		
+		// Iterate into the nested operations
+		while ( ! ops.isEmpty() )
+		{
+			final IFunction  op = ops.removeFirst();
+			
+			if ( op instanceof ImgSource )
+				return ( ( ImgSource< ? > )op ).getRandomAccessibleInterval();
+			else if ( op instanceof IUnaryFunction )
+			{
+				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
+				
+				if ( op instanceof IBinaryFunction )
+				{
+					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+					
+					if ( op instanceof ITrinaryFunction )
+					{
+						ops.addLast( ( ( ITrinaryFunction )op ).getThird() );
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
 
 	static final public IFunction[] wrapMap( final Object caller, final Object[] obs )
 	{
@@ -134,5 +168,60 @@ public class Util
 		{
 			throw new RuntimeException( "Error with the constructor for class " + caller.getClass(), e );
 		}
+	}
+
+	static public final < O extends RealType< O > > Converter< RealType< ? >, O > genericRealTypeConverter()
+	{
+		return new Converter< RealType< ? >, O >()
+		{
+			@Override
+			public final void convert( final RealType< ? > input, final O output)
+			{
+				output.setReal( input.getRealDouble() );
+			}
+		};
+	}
+
+	public static final < O extends RealType< O > > IImgSourceIterable findFirstIterableImgSource( final OFunction< O > f )
+	{
+		final LinkedList< OFunction< O > > ops = new LinkedList<>();
+		ops.addLast( f );
+		
+		// Iterate into the nested operations
+		while ( ! ops.isEmpty() )
+		{
+			final OFunction< O >  op = ops.removeFirst();
+			for ( final OFunction< O > cf : op.children() )
+			{
+				if ( cf instanceof IImgSourceIterable )
+					return ( IImgSourceIterable ) cf;
+				ops.addLast( cf );
+			}
+		}
+		
+		return null;
+	}
+	
+	public static final < O extends RealType< O > > List< IImgSourceIterable > findAllIterableImgSource( final OFunction< O > f )
+	{
+		final LinkedList< OFunction< O > > ops = new LinkedList<>();
+		ops.addLast( f );
+		
+		final List< IImgSourceIterable > iis = new ArrayList<>();
+		
+		// Iterate into the nested operations
+		while ( ! ops.isEmpty() )
+		{
+			final OFunction< O >  op = ops.removeFirst();
+			for ( final OFunction< O > cf : op.children() )
+			{
+				if ( cf instanceof IImgSourceIterable )
+					iis.add( ( IImgSourceIterable ) cf );
+				else
+					ops.addLast( cf );
+			}
+		}
+		
+		return iis;
 	}
 }
