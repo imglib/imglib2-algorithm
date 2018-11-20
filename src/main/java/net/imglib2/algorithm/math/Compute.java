@@ -25,7 +25,7 @@ public class Compute
 {
 	private final IFunction operation;
 	private final boolean compatible_iteration_order;
-	
+		
 	/**
 	 * Validate the {code operation}.
 	 * 
@@ -112,6 +112,7 @@ public class Compute
 		
 		// child-parent map
 		final HashMap< IFunction, IFunction > cp = new HashMap<>();
+		cp.put( f, null );
 		
 		// Collect images to later check their iteration order
 		final LinkedList< RandomAccessibleInterval< ? > > images = new LinkedList<>();
@@ -122,26 +123,26 @@ public class Compute
 		// Collect Let instances to check that their declared variables are used
 		final HashSet< Let > lets = new HashSet<>();
 		
-		IFunction parent = null;
-		
-		// Iterate into the nested operations
+		// Iterate into the nested operations, depth-first
 		while ( ! ops.isEmpty() )
 		{
 			final IFunction  op = ops.removeFirst();
-			cp.put( op, parent );
-			parent = op;
 			
 			if ( op instanceof ImgSource )
 			{
-				images.addLast( ( ( ImgSource< ? > )op ).getRandomAccessibleInterval() );
+				images.addFirst( ( ( ImgSource< ? > )op ).getRandomAccessibleInterval() );
 			}
 			else if ( op instanceof IUnaryFunction )
 			{
-				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
+				final IFunction first = ( ( IUnaryFunction )op ).getFirst();
+				ops.addFirst( first );
+				cp.put( first, op );
 				
 				if ( op instanceof IBinaryFunction )
 				{
-					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+					final IFunction second = ( ( IBinaryFunction )op ).getSecond();
+					ops.add( 1, second );
+					cp.put( second, op );
 					
 					if ( op instanceof Let )
 					{
@@ -150,7 +151,9 @@ public class Compute
 					
 					if ( op instanceof ITrinaryFunction )
 					{
-						ops.addLast( ( ( ITrinaryFunction )op ).getThird() );
+						final IFunction third = ( ( ITrinaryFunction )op ).getThird();
+						ops.add( 2, third );
+						cp.put( third, op );
 					}
 				}
 			}
@@ -165,16 +168,16 @@ public class Compute
 		final HashSet< Let > used = new HashSet<>();
 		all: for ( final Var var : vars )
 		{
-			parent = var;
+			IFunction parent = var;
 			while ( null != ( parent = cp.get( parent ) ) )
 			{
 				if ( parent instanceof Let )
 				{
-					Let let = ( Let )parent;
+					final Let let = ( Let )parent;
 					if ( let.getVarName() != var.getName() )
 						continue;
 					// Else, found: Var is in use
-					used.add( let );
+					used.add( let ); // might already be in used
 					continue all;
 				}
 			}
