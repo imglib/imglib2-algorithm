@@ -35,6 +35,8 @@ import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.math.abstractions.IFunction;
+import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
@@ -310,7 +312,7 @@ public class ImgMathTest
 		final ArrayImg< FloatType, ? > saturation = new ArrayImgFactory< FloatType >( new FloatType() ).create( dims );
 		
 		// Compute saturation
-		compute( let( "red", red,
+		final IFunction f = let( "red", red,
 					  "green", green,
 					  "blue", blue,
 					  "max", max( var( "red" ), var( "green" ), var( "blue" ) ),
@@ -318,8 +320,9 @@ public class ImgMathTest
 					  IF ( EQ( 0, var( "max" ) ),
 					       0,
 					       div( sub( var( "max" ), var( "min" ) ),
-					        	var( "max" ) ) ) ) )
-			.into( saturation );
+					        	var( "max" ) ) ) );
+		System.out.println("=== Hierarchy ===\n" + Util.hierarchy( f ) );
+		compute( f ).into( saturation );
 		
 		final long sum = sumAsInts( saturation, 255.0 );
 		
@@ -661,11 +664,13 @@ public class ImgMathTest
 	
 	@Test
 	public void test1() {
+		System.out.println("test1");
 		assertTrue( testImgMath1() );
 	}
 	
 	@Test
 	public void test2() {
+		System.out.println("test2");
 		assertTrue( testIterationOrder() );
 	}
 	
@@ -677,31 +682,37 @@ public class ImgMathTest
 	
 	@Test
 	public void test4() {
+		System.out.println("test4");
 		assertTrue( testVarags() );
 	}
 	
 	@Test
 	public void testLet1Simple() {
+		System.out.println("testLet1Simple");
 		assertTrue( testLetOneLevel() );
 	}
 	
 	@Test
 	public void testLet2Advanced() {
+		System.out.println("testLet2Advanced");
 		assertTrue( testLetTwoLets() );
 	}
 	
 	@Test
 	public void testLet3MultiVar() {
+		System.out.println("testLet3MultiVar");
 		assertTrue ( testMultiLet() );
 	}
 	
 	@Test
 	public void testLet4NestedMultiLet() {
+		System.out.println("testLet4NestedMultiLet");
 		assertTrue ( testNestedMultiLet() );
 	}
 	
 	@Test
 	public void test1IfThenElse() {
+		System.out.println("test1IfThenElse");
 		assertTrue ( testIfThenElse() );
 	}
 	
@@ -713,11 +724,13 @@ public class ImgMathTest
 	
 	@Test
 	public void test5LT() {
+		System.out.println("test5LT");
 		assertTrue( testLT() );
 	}
 	
 	@Test
 	public void test6GT() {
+		System.out.println("test6GT");
 		assertTrue( testGT() );
 	}
 	
