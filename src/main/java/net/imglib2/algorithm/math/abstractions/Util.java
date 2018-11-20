@@ -10,6 +10,7 @@ import java.util.Set;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.ImgSource;
+import net.imglib2.algorithm.math.Let;
 import net.imglib2.algorithm.math.NumberSource;
 import net.imglib2.algorithm.math.Var;
 import net.imglib2.converter.Converter;
@@ -228,5 +229,58 @@ public class Util
 		}
 		
 		return iis;
+	}
+	
+	/** Generate a printable, indented {@link String} with the nested hierarchy
+	 *  of operations under {@link IFunction} {@code f}. */
+	public static final String hierarchy( final IFunction f )
+	{
+		final LinkedList< IFunction > ops = new LinkedList<>();
+		ops.add( f );
+		
+		final StringBuilder hierarchy = new StringBuilder();
+		final LinkedList< String > indents = new LinkedList<>();
+		indents.add("");
+		
+		// Iterate into the nested operations, depth-first
+		while ( ! ops.isEmpty() )
+		{
+			final IFunction  op = ops.removeFirst();
+
+			String indent = indents.removeFirst();
+			String pre = "";
+			String post = "";
+
+			if ( op instanceof IUnaryFunction )
+			{
+				ops.addFirst( ( ( IUnaryFunction )op ).getFirst() );
+				indents.addFirst( indent + "  " );
+
+				if ( op instanceof IBinaryFunction )
+				{
+					if ( op instanceof Let )
+					{
+						post = " \"" + ( ( Let )op ).getVarName() + "\" -> ";
+					}
+					ops.add( 1, ( ( IBinaryFunction )op ).getSecond() );
+					indents.add( 1, indent + "  " );
+
+					if ( op instanceof ITrinaryFunction )
+					{
+						ops.add( 2, ( ( ITrinaryFunction )op ).getThird() );
+						indents.add( 2, indent + "  " );
+					}
+				}
+			}
+			else if ( op instanceof Var )
+			{
+				pre = "\"" + ( ( Var )op ).getName() + "\" ";
+			}
+			
+
+			hierarchy.append( indent + pre + op.getClass().getSimpleName() + post + "\n");
+		}
+
+		return hierarchy.toString();
 	}
 }
