@@ -11,6 +11,7 @@ import java.util.Set;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.ImgSource;
 import net.imglib2.algorithm.math.NumberSource;
+import net.imglib2.algorithm.math.Var;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
@@ -78,6 +79,10 @@ public class Util
 		else if ( o instanceof IFunction )
 		{
 			return ( (IFunction) o );
+		}
+		else if ( o instanceof String )
+		{
+			return new Var( (String)o );
 		}
 		
 		// Make it fail
