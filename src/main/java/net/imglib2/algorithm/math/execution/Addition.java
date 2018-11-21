@@ -19,6 +19,7 @@ public class Addition< O extends RealType< O > > implements OFunction< O >
 		this.b = b;
 	}
 	
+	@Override
 	public final O eval()
 	{
 		this.scrap.set( this.a.eval() );
@@ -26,6 +27,7 @@ public class Addition< O extends RealType< O > > implements OFunction< O >
 		return this.scrap;
 	}
 
+	@Override
 	public final O eval( final Localizable loc )
 	{
 		this.scrap.set( this.a.eval( loc ) );
@@ -37,5 +39,17 @@ public class Addition< O extends RealType< O > > implements OFunction< O >
 	public List< OFunction< O > > children()
 	{
 		return Arrays.asList( this.a, this.b );
+	}
+	
+	@Override
+	public final double evalDouble()
+	{
+		return this.a.evalDouble() + this.b.evalDouble();
+	}
+	
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		return this.a.evalDouble( loc ) + this.b.evalDouble( loc );
 	}
 }

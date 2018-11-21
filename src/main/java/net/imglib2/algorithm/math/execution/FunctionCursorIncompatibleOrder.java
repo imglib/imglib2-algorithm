@@ -1,5 +1,6 @@
 package net.imglib2.algorithm.math.execution;
 
+import net.imglib2.AbstractCursor;
 import net.imglib2.Cursor;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.converter.Converter;
@@ -16,5 +17,11 @@ public class FunctionCursorIncompatibleOrder< O extends RealType< O > > extends 
 	public void fwd()
 	{
 		this.scrap = this.f.eval( this.ii.localizable() ); 
+	}
+	
+	@Override
+	public AbstractCursor< O > copy()
+	{
+		return new FunctionCursorIncompatibleOrder< O >( this.operation, this.outputType, this.converter );
 	}
 }

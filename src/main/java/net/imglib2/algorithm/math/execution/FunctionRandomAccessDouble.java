@@ -11,11 +11,11 @@ import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public class FunctionRandomAccess< O extends RealType< O > > extends Point implements RandomAccess< O >
+public class FunctionRandomAccessDouble< O extends RealType< O > > extends Point implements RandomAccess< O >
 {
 	private final FunctionSampler sampler;
 
-	public FunctionRandomAccess( final IFunction operation, final O outputType, final Converter< RealType< ? >, O > converter )
+	public FunctionRandomAccessDouble( final IFunction operation, final O outputType, final Converter< RealType< ? >, O > converter )
 	{
 		super( Util.findFirstImg( operation ).numDimensions() );
 		this.sampler = new FunctionSampler( this, operation, outputType, converter );
@@ -25,7 +25,7 @@ public class FunctionRandomAccess< O extends RealType< O > > extends Point imple
 	{
 		private final Point point;
 		private final IFunction operation;
-		private final O outputType;
+		private final O scrap;
 		private final Converter< RealType< ? >, O > converter;
 		private final OFunction< O > f;
 		
@@ -33,7 +33,7 @@ public class FunctionRandomAccess< O extends RealType< O > > extends Point imple
 		{
 			this.point = point;
 			this.operation = operation;
-			this.outputType = outputType.createVariable();
+			this.scrap = outputType.createVariable();
 			this.converter = converter;
 			this.f = operation.reInit(
 					outputType.copy(),
@@ -45,13 +45,14 @@ public class FunctionRandomAccess< O extends RealType< O > > extends Point imple
 		@Override
 		public final Sampler< O > copy()
 		{
-			return new FunctionSampler( this.point, this.operation, this.outputType, this.converter );
+			return new FunctionSampler( this.point, this.operation, this.scrap, this.converter );
 		}
 
 		@Override
 		public final O get()
 		{
-			return this.f.eval( this.point );
+			this.scrap.setReal( this.f.evalDouble( this.point ) );
+			return this.scrap;
 		}
 	}
 	
@@ -70,6 +71,6 @@ public class FunctionRandomAccess< O extends RealType< O > > extends Point imple
 	@Override
 	public RandomAccess< O > copyRandomAccess()
 	{
-		return new FunctionRandomAccess< O >( this.sampler.operation, this.sampler.outputType, this.sampler.converter );
+		return new FunctionRandomAccessDouble< O >( this.sampler.operation, this.sampler.scrap, this.sampler.converter );
 	}
 }

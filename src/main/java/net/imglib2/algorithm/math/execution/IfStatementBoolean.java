@@ -40,4 +40,20 @@ public class IfStatementBoolean< O extends RealType< O > > implements OFunction<
 	{
 		return Arrays.asList( this.abool, this.b, this.c );
 	}
+
+	@Override
+	public final double evalDouble()
+	{
+		return this.abool.evalBoolean() ?
+				this.b.evalDouble()
+				: this.c.evalDouble();
+	}
+
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		return this.abool.evalBoolean( loc ) ?
+				this.b.evalDouble( loc )
+				: this.c.evalDouble( loc );
+	}
 }

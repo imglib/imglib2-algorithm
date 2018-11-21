@@ -24,7 +24,7 @@ public class If extends ATrinaryFunction
 	@Override
 	public < O extends RealType< O > > OFunction< O > reInit(
 			final O tmp,
-			final Map< String, O > bindings,
+			final Map< String, LetBinding< O > > bindings,
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{

@@ -62,16 +62,18 @@ public final class Let extends ViewableFunction implements IFunction, IBinaryFun
 	@Override
 	public < O extends RealType< O > > LetBinding< O > reInit(
 			final O tmp,
-			final Map< String, O > bindings,
+			final Map< String, LetBinding< O > > bindings,
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
 		final O scrap = tmp.copy();
-		final Map< String, O > rebind = new HashMap<>( bindings );
-		rebind.put( this.varName, scrap );
+		final Map< String, LetBinding< O > > rebind = new HashMap<>( bindings );
+		// The LetBinding constructor will add itself to the rebind prior to reInit the two IFunction varValue and body.
 		return new LetBinding< O >( scrap, this.varName,
-				this.varValue.reInit( tmp, rebind, converter, imgSources ),
-				this.body.reInit( tmp, rebind, converter, imgSources ) );
+				rebind,
+				this.varValue, //this.varValue.reInit( tmp, rebind, converter, imgSources ),
+				this.body, //this.body.reInit( tmp, rebind, converter, imgSources ) );
+				converter, imgSources );
 	}
 
 	@Override

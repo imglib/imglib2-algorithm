@@ -43,4 +43,24 @@ public class IfStatement< O extends RealType< O > > implements OFunction< O >
 	{
 		return Arrays.asList( this.a, this.b, this.c );
 	}
+	
+	
+	@Override
+	public final double evalDouble()
+	{
+		return 0 != this.a.evalDouble() ?
+			// Then
+			this.b.evalDouble()
+			// Else
+			: this.c.evalDouble();
+	}
+	
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		return 0 != this.a.evalDouble( loc ) ?
+			// Then
+			this.b.evalDouble( loc )
+			// Else
+			: this.c.evalDouble( loc );	}
 }

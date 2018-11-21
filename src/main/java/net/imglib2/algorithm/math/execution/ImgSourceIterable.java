@@ -73,4 +73,17 @@ public class ImgSourceIterable< I extends RealType< I >, O extends RealType< O >
 	{
 		return Arrays.asList();
 	}
+	
+	@Override
+	public final double evalDouble()
+	{
+		return this.it.next().getRealDouble();
+	}
+
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		this.ra.setPosition( loc );
+		return this.ra.get().getRealDouble();
+	}
 }

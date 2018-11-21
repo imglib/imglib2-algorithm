@@ -56,7 +56,7 @@ public class ImgSourceIterableDirect< O extends RealType< O > > implements OFunc
 	}
 
 	@Override
-	public void localize(long[] position)
+	public void localize( final long[] position)
 	{
 		this.it.localize( position );
 	}
@@ -65,5 +65,18 @@ public class ImgSourceIterableDirect< O extends RealType< O > > implements OFunc
 	public List< OFunction< O > > children()
 	{
 		return Arrays.asList();
+	}
+	
+	@Override
+	public final double evalDouble()
+	{
+		return this.it.next().getRealDouble();
+	}
+
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		this.ra.setPosition( loc );
+		return this.ra.get().getRealDouble();
 	}
 }

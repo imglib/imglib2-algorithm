@@ -15,8 +15,12 @@ import net.imglib2.algorithm.math.abstractions.IUnaryFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.algorithm.math.execution.FunctionCursor;
+import net.imglib2.algorithm.math.execution.FunctionCursorDouble;
+import net.imglib2.algorithm.math.execution.FunctionCursorDoubleIncompatibleOrder;
 import net.imglib2.algorithm.math.execution.FunctionCursorIncompatibleOrder;
 import net.imglib2.algorithm.math.execution.FunctionRandomAccess;
+import net.imglib2.algorithm.math.execution.FunctionRandomAccessDouble;
+import net.imglib2.algorithm.math.execution.LetBinding;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
@@ -80,7 +84,7 @@ public class Compute
 		// Recursive copy: initializes interval iterators and sets temporary computation holder
 		final OFunction< O > f = this.operation.reInit(
 				target.randomAccess().get().createVariable(),
-				new HashMap< String, O >(),
+				new HashMap< String, LetBinding< O > >(),
 				converter, null );
 		
 		// Check compatible iteration order and dimensions
@@ -238,5 +242,44 @@ public class Compute
 		@SuppressWarnings("unchecked")
 		final RandomAccessibleInterval< O > img = ( RandomAccessibleInterval< O > )Util.findFirstImg( operation );
 		return this.cursor( img.randomAccess().get().createVariable() );
+	}
+	
+	public < O extends RealType< O > > RandomAccess< O > randomAccessDouble( final O outputType, final Converter< RealType< ? >, O > converter )
+	{
+		return new FunctionRandomAccessDouble< O >( this.operation, outputType, converter );
+	}
+	
+	public < O extends RealType< O > > RandomAccess< O > randomAccessDouble( final O outputType )
+	{
+		return new FunctionRandomAccessDouble< O >( this.operation, outputType, Util.genericRealTypeConverter() );
+	}
+	
+	/** Returns a {@link RandomAccess} with the same type as the first input image found. */
+	public < O extends RealType< O > > RandomAccess< O > randomAccessDouble()
+	{
+		@SuppressWarnings("unchecked")
+		final RandomAccessibleInterval< O > img = ( RandomAccessibleInterval< O > )Util.findFirstImg( operation );
+		final O outputType = img.randomAccess().get().createVariable();
+		return new FunctionRandomAccessDouble< O >( this.operation, outputType, Util.genericRealTypeConverter() );
+	}
+	
+	public < O extends RealType< O > > Cursor< O > cursorDouble( final O outputType, final Converter< RealType< ? >, O > converter )
+	{
+		if ( this.compatible_iteration_order )
+			return new FunctionCursorDouble< O >( this.operation, outputType, converter );
+		return new FunctionCursorDoubleIncompatibleOrder< O >( this.operation, outputType, converter );
+	}
+	
+	public < O extends RealType< O > > Cursor< O > cursorDouble( final O outputType )
+	{
+		return this.cursorDouble( outputType, Util.genericRealTypeConverter() );
+	}
+	
+	/** Returns a {@link Cursor} with the same type as the first input image found. */
+	public < O extends RealType< O > > Cursor< O > cursorDouble()
+	{
+		@SuppressWarnings("unchecked")
+		final RandomAccessibleInterval< O > img = ( RandomAccessibleInterval< O > )Util.findFirstImg( operation );
+		return this.cursorDouble( img.randomAccess().get().createVariable() );
 	}
 }
