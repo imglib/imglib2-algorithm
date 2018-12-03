@@ -39,7 +39,7 @@ public abstract class AbstractMultiThreadedConvolution< T > implements Convoluti
 	{
 		if ( executor == null )
 		{
-			final int numThreads = suggestNumThreads();
+			final int numThreads = Runtime.getRuntime().availableProcessors();
 			final ExecutorService executor = Executors.newFixedThreadPool( numThreads );
 			try
 			{
@@ -56,15 +56,13 @@ public abstract class AbstractMultiThreadedConvolution< T > implements Convoluti
 		}
 	}
 
-	private int getNumThreads( final ExecutorService executor )
+	static int getNumThreads( final ExecutorService executor )
 	{
-		if ( executor instanceof ThreadPoolExecutor )
-			return ( ( ThreadPoolExecutor ) executor ).getMaximumPoolSize();
-		return suggestNumThreads();
+		int maxPoolSize = ( executor instanceof ThreadPoolExecutor ) ?
+				( ( ThreadPoolExecutor ) executor ).getMaximumPoolSize() :
+				Integer.MAX_VALUE;
+		int availableProcessors = Runtime.getRuntime().availableProcessors();
+		return Math.max(1, Math.min(availableProcessors, maxPoolSize));
 	}
 
-	private int suggestNumThreads()
-	{
-		return Runtime.getRuntime().availableProcessors();
-	}
 }
