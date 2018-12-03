@@ -16,10 +16,6 @@ import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.Type;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
@@ -83,8 +79,13 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 		final long[] dim = Intervals.dimensionsAsLongArray( target );
 		dim[ direction ] = 1;
 
-		final int numTasks = numThreads > 1 ? numThreads * 4 : 1;
+		final int numTasks = numThreads > 1 ? timesFourAvoidOverflow(numThreads) : 1;
 		LineConvolution.forEachIntervalElementInParallel( executorService, numTasks, new FinalInterval( dim ), actionFactory );
+	}
+
+	private int timesFourAvoidOverflow( int x )
+	{
+		return (int) Math.min((long) x * 4, Integer.MAX_VALUE);
 	}
 
 	/**
@@ -110,14 +111,14 @@ public class LineConvolution< T > extends AbstractMultiThreadedConvolution< T >
 		final long[] min = Intervals.minAsLongArray( interval );
 		final long[] dim = Intervals.dimensionsAsLongArray( interval );
 		final long size = Intervals.numElements( dim );
-		final long endIndex = size;
-		final long taskSize = ( size + numTasks - 1 ) / numTasks; // round up
+		final int boundedNumTasks = (int) Math.max( 1, Math.min(size, numTasks ));
+		final long taskSize = ( size - 1 ) / boundedNumTasks + 1; // taskSize = roundUp(size / boundedNumTasks);
 		final ArrayList< Callable< Void > > callables = new ArrayList<>();
 
-		for ( int taskNum = 0; taskNum < numTasks; ++taskNum )
+		for ( int taskNum = 0; taskNum < boundedNumTasks; ++taskNum )
 		{
 			final long myStartIndex = taskNum * taskSize;
-			final long myEndIndex = Math.min( endIndex, myStartIndex + taskSize );
+			final long myEndIndex = Math.min( size, myStartIndex + taskSize );
 			final Callable< Void > r = () -> {
 				final Consumer< Localizable > action = actionFactory.get();
 				final long[] position = new long[ dim.length ];

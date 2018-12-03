@@ -8,6 +8,8 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
 import org.junit.Test;
 
+import java.util.concurrent.Executors;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -43,6 +45,16 @@ public class LineConvolutionTest
 		convolver.process( source, target );
 		assertTrue( Intervals.equals( source, requiredSource ) );
 		assertArrayEquals( expected, result );
+	}
+
+	@Test
+	public void testNumTasksEqualsIntegerMaxValue() {
+		byte[] result = new byte[ 1 ];
+		Img< UnsignedByteType > out = ArrayImgs.unsignedBytes( result, result.length );
+		Img< UnsignedByteType > in = ArrayImgs.unsignedBytes( new byte[] { 1, 2 }, 2 );
+		final LineConvolution< UnsignedByteType > convolution = new LineConvolution<>( new ForwardDifferenceConvolverFactory(), 0 );
+		convolution.process( in, out, Executors.newSingleThreadExecutor(), Integer.MAX_VALUE );
+		assertArrayEquals( new byte[] { 1 }, result );
 	}
 
 	static class ForwardDifferenceConvolverFactory implements LineConvolverFactory< UnsignedByteType >
