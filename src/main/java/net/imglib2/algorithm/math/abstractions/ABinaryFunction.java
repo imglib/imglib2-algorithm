@@ -1,6 +1,6 @@
 package net.imglib2.algorithm.math.abstractions;
 
-abstract public class ABinaryFunction extends VarargsFunction implements IBinaryFunction
+abstract public class ABinaryFunction extends ViewableFunction implements IBinaryFunction
 {
 	protected final IFunction a, b;
 	
@@ -12,7 +12,7 @@ abstract public class ABinaryFunction extends VarargsFunction implements IBinary
 	
 	public ABinaryFunction( final Object... obs )
 	{
-		final IFunction[] p = this.wrapMap( obs );
+		final IFunction[] p = Util.wrapMap( this, obs );
 		this.a = p[ 0 ];
 		this.b = p[ 1 ];
 	}

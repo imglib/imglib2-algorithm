@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IBinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
@@ -13,6 +14,9 @@ import net.imglib2.algorithm.math.abstractions.ITrinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IUnaryFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
+import net.imglib2.algorithm.math.execution.FunctionCursor;
+import net.imglib2.algorithm.math.execution.FunctionCursorIncompatibleOrder;
+import net.imglib2.algorithm.math.execution.FunctionRandomAccess;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
@@ -21,7 +25,7 @@ public class Compute
 {
 	private final IFunction operation;
 	private final boolean compatible_iteration_order;
-	
+		
 	/**
 	 * Validate the {code operation}.
 	 * 
@@ -71,14 +75,7 @@ public class Compute
 			)
 	{
 		if ( null == converter )
-			converter = new Converter< RealType< ? >, O >()
-			{
-				@Override
-				public final void convert( final RealType< ? > input, final O output)
-				{
-					output.setReal( input.getRealDouble() );
-				}
-			};
+			converter = Util.genericRealTypeConverter();
 			
 		// Recursive copy: initializes interval iterators and sets temporary computation holder
 		final OFunction< O > f = this.operation.reInit(
@@ -115,6 +112,7 @@ public class Compute
 		
 		// child-parent map
 		final HashMap< IFunction, IFunction > cp = new HashMap<>();
+		cp.put( f, null );
 		
 		// Collect images to later check their iteration order
 		final LinkedList< RandomAccessibleInterval< ? > > images = new LinkedList<>();
@@ -125,26 +123,26 @@ public class Compute
 		// Collect Let instances to check that their declared variables are used
 		final HashSet< Let > lets = new HashSet<>();
 		
-		IFunction parent = null;
-		
-		// Iterate into the nested operations
+		// Iterate into the nested operations, depth-first
 		while ( ! ops.isEmpty() )
 		{
 			final IFunction  op = ops.removeFirst();
-			cp.put( op, parent );
-			parent = op;
 			
 			if ( op instanceof ImgSource )
 			{
-				images.addLast( ( ( ImgSource< ? > )op ).getRandomAccessibleInterval() );
+				images.addFirst( ( ( ImgSource< ? > )op ).getRandomAccessibleInterval() );
 			}
 			else if ( op instanceof IUnaryFunction )
 			{
-				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
+				final IFunction first = ( ( IUnaryFunction )op ).getFirst();
+				ops.addFirst( first );
+				cp.put( first, op );
 				
 				if ( op instanceof IBinaryFunction )
 				{
-					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+					final IFunction second = ( ( IBinaryFunction )op ).getSecond();
+					ops.add( 1, second );
+					cp.put( second, op );
 					
 					if ( op instanceof Let )
 					{
@@ -153,7 +151,9 @@ public class Compute
 					
 					if ( op instanceof ITrinaryFunction )
 					{
-						ops.addLast( ( ( ITrinaryFunction )op ).getThird() );
+						final IFunction third = ( ( ITrinaryFunction )op ).getThird();
+						ops.add( 2, third );
+						cp.put( third, op );
 					}
 				}
 			}
@@ -168,16 +168,16 @@ public class Compute
 		final HashSet< Let > used = new HashSet<>();
 		all: for ( final Var var : vars )
 		{
-			parent = var;
+			IFunction parent = var;
 			while ( null != ( parent = cp.get( parent ) ) )
 			{
 				if ( parent instanceof Let )
 				{
-					Let let = ( Let )parent;
+					final Let let = ( Let )parent;
 					if ( let.getVarName() != var.getName() )
 						continue;
 					// Else, found: Var is in use
-					used.add( let );
+					used.add( let ); // might already be in used
 					continue all;
 				}
 			}
@@ -199,5 +199,44 @@ public class Compute
 		// Check ImgSource: if they are downstream of an If statement, they should be declared in a Let before that
 		
 		return Util.compatibleIterationOrder( images );
+	}
+	
+	public < O extends RealType< O > > RandomAccess< O > randomAccess( final O outputType, final Converter< RealType< ? >, O > converter )
+	{
+		return new FunctionRandomAccess< O >( this.operation, outputType, converter );
+	}
+	
+	public < O extends RealType< O > > RandomAccess< O > randomAccess( final O outputType )
+	{
+		return new FunctionRandomAccess< O >( this.operation, outputType, Util.genericRealTypeConverter() );
+	}
+	
+	/** Returns a {@link RandomAccess} with the same type as the first input image found. */
+	public < O extends RealType< O > > RandomAccess< O > randomAccess()
+	{
+		@SuppressWarnings("unchecked")
+		final RandomAccessibleInterval< O > img = ( RandomAccessibleInterval< O > )Util.findFirstImg( operation );
+		final O outputType = img.randomAccess().get().createVariable();
+		return new FunctionRandomAccess< O >( this.operation, outputType, Util.genericRealTypeConverter() );
+	}
+	
+	public < O extends RealType< O > > Cursor< O > cursor( final O outputType, final Converter< RealType< ? >, O > converter )
+	{
+		if ( this.compatible_iteration_order )
+			return new FunctionCursor< O >( this.operation, outputType, converter );
+		return new FunctionCursorIncompatibleOrder< O >( this.operation, outputType, converter );
+	}
+	
+	public < O extends RealType< O > > Cursor< O > cursor( final O outputType )
+	{
+		return this.cursor( outputType, Util.genericRealTypeConverter() );
+	}
+	
+	/** Returns a {@link Cursor} with the same type as the first input image found. */
+	public < O extends RealType< O > > Cursor< O > cursor()
+	{
+		@SuppressWarnings("unchecked")
+		final RandomAccessibleInterval< O > img = ( RandomAccessibleInterval< O > )Util.findFirstImg( operation );
+		return this.cursor( img.randomAccess().get().createVariable() );
 	}
 }

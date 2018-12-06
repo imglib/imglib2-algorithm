@@ -4,6 +4,7 @@ import java.util.Map;
 
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
+import net.imglib2.algorithm.math.execution.IterableRandomAccessibleFunction;
 import net.imglib2.algorithm.math.execution.NumericSource;
 import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
@@ -25,5 +26,23 @@ public final class NumberSource implements IFunction
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
 		return new NumericSource< O >( tmp.copy(), this.number );
+	}
+
+	@Override
+	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view( final O outputType )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view( final O outputType, final Converter< RealType< ? >, O > converter )
+	{
+		throw new UnsupportedOperationException();
 	}
 }

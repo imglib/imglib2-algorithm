@@ -1,5 +1,8 @@
 package net.imglib2.algorithm.math.execution;
 
+import java.util.Arrays;
+import java.util.List;
+
 import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.type.numeric.RealType;
@@ -40,5 +43,11 @@ public class LetBinding< O extends RealType< O > > implements OFunction< O >
 	public final String getVarName()
 	{
 		return this.varName;
+	}
+	
+	@Override
+	public List< OFunction< O > > children()
+	{
+		return Arrays.asList( this.varValue, this.body );
 	}
 }

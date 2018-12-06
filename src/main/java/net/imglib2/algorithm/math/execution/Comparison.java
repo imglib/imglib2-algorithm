@@ -1,5 +1,8 @@
 package net.imglib2.algorithm.math.execution;
 
+import java.util.Arrays;
+import java.util.List;
+
 import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.IBooleanFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
@@ -43,5 +46,11 @@ abstract public class Comparison< O extends RealType< O > > implements OFunction
 	public final boolean evalBoolean( final Localizable loc )
 	{
 		return this.compare( this.a.eval( loc ), this.b.eval( loc ) );
+	}
+	
+	@Override
+	public List< OFunction< O > > children()
+	{
+		return Arrays.asList( this.a, this.b );
 	}
 }

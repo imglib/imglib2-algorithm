@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.imglib2.algorithm.math.abstractions.ATrinaryFunction;
+import net.imglib2.algorithm.math.abstractions.Compare;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.algorithm.math.execution.Comparison;
 import net.imglib2.algorithm.math.execution.IfStatement;
@@ -41,7 +42,7 @@ public class If extends ATrinaryFunction
 		//               and then having to read it out and compare it to zero to make a boolean,
 		//               instead returning a boolean directly.
 		final OFunction< O > instance;
-		if ( this.a instanceof Comparison )
+		if ( this.a instanceof Compare )
 			instance = new IfStatementBoolean< O >( ( Comparison< O > ) this.a.reInit( tmp, bindings, converter, imgS ),
 					this.b.reInit( tmp, bindings, converter, imgS ), this.c.reInit( tmp, bindings, converter, imgS ) );
 		else
