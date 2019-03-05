@@ -14,7 +14,7 @@
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>
-	<url>http://imagej.net/ImgLib2_Algorithms</url>
+	<url>https://imagej.net/ImgLib2_Algorithms</url>
 	<inceptionYear>2009</inceptionYear>
 	<organization>
 		<name>ImgLib2</name>
@@ -31,7 +31,7 @@
 		<developer>
 			<id>tpietzsch</id>
 			<name>Tobias Pietzsch</name>
-			<url>http://imagej.net/User:Pietzsch</url>
+			<url>https://imagej.net/User:Pietzsch</url>
 			<roles>
 				<role>lead</role>
 				<role>developer</role>
@@ -44,7 +44,7 @@
 		<developer>
 			<id>StephanPreibisch</id>
 			<name>Stephan Preibisch</name>
-			<url>http://imagej.net/User:StephanP</url>
+			<url>https://imagej.net/User:StephanP</url>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -58,7 +58,7 @@
 		<developer>
 			<id>axtimwalde</id>
 			<name>Stephan Saalfeld</name>
-			<url>http://imagej.net/User:Saalfeld</url>
+			<url>https://imagej.net/User:Saalfeld</url>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -72,7 +72,7 @@
 		<developer>
 			<id>ctrueden</id>
 			<name>Curtis Rueden</name>
-			<url>http://imagej.net/User:Rueden</url>
+			<url>https://imagej.net/User:Rueden</url>
 			<roles>
 				<role>maintainer</role>
 			</roles>
@@ -80,7 +80,7 @@
 		<developer>
 			<id>hanslovsky</id>
 			<name>Philipp Hanslovsky</name>
-			<url>http://imagej.net/User:Hanslovsky</url>
+			<url>https://imagej.net/User:Hanslovsky</url>
 			<roles>
 				<role>developer</role>
 				<role>debugger</role>
@@ -93,22 +93,22 @@
 	<contributors>
 		<contributor>
 			<name>John Bogovic</name>
-			<url>http://imagej.net/User:Bogovic</url>
+			<url>https://imagej.net/User:Bogovic</url>
 			<properties><id>bogovicj</id></properties>
 		</contributor>
 		<contributor>
 			<name>Albert Cardona</name>
-			<url>http://imagej.net/User:Albertcardona</url>
+			<url>https://imagej.net/User:Albertcardona</url>
 			<properties><id>acardona</id></properties>
 		</contributor>
 		<contributor>
 			<name>Barry DeZonia</name>
-			<url>http://imagej.net/User:Bdezonia</url>
+			<url>https://imagej.net/User:Bdezonia</url>
 			<properties><id>bdezonia</id></properties>
 		</contributor>
 		<contributor>
 			<name>Christian Dietz</name>
-			<url>http://imagej.net/User:Dietzc</url>
+			<url>https://imagej.net/User:Dietzc</url>
 			<properties><id>dietzc</id></properties>
 		</contributor>
 		<contributor>
@@ -117,47 +117,47 @@
 		</contributor>
 		<contributor>
 			<name>Stefan Helfrich</name>
-			<url>http://imagej.net/User:Stelfrich</url>
+			<url>https://imagej.net/User:Stelfrich</url>
 			<properties><id>stelfrich</id></properties>
 		</contributor>
 		<contributor>
 			<name>Mark Hiner</name>
-			<url>http://imagej.net/User:Hinerm</url>
+			<url>https://imagej.net/User:Hinerm</url>
 			<properties><id>hinerm</id></properties>
 		</contributor>
 		<contributor>
 			<name>Florian Jug</name>
-			<url>http://imagej.net/User:Jug</url>
+			<url>https://imagej.net/User:Jug</url>
 			<properties><id>fjug</id></properties>
 		</contributor>
 		<contributor>
 			<name>Lee Kamentsky</name>
-			<url>http://imagej.net/User:Leek</url>
+			<url>https://imagej.net/User:Leek</url>
 			<properties><id>LeeKamentsky</id></properties>
 		</contributor>
 		<contributor>
 			<name>Larry Lindsey</name>
-			<url>http://imagej.net/User:Lindsey</url>
+			<url>https://imagej.net/User:Lindsey</url>
 			<properties><id>larrylindsey</id></properties>
 		</contributor>
 		<contributor>
 			<name>Johannes Schindelin</name>
-			<url>http://imagej.net/User:Schindelin</url>
+			<url>https://imagej.net/User:Schindelin</url>
 			<properties><id>dscho</id></properties>
 		</contributor>
 		<contributor>
 			<name>Benjamin Schmid</name>
-			<url>http://imagej.net/User:Bene</url>
+			<url>https://imagej.net/User:Bene</url>
 			<properties><id>bene51</id></properties>
 		</contributor>
 		<contributor>
 			<name>Jean-Yves Tinevez</name>
-			<url>http://imagej.net/User:JeanYvesTinevez</url>
+			<url>https://imagej.net/User:JeanYvesTinevez</url>
 			<properties><id>tinevez</id></properties>
 		</contributor>
 		<contributor>
 			<name>Leon Yang</name>
-			<url>http://imagej.net/User:Leon</url>
+			<url>https://imagej.net/User:Leon</url>
 			<properties><id>lnyng</id></properties>
 		</contributor>
 	</contributors>
