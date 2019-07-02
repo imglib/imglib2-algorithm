@@ -145,7 +145,7 @@ public final class ConnectedComponents
 		for  ( final I i : Views.iterable( output ) )
 			i.setZero();
 
-		final int numLabels = labelAllConnectedComponents( input, output, se ) + 1;
+		final int numLabels = labelAllConnectedComponents( input, output, se, service ) + 1;
 
 		final ArrayList< Set< L > > labelSets = new ArrayList< Set< L > >();
 		labelSets.add( new HashSet< L >() );
