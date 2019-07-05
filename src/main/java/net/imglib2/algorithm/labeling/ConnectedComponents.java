@@ -37,7 +37,7 @@ import gnu.trove.list.array.TIntArrayList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +53,6 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.iterator.IntervalIterator;
 import net.imglib2.roi.labeling.ImgLabeling;
-import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.view.Views;
 
@@ -147,20 +146,12 @@ public final class ConnectedComponents
 
 		final int numLabels = labelAllConnectedComponents( input, output, se, service ) + 1;
 
-		final ArrayList< Set< L > > labelSets = new ArrayList< Set< L > >();
-		labelSets.add( new HashSet< L >() );
+		final ArrayList< Set< L > > labelSets = new ArrayList<>();
+		labelSets.add( Collections.emptySet() );
 		for ( int i = 1; i < numLabels; ++i )
-		{
-			final HashSet< L > set = new HashSet< L >();
-			set.add( labelGenerator.next() );
-			labelSets.add( set );
-		}
-		new LabelingMapping.SerialisationAccess< L >( labeling.getMapping() )
-		{
-			{
-				super.setLabelSets( labelSets );
-			}
-		};
+			labelSets.add( Collections.singleton( labelGenerator.next() ) );
+
+		labeling.getMapping().setLabelSets( labelSets );
 	}
 
 	/**

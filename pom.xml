@@ -200,6 +200,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
+		<imglib2-roi.version>0.9.0</imglib2-roi.version>
 	</properties>
 
 	<repositories>
