@@ -377,7 +377,7 @@ public class ConnectedComponentAnalysis
 				}
 			}
 		}
-		UnionFind.relabel( labeling, uf, id, idForSet );
+		uf.relabel( labeling, id, idForSet );
 	}
 
 	/**
