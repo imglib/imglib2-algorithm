@@ -10,6 +10,7 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
+import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.util.Util;
@@ -75,7 +76,7 @@ class Concatenation< T > implements Convolution< T >
 				currentTarget = Views.interval( available, targetInterval );
 
 			if ( currentTarget == null )
-				currentTarget = createImage( uncheckedCast( targetType ), targetInterval );
+				currentTarget = createImage( Cast.unchecked( targetType ), targetInterval );
 
 			step.process( currentSource, currentTarget );
 
@@ -90,14 +91,6 @@ class Concatenation< T > implements Convolution< T >
 		final long[] dimensions = Intervals.dimensionsAsLongArray( targetInterval );
 		final Img< T > ts = Util.getArrayOrCellImgFactory( targetInterval, targetType ).create( dimensions );
 		return Views.translate( ts, Intervals.minAsLongArray( targetInterval ) );
-	}
-
-	private static < T > T uncheckedCast( final Object in )
-	{
-		@SuppressWarnings( "unchecked" )
-		final
-		T in1 = ( T ) in;
-		return in1;
 	}
 
 	private List< Pair< T, Interval > > tmpIntervals( T type, Interval interval )
