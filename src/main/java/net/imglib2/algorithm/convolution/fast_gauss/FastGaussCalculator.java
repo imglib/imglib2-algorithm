@@ -15,65 +15,49 @@ package net.imglib2.algorithm.convolution.fast_gauss;
  */
 public class FastGaussCalculator
 {
-	private final Parameters fc;
-	// we will utilize ring buffers whose current positions will be driven
-	// by the currently processed index inside the input array -- we will use
-	// bit masking to achieve fast the effect of the operation modulo, furthermore
-	// it does not suffer from sign effect: -5 % 8 = -5 in Java; I need it be +3
-	// to make it work nicely for the ring buffer (which cannot have negative indices)
-    //
-	// remember current plus last two results for every yk-term (there's M of them),
-	// so we need either 3*3 or 3*4=12 values => 4 bits = capacity for 16 values,
-	//
-	// actually, we will use 4 ring sub-buffers (each of length 4, 2 bits) for the
-	// individual yks...: y1, y3, y5, y7 (the order in which they are touched during
-	// the computation of the filter)
-	//
-	private final double[] yk0 = new double[ 4 ];
+	private double[] y_n = new double[ 4 ]; // stores y values for k=1,3,5,7 of the current step
 
-	private final double[] yk1 = new double[ 4 ];
+	private double[] y_n_minus_1 = new double[ 4 ]; // stores the y_n value of the previous step
 
-	private final double[] yk2 = new double[ 4 ];
+	private double[] y_n_minus_2 = new double[ 4 ]; // stores the y_n value of the step before the previous step
 
-	private final double[] yk3 = new double[ 4 ];
+	private final double[] nk_2;
 
-	private int x;
+	private final double[] dk_1;
+
+	private final int M;
 
 	public FastGaussCalculator( final Parameters fc )
 	{
-		this.fc = fc;
+		nk_2 = fc.nk_2;
+		dk_1 = fc.dk_1;
+		M = fc.M;
 	}
 
 	public void initialize( final double boundaryValue )
 	{
 		//calculate yk that one would get on constant signal of 1.0
-		//(Vlado's invention by solving eq. (35) assuming yk_n = yk_n-1 = yk_n-2)
-		final double y1_mN = 2.0 * fc.nk_2[ 0 ] / ( fc.dk_1[ 0 ] + 2.0 );
-		final double y3_mN = 2.0 * fc.nk_2[ 1 ] / ( fc.dk_1[ 1 ] + 2.0 );
-		final double y5_mN = 2.0 * fc.nk_2[ 2 ] / ( fc.dk_1[ 2 ] + 2.0 );
-		final double y7_mN = fc.M == 4 ? 2.0 * fc.nk_2[ 3 ] / ( fc.dk_1[ 3 ] + 2.0 ) : 0.0;
+		//(Vlado's invention by solving eq. (35) assuming y_n = y_n_minus_1 = y_n_minus_2)
 
-		//calculate yk that one would get on constant signal of array[0],
-		//and use this value for yk[x-2] and yk[x-1] when x=-Nm1
-		x = -1;
-		yk0[ x & 3 ] = yk0[ ( x - 1 ) & 3 ] = boundaryValue * y1_mN;
-		yk1[ x & 3 ] = yk1[ ( x - 1 ) & 3 ] = boundaryValue * y3_mN;
-		yk2[ x & 3 ] = yk2[ ( x - 1 ) & 3 ] = boundaryValue * y5_mN;
-		yk3[ x & 3 ] = yk3[ ( x - 1 ) & 3 ] = boundaryValue * y7_mN;
+		for ( int i = 0; i < M; i++ )
+			y_n[ i ] = y_n_minus_1[ i ] = boundaryValue * 2.0 * nk_2[ i ] / ( dk_1[ i ] + 2.0 );
 	}
 
 	public void update( final double tmp )
 	{
-		++x;
-		yk0[ x & 3 ] = fc.nk_2[ 0 ] * tmp - fc.dk_1[ 0 ] * yk0[ ( x - 1 ) & 3 ] - yk0[ ( x - 2 ) & 3 ];
-		yk1[ x & 3 ] = fc.nk_2[ 1 ] * tmp - fc.dk_1[ 1 ] * yk1[ ( x - 1 ) & 3 ] - yk1[ ( x - 2 ) & 3 ];
-		yk2[ x & 3 ] = fc.nk_2[ 2 ] * tmp - fc.dk_1[ 2 ] * yk2[ ( x - 1 ) & 3 ] - yk2[ ( x - 2 ) & 3 ];
-		yk3[ x & 3 ] = fc.M == 4 ? fc.nk_2[ 3 ] * tmp - fc.dk_1[ 3 ] * yk3[ ( x - 1 ) & 3 ] - yk3[ ( x - 2 ) & 3 ] : 0;
+		double[] t = y_n_minus_2;
+		y_n_minus_2 = y_n_minus_1;
+		y_n_minus_1 = y_n;
+		y_n = t;
+		y_n[ 0 ] = nk_2[ 0 ] * tmp - dk_1[ 0 ] * y_n_minus_1[ 0 ] - y_n_minus_2[ 0 ];
+		y_n[ 1 ] = nk_2[ 1 ] * tmp - dk_1[ 1 ] * y_n_minus_1[ 1 ] - y_n_minus_2[ 1 ];
+		y_n[ 2 ] = nk_2[ 2 ] * tmp - dk_1[ 2 ] * y_n_minus_1[ 2 ] - y_n_minus_2[ 2 ];
+		y_n[ 3 ] = nk_2[ 3 ] * tmp - dk_1[ 3 ] * y_n_minus_1[ 3 ] - y_n_minus_2[ 3 ];
 	}
 
 	public double getValue()
 	{
-		return yk0[ x & 3 ] + yk1[ x & 3 ] + yk2[ x & 3 ] + yk3[ x & 3 ];
+		return y_n[ 0 ] + y_n[ 1 ] + y_n[ 2 ] + y_n[ 3 ];
 	}
 
 	/**
