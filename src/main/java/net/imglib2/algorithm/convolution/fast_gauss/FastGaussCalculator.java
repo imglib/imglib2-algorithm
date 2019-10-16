@@ -239,7 +239,7 @@ public class FastGaussCalculator
 
 				final double D11 = r_3 - r_5 * C_35 - r_7 * C_37;
 				final double D21 = p_3 - p_5 * C_35 - p_7 * C_37;
-				final double D31 = p_3 * r_5 + p_5 * r_7 + C_37 - p_5 * r_3 - p_7 * r_5 * C_37;
+				final double D31 = p_3 * r_5 + p_5 * r_7 * C_37 - p_5 * r_3 - p_7 * r_5 * C_37;
 				final double D41 = p_5 * r_7 * C_35 + p_7 * r_3 - p_3 * r_7 - p_7 * r_5 * C_35;
 
 				final double D12 = r_1 - r_5 * C_15 - r_7 * C_17;

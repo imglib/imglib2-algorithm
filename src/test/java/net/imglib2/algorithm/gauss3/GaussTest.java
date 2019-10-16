@@ -18,7 +18,6 @@ import net.imglib2.util.Intervals;
 import net.imglib2.util.Localizables;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.function.BiFunction;
@@ -53,7 +52,6 @@ public class GaussTest< T extends RealType< T > & NativeType< T > >
 		assertImagesEqual( 24, secondDerivativeX( expected ), secondDerivativeX( result ) );
 	}
 
-	@Ignore( "The FastGauss currently deals poorly with an offset in the image." )
 	@Test
 	public void testFastGauss()
 	{
@@ -129,6 +127,8 @@ public class GaussTest< T extends RealType< T > & NativeType< T > >
 	private void assertImagesEqual( int expectedSnr, RandomAccessibleInterval< ? extends RealType< ? > > a, RandomAccessibleInterval< T > b )
 	{
 		double actualSnr = snr( a, b );
+		if ( Double.isNaN( actualSnr ) )
+			fail( "Either the expected or the actual image contains NaN values." );
 		if ( expectedSnr > actualSnr )
 			fail( "The SNR is lower than expected, expected: " + expectedSnr + " dB actual: " + actualSnr + " dB" );
 	}
