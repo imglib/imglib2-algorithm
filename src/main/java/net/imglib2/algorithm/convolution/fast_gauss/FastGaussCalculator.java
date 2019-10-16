@@ -100,7 +100,7 @@ public class FastGaussCalculator
 		/**
 		 * the width of the filter
 		 */
-		public int N = 0;
+		public final int N;
 
 		/**
 		 * the filtering coefficients
@@ -116,19 +116,19 @@ public class FastGaussCalculator
 
 		public static Parameters fast( final double sigma )
 		{
-			return new Parameters( 3, sigma );
+			return new Parameters( 3, sigma, round( 3.2795 * sigma + 0.25460 ) );
 		}
 
 		public static Parameters exact( final double sigma )
 		{
-			return new Parameters( 4, sigma );
+			return new Parameters( 4, sigma, round( 3.7210 * sigma + 0.20157 ) );
 		}
 
 		/**
 		 * Construct with the same accuracy as the Gauss1D for which you want to
 		 * use it.
 		 */
-		private Parameters( final int _M, final double sigma )
+		private Parameters( final int _M, final double sigma, final int N )
 		{
 			if ( sigma <= 0 )
 				throw new IllegalArgumentException( "Sigma must be positive." );
@@ -136,16 +136,11 @@ public class FastGaussCalculator
 			nk_2 = new double[ 4 ];
 			dk_1 = new double[ 4 ];
 
-			// eq. (57), the filter width
-			final double N1 = ( int ) ( ( M == 3 ? 3.2795 * sigma + 0.25460 // M==3
-					: 3.7210 * sigma + 0.20157 // M==4
-			) + 0.5 );
-
 			// Table I, 1st/top objective
-			final double omega_1 = 1.0 * Math.PI / ( 2.0 * N1 );
-			final double omega_3 = 3.0 * Math.PI / ( 2.0 * N1 );
-			final double omega_5 = 5.0 * Math.PI / ( 2.0 * N1 );
-			final double omega_7 = 7.0 * Math.PI / ( 2.0 * N1 );
+			final double omega_1 = 1.0 * Math.PI / ( 2.0 * N );
+			final double omega_3 = 3.0 * Math.PI / ( 2.0 * N );
+			final double omega_5 = 5.0 * Math.PI / ( 2.0 * N );
+			final double omega_7 = 7.0 * Math.PI / ( 2.0 * N );
 
 			// eq. (37) i=1,3,5,7
 			final double p_1 = 1.0 / Math.tan( 0.5 * omega_1 );
@@ -161,10 +156,10 @@ public class FastGaussCalculator
 
 			// approximate rho_i:
 			// eq. (50) i=1,3,5,7
-			final double rho_1 = Math.exp( -0.5 * sigma * sigma * omega_1 * omega_1 ) / N1;
-			final double rho_3 = Math.exp( -0.5 * sigma * sigma * omega_3 * omega_3 ) / N1;
-			final double rho_5 = Math.exp( -0.5 * sigma * sigma * omega_5 * omega_5 ) / N1;
-			final double rho_7 = Math.exp( -0.5 * sigma * sigma * omega_7 * omega_7 ) / N1;
+			final double rho_1 = Math.exp( -0.5 * sigma * sigma * omega_1 * omega_1 ) / N;
+			final double rho_3 = Math.exp( -0.5 * sigma * sigma * omega_3 * omega_3 ) / N;
+			final double rho_5 = Math.exp( -0.5 * sigma * sigma * omega_5 * omega_5 ) / N;
+			final double rho_7 = Math.exp( -0.5 * sigma * sigma * omega_7 * omega_7 ) / N;
 	/*
 			//accurate rho_i:
 			// eq. (50) i=1,3,5,7
@@ -202,6 +197,8 @@ public class FastGaussCalculator
 
 			// get beta_k
 			double beta_1, beta_3;
+			double gamma_2 = N * N - sigma * sigma;
+			double gamma_3 = C_15 * rho_1 + C_35 * rho_3 + rho_5;
 			if ( M == 3 )
 			{
 				//build 6 minor 2x2 matrices to invA by excluding i-th row and j-th column from invA,
@@ -222,10 +219,8 @@ public class FastGaussCalculator
 				final double det_invA = p_1 * D11 - r_1 * D21 + C_15 * D31;
 
 				// eq. (53), only first two rows of matrix A_N
-				beta_1 = ( +D11 - ( N1 * N1 - sigma * sigma ) * D21
-						+ ( C_15 * rho_1 + C_35 * rho_3 + rho_5 ) * D31 ) / det_invA;
-				beta_3 = ( -D12 + ( N1 * N1 - sigma * sigma ) * D22
-						- ( C_15 * rho_1 + C_35 * rho_3 + rho_5 ) * D32 ) / det_invA;
+				beta_1 = ( +D11 - gamma_2 * D21 + gamma_3 * D31 ) / det_invA;
+				beta_3 = ( -D12 + gamma_2 * D22 - gamma_3 * D32 ) / det_invA;
 			}
 			else
 			{ // M == 4
@@ -250,10 +245,9 @@ public class FastGaussCalculator
 				final double det_invA = p_1 * D11 - r_1 * D21 + C_15 * D31 - C_17 * D41;
 
 				// eq. (53), only first two rows of matrix A_N
-				beta_1 = ( +D11 - ( N1 * N1 - sigma * sigma ) * D21 + ( C_15 * rho_1 + C_35 * rho_3 + rho_5 ) * D31
-						- ( C_17 * rho_1 + C_37 * rho_3 + rho_7 ) * D41 ) / det_invA;
-				beta_3 = ( -D12 + ( N1 * N1 - sigma * sigma ) * D22 - ( C_15 * rho_1 + C_35 * rho_3 + rho_5 ) * D32
-						+ ( C_17 * rho_1 + C_37 * rho_3 + rho_7 ) * D42 ) / det_invA;
+				double gamma4 = C_17 * rho_1 + C_37 * rho_3 + rho_7;
+				beta_1 = ( +D11 - gamma_2 * D21 + gamma_3 * D31 - gamma4 * D41 ) / det_invA;
+				beta_3 = ( -D12 + gamma_2 * D22 - gamma_3 * D32 + gamma4 * D42 ) / det_invA;
 			}
 
 			// eq. (49), since I didn't want to continue building A_N to be used in eq. (53),
@@ -263,11 +257,11 @@ public class FastGaussCalculator
 			final double beta_7 = rho_7 + C_17 * ( rho_1 - beta_1 ) + C_37 * ( rho_3 - beta_3 );
 
 			// fill the output container FilteringCoeffs
-			N = ( int ) N1;
+			this.N = N;
 
-			nk_2[ 0 ] = -beta_1 * Math.cos( omega_1 * ( N1 + 1.0 ) );
-			nk_2[ 1 ] = -beta_3 * Math.cos( omega_3 * ( N1 + 1.0 ) );
-			nk_2[ 2 ] = -beta_5 * Math.cos( omega_5 * ( N1 + 1.0 ) );
+			nk_2[ 0 ] = -beta_1 * Math.cos( omega_1 * ( N + 1 ) );
+			nk_2[ 1 ] = -beta_3 * Math.cos( omega_3 * ( N + 1 ) );
+			nk_2[ 2 ] = -beta_5 * Math.cos( omega_5 * ( N + 1 ) );
 
 			dk_1[ 0 ] = -2.0 * Math.cos( omega_1 );
 			dk_1[ 1 ] = -2.0 * Math.cos( omega_3 );
@@ -275,7 +269,7 @@ public class FastGaussCalculator
 
 			if ( M == 4 )
 			{
-				nk_2[ 3 ] = -beta_7 * Math.cos( omega_7 * ( N1 + 1.0 ) );
+				nk_2[ 3 ] = -beta_7 * Math.cos( omega_7 * ( N + 1 ) );
 				dk_1[ 3 ] = -2.0 * Math.cos( omega_7 );
 				// NB: array length was guarded at the beginning of this function
 			}
@@ -283,5 +277,11 @@ public class FastGaussCalculator
 			// declare to what sigma the coefficients belong to
 			Sigma = sigma;
 		}
+
+	}
+
+	private static int round( double value )
+	{
+		return ( int ) ( value + 0.5 );
 	}
 }
