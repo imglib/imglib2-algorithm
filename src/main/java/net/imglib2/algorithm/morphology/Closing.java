@@ -77,7 +77,7 @@ public class Closing
 	 * @return an {@link Img} of the same type and same dimensions that of the
 	 *         source.
 	 */
-	public static final < T extends RealType< T >> Img< T > close( final Img< T > source, final List< Shape > strels, final int numThreads )
+	public static final < T extends RealType< T >> Img< T > close( final Img< T > source, final List< ? extends Shape > strels, final int numThreads )
 	{
 		final Img< T > dilated = Dilation.dilate( source, strels, numThreads );
 		final Img< T > eroded = Erosion.erode( dilated, strels, numThreads );
@@ -124,7 +124,7 @@ public class Closing
 	 * @return an {@link Img} of the same type and same dimensions that of the
 	 *         source.
 	 */
-	public static final < T extends Type< T > & Comparable< T > > Img< T > close( final Img< T > source, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static final < T extends Type< T > & Comparable< T > > Img< T > close( final Img< T > source, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		final Img< T > dilated = Dilation.dilate( source, strels, minVal, numThreads );
 		final Img< T > eroded = Erosion.erode( dilated, strels, maxVal, numThreads );
@@ -239,7 +239,7 @@ public class Closing
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
 	 */
-	public static < T extends RealType< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final int numThreads )
 	{
 		final T maxVal = MorphologyUtils.createVariable( source, target );
 		maxVal.setReal( maxVal.getMaxValue() );
@@ -301,7 +301,7 @@ public class Closing
 	 *            the type of the source and the result. Must extends
 	 *            {@code Compparable}.
 	 */
-	public static < T extends Type< T > & Comparable< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		// Create temp image
 		final ImgFactory< T > factory = Util.getSuitableImgFactory( target, maxVal );
@@ -456,7 +456,7 @@ public class Closing
 	 *            the type of the source image. Must be a sub-type of
 	 *            {@code T extends RealType}.
 	 */
-	public static < T extends RealType< T > > void closeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T > > void closeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< ? extends Shape > strels, final int numThreads )
 	{
 		final T maxVal = MorphologyUtils.createVariable( source, interval );
 		maxVal.setReal( maxVal.getMaxValue() );
@@ -514,7 +514,7 @@ public class Closing
 	 *            the type of the source image. Must be a sub-type of
 	 *            {@code T extends Comparable}.
 	 */
-	public static < T extends Type< T > & Comparable< T >> void closeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T >> void closeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		for ( final Shape strel : strels )
 		{

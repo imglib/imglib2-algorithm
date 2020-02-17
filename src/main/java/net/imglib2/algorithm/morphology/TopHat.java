@@ -90,7 +90,7 @@ public class TopHat
 	 *            sub-type of {@code T extends RealType}.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
-	public static < T extends RealType< T >> Img< T > topHat( final Img< T > source, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T >> Img< T > topHat( final Img< T > source, final List< ? extends Shape > strels, final int numThreads )
 	{
 		if ( strels.isEmpty() ) { return source; }
 		final Img< T > opened = Opening.open( source, strels, numThreads );
@@ -142,7 +142,7 @@ public class TopHat
 	 *            themselves and to subtract them.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
-	public static < T extends Type< T > & Comparable< T > & Sub< T > > Img< T > topHat( final Img< T > source, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > & Sub< T > > Img< T > topHat( final Img< T > source, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		final Img< T > opened = Opening.open( source, strels, minVal, maxVal, numThreads );
 		MorphologyUtils.subABA( opened, source, numThreads );
@@ -265,7 +265,7 @@ public class TopHat
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
 	 */
-	public static < T extends RealType< T >> void topHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T >> void topHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final int numThreads )
 	{
 		Opening.open( source, target, strels, numThreads );
 		MorphologyUtils.subBAB( source, target, numThreads );
@@ -326,7 +326,7 @@ public class TopHat
 	 *            because we want to be able to compare pixels between
 	 *            themselves and to subtract them.
 	 */
-	public static < T extends Type< T > & Comparable< T > & Sub< T >> void topHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > & Sub< T >> void topHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		Opening.open( source, target, strels, minVal, maxVal, numThreads );
 		MorphologyUtils.subBAB( source, target, numThreads );
@@ -460,7 +460,7 @@ public class TopHat
 	 *            the type of the source image. Must be a sub-type of
 	 *            {@code T extends RealType}.
 	 */
-	public static < T extends RealType< T >> void topHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T >> void topHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< ? extends Shape > strels, final int numThreads )
 	{
 		// Prepare tmp holder
 		final T minVal = MorphologyUtils.createVariable( source, interval );
@@ -523,7 +523,7 @@ public class TopHat
 	 *            because we want to be able to compare pixels between
 	 *            themselves and to subtract them.
 	 */
-	public static < T extends Type< T > & Comparable< T > & Sub< T >> void topHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > & Sub< T >> void topHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		// Prepare tmp holder
 		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, minVal );

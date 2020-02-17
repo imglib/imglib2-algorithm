@@ -89,7 +89,7 @@ public class BlackTopHat
 	 *            sub-type of {@code T extends RealType}.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
-	public static < T extends RealType< T >> Img< T > blackTopHat( final Img< T > source, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T >> Img< T > blackTopHat( final Img< T > source, final List< ? extends Shape > strels, final int numThreads )
 	{
 		final Img< T > closed = Closing.close( source, strels, numThreads );
 		MorphologyUtils.subAAB( closed, source, numThreads );
@@ -140,7 +140,7 @@ public class BlackTopHat
 	 *            subtract them.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
-	public static < T extends Type< T > & Comparable< T > & Sub< T > > Img< T > blackTopHat( final Img< T > source, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > & Sub< T > > Img< T > blackTopHat( final Img< T > source, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		final Img< T > closed = Closing.close( source, strels, minVal, maxVal, numThreads );
 		MorphologyUtils.subAAB( closed, source, numThreads );
@@ -262,7 +262,7 @@ public class BlackTopHat
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
 	 */
-	public static < T extends RealType< T > > void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T > > void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final int numThreads )
 	{
 		Closing.close( source, target, strels, numThreads );
 		MorphologyUtils.subAAB2( target, source, numThreads );
@@ -321,7 +321,7 @@ public class BlackTopHat
 	 *            want to be able to compare pixels between themselves and to
 	 *            subtract them.
 	 */
-	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		Closing.close( source, target, strels, minVal, maxVal, numThreads );
 		MorphologyUtils.subAAB2( target, source, numThreads );
@@ -452,7 +452,7 @@ public class BlackTopHat
 	 *            the type of the source image. Must be a sub-type of
 	 *            {@code T extends RealType}.
 	 */
-	public static < T extends RealType< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< ? extends Shape > strels, final int numThreads )
 	{
 		// Prepare tmp holder
 		final T minVal = MorphologyUtils.createVariable( source, interval );
@@ -514,7 +514,7 @@ public class BlackTopHat
 	 *            want to be able to compare pixels between themselves and to
 	 *            subtract them.
 	 */
-	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< ? extends Shape> strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		// Prepare tmp holder
 		final ImgFactory< T > factory = Util.getSuitableImgFactory( interval, minVal );
