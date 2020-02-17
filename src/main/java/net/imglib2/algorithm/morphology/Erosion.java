@@ -87,7 +87,7 @@ public class Erosion
 	 *            sub-type of {@code T extends RealType}.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
-	public static < T extends RealType< T > > Img< T > erode( final Img< T > source, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T > > Img< T > erode( final Img< T > source, final List< ? extends Shape > strels, final int numThreads )
 	{
 		Img< T > target = source;
 		for ( final Shape strel : strels )
@@ -138,7 +138,7 @@ public class Erosion
 	 *            sub-type of {@code T extends Comparable & Type}.
 	 * @return a new {@link Img}, of same dimensions than the source.
 	 */
-	public static < T extends Type< T > & Comparable< T > > Img< T > erode( final Img< T > source, final List< Shape > strels, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > > Img< T > erode( final Img< T > source, final List< ? extends Shape > strels, final T maxVal, final int numThreads )
 	{
 		Img< T > target = source;
 		for ( final Shape strel : strels )
@@ -260,7 +260,7 @@ public class Erosion
 	 * @param numThreads
 	 *            the number of threads to use for the calculation.
 	 */
-	public static < T extends RealType< T >> void erode( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T >> void erode( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final int numThreads )
 	{
 		final T maxVal = MorphologyUtils.createVariable( source, target );
 		maxVal.setReal( maxVal.getMaxValue() );
@@ -317,7 +317,7 @@ public class Erosion
 	 *            the type of the source image and the erosion result. Must be a
 	 *            sub-type of {@code T extends Comparable & Type}.
 	 */
-	public static < T extends Type< T > & Comparable< T > > void erode( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > > void erode( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final T maxVal, final int numThreads )
 	{
 		if ( strels.isEmpty() ) { return; }
 		if ( strels.size() == 1 )
@@ -608,7 +608,7 @@ public class Erosion
 	 *            sub-type of {@code T extends RealType}.
 	 * @return a new {@link Img}, possibly of larger dimensions than the source.
 	 */
-	public static < T extends RealType< T > > Img< T > erodeFull( final Img< T > source, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T > > Img< T > erodeFull( final Img< T > source, final List< ? extends Shape > strels, final int numThreads )
 	{
 		Img< T > target = source;
 		for ( final Shape strel : strels )
@@ -672,7 +672,7 @@ public class Erosion
 	 *            sub-type of {@code T extends Comparable & Type}.
 	 * @return a new {@link Img}, possibly of larger dimensions than the source.
 	 */
-	public static < T extends Type< T > & Comparable< T > > Img< T > erodeFull( final Img< T > source, final List< Shape > strels, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > > Img< T > erodeFull( final Img< T > source, final List< ? extends Shape > strels, final T maxVal, final int numThreads )
 	{
 		Img< T > target = source;
 		for ( final Shape strel : strels )
@@ -833,7 +833,7 @@ public class Erosion
 	 *            the type of the source image. Must be a sub-type of
 	 *            {@code T extends RealType}.
 	 */
-	public static < T extends RealType< T > > void erodeInPlace( final RandomAccessible< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T > > void erodeInPlace( final RandomAccessible< T > source, final Interval interval, final List< ? extends Shape > strels, final int numThreads )
 	{
 		for ( final Shape strel : strels )
 		{
@@ -887,7 +887,7 @@ public class Erosion
 	 *            the type of the source image. Must be a sub-type of
 	 *            {@code T extends Comparable & Type}.
 	 */
-	public static < T extends Type< T > & Comparable< T > > void erodeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > > void erodeInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< ? extends Shape > strels, final T maxVal, final int numThreads )
 	{
 		for ( final Shape strel : strels )
 		{

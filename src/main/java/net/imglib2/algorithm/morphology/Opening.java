@@ -84,7 +84,7 @@ public class Opening
 	 * @return an {@link Img} of the same type and same dimensions that of the
 	 *         source.
 	 */
-	public static final < T extends RealType< T >> Img< T > open( final Img< T > source, final List< Shape > strels, final int numThreads )
+	public static final < T extends RealType< T >> Img< T > open( final Img< T > source, final List< ? extends Shape > strels, final int numThreads )
 	{
 		final Img< T > eroded = Erosion.erode( source, strels, numThreads );
 		final Img< T > dilated = Dilation.dilate( eroded, strels, numThreads );
@@ -131,7 +131,7 @@ public class Opening
 	 * @return an {@link Img} of the same type and same dimensions that of the
 	 *         source.
 	 */
-	public static final < T extends Type< T > & Comparable< T > > Img< T > open( final Img< T > source, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static final < T extends Type< T > & Comparable< T > > Img< T > open( final Img< T > source, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		final Img< T > eroded = Erosion.erode( source, strels, maxVal, numThreads );
 		final Img< T > dilated = Dilation.dilate( eroded, strels, minVal, numThreads );
@@ -246,7 +246,7 @@ public class Opening
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
 	 */
-	public static < T extends RealType< T > > void open( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T > > void open( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final int numThreads )
 	{
 		final T maxVal = MorphologyUtils.createVariable( source, target );
 		maxVal.setReal( maxVal.getMaxValue() );
@@ -308,7 +308,7 @@ public class Opening
 	 *            the type of the source and the result. Must extends
 	 *            {@code Compparable}.
 	 */
-	public static < T extends Type< T > & Comparable< T > > void open( final RandomAccessible< T > source, final IterableInterval< T > target, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T > > void open( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		// Create temp image
 		final ImgFactory< T > factory = Util.getSuitableImgFactory( target, maxVal );
@@ -463,7 +463,7 @@ public class Opening
 	 *            the type of the source image. Must be a sub-type of
 	 *            {@code T extends RealType}.
 	 */
-	public static < T extends RealType< T > > void openInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final int numThreads )
+	public static < T extends RealType< T > > void openInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< ? extends Shape > strels, final int numThreads )
 	{
 		final T maxVal = MorphologyUtils.createVariable( source, interval );
 		maxVal.setReal( maxVal.getMaxValue() );
@@ -521,7 +521,7 @@ public class Opening
 	 *            the type of the source image. Must be a sub-type of
 	 *            {@code T extends Comparable}.
 	 */
-	public static < T extends Type< T > & Comparable< T >> void openInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< Shape > strels, final T minVal, final T maxVal, final int numThreads )
+	public static < T extends Type< T > & Comparable< T >> void openInPlace( final RandomAccessibleInterval< T > source, final Interval interval, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
 		for ( final Shape strel : strels )
 		{
