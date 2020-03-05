@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -50,10 +50,13 @@ import net.imglib2.util.Intervals;
 /**
  * A {@link Shape} representing finite, centered, symmetric lines, that are
  * parallel to the image axes.
- * 
+ *
  * @author Jean-Yves Tinevez#
  * @author Jonathan Hale (University of Konstanz)
+ *
+ * @deprecated use the equivalent class in {@link net.imglib2.neighborhood}
  */
+@Deprecated
 public class HorizontalLineShape implements Shape
 {
 	private final long span;
@@ -64,7 +67,7 @@ public class HorizontalLineShape implements Shape
 
 	/**
 	 * Create a new line shape.
-	 * 
+	 *
 	 * @param span
 	 *            the span of the line in both directions, so that its total
 	 *            extend is given by {@code 2 x span + 1}.
@@ -124,7 +127,7 @@ public class HorizontalLineShape implements Shape
 	{
 		return span;
 	}
-	
+
 	/**
 	 * @return The dimension along which the line is layed.
 	 */
@@ -132,7 +135,7 @@ public class HorizontalLineShape implements Shape
 	{
 		return dim;
 	}
-	
+
 	@Override
 	public String toString()
 	{

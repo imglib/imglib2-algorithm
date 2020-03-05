@@ -202,6 +202,11 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
 		<imglib2-roi.version>0.9.0</imglib2-roi.version>
+
+		<!-- TODO remove as ImgLib2 pull request is accepted and released -->
+		<imglib2.version>5.9.0-SNAPSHOT</imglib2.version>
+		<enforcer.skip>true</enforcer.skip>
+
 	</properties>
 
 	<repositories>

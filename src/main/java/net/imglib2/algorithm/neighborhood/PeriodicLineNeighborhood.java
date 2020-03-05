@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -51,11 +51,14 @@ import net.imglib2.util.Intervals;
  * <p>
  * <tt>Jones and Soilles. Periodic lines: Definition, cascades, and application
  * to granulometries. Pattern Recognition Letters (1996) vol. 17 (10) pp. 1057-1063</tt>
- * 
+ *
  * @author Jean-Yves Tinevez Sep 3, 2013
- * 
+ *
  * @param <T>
+ *
+ * @deprecated use the equivalent class in {@link net.imglib2.neighborhood}
  */
+@Deprecated
 public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implements Neighborhood< T >
 {
 	public static < T > PeriodicLineNeighborhoodFactory< T > factory()
@@ -80,7 +83,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	/**
 	 * The increments for the periodic line. The elements iterated have an index
 	 * calculated from:
-	 * 
+	 *
 	 * <pre>
 	 * position - span x increments,
 	 * ...
@@ -104,7 +107,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	/**
 	 * Creates a new periodic line, centered on {@code position}, and that
 	 * will iterate over {@code 2 × span + 1} pixels as follow:
-	 * 
+	 *
 	 * <pre>
 	 * position - span x increments,
 	 * ...
@@ -116,7 +119,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	 * ...
 	 * position + span x increments
 	 * </pre>
-	 * 
+	 *
 	 * @param position
 	 *            the center of the neighborhood.
 	 * @param span
