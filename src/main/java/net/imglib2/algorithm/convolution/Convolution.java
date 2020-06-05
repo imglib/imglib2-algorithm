@@ -34,6 +34,7 @@ public interface Convolution< T >
 	/**
 	 * Set the {@link ExecutorService} to be used for convolution.
 	 */
+	@Deprecated
 	default void setExecutor( final ExecutorService executor )
 	{}
 

@@ -34,17 +34,10 @@
 
 package net.imglib2.algorithm.morphology.distance;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-
-import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
@@ -56,12 +49,14 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.loops.LoopBuilder;
+import net.imglib2.parallel.Parallelization;
+import net.imglib2.parallel.TaskExecutors;
 import net.imglib2.type.BooleanType;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
@@ -169,7 +164,8 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-		transform( source, source, distanceType, es, nTasks, weights );
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> transform( source, source, distanceType, weights ) );
 	}
 
 	/**
@@ -248,7 +244,8 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-		transform( source, target, target, distanceType, es, nTasks, weights );
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> transform( source, target, distanceType, weights ) );
 	}
 
 	/**
@@ -353,21 +350,8 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-
-		final boolean isIsotropic = weights.length <= 1;
-		final double[] w = weights.length == source.numDimensions() ? weights : DoubleStream.generate( () -> weights.length == 0 ? 1.0 : weights[ 0 ] ).limit( source.numDimensions() ).toArray();
-
-		switch ( distanceType )
-		{
-		case EUCLIDIAN:
-			transform( source, tmp, target, isIsotropic ? new EuclidianDistanceIsotropic( w[ 0 ] ) : new EuclidianDistanceAnisotropic( w ), es, nTasks );
-			break;
-		case L1:
-			transformL1( source, tmp, target, es, nTasks, w );
-			break;
-		default:
-			break;
-		}
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> transform( source, tmp, target, distanceType, weights ) );
 	}
 
 	/**
@@ -422,7 +406,8 @@ public class DistanceTransform
 			final ExecutorService es,
 			final int nTasks ) throws InterruptedException, ExecutionException
 	{
-		transform( source, source, d, es, nTasks );
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> transform( source, d ) );
 	}
 
 	/**
@@ -487,7 +472,8 @@ public class DistanceTransform
 			final ExecutorService es,
 			final int nTasks ) throws InterruptedException, ExecutionException
 	{
-		transform( source, target, target, d, es, nTasks );
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> transform( source, target, d ) );
 	}
 
 	/**
@@ -592,37 +578,8 @@ public class DistanceTransform
 			final ExecutorService es,
 			final int nTasks ) throws InterruptedException, ExecutionException
 	{
-
-		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
-		final int nDim = source.numDimensions();
-		final int lastDim = nDim - 1;
-
-		if ( nDim == 1 )
-		{
-			transformAlongDimensionParallel(
-					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
-					d,
-					0,
-					es,
-					nTasks );
-		}
-		else
-		{
-			transformAlongDimensionParallel( source, tmp, d, 0, es, nTasks );
-		}
-
-		for ( int dim = 1; dim < nDim; ++dim )
-		{
-			if ( dim == lastDim )
-			{
-				transformAlongDimensionParallel( tmp, target, d, dim, es, nTasks );
-			}
-			else
-			{
-				transformAlongDimensionParallel( tmp, tmp, d, dim, es, nTasks );
-			}
-		}
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> transform( source, tmp, target, d ) );
 	}
 
 	/**
@@ -697,7 +654,8 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-		binaryTransform( source, target, target, distanceType, es, nTasks, weights );
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> binaryTransform( source, target, distanceType, weights ) );
 	}
 
 	/**
@@ -789,11 +747,8 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-		final U maxVal = Util.getTypeFromInterval( tmp ).createVariable();
-		maxVal.setReal( maxVal.getMaxValue() );
-		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
-		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
-		transform( converted, tmp, target, distanceType, es, nTasks, weights );
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> binaryTransform( source, tmp, target, distanceType, weights ) );
 	}
 
 	/**
@@ -886,7 +841,8 @@ public class DistanceTransform
 			final ExecutorService es,
 			final int nTasks ) throws InterruptedException, ExecutionException
 	{
-		binaryTransform( source, target, target, d, es, nTasks );
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> binaryTransform( source, target, d ) );
 	}
 
 	/**
@@ -963,11 +919,8 @@ public class DistanceTransform
 			final ExecutorService es,
 			final int nTasks ) throws InterruptedException, ExecutionException
 	{
-		final U maxVal = Util.getTypeFromInterval( tmp ).createVariable();
-		maxVal.setReal( maxVal.getMaxValue() );
-		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
-		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
-		transform( converted, tmp, target, d, es, nTasks );
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> binaryTransform( source, tmp, target, d ) );
 	}
 
 	/**
@@ -986,7 +939,7 @@ public class DistanceTransform
 	 * @param weights
 	 *            Individual weights for each dimension, balancing image values
 	 *            and L1 distance.
-	 * @param <B>
+	 * @param <T>
 	 *            {@link BooleanType} binary mask input
 	 * @param <U>
 	 *            {@link RealType} intermediate results
@@ -1065,36 +1018,8 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
-		final int nDim = source.numDimensions();
-		final int lastDim = nDim - 1;
-
-		if ( nDim == 1 )
-		{
-			transformL1AlongDimensionParallel(
-					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
-					0,
-					weights[ 0 ],
-					es,
-					nTasks );
-		}
-		else
-		{
-			transformL1AlongDimensionParallel( source, tmp, 0, weights[ 0 ], es, nTasks );
-		}
-
-		for ( int dim = 1; dim < nDim; ++dim )
-		{
-			if ( dim == lastDim )
-			{
-				transformL1AlongDimensionParallel( tmp, target, dim, weights[ dim ], es, nTasks );
-			}
-			else
-			{
-				transformL1AlongDimensionParallel( tmp, tmp, dim, weights[ dim ], es, nTasks );
-			}
-		}
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> transformL1( source, tmp, target, weights ) );
 	}
 
 	private static < T extends RealType< T >, U extends RealType< U > > void transformAlongDimension(
@@ -1103,63 +1028,25 @@ public class DistanceTransform
 			final Distance d,
 			final int dim )
 	{
-		final int lastDim = target.numDimensions() - 1;
 		final long size = target.dimension( dim );
-		final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
-		// do not permute if we already work on last dimension
-		final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( dim == lastDim ? Views.interval( source, target ) : Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
-		final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( dim == lastDim ? target : Views.permute( target, dim, lastDim ) ) ).cursor();
-		final RealComposite< LongType > lowerBoundDistanceIndex = Views.collapseReal( createAppropriateOneDimensionalImage( size, new LongType() ) ).randomAccess().get();
-		final RealComposite< DoubleType > envelopeIntersectLocation = Views.collapseReal( createAppropriateOneDimensionalImage( size + 1, new DoubleType() ) ).randomAccess().get();
+		final RandomAccessibleInterval< RealComposite< T > > s = collapseDimensions( Views.interval( source, target ), dim );
+		final RandomAccessibleInterval< RealComposite< U > > t = collapseDimensions( target, dim );
 
-		while ( s.hasNext() )
-		{
-			final RealComposite< T > sourceComp = s.next();
-			final RealComposite< U > targetComp = t.next();
-			for ( long i = 0; i < size; ++i )
-			{
-				tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
-			}
-			transformSingleColumn( tmp, targetComp, lowerBoundDistanceIndex, envelopeIntersectLocation, d, dim, size );
-		}
-	}
-
-	private static < T extends RealType< T >, U extends RealType< U > > void transformAlongDimensionParallel(
-			final RandomAccessible< T > source,
-			final RandomAccessibleInterval< U > target,
-			final Distance d,
-			final int dim,
-			final ExecutorService es,
-			final int nTasks ) throws InterruptedException, ExecutionException
-	{
-		int largestDim = getLargestDimension( Views.hyperSlice( target, dim, target.min( dim ) ) );
-		// ignore dimension along which we calculate transform
-		if ( largestDim >= dim )
-		{
-			largestDim += 1;
-		}
-		final long size = target.dimension( dim );
-		final long stepPerChunk = Math.max( size / nTasks, 1 );
-
-		final long[] min = Intervals.minAsLongArray( target );
-		final long[] max = Intervals.maxAsLongArray( target );
-
-		final long largestDimMin = target.min( largestDim );
-		final long largestDimMax = target.max( largestDim );
-
-		final ArrayList< Callable< Void > > tasks = new ArrayList<>();
-		for ( long m = largestDimMin, M = largestDimMin + stepPerChunk - 1; m <= largestDimMax; m += stepPerChunk, M += stepPerChunk )
-		{
-			min[ largestDim ] = m;
-			max[ largestDim ] = Math.min( M, largestDimMax );
-			final Interval fi = new FinalInterval( min, max );
-			tasks.add( () -> {
-				transformAlongDimension( source, Views.interval( target, fi ), d, dim );
-				return null;
-			} );
-		}
-
-		invokeAllAndWait( es, tasks );
+		LoopBuilder.setImages( s, t ).multiThreaded().forEachChunk( chunk -> {
+			final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
+			final RealComposite< LongType > lowerBoundDistanceIndex = Views.collapseReal( createAppropriateOneDimensionalImage( size, new LongType() ) ).randomAccess().get();
+			final RealComposite< DoubleType > envelopeIntersectLocation = Views.collapseReal( createAppropriateOneDimensionalImage( size + 1, new DoubleType() ) ).randomAccess().get();
+			chunk.forEachPixel(
+					( sourceComp, targetComp ) -> {
+						for ( long i = 0; i < size; ++i )
+						{
+							tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
+						}
+						transformSingleColumn( tmp, targetComp, lowerBoundDistanceIndex, envelopeIntersectLocation, d, dim, size );
+					}
+			);
+			return null;
+		} );
 	}
 
 	private static < T extends RealType< T >, U extends RealType< U > > void transformSingleColumn(
@@ -1216,62 +1103,28 @@ public class DistanceTransform
 			final int dim,
 			final double weight )
 	{
-		final int lastDim = target.numDimensions() - 1;
 		final long size = target.dimension( dim );
-		final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
 		// do not permute if we already work on last dimension
-		final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( dim == lastDim ? Views.interval( source, target ) : Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
-		final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( dim == lastDim ? target : Views.permute( target, dim, lastDim ) ) ).cursor();
+		final RandomAccessibleInterval< RealComposite< T > > s = collapseDimensions( Views.interval( source, target ), dim );
+		final RandomAccessibleInterval< RealComposite< U > > t = collapseDimensions( target, dim );
 
-		while ( s.hasNext() )
-		{
-			final RealComposite< T > sourceComp = s.next();
-			final RealComposite< U > targetComp = t.next();
-			for ( long i = 0; i < size; ++i )
-			{
-				tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
-			}
-			transformL1SingleColumn( tmp, targetComp, weight, size );
-		}
+		LoopBuilder.setImages( s, t ).multiThreaded().forEachChunk( chunk -> {
+			final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
+			chunk.forEachPixel( ( sourceComp, targetComp ) -> {
+				for ( long i = 0; i < size; ++i )
+				{
+					tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
+				}
+				transformL1SingleColumn( tmp, targetComp, weight, size );
+			} );
+			return null;
+		} );
 	}
 
-	private static < T extends RealType< T >, U extends RealType< U > > void transformL1AlongDimensionParallel(
-			final RandomAccessible< T > source,
-			final RandomAccessibleInterval< U > target,
-			final int dim,
-			final double weight,
-			final ExecutorService es,
-			final int nTasks ) throws InterruptedException, ExecutionException
+	private static < U extends RealType< U > > RandomAccessibleInterval< RealComposite< U > > collapseDimensions( RandomAccessibleInterval< U > target, int dim )
 	{
-		int largestDim = getLargestDimension( Views.hyperSlice( target, dim, target.min( dim ) ) );
-		// ignore dimension along which we calculate transform
-		if ( largestDim >= dim )
-		{
-			largestDim += 1;
-		}
-		final long size = target.dimension( dim );
-		final long stepPerChunk = Math.max( size / nTasks, 1 );
-
-		final long[] min = Intervals.minAsLongArray( target );
-		final long[] max = Intervals.maxAsLongArray( target );
-
-		final long largestDimMin = target.min( largestDim );
-		final long largestDimMax = target.max( largestDim );
-
-		final ArrayList< Callable< Void > > tasks = new ArrayList<>();
-		for ( long m = largestDimMin, M = largestDimMin + stepPerChunk - 1; m <= largestDimMax; m += stepPerChunk, M += stepPerChunk )
-		{
-			min[ largestDim ] = m;
-			max[ largestDim ] = Math.min( M, largestDimMax );
-			final Interval fi = new FinalInterval( min, max );
-			tasks.add( () -> {
-				transformL1AlongDimension( source, Views.interval( target, fi ), dim, weight );
-				return null;
-			} );
-		}
-
-		invokeAllAndWait( es, tasks );
-
+		final int lastDim = target.numDimensions() - 1;
+		return Views.collapseReal( dim == lastDim ? target : Views.permute( target, dim, lastDim ) );
 	}
 
 	private static < T extends RealType< T >, U extends RealType< U > > void transformL1SingleColumn(
@@ -1296,19 +1149,6 @@ public class DistanceTransform
 			t.setReal( Math.min( t.getRealDouble(), other + weight ) );
 		}
 
-	}
-
-	/**
-	 * Convenience method to invoke all tasks with a given
-	 * {@link ExecutorService}.
-	 */
-	private static < T > void invokeAllAndWait( final ExecutorService es, final Collection< Callable< T > > tasks ) throws InterruptedException, ExecutionException
-	{
-		final List< Future< T > > futures = es.invokeAll( tasks );
-		for ( final Future< T > f : futures )
-		{
-			f.get();
-		}
 	}
 
 	/**

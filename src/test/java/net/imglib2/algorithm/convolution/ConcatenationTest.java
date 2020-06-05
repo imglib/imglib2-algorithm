@@ -18,6 +18,7 @@ import net.imglib2.util.ConstantUtils;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -55,6 +56,7 @@ public class ConcatenationTest
 		assertArrayEquals( new int[] { -3, 3 }, targetPixels );
 	}
 
+	@Ignore( "takes to long" )
 	@Test
 	public void testHugeImage()
 	{

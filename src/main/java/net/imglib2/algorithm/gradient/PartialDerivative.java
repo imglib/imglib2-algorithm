@@ -34,21 +34,18 @@
 
 package net.imglib2.algorithm.gradient;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import net.imglib2.Cursor;
-import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.loops.LoopBuilder;
+import net.imglib2.parallel.TaskExecutor;
+import net.imglib2.parallel.Parallelization;
+import net.imglib2.parallel.TaskExecutors;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
-import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 /**
@@ -98,7 +95,7 @@ public class PartialDerivative
 	 * @param source
 	 *            source image, has to provide valid data in the interval of the
 	 *            gradient image plus a one pixel border in dimension.
-	 * @param gradient
+	 * @param result
 	 *            output image
 	 * @param dimension
 	 *            along which dimension the partial derivatives are computed
@@ -110,57 +107,15 @@ public class PartialDerivative
 	 */
 	public static < T extends NumericType< T > > void gradientCentralDifferenceParallel(
 			final RandomAccessible< T > source,
-			final RandomAccessibleInterval< T > gradient,
+			final RandomAccessibleInterval< T > result,
 			final int dimension,
 			final int nTasks,
 			final ExecutorService es ) throws InterruptedException, ExecutionException
 	{
-		final int nDim = source.numDimensions();
-		if ( nDim < 2 )
-		{
-			gradientCentralDifference( source, gradient, dimension );
-			return;
-		}
-
-		long dimensionMax = Long.MIN_VALUE;
-		int dimensionArgMax = -1;
-
-		for ( int d = 0; d < nDim; ++d )
-		{
-			final long size = gradient.dimension( d );
-			if ( d != dimension && size > dimensionMax )
-			{
-				dimensionMax = size;
-				dimensionArgMax = d;
-			}
-		}
-
-		final long stepSize = Math.max( dimensionMax / nTasks, 1 );
-		final long stepSizeMinusOne = stepSize - 1;
-		final long min = gradient.min( dimensionArgMax );
-		final long max = gradient.max( dimensionArgMax );
-
-		final ArrayList< Callable< Void > > tasks = new ArrayList<>();
-		for ( long currentMin = min, minZeroBase = 0; minZeroBase < dimensionMax; currentMin += stepSize, minZeroBase += stepSize )
-		{
-			final long currentMax = Math.min( currentMin + stepSizeMinusOne, max );
-			final long[] mins = new long[ nDim ];
-			final long[] maxs = new long[ nDim ];
-			gradient.min( mins );
-			gradient.max( maxs );
-			mins[ dimensionArgMax ] = currentMin;
-			maxs[ dimensionArgMax ] = currentMax;
-			final IntervalView< T > currentInterval = Views.interval( gradient, new FinalInterval( mins, maxs ) );
-			tasks.add( () -> {
-				gradientCentralDifference( source, currentInterval, dimension );
-				return null;
-			} );
-		}
-
-		final List< Future< Void > > futures = es.invokeAll( tasks );
-
-		for ( final Future< Void > f : futures )
-			f.get();
+		TaskExecutor taskExecutor = TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks );
+		Parallelization.runWithExecutor( taskExecutor, () -> {
+			gradientCentralDifference( source, result, dimension );
+		} );
 	}
 
 	// fast version
@@ -184,7 +139,7 @@ public class PartialDerivative
 		final RandomAccessibleInterval< T > back = Views.interval( source, Intervals.translate( result, -1, dimension ) );
 		final RandomAccessibleInterval< T > front = Views.interval( source, Intervals.translate( result, 1, dimension ) );
 
-		LoopBuilder.setImages( result, back, front ).forEachPixel( ( r, b, f ) -> {
+		LoopBuilder.setImages( result, back, front ).multiThreaded().forEachPixel( ( r, b, f ) -> {
 			r.set( f );
 			r.sub( b );
 			r.mul( 0.5 );
@@ -207,7 +162,7 @@ public class PartialDerivative
 		final RandomAccessibleInterval< T > back = Views.interval( source, Intervals.translate( result, -1, dimension ) );
 		final RandomAccessibleInterval< T > front = Views.interval( source, result );
 
-		LoopBuilder.setImages( result, back, front ).forEachPixel( ( r, b, f ) -> {
+		LoopBuilder.setImages( result, back, front ).multiThreaded().forEachPixel( ( r, b, f ) -> {
 			r.set( f );
 			r.sub( b );
 		} );
@@ -229,7 +184,7 @@ public class PartialDerivative
 		final RandomAccessibleInterval< T > back = Views.interval( source, result );
 		final RandomAccessibleInterval< T > front = Views.interval( source, Intervals.translate( result, 1, dimension ) );
 
-		LoopBuilder.setImages( result, back, front ).forEachPixel( ( r, b, f ) -> {
+		LoopBuilder.setImages( result, back, front ).multiThreaded().forEachPixel( ( r, b, f ) -> {
 			r.set( f );
 			r.sub( b );
 		} );

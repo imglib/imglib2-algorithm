@@ -33,25 +33,19 @@
  */
 package net.imglib2.algorithm.dog;
 
-import java.util.ArrayList;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
-import net.imglib2.Cursor;
-import net.imglib2.IterableInterval;
-import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.gauss3.Gauss3;
-import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
+import net.imglib2.loops.LoopBuilder;
+import net.imglib2.parallel.Parallelization;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * Compute Difference-of-Gaussian of a {@link RandomAccessible}.
@@ -61,12 +55,28 @@ import net.imglib2.view.Views;
 public class DifferenceOfGaussian
 {
 	/**
+	 * @deprecated Please use:
+	 * Parallelization.withExecutor( service ).run( () -> DoG( sigmaSmaller, sigmaLarger, input, dog ) );
+	 */
+	public static < I extends NumericType< I >, T extends NumericType< T > & NativeType< T > > void DoG(
+			final double[] sigmaSmaller,
+			final double[] sigmaLarger,
+			final RandomAccessible< I > input,
+			final RandomAccessibleInterval< T > dog,
+			final ExecutorService service )
+	{
+		Parallelization.runWithExecutor( service,
+				() -> DoG( sigmaSmaller, sigmaLarger, input, dog )
+		);
+	}
+
+	/**
 	 * Compute the difference of Gaussian for the input. Input convolved with
 	 * Gaussian of sigmaSmaller is subtracted from input convolved with Gaussian
 	 * of sigmaLarger (where {@code sigmaLarger > sigmaSmaller}).
 	 * <p>
 	 * Creates an appropriate temporary image and calls
-	 * {@link #DoG(double[], double[], RandomAccessible, RandomAccessible, RandomAccessibleInterval, ExecutorService)}
+	 * {@link #DoG(double[], double[], RandomAccessible, RandomAccessible, RandomAccessibleInterval)}
 	 * .
 	 * </p>
 	 *
@@ -80,21 +90,35 @@ public class DifferenceOfGaussian
 	 *            convolution).
 	 * @param dog
 	 *            the Difference-of-Gaussian result image.
-	 * @param service
-	 *            service providing threads for multi-threading
 	 */
 	public static < I extends NumericType< I >, T extends NumericType< T > & NativeType< T > > void DoG(
 			final double[] sigmaSmaller,
 			final double[] sigmaLarger,
 			final RandomAccessible< I > input,
-			final RandomAccessibleInterval< T > dog,
-			final ExecutorService service )
+			final RandomAccessibleInterval< T > dog )
 	{
 		final T type = Util.getTypeFromInterval( dog );
 		final Img< T > g1 = Util.getArrayOrCellImgFactory( dog, type ).create( dog );
 		final long[] translation = new long[ dog.numDimensions() ];
 		dog.min( translation );
-		DoG( sigmaSmaller, sigmaLarger, input, Views.translate( g1, translation ), dog, service );
+		DoG( sigmaSmaller, sigmaLarger, input, Views.translate( g1, translation ), dog );
+	}
+
+	/**
+	 * @deprecated  Please use instead
+	 * {@code Parallelization.withExecutor( service ). run( () -> DoG( sigmaSmaller, sigmaLarger, input, tmp, dog ) ); }
+	 */
+	public static < I extends NumericType< I >, T extends NumericType< T > & NativeType< T > > void DoG(
+			final double[] sigmaSmaller,
+			final double[] sigmaLarger,
+			final RandomAccessible< I > input,
+			final RandomAccessible< T > tmp,
+			final RandomAccessibleInterval< T > dog,
+			final ExecutorService service )
+	{
+		Parallelization.runWithExecutor( service,
+				() -> DoG( sigmaSmaller, sigmaLarger, input, tmp, dog )
+		);
 	}
 
 	/**
@@ -115,88 +139,18 @@ public class DifferenceOfGaussian
 	 *            dog result image.
 	 * @param dog
 	 *            the Difference-of-Gaussian result image.
-	 * @param service
-	 *            how many threads to use for the computation.
 	 */
 	public static < I extends NumericType< I >, T extends NumericType< T > & NativeType< T > > void DoG(
 			final double[] sigmaSmaller,
 			final double[] sigmaLarger,
 			final RandomAccessible< I > input,
 			final RandomAccessible< T > tmp,
-			final RandomAccessibleInterval< T > dog,
-			final ExecutorService service )
+			final RandomAccessibleInterval< T > dog )
 	{
 		final IntervalView< T > tmpInterval = Views.interval( tmp, dog );
-		try
-		{
-			Gauss3.gauss( sigmaSmaller, input, tmpInterval, service );
-			Gauss3.gauss( sigmaLarger, input, dog, service );
-		}
-		catch ( final IncompatibleTypeException e )
-		{
-			e.printStackTrace();
-		}
-		final IterableInterval< T > dogIterable = Views.iterable( dog );
-		final IterableInterval< T > tmpIterable = Views.iterable( tmpInterval );
-		final long size = dogIterable.size();
-		// FIXME find better heuristic?
-		final int numThreads = Runtime.getRuntime().availableProcessors();
-		final int numTasks = numThreads <= 1 ? 1 : numThreads * 20;
-		final long taskSize = size / numTasks;
-		final ArrayList< Future< Void > > futures = new ArrayList<>();
-		for ( int taskNum = 0; taskNum < numTasks; ++taskNum )
-		{
-			final long fromIndex = taskNum * taskSize;
-			final long thisTaskSize = ( taskNum == numTasks - 1 ) ? size - fromIndex : taskSize;
-			if ( dogIterable.iterationOrder().equals( tmpIterable.iterationOrder() ) )
-				futures.add( service.submit( new Callable< Void >()
-				{
-					@Override
-					public Void call()
-					{
-						final Cursor< T > dogCursor = dogIterable.cursor();
-						final Cursor< T > tmpCursor = tmpIterable.cursor();
-						dogCursor.jumpFwd( fromIndex );
-						tmpCursor.jumpFwd( fromIndex );
-						for ( int i = 0; i < thisTaskSize; ++i )
-							dogCursor.next().sub( tmpCursor.next() );
-						return null;
-					}
-				} ) );
-			else
-				futures.add( service.submit( new Callable< Void >()
-				{
-					@Override
-					public Void call()
-					{
-						final Cursor< T > dogCursor = dogIterable.localizingCursor();
-						final RandomAccess< T > tmpAccess = tmpInterval.randomAccess();
-						dogCursor.jumpFwd( fromIndex );
-						for ( int i = 0; i < thisTaskSize; ++i )
-						{
-							final T o = dogCursor.next();
-							tmpAccess.setPosition( dogCursor );
-							o.sub( tmpAccess.get() );
-						}
-						return null;
-					}
-				} ) );
-		}
-		for ( final Future< Void > f : futures )
-		{
-			try
-			{
-				f.get();
-			}
-			catch ( final InterruptedException e )
-			{
-				e.printStackTrace();
-			}
-			catch ( final ExecutionException e )
-			{
-				e.printStackTrace();
-			}
-		}
+		Gauss3.gauss( sigmaSmaller, input, tmpInterval );
+		Gauss3.gauss( sigmaLarger, input, dog );
+		LoopBuilder.setImages( dog, tmpInterval ).multiThreaded().forEachPixel( ( d, t ) -> d.sub( t ) );
 	}
 
 	/**

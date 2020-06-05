@@ -33,15 +33,13 @@
  */
 package net.imglib2.algorithm.morphology;
 
-import java.util.Vector;
-
-import net.imglib2.Cursor;
 import net.imglib2.EuclideanSpace;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.loop.IterableLoopBuilder;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.Shape;
 import net.imglib2.img.Img;
@@ -49,14 +47,11 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.array.ArrayRandomAccess;
 import net.imglib2.img.basictypeaccess.array.LongArray;
-import net.imglib2.multithreading.Chunk;
-import net.imglib2.multithreading.SimpleMultiThreading;
+import net.imglib2.parallel.Parallelization;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.operators.Sub;
-import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
-import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 public class MorphologyUtils
@@ -66,17 +61,15 @@ public class MorphologyUtils
 	 * Static util to compute the final image dimensions and required offset
 	 * when performing a full dilation with the specified strel.
 	 *
-	 * @param source
-	 *            the source image.
-	 * @param strel
-	 *            the strel to use for dilation.
+	 * @param source the source image.
+	 * @param strel  the strel to use for dilation.
 	 * @return a 2-elements {@code long[][]}:
-	 *         <ol start="0">
-	 *         <li>a {@code long[]} array with the final image target
-	 *         dimensions.
-	 *         <li>a {@code long[]} array with the offset to apply to the
-	 *         source image.
-	 *         </ol>
+	 * <ol start="0">
+	 * <li>a {@code long[]} array with the final image target
+	 * dimensions.
+	 * <li>a {@code long[]} array with the offset to apply to the
+	 * source image.
+	 * </ol>
 	 */
 	public static final < T > long[][] computeTargetImageDimensionsAndOffset( final Interval source, final Shape strel )
 	{
@@ -291,61 +284,16 @@ public class MorphologyUtils
 
 	static < T extends Type< T > > void copy( final IterableInterval< T > source, final RandomAccessible< T > target, final int numThreads )
 	{
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( source.size(), numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-		for ( int i = 0; i < threads.length; i++ )
-		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology copy thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final Cursor< T > sourceCursor = source.localizingCursor();
-					sourceCursor.jumpFwd( chunk.getStartPosition() );
-					final RandomAccess< T > targetRandomAccess = target.randomAccess();
-
-					for ( long step = 0; step < chunk.getLoopSize(); step++ )
-					{
-						sourceCursor.fwd();
-						targetRandomAccess.setPosition( sourceCursor );
-						targetRandomAccess.get().set( sourceCursor.get() );
-					}
-				}
-			};
-		}
-
-		SimpleMultiThreading.startAndJoin( threads );
+		Parallelization.runWithNumThreads( numThreads, () -> {
+			IterableLoopBuilder.setImages( source, target ).multithreaded().forEachPixel( ( s, t ) -> t.set( s ) );
+		} );
 	}
 
 	static < T extends Type< T > > void copy2( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
 	{
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-		for ( int i = 0; i < threads.length; i++ )
-		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology copy2 thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final Cursor< T > targetCursor = target.localizingCursor();
-					targetCursor.jumpFwd( chunk.getStartPosition() );
-					final RandomAccess< T > sourceRandomAccess = source.randomAccess();
-
-					// iterate over the input cursor
-					for ( long step = 0; step < chunk.getLoopSize(); step++ )
-					{
-						targetCursor.fwd();
-						sourceRandomAccess.setPosition( targetCursor );
-						targetCursor.get().set( sourceRandomAccess.get() );
-					}
-				}
-			};
-		}
-
-		SimpleMultiThreading.startAndJoin( threads );
+		Parallelization.runWithNumThreads( numThreads, () -> {
+			IterableLoopBuilder.setImages( target, source ).multithreaded().forEachPixel( ( t, s ) -> t.set( s ) );
+		} );
 	}
 
 	static < T extends Type< T > > Img< T > copyCropped( final Img< T > largeSource, final Interval interval, final int numThreads )
@@ -356,32 +304,8 @@ public class MorphologyUtils
 			offset[ d ] = ( largeSource.dimension( d ) - interval.dimension( d ) ) / 2;
 		}
 		final Img< T > create = largeSource.factory().create( interval );
-
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( create.size(), numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-		for ( int i = 0; i < threads.length; i++ )
-		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology copyCropped thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final IntervalView< T > intervalView = Views.offset( largeSource, offset );
-					final Cursor< T > cursor = create.cursor();
-					cursor.jumpFwd( chunk.getStartPosition() );
-					final RandomAccess< T > randomAccess = intervalView.randomAccess();
-					for ( long step = 0; step < chunk.getLoopSize(); step++ )
-					{
-						cursor.fwd();
-						randomAccess.setPosition( cursor );
-						cursor.get().set( randomAccess.get() );
-					}
-				}
-			};
-		}
-
-		SimpleMultiThreading.startAndJoin( threads );
+		final RandomAccessibleInterval< T > intervalView = Views.translateInverse( largeSource, offset );
+		copy2( intervalView, create, numThreads );
 		return create;
 	}
 
@@ -393,7 +317,7 @@ public class MorphologyUtils
 	 * @param interval
 	 * @return type instance
 	 */
-	static < T extends Type< T >> T createVariable( final RandomAccessible< T > accessible, final Interval interval )
+	static < T extends Type< T > > T createVariable( final RandomAccessible< T > accessible, final Interval interval )
 	{
 		final RandomAccess< T > a = accessible.randomAccess();
 		interval.min( a );
@@ -405,7 +329,7 @@ public class MorphologyUtils
 		final int numDims = space.numDimensions();
 		final long[] dimensions = Util.getArrayFromValue( 1l, numDims );
 		final ArrayImg< BitType, LongArray > img = ArrayImgs.bits( dimensions );
-		final IterableInterval< Neighborhood< BitType >> neighborhoods = shape.neighborhoods( img );
+		final IterableInterval< Neighborhood< BitType > > neighborhoods = shape.neighborhoods( img );
 		final Neighborhood< BitType > neighborhood = neighborhoods.cursor().next();
 		return neighborhood;
 	}
@@ -418,12 +342,10 @@ public class MorphologyUtils
 	 * This method only prints the first 3 dimensions of the structuring
 	 * element. Dimensions above 3 are skipped.
 	 *
-	 * @param shape
-	 *            the structuring element to print.
-	 * @param dimensionality
-	 *            the dimensionality to cast it over. This is required as
-	 *            {@link Shape} does not carry a dimensionality, and we need one
-	 *            to generate a neighborhood to iterate.
+	 * @param shape          the structuring element to print.
+	 * @param dimensionality the dimensionality to cast it over. This is required as
+	 *                       {@link Shape} does not carry a dimensionality, and we need one
+	 *                       to generate a neighborhood to iterate.
 	 * @return a string representation of the structuring element.
 	 */
 	public static final String printNeighborhood( final Shape shape, final int dimensionality )
@@ -473,219 +395,85 @@ public class MorphologyUtils
 	/**
 	 * Does A = A - B. Writes the results in A.
 	 *
-	 * @param A
-	 *            A
-	 * @param B
-	 *            B
+	 * @param A          A
+	 * @param B          B
 	 * @param numThreads
 	 */
 	static < T extends Sub< T > > void subAAB( final RandomAccessible< T > A, final IterableInterval< T > B, final int numThreads )
 	{
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( B.size(), numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-
-		for ( int i = 0; i < threads.length; i++ )
-		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subAAB thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final Cursor< T > Bcursor = B.localizingCursor();
-					Bcursor.jumpFwd( chunk.getStartPosition() );
-					final RandomAccess< T > Ara = A.randomAccess();
-
-					for ( long step = 0; step < chunk.getLoopSize(); step++ )
-					{
-						Bcursor.fwd();
-						Ara.setPosition( Bcursor );
-						Ara.get().sub( Bcursor.get() );
-					}
-				}
-			};
-		}
-
-		SimpleMultiThreading.startAndJoin( threads );
+		Parallelization.runWithNumThreads( numThreads, () -> {
+			IterableLoopBuilder.setImages( B, A ).multithreaded().forEachPixel( ( b, a ) -> a.sub( b ) );
+		} );
 	}
-
 
 	/**
 	 * Does A = A - B. Writes the results in A.
 	 *
-	 * @param A
-	 *            A
-	 * @param B
-	 *            B
+	 * @param A          A
+	 * @param B          B
 	 * @param numThreads
 	 */
 	static < T extends Sub< T > > void subAAB2( final IterableInterval< T > A, final RandomAccessible< T > B, final int numThreads )
 	{
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( A.size(), numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-
-		for ( int i = 0; i < threads.length; i++ )
-		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subAAB2 thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final Cursor< T > Acursor = A.localizingCursor();
-					Acursor.jumpFwd( chunk.getStartPosition() );
-					final RandomAccess< T > Bra = B.randomAccess(); // LOL
-
-					for ( long step = 0; step < chunk.getLoopSize(); step++ )
-					{
-						Acursor.fwd();
-						Bra.setPosition( Acursor );
-						Acursor.get().sub( Bra.get() );
-					}
-				}
-			};
-		}
-
-		SimpleMultiThreading.startAndJoin( threads );
-	}
-
-
-	/**
-	 * Does A = B - A. Writes the results in A.
-	 *
-	 * @param source
-	 *            A
-	 * @param target
-	 *            B
-	 * @param numThreads
-	 */
-	static < T extends Sub< T > & Type< T >> void subABA( final RandomAccessible< T > source, final IterableInterval< T > target, final int numThreads )
-	{
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( target.size(), numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-
-		for ( int i = 0; i < threads.length; i++ )
-		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subABA thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final T tmp = createVariable( source, target );
-					final Cursor< T > targetCursor = target.localizingCursor();
-					targetCursor.jumpFwd( chunk.getStartPosition() );
-					final RandomAccess< T > sourceRandomAccess = source.randomAccess();
-
-					for ( long step = 0; step < chunk.getLoopSize(); step++ )
-					{
-						targetCursor.fwd();
-						sourceRandomAccess.setPosition( targetCursor );
-
-						tmp.set( targetCursor.get() );
-						tmp.sub( sourceRandomAccess.get() );
-
-						sourceRandomAccess.get().set( tmp );
-					}
-				}
-			};
-		}
-
-		SimpleMultiThreading.startAndJoin( threads );
+		Parallelization.runWithNumThreads( numThreads, () -> {
+			IterableLoopBuilder.setImages( A, B ).multithreaded().forEachPixel( ( a, b ) -> a.sub( b ) );
+		} );
 	}
 
 	/**
 	 * Does A = B - A. Writes the results in A.
 	 *
-	 * @param source
-	 *            A
-	 * @param target
-	 *            B
+	 * @param A          A
+	 * @param B          B
 	 * @param numThreads
 	 */
-	static < T extends Sub< T > & Type< T >> void subABA2( final RandomAccessibleInterval< T > source, final RandomAccessible< T > target, final int numThreads )
+	static < T extends Sub< T > & Type< T > > void subABA( final RandomAccessible< T > A, final IterableInterval< T > B, final int numThreads )
 	{
-		final long size = Intervals.numElements( source );
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( size, numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
+		Parallelization.runWithNumThreads( numThreads, () -> {
+			IterableLoopBuilder.setImages( B, A ).multithreaded().forEachChunk( chunk -> {
+				T tmp = createVariable( A, B );
+				chunk.forEachPixel( ( b, a ) -> {
+					tmp.set( b );
+					tmp.sub( a );
+					a.set( tmp );
+				} );
+				return null;
+			} );
+		} );
+	}
 
-		for ( int i = 0; i < threads.length; i++ )
-		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subABA2 thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final T tmp = createVariable( target, source );
-					final Cursor< T > sourceCursor = Views.iterable( source ).localizingCursor();
-					sourceCursor.jumpFwd( chunk.getStartPosition() );
-					final RandomAccess< T > targetRandomAccess = target.randomAccess( source );
-
-					for ( long step = 0; step < chunk.getLoopSize(); step++ )
-					{
-
-					}
-					while ( sourceCursor.hasNext() )
-					{
-						sourceCursor.fwd();
-						targetRandomAccess.setPosition( sourceCursor );
-
-						tmp.set( targetRandomAccess.get() );
-						tmp.sub( sourceCursor.get() );
-
-						targetRandomAccess.get().set( tmp );
-					}
-				}
-			};
-		}
-
-		SimpleMultiThreading.startAndJoin( threads );
+	/**
+	 * Does A = B - A. Writes the results in A.
+	 *
+	 * @param A          A
+	 * @param B          B
+	 * @param numThreads
+	 */
+	static < T extends Sub< T > & Type< T > > void subABA2( final RandomAccessibleInterval< T > A, final RandomAccessible< T > B, final int numThreads )
+	{
+		subABA( A, Views.interval( B, A ), numThreads );
 	}
 
 	/**
 	 * Does B = A - B. Writes the results in B.
 	 *
-	 * @param A
-	 *            A
-	 * @param B
-	 *            B
+	 * @param A          A
+	 * @param B          B
 	 * @param numThreads
 	 */
 	static < T extends Type< T > & Sub< T > > void subBAB( final RandomAccessible< T > A, final IterableInterval< T > B, final int numThreads )
 	{
-		final long size = Intervals.numElements( B );
-		final Vector< Chunk > chunks = SimpleMultiThreading.divideIntoChunks( size, numThreads );
-		final Thread[] threads = SimpleMultiThreading.newThreads( numThreads );
-
-		for ( int i = 0; i < threads.length; i++ )
-		{
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( "Morphology subBAB thread " + i )
-			{
-				@Override
-				public void run()
-				{
-					final T tmp = createVariable( A, B );
-					final Cursor< T > BCursor = B.localizingCursor();
-					BCursor.jumpFwd( chunk.getStartPosition() );
-					final RandomAccess< T > Ara = A.randomAccess();
-
-					for ( long step = 0; step < chunk.getLoopSize(); step++ )
-					{
-						BCursor.fwd();
-						Ara.setPosition( BCursor );
-
-						tmp.set( Ara.get() );
-						tmp.sub( BCursor.get() );
-
-						BCursor.get().set( tmp );
-					}
-				}
-			};
-		}
-
-		SimpleMultiThreading.startAndJoin( threads );
+		Parallelization.runWithNumThreads( numThreads, () -> {
+			IterableLoopBuilder.setImages( B, A ).multithreaded().forEachChunk( chunk -> {
+				T tmp = createVariable( A, B );
+				chunk.forEachPixel( ( b, a ) -> {
+					tmp.set( a );
+					tmp.sub( b );
+					a.set( tmp );
+				} );
+				return null;
+			} );
+		} );
 	}
 
 }

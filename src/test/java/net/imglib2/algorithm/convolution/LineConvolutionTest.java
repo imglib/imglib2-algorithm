@@ -4,6 +4,8 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.parallel.Parallelization;
+import net.imglib2.parallel.TaskExecutors;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
 import org.junit.Test;
@@ -52,8 +54,11 @@ public class LineConvolutionTest
 		byte[] result = new byte[ 1 ];
 		Img< UnsignedByteType > out = ArrayImgs.unsignedBytes( result, result.length );
 		Img< UnsignedByteType > in = ArrayImgs.unsignedBytes( new byte[] { 1, 2 }, 2 );
-		final LineConvolution< UnsignedByteType > convolution = new LineConvolution<>( new ForwardDifferenceConvolverFactory(), 0 );
-		convolution.process( in, out, Executors.newSingleThreadExecutor(), Integer.MAX_VALUE );
+		Runnable runnable = () -> {
+			final LineConvolution< UnsignedByteType > convolution = new LineConvolution<>( new ForwardDifferenceConvolverFactory(), 0 );
+			convolution.process( in, out );
+		};
+		Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( Executors.newSingleThreadExecutor(), Integer.MAX_VALUE) , runnable );
 		assertArrayEquals( new byte[] { 1 }, result );
 	}
 

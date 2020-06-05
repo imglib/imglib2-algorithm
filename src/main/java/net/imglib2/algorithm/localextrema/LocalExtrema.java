@@ -33,32 +33,34 @@
  */
 package net.imglib2.algorithm.localextrema;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
-
-import net.imglib2.Cursor;
-import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.Sampler;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.algorithm.neighborhood.Shape;
+import net.imglib2.converter.readwrite.WriteConvertedRandomAccessible;
+import net.imglib2.loops.LoopBuilder;
+import net.imglib2.parallel.Parallelization;
+import net.imglib2.parallel.TaskExecutor;
+import net.imglib2.parallel.TaskExecutors;
 import net.imglib2.util.ConstantUtils;
-import net.imglib2.util.Intervals;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 /**
  * Provides {@link #findLocalExtrema} to find pixels that are extrema in their
@@ -320,38 +322,8 @@ public class LocalExtrema
 			final int numTasks,
 			final int splitDim ) throws InterruptedException, ExecutionException
 	{
-
-		final long[] min = Intervals.minAsLongArray( interval );
-		final long[] max = Intervals.maxAsLongArray( interval );
-
-		final long splitDimSize = interval.dimension( splitDim );
-		final long splitDimMax = max[ splitDim ];
-		final long splitDimMin = min[ splitDim ];
-		final long taskSize = Math.max( splitDimSize / numTasks, 1 );
-
-		final ArrayList< Callable< List< P > > > tasks = new ArrayList<>();
-
-		for ( long start = splitDimMin, stop = splitDimMin + taskSize - 1; start <= splitDimMax; start += taskSize, stop += taskSize )
-		{
-			final long s = start;
-			// need max here instead of dimension for constructor of
-			// FinalInterval
-			final long S = Math.min( stop, splitDimMax );
-			tasks.add( () -> {
-				final long[] localMin = min.clone();
-				final long[] localMax = max.clone();
-				localMin[ splitDim ] = s;
-				localMax[ splitDim ] = S;
-				return findLocalExtrema( source, new FinalInterval( localMin, localMax ), localNeighborhoodCheck, shape );
-			} );
-		}
-
-		final ArrayList< P > extrema = new ArrayList<>();
-		final List< Future< List< P > > > futures = service.invokeAll( tasks );
-		for ( final Future< List< P > > f : futures )
-			extrema.addAll( f.get() );
-		return extrema;
-
+		TaskExecutor taskExecutor = TaskExecutors.forExecutorServiceAndNumTasks( service, numTasks );
+		return Parallelization.runWithExecutor( taskExecutor, () -> findLocalExtrema( source, interval, localNeighborhoodCheck, shape ) );
 	}
 
 	/**
@@ -470,22 +442,28 @@ public class LocalExtrema
 			final LocalNeighborhoodCheck< P, T > localNeighborhoodCheck,
 			final Shape shape )
 	{
+		WriteConvertedRandomAccessible< T, RandomAccess< T > > randomAccessible = new WriteConvertedRandomAccessible<>( source, sampler -> (RandomAccess< T >) sampler );
+		RandomAccessibleInterval< RandomAccess< T > > centers = Views.interval( randomAccessible, interval);
+		RandomAccessibleInterval< Neighborhood< T > > neighborhoods = Views.interval( shape.neighborhoodsRandomAccessible( source ), interval );
+		List< List< P > > extremas = LoopBuilder.setImages( centers, neighborhoods ).multiThreaded().forEachChunk( chunk -> {
+			List< P > extrema = new ArrayList<>();
+			chunk.forEachPixel( ( center, neighborhood ) -> {
+				P p = localNeighborhoodCheck.check( center, neighborhood );
+				if ( p != null )
+					extrema.add( p );
+			} );
+			return extrema;
+		} );
+		return concatenate( extremas );
+	}
 
-		final IntervalView< T > sourceInterval = Views.interval( source, interval );
-
-		final ArrayList< P > extrema = new ArrayList<>();
-
-		final Cursor< T > center = Views.flatIterable( sourceInterval ).cursor();
-		for ( final Neighborhood< T > neighborhood : shape.neighborhoods( sourceInterval ) )
-		{
-			center.fwd();
-			final P p = localNeighborhoodCheck.check( center, neighborhood );
-			if ( p != null )
-				extrema.add( p );
-		}
-
-		return extrema;
-
+	private static < P > List<P> concatenate( Collection<List<P>> lists )
+	{
+		int size = lists.stream().mapToInt( List::size ).sum();
+		List< P > result = new ArrayList<>( size );
+		for ( List< P > list : lists )
+			result.addAll( list );
+		return result;
 	}
 
 	/**

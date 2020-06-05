@@ -34,24 +34,19 @@
 
 package net.imglib2.algorithm.linalg.eigen;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
-import net.imglib2.Cursor;
-import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgFactory;
+import net.imglib2.loops.LoopBuilder;
+import net.imglib2.parallel.Parallelization;
+import net.imglib2.parallel.TaskExecutors;
 import net.imglib2.type.numeric.ComplexType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
-import net.imglib2.view.composite.NumericComposite;
-import net.imglib2.view.composite.RealComposite;
+import net.imglib2.view.composite.CompositeIntervalView;
+import net.imglib2.view.composite.GenericComposite;
 
 /**
  *
@@ -286,71 +281,10 @@ public class TensorEigenValues
 			final ExecutorService es )
 	{
 
-		assert nTasks > 0: "Passed nTasks < 1";
+		assert nTasks > 0 : "Passed nTasks < 1";
 
-		final int tensorDims = tensor.numDimensions();
-
-		long dimensionMax = Long.MIN_VALUE;
-		int dimensionArgMax = -1;
-
-		for ( int d = 0; d < tensorDims - 1; ++d )
-		{
-			final long size = tensor.dimension( d );
-			if ( size > dimensionMax )
-			{
-				dimensionMax = size;
-				dimensionArgMax = d;
-			}
-		}
-
-		final long stepSize = Math.max( dimensionMax / nTasks, 1 );
-		final long stepSizeMinusOne = stepSize - 1;
-		final long max = dimensionMax - 1;
-
-		final ArrayList< Callable< RandomAccessibleInterval< U > > > tasks = new ArrayList<>();
-		for ( long currentMin = 0; currentMin < dimensionMax; currentMin += stepSize )
-		{
-			final long currentMax = Math.min( currentMin + stepSizeMinusOne, max );
-			final long[] minT = new long[ tensorDims ];
-			final long[] maxT = new long[ tensorDims ];
-			final long[] minE = new long[ tensorDims ];
-			final long[] maxE = new long[ tensorDims ];
-			tensor.min( minT );
-			tensor.max( maxT );
-			eigenvalues.min( minE );
-			eigenvalues.max( maxE );
-			minE[ dimensionArgMax ] = minT[ dimensionArgMax ] = currentMin;
-			maxE[ dimensionArgMax ] = maxT[ dimensionArgMax ] = currentMax;
-			final IntervalView< T > currentTensor = Views.interval( tensor, new FinalInterval( minT, maxT ) );
-			final IntervalView< U > currentEigenvalues = Views.interval( eigenvalues, new FinalInterval( minE, maxE ) );
-			tasks.add( () -> calculateEigenValuesImpl( currentTensor, currentEigenvalues, ev.copy() ) );
-		}
-
-
-		try
-		{
-			final List< Future< RandomAccessibleInterval< U > > > futures = es.invokeAll( tasks );
-			for ( final Future< RandomAccessibleInterval< U > > f : futures )
-				try
-			{
-					f.get();
-			}
-			catch ( final ExecutionException e )
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		catch ( final InterruptedException e )
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return eigenvalues;
-
-
-
+		return Parallelization.runWithExecutor( TaskExecutors.forExecutorServiceAndNumTasks( es, nTasks ),
+				() -> calculateEigenValues( tensor, eigenvalues, ev ) );
 	}
 
 	private static < T extends RealType< T >, U extends ComplexType< U > > RandomAccessibleInterval< U > calculateEigenValuesImpl(
@@ -358,10 +292,15 @@ public class TensorEigenValues
 			final RandomAccessibleInterval< U > eigenvalues,
 			final EigenValues< T, U > ev )
 	{
-		final Cursor< RealComposite< T > > m = Views.iterable( Views.collapseReal( tensor ) ).cursor();
-		final Cursor< NumericComposite< U > > e = Views.iterable( Views.collapseNumeric( eigenvalues ) ).cursor();
-		while ( m.hasNext() )
-			ev.compute( m.next(), e.next() );
+		RandomAccessibleInterval< ? extends GenericComposite< T > > tensorVectors = Views.collapse( tensor );
+		CompositeIntervalView< U, ? extends GenericComposite< U > > eigenvaluesVectors = Views.collapse( eigenvalues );
+		LoopBuilder.setImages( tensorVectors, eigenvaluesVectors )
+				.multiThreaded()
+				.forEachChunk( chunk -> {
+					EigenValues< T, U > copy = ev.copy();
+					chunk.forEachPixel( copy::compute );
+					return null;
+				} );
 		return eigenvalues;
 	}
 
