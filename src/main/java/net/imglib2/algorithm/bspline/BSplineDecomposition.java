@@ -53,8 +53,6 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 
 	protected boolean isPadded = true;
 
-	protected boolean doLastDimOptimization = true;
-
 	public BSplineDecomposition( final int order, final RandomAccessible<T> img )
 	{
 		assert( order <= 5 );
@@ -69,9 +67,6 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 		padding = new double[ paddingWidth ];
 	}
 
-	/**
-	 * This constructor will build a cubic bspline decomposition.
-	 */
 	public BSplineDecomposition( final RandomAccessible<T> img )
 	{
 		this( 3, img );
@@ -80,11 +75,6 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 	public void setPadded( final boolean isPadded )
 	{
 		this.isPadded = isPadded;
-	}
-
-	public void setDoOptimization( final boolean lastDimOpt )
-	{
-		this.doLastDimOptimization = lastDimOpt;
 	}
 	
 	public RandomAccessible<T> getImage()
@@ -171,13 +161,12 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 
 			/**
 			 * A "small" optimization:
-			 * 	Don't need to do recursion over padded areas for last dimensions
-			 *  since only the central, un-padded area will be copied into destination interval. 
+			 * Don't need to do recursion over padded areas for last dimensions
+			 * since only the central, un-padded area will be copied into destination interval. 
 			 */
-
 			Interval itvl;
 			IntervalIterator it = getIterator( coefficients, d );
-			if( doLastDimOptimization && d == (nd - 1) && originalInterval != null )
+			if( d == (nd - 1) && originalInterval != null )
 			{
 				//System.out.println("opt");
 				itvl = originalInterval;

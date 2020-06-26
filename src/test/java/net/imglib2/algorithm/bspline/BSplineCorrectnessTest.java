@@ -24,7 +24,6 @@ import net.imglib2.view.Views;
 
 public class BSplineCorrectnessTest
 {
-
 	@Test
 	public void test3Spline1d()
 	{
@@ -48,12 +47,10 @@ public class BSplineCorrectnessTest
 		BSplineInterpolator< DoubleType > spline3p1Wider = factory8.create( p1 );
 
 		spline3p0Wider.setPosition( 15.5, 0 );
-		System.out.println( spline3p0.get() );
-		System.out.println( spline3p0Wider.get() );
+		Assert.assertEquals("spline3 p0", 1.0, spline3p0.get().get(), 1e-3 );
 
 		spline3p1Wider.setPosition( 15.5, 0 );
-		System.out.println( spline3p1.get() );
-		System.out.println( spline3p1Wider.get() );
+		Assert.assertEquals("spline3 p1", 16.5, spline3p1.get().get(), 0.1 );
 	}
 
 	public static <T extends RealType<T>> RandomAccessible<T> separableImage( final T t, final BiConsumer<Localizable,T>... funs1d )
