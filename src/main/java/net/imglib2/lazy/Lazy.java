@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import net.imglib2.Interval;
-import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.img.CachedCellImg;
@@ -49,6 +48,9 @@ import net.imglib2.util.Intervals;
 
 /**
  * Convenience methods to create lazy evaluated cached cell images with ops or consumers.
+ * 
+ * Warning: this class or its functionality could be moved elsewhere in the near future, likely
+ * imglib2-cache or imgli2-core.
  *
  * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
  */
