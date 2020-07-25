@@ -1,6 +1,7 @@
 package net.imglib2.algorithm.math;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -22,13 +23,17 @@ import net.imglib2.algorithm.math.execution.FunctionRandomAccess;
 import net.imglib2.algorithm.math.execution.FunctionRandomAccessDouble;
 import net.imglib2.algorithm.math.execution.LetBinding;
 import net.imglib2.converter.Converter;
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
 public class Compute
 {
 	private final IFunction operation;
-	private final boolean compatible_iteration_order;
+	private boolean compatible_iteration_order;
 		
 	/**
 	 * Validate the {code operation}.
@@ -41,6 +46,88 @@ public class Compute
 		
 		// Throw RuntimeException as needed to indicate incorrect construction
 		this.compatible_iteration_order = this.validate( this.operation );
+	}
+	
+	public < O extends RealType< O > & NativeType< O > > RandomAccessibleInterval< O >
+	intoArrayImg()
+	{
+		@SuppressWarnings("unchecked")
+		final RandomAccessibleInterval< O > rai = ( RandomAccessibleInterval< O > )Util.findImg( operation ).iterator().next();
+		final ArrayImg< O, ? > target = new ArrayImgFactory< O >( rai.randomAccess().get().createVariable() ).create( rai );
+		this.compatible_iteration_order = Util.compatibleIterationOrder( Arrays.asList( rai, target ) );
+		return this.into( target );
+	}
+	
+	public < O extends RealType< O > & NativeType< O >, C  extends RealType< C > & NativeType< C > > RandomAccessibleInterval< O >
+	intoArrayImg( final C computeType, final O outputType )
+	{
+		final RandomAccessibleInterval< ? > rai = Util.findImg( operation ).iterator().next();
+		final ArrayImg< O, ? > target = new ArrayImgFactory< O >( outputType ).create( rai );
+		this.compatible_iteration_order = Util.compatibleIterationOrder( Arrays.asList( rai, target ) );
+		return this.into( new ArrayImgFactory< O >( outputType ).create( rai ), null, computeType, null );
+	}
+	
+	public < O extends RealType< O > & NativeType< O >, C  extends RealType< C > > RandomAccessibleInterval< O >
+	intoArrayImg( final O outputType )
+	{
+		return intoArrayImg( outputType.createVariable(), outputType );
+	}
+	
+	/**
+	 * Execute the computation and store the result into a newly created {@code Img} of the same {@code Type}
+	 * (and kind, by {@code ImgFactory}) as one of the input images, using as the computation {@code Type}
+	 * the type of that picked input image.
+	 * 
+	 * This approach is appropriate when e.g. all input images are of the same type, and operations aren't
+	 * expected to overflow the {@code Type} or it doesn't matter whether they do.
+	 * 
+	 * @return A newly created {@code Img} with the result of the computation.
+	 */
+	@SuppressWarnings("unchecked")
+	public < O extends RealType< O > & NativeType< O > > RandomAccessibleInterval< O >
+	intoImg()
+	{
+		return intoImg( ( ( RandomAccessibleInterval< O > )Util.findImg( operation ).iterator().next() ).randomAccess().get().createVariable() );
+	}
+	
+	/**
+	 * Execute the computation and store the result into a newly created {@code Img} of the same kind,
+	 * by {@code ImgFactory}, as one of the input images, but of type {@code outputType}, which is also
+	 * used as the computation {@code Type}.
+	 * 
+	 * @param outputType The {@code Type} of the returned {@code Img} and used for computing.
+	 * 
+	 * @return A newly created {@code Img} with the result of the computation.
+	 */
+	public < O extends RealType< O > & NativeType< O > > RandomAccessibleInterval< O >
+	intoImg( O outputType )
+	{
+		return intoImg( outputType.createVariable(), outputType );
+	}
+	
+	/**
+	 * Execute the computation and store the result into a newly created {@code Img} of the same kind,
+	 * by {@code ImgFactory}, as one of the input images, but of type {@code outputType}, while using
+	 * {@code computeType} for math operations, converting to the {@code outputType} to store the result.
+	 * 
+	 * @param computeType The {@code Type} used to perform mathematical operations.
+	 * 
+	 * @param outputType The {@code Type} of the returned {@code Img}.
+	 * 
+	 * @return A newly created {@code Img} with the result of the computation.
+	 */
+	public < O extends RealType< O > & NativeType< O >, C extends RealType< C > > RandomAccessibleInterval< O >
+	intoImg( final C computeType, O outputType )
+	{
+		for ( final RandomAccessibleInterval< ? > rai : Util.findImg( operation ) )
+		{
+			if ( rai instanceof Img )
+			{
+				final Img< O > target = ( ( Img< ? > )rai ).factory().imgFactory( outputType ).create( rai ); // of compatible iteration order by definition
+				return into( target, null, computeType, null );
+			}
+		}
+		return intoArrayImg();
 	}
 
 	/**
@@ -66,7 +153,7 @@ public class Compute
 	 *               note its {@code Type} determines the precision of the computation and the specific
 	 *               implementation of the mathematical operations.
 	 * 
-	 * @param converter The {@code Converter} that transfers all input {@code Type} to the {@code Type}
+	 * @param inConverter The {@code Converter} that transfers all input {@code Type} to the {@code Type}
 	 *                  of the {@code target}; when null, will create one that uses double floating-point
 	 *                  precision; but note that if the {@code Type} of an input {@code RandomAccessibleInterval}
 	 *                  is the same as that of the {@code target}, the converter will not be used.
@@ -75,24 +162,75 @@ public class Compute
 	 */
 	public < O extends RealType< O > > RandomAccessibleInterval< O > into(
 			final RandomAccessibleInterval< O > target,
-			Converter< RealType< ? >, O > converter
+			Converter< RealType< ? >, O > inConverter
 			)
 	{
-		if ( null == converter )
-			converter = Util.genericRealTypeConverter();
-			
+		return into( target, inConverter, target.randomAccess().get().createVariable(), null );
+	}
+
+	/**
+	 * Execute the mathematical operations and store the result into the given {@code RandomAccessibleInterval}.
+	 * Takes into account whether all images involved in the computation are iterable in a compatible way.
+	 * 
+	 * @param target The {@code RandomAccessibleInterval} into which to store the computation.
+	 * 
+	 * @param inConverter The {@code Converter} that transfers all input {@code Type} to the {@code Type}
+	 *                  of the {@code target}; when null, will create one that uses double floating-point
+	 *                  precision; but note that if the {@code Type} of an input {@code RandomAccessibleInterval}
+	 *                  is the same as that of the {@code target}, the converter will not be used.
+	 * 
+	 * @param computingType The {@code Type} that determines the precision of the computation and the specific
+	 *                 implementation of the mathematical operations.
+	 * 
+	 * @param outConverter The {@code Converter} that transfers the {@code computingType} to the {@code Type}
+	 *                 of the {@code target}; when null, a new one is created, which is the identity when the
+	 *                 {@code computingType} equal the {@code Type} of the {@code target}, and a generic
+	 *                 {@code RealType} converter that uses floating-point values (with {@code RealType#setReal(double)})
+	 *                 created with {@code Util#genericRealTypeConverter()} is used.
+	 * 
+	 * @return The {@code target}.
+	 */
+	@SuppressWarnings("unchecked")
+	public < O extends RealType< O >, C extends RealType< C > > RandomAccessibleInterval< O > into(
+			final RandomAccessibleInterval< O > target,
+			Converter< RealType< ? >, C > inConverter,
+			final C computingType,
+			Converter< C, O > outConverter
+			)
+	{
+		if ( null == inConverter )
+			inConverter = Util.genericRealTypeConverter();
+		
+		if ( null == outConverter )
+		{
+			final boolean are_same_type = computingType.getClass() == target.randomAccess().get().createVariable().getClass();
+			if ( are_same_type )
+			{
+				outConverter = ( Converter< C, O > )new Converter< C, C >() {
+					@Override
+					public final void convert( final C comp, final C out) {
+						out.set( comp );
+					}
+				};
+			}
+			else
+			{
+				outConverter = ( Converter< C, O > )Util.genericRealTypeConverter();
+			}
+		}
+
 		// Recursive copy: initializes interval iterators and sets temporary computation holder
-		final OFunction< O > f = this.operation.reInit(
-				target.randomAccess().get().createVariable(),
-				new HashMap< String, LetBinding< O > >(),
-				converter, null );
+		final OFunction< C > f = this.operation.reInit(
+				computingType,
+				new HashMap< String, LetBinding< C > >(),
+				inConverter, null );
 		
 		// Check compatible iteration order and dimensions
 		if ( this.compatible_iteration_order )
 		{
-			// Evaluate function for every pixel
-			for ( final O output : Views.iterable( target ) )
-				output.set( f.eval() );
+				// Evaluate function for every pixel
+				for ( final O output : Views.iterable( target ) )
+					outConverter.convert( f.eval(), output );
 		}
 		else
 		{
@@ -102,7 +240,7 @@ public class Compute
 			while ( cursor.hasNext() )
 			{
 				cursor.fwd();
-				cursor.get().set( f.eval( cursor ) );
+				outConverter.convert( f.eval( cursor ), cursor.get() );
 			}
 		}
 		
