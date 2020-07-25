@@ -214,7 +214,17 @@ public class ImgMath
 		return new Equal( o1, o2 );
 	}
 	
+	static public final Equal equal( final Object o1, final Object o2 )
+	{
+		return new Equal( o1, o2 );
+	}
+	
 	static public final NotEqual NEQ( final Object o1, final Object o2 )
+	{
+		return new NotEqual( o1, o2 );
+	}
+	
+	static public final NotEqual notEqual( final Object o1, final Object o2 )
 	{
 		return new NotEqual( o1, o2 );
 	}
@@ -224,7 +234,17 @@ public class ImgMath
 		return new LessThan( o1, o2 );
 	}
 	
+	static public final LessThan lessThan( final Object o1, final Object o2 )
+	{
+		return new LessThan( o1, o2 );
+	}
+	
 	static public final GreaterThan GT( final Object o1, final Object o2 )
+	{
+		return new GreaterThan( o1, o2 );
+	}
+	
+	static public final GreaterThan greaterThan( final Object o1, final Object o2 )
 	{
 		return new GreaterThan( o1, o2 );
 	}
