@@ -26,7 +26,7 @@ public class Util
 	 * @param images
 	 * @return Returns true if images have the same dimensions and iterator order, and false when the iteration order is incompatible.
 	 */
-	static public boolean compatibleIterationOrder( final LinkedList< RandomAccessibleInterval< ? > > images )
+	static public boolean compatibleIterationOrder( final List< RandomAccessibleInterval< ? > > images )
 	{
 		if ( images.isEmpty() )
 		{
