@@ -32,6 +32,7 @@ import net.imglib2.converter.Converter;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
@@ -340,6 +341,43 @@ public class Compute
 		}
 		
 		return new RandomAccessIntervalCompute();
+	}
+	
+	public < O extends RealType< O > & NativeType< O > > RandomAccessibleInterval< O >
+	parallelIntoArrayImg()
+	{
+		@SuppressWarnings("unchecked")
+		final O outputType =  ( ( RandomAccessibleInterval< O > )Util.findImg( operation ).iterator().next() ).randomAccess().get().createVariable();
+		return parallelIntoArrayImg( null, outputType.createVariable(), outputType, null );
+	}
+	
+	public < O extends RealType< O > & NativeType< O > > RandomAccessibleInterval< O >
+	parallelIntoArrayImg( final O outputType )
+	{
+		return parallelIntoArrayImg( null, outputType.createVariable(), outputType, null );
+	}
+	
+	public < O extends RealType< O > & NativeType< O >, C extends RealType< C > > RandomAccessibleInterval< O >
+	parallelIntoArrayImg(
+			final C computeType,
+			final O outputType
+			)
+	{
+		return parallelIntoArrayImg( null, computeType, outputType, null );
+	}
+	
+	public < O extends RealType< O > & NativeType< O >, C extends RealType< C > > RandomAccessibleInterval< O >
+	parallelIntoArrayImg(
+			final Converter< RealType< ? >, C > inConverter,
+			final C computeType,
+			final O outputType,
+			final Converter< C, O > outConverter
+			)
+	{
+		final RandomAccessibleInterval< O > source = asRandomAccessibleInterval( inConverter, computeType, outputType, outConverter ),
+		                                    target = new ArrayImgFactory< O >( outputType ).create( source );
+		LoopBuilder.setImages( source, target).forEachPixel( O::set );
+		return target;
 	}
 	
 	private boolean validate( final IFunction f )
