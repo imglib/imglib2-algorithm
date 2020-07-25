@@ -5,6 +5,7 @@ import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.converter.Converter;
 import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
@@ -96,6 +97,16 @@ public class ImgMath
 			final Converter< RealType< ? >, O > converter )
 	{
 		return new Compute( operation ).into( target, converter );
+	}
+	
+	static public final < O extends NativeType< O > & RealType< O > > RandomAccessibleInterval< O > computeIntoImg( final IFunction operation )
+	{
+		return compute( operation ).intoImg();
+	}
+	
+	static public final < O extends NativeType< O > & RealType< O > > RandomAccessibleInterval< O > computeIntoArrayImg( final IFunction operation )
+	{
+		return compute( operation ).intoArrayImg();
 	}
 	
 	static public final Add add( final Object o1, final Object o2 )
