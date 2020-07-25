@@ -6,9 +6,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import net.imglib2.AbstractWrappedInterval;
+import net.imglib2.AbstractWrappedPositionableLocalizable;
 import net.imglib2.Cursor;
+import net.imglib2.Interval;
+import net.imglib2.Localizable;
+import net.imglib2.Positionable;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.Sampler;
 import net.imglib2.algorithm.math.abstractions.IBinaryFunction;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.ITrinaryFunction;
@@ -245,6 +251,95 @@ public class Compute
 		}
 		
 		return target;
+	}
+
+	
+	@SuppressWarnings("unchecked")
+	public < O extends RealType< O >, C extends RealType< C > > RandomAccessibleInterval< O > asRandomAccessibleInterval(
+			final Converter< RealType< ? >, C > inConverter_,
+			final C computingType,
+			final O outputType,
+			final Converter< C, O > outConverter_)
+	{
+		final Converter< RealType< ? >, C > inConverter = null != inConverter_ ? inConverter_ : Util.genericRealTypeConverter();
+		
+		final Converter< C, O > outConverter;
+		if ( null == outConverter_ )
+		{
+			final boolean are_same_type = computingType.getClass() == outputType.getClass();
+			if ( are_same_type )
+			{
+				outConverter = ( Converter< C, O > )new Converter< C, C >() {
+					@Override
+					public final void convert( final C comp, final C out) {
+						out.set( comp );
+					}
+				};
+			}
+			else
+			{
+				outConverter = ( Converter< C, O > )Util.genericRealTypeConverter();
+			}
+		}
+		else
+			outConverter = outConverter_;
+		
+		class RandomAccessCompute< PL extends Positionable & Localizable > extends AbstractWrappedPositionableLocalizable< PL > implements RandomAccess< O >
+		{
+			private final O result;
+			private final OFunction< C > f;
+			private final RandomAccessibleInterval< O > sourceInterval;
+
+			public RandomAccessCompute( final O outputType, final RandomAccessibleInterval< O > sourceInterval ) {
+				super( ( PL )sourceInterval.randomAccess() );
+				this.result = outputType.createVariable();
+				this.sourceInterval = sourceInterval;
+				// Recursive copy: initializes interval iterators and sets temporary computation holder
+				this.f = Compute.this.operation.reInit(
+						computingType,
+						new HashMap< String, LetBinding< C > >(),
+						inConverter, null );
+			}
+
+			@Override
+			public final O get() {
+				outConverter.convert( f.eval( this ), result );
+				return result;
+			}
+
+			@Override
+			public Sampler< O > copy() {
+				return new RandomAccessCompute< PL >( this.result, this.sourceInterval );
+			}
+
+			@Override
+			public RandomAccess< O > copyRandomAccess() {
+				return new RandomAccessCompute< PL >( this.result, this.sourceInterval );
+			}
+		}
+				
+		class RandomAccessIntervalCompute extends AbstractWrappedInterval< RandomAccessibleInterval< O > > implements RandomAccessibleInterval< O >
+		{
+			public RandomAccessIntervalCompute()
+			{
+				super( ( RandomAccessibleInterval< O > )Views.zeroMin( Util.findImg( operation ).iterator().next() ) );
+			}
+
+			@Override
+			public RandomAccess< O > randomAccess()
+			{
+				return randomAccess( this.sourceInterval );
+			}
+
+			@SuppressWarnings("rawtypes")
+			@Override
+			public RandomAccess< O > randomAccess( final Interval interval )
+			{	
+				return new RandomAccessCompute( outputType.createVariable(), this.sourceInterval ); // Generic type inescrutable
+			}
+		}
+		
+		return new RandomAccessIntervalCompute();
 	}
 	
 	private boolean validate( final IFunction f )
