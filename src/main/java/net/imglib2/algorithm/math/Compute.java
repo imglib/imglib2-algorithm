@@ -253,8 +253,20 @@ public class Compute
 		
 		return target;
 	}
-
 	
+	/** 
+	 * View the result of the computations as a {@code RandomAccessibleInterval}, i.e. there is no target image,
+	 * instead any pixel can be viewed as the result of the computation applied to it, dynamically.
+	 * 
+	 * See also {@code ViewableFunction} and methods below related to {@code Compute#randomAccess()} and {@code Compute#cursor()}.
+	 * The key difference is that, here, the computation and the output type can be different.
+	 * 
+	 * @param inConverter_ To convert input images into the {@code computingType}. Can be null, defaults to a {@code Util#genericRealTypeConverter()}.
+	 * @param computingType The {@code Type} that defines the math to use.
+	 * @param outputType The @{code Type} of the constructed and returned {@code RandomAccessibleInterval}.
+	 * @param outConverter_ To convert from the {@code computingType} to the {@code outputType}. Can be null, defaults to a {@code Util#genericRealTypeConverter()}.
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	public < O extends RealType< O >, C extends RealType< C > > RandomAccessibleInterval< O > asRandomAccessibleInterval(
 			final Converter< RealType< ? >, C > inConverter_,
@@ -343,20 +355,38 @@ public class Compute
 		return new RandomAccessIntervalCompute();
 	}
 	
+	/**
+	 * Compute the result multithreaded into an {@code ArrayImg} of the same {@code Type} as the first image found,
+	 * with mathematical operations using that same {@code Type}.
+	 */
 	public < O extends RealType< O > & NativeType< O > > RandomAccessibleInterval< O >
 	parallelIntoArrayImg()
 	{
 		@SuppressWarnings("unchecked")
-		final O outputType =  ( ( RandomAccessibleInterval< O > )Util.findImg( operation ).iterator().next() ).randomAccess().get().createVariable();
-		return parallelIntoArrayImg( null, outputType.createVariable(), outputType, null );
+		final RandomAccessibleInterval< O > first = ( RandomAccessibleInterval< O > )Util.findImg( operation ).iterator().next();
+		final O outputType =  first.randomAccess().get().createVariable();
+		final ArrayImg< O, ? > target = new ArrayImgFactory< O >( outputType ).create( first );
+		return parallelInto( null, outputType.createVariable(), outputType, null, target );
 	}
 	
+	/**
+	 * Compute the result multithreaded into an {@code ArrayImg} of the given {@code Type}.
+	 * 
+	 * @param outputType The {@code Type} used for both computations and the output image.
+	 */
 	public < O extends RealType< O > & NativeType< O > > RandomAccessibleInterval< O >
 	parallelIntoArrayImg( final O outputType )
 	{
 		return parallelIntoArrayImg( null, outputType.createVariable(), outputType, null );
 	}
 	
+	/**
+	 * Compute the result multithreaded into an {@code ArrayImg} of the given {@code Type}.
+	 * Uses generic {@code RealType} converters where appropriate as provided by {@code Util#genericRealTypeConverter()}.
+	 * 
+	 * @param computeType The {@code Type} used for computations.
+	 * @param outputType The {@code Type} used for the output image.
+	 */
 	public < O extends RealType< O > & NativeType< O >, C extends RealType< C > > RandomAccessibleInterval< O >
 	parallelIntoArrayImg(
 			final C computeType,
@@ -366,6 +396,14 @@ public class Compute
 		return parallelIntoArrayImg( null, computeType, outputType, null );
 	}
 	
+	/**
+	 * Compute the result multithreaded into an {@code ArrayImg} of the given {@code Type}.
+	 * 
+	 * @param inConverter From input to {@code computeType}, or when null, uses {@code Util#genericRealTypeConverter()}.
+	 * @param computeType The {@code Type} used for computations.
+	 * @param outputType The {@code Type} used for the output image.
+	 * @param outConverter From {@code computeType} to {@code outputType}, or when null, uses {@code Util#genericRealTypeConverter()}.
+	 */
 	public < O extends RealType< O > & NativeType< O >, C extends RealType< C > > RandomAccessibleInterval< O >
 	parallelIntoArrayImg(
 			final Converter< RealType< ? >, C > inConverter,
@@ -374,8 +412,43 @@ public class Compute
 			final Converter< C, O > outConverter
 			)
 	{
-		final RandomAccessibleInterval< O > source = asRandomAccessibleInterval( inConverter, computeType, outputType, outConverter ),
-		                                    target = new ArrayImgFactory< O >( outputType ).create( source );
+		final ArrayImg< O, ? > target = new ArrayImgFactory< O >( outputType ).create( Util.findImg( operation ).iterator().next() );
+		return parallelInto( inConverter, computeType, outputType, outConverter, target );
+	}
+	
+	/**
+	 * Compute the result multithreaded into an {@code ArrayImg} of the given {@code Type}.
+	 * Uses generic {@code RealType} converters where appropriate as provided by {@code Util#genericRealTypeConverter()}.
+	 *
+	 * @param target To store the result of the computation, with its {@code Type} defining both the output {@code Type} and the {@code Type} used for computations.
+	 */
+	public < O extends RealType< O > > RandomAccessibleInterval< O >
+	parallelInto(
+			final RandomAccessibleInterval< O > target
+			)
+	{
+		final O type = net.imglib2.util.Util.getTypeFromInterval( target );
+		return parallelInto( null, type.createVariable(), type, null, target );
+	}
+	
+	/**
+	 * Compute the result multithreaded into an {@code ArrayImg} of the given {@code Type}.
+	 * 
+	 * @param inConverter From input to {@code computeType}, or when null, uses {@code Util#genericRealTypeConverter()}.
+	 * @param computeType The {@code Type} used for computations.
+	 * @param outputType The {@code Type} used for the output image.
+	 * @param outConverter From {@code computeType} to {@code outputType}, or when null, uses {@code Util#genericRealTypeConverter()}.
+	 */
+	public < O extends RealType< O >, C extends RealType< C > > RandomAccessibleInterval< O >
+	parallelInto(
+			final Converter< RealType< ? >, C > inConverter,
+			final C computeType,
+			final O outputType,
+			final Converter< C, O > outConverter,
+			final RandomAccessibleInterval< O > target
+			)
+	{
+		final RandomAccessibleInterval< O > source = asRandomAccessibleInterval( inConverter, computeType, outputType, outConverter );
 		LoopBuilder.setImages( source, target).forEachPixel( O::set );
 		return target;
 	}
