@@ -17,7 +17,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.RealRandomAccess;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.algorithm.bspline.BSplineCoefficientsInterpolator;
-import net.imglib2.interpolation.randomaccess.BSplineCoefficientsInterpolatorFactory;
+import net.imglib2.algorithm.interpolation.randomaccess.BSplineCoefficientsInterpolatorFactory;
 import net.imglib2.iterator.IntervalIterator;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.position.FunctionRealRandomAccessible;

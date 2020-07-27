@@ -32,7 +32,7 @@
  * #L%
  */
 
-package net.imglib2.interpolation.randomaccess;
+package net.imglib2.algorithm.interpolation.randomaccess;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealInterval;

@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.interpolation.randomaccess;
+package net.imglib2.algorithm.interpolation.randomaccess;
 
 import java.util.Arrays;
 

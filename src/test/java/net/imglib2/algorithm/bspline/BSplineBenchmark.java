@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.function.*;
 
 import net.imglib2.*;
+import net.imglib2.algorithm.interpolation.randomaccess.BSplineCoefficientsInterpolatorFactory;
+import net.imglib2.algorithm.interpolation.randomaccess.BSplineInterpolatorFactory;
 import net.imglib2.img.*;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;

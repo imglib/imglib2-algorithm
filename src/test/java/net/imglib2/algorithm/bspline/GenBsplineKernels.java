@@ -7,7 +7,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import net.imglib2.interpolation.randomaccess.BSplineInterpolator;
+import net.imglib2.algorithm.interpolation.randomaccess.BSplineInterpolator;
 
 public class GenBsplineKernels {
 
