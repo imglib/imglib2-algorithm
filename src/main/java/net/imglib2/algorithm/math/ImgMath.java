@@ -209,6 +209,21 @@ public class ImgMath
 		return new Min( obs );
 	}
 	
+	static public final Log log( final Object o1 )
+	{
+		return new Log( o1 );
+	}
+	
+	static public final Log logarithm( final Object o1 )
+	{
+		return new Log( o1 );
+	}
+	
+	static public final Exp exp( final Object o1 )
+	{
+		return new Exp( o1 );
+	}
+	
 	static public final Let let( final String varName, final Object varValue, final Object body )
 	{
 		return new Let( varName, varValue, body );
