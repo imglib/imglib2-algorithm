@@ -9,55 +9,28 @@ import java.util.Arrays;
 
 import net.imglib2.algorithm.interpolation.randomaccess.BSplineInterpolator;
 
-public class GenBsplineKernels {
-
+/**
+ * Contains methods that pre-compute the coefficients of
+ * the polynomials comprising the b-spline kernel functions.
+ * Specifically {@link BsplineKernel4} and {@link BsplineKernel5}.
+ * 
+ * See:
+ * Unser, Aldroubi, Eden  "Fast B-Spline Transform for Continuous Image Representation
+ * and Interpolation" PAMI 1991
+ *
+ */
+public class GenBsplineKernels
+{
 	public static void main(String[] args) throws IOException
 	{
-
-//		int order = 4;
-//		ArrayList<double[]> pieces = splinePieces( order );
-//		ArrayList<double[]> cpieces = centeredSplinePieces( order );
-//
-//		System.out.println( "spline pieces: ");
-//		for( int i = 0; i < pieces.size(); i++ )
-//			System.out.println(  "  " + Arrays.toString( pieces.get( i )));
-
-
-//		System.out.println( " ");
-//		System.out.println( "center: " + kernelCenter( order ));
-//		System.out.println( " ");
-//
-//		System.out.println( "centered spline pieces: ");
-//		for( int i = 0; i < cpieces.size(); i++ )
-//			System.out.println(  "  " + Arrays.toString( cpieces.get( i )));
-
-
-		/*
-		 * Good - uncentered splines sum to one
-		 */
-//		testKnotValueSums( pieces );
-
-
-//		centeredPolysToCsv();		
-
-//		tests();
-
-//		validateForCubicKernel();
-		
-//		writeCenteredSplinePieces();
-
+		System.out.println( "Uncentered:");
 		writeUnCenteredSplinePieces();
+
+		System.out.println( "\n\n");
+		System.out.println( "Centered:");
+		writeCenteredSplinePieces();
 	}
-	
-	public static void testKnotValueSums( final ArrayList<double[]> polys )
-	{
-		double[] knotValues = valuesAtKnots( polys );
-		double sum = Arrays.stream( knotValues ).sum();
-		
-		System.out.println("values: "  + Arrays.toString( knotValues ));
-		System.out.println("   sum: "  + sum );
-	}
-	
+
 	public static double[] valuesAtKnots( final ArrayList<double[]> polys )
 	{
 		int N = polys.size() + 1;
@@ -83,14 +56,10 @@ public class GenBsplineKernels {
 		double step = 0.1;
 
 		ArrayList<double[]> cubK = centeredSplinePieces( 3 );
-
 		double y = BSplineInterpolator.evaluate3Normalized( 0 );
 
 //		double z = apply( cubK, 2 );
 		double z = bsplineKernel( 0, 3 );
-
-		System.out.println( "y : " + y );
-		System.out.println( "z : " + z );
 
 		for( double x = start; x <= end; x += step)
 		{
@@ -101,11 +70,11 @@ public class GenBsplineKernels {
 		}
 	}
 
-	public static ArrayList<double[]> centeredSplinePieces( int i )
+	public static ArrayList<double[]> centeredSplinePieces( int order )
 	{
-		double c = kernelCenter( i );
+		double c = kernelCenter( order );
 
-		ArrayList<double[]> ppolysUncentered = splinePieces( i );
+		ArrayList<double[]> ppolysUncentered = splinePieces( order );
 		ArrayList<double[]> ppolys = new ArrayList<>();
 
 		for( double[] p : ppolysUncentered )
@@ -114,6 +83,12 @@ public class GenBsplineKernels {
 		return ppolys;
 	}
 
+	/**
+	 * Prints the polynomials comprising un-centered bspline kernels 
+	 * for splines of order 0 through 5.
+	 * 
+	 * Un-centered means that the support of the kernel is strictly positive.
+	 */
 	public static void writeUnCenteredSplinePieces()
 	{
 		for( int i = 0; i <= 5; i++ )
@@ -127,6 +102,12 @@ public class GenBsplineKernels {
 		}
 	}
 	
+	/**
+	 * Prints the polynomials comprising centered bspline kernels 
+	 * for splines of order 0 through 5.
+	 * 
+	 * centered means that the kernel is symmetric around zero.
+	 */
 	public static void writeCenteredSplinePieces()
 	{
 		for( int i = 0; i <= 5; i++ )
@@ -163,72 +144,9 @@ public class GenBsplineKernels {
 		}
 	}
 	
-	public static double kernelCenter( int n )
+	public static double kernelCenter( final int order )
 	{
-		return (double)( n + 1 ) / 2.0;
-	}
-	
-	public static void tests() throws IOException
-	{
-//		System.out.println( fact( 5 ));
-//		System.out.println( nCk( 10, 3 ));
-
-//		double[] a = new double[]{ -1, 1 };
-//		double[] b = new double[]{ 1, 0, 1 };
-//		double[] c = polyMult( a, b );
-//		System.out.println( "c: " + Arrays.toString( c ));
-
-//		double[] c = shiftedPoly( 3, -1 );
-//		System.out.println( "c: " + Arrays.toString( c ));
-
-
-//		long j = 3;
-//		long sng = j % 2 == 0 ? 1 : -1;
-//		System.out.println( sng );
-
-//		double[] p0 = bsplinePolyPiece( 0, 0 );
-//		System.out.println( "p0: " + Arrays.toString( p0 ));
-//
-//		double[] p1 = bsplinePolyPiece( 3, 0 );
-//		System.out.println( "p1: " + Arrays.toString( p1 ));
-		
-//		bsplineAll( 0 );
-//		bsplineAll( 1 );
-//		bsplineAll( 2 );
-//		bsplineAll( 3 );
-
-
-//		ArrayList<double[]> ppolys = bsplineAll( 1 );
-//		double x = 3;
-//		double y = apply( ppolys.get( 0 ), x );
-//		System.out.println( " f(" + x + ") = " + y  );
-		double start = -1.0;
-		double end = 7.00001;
-
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/ker1.csv", 
-				splinePieces( 0 ),
-				start, end, 0.1 );
-
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/ker1.csv", 
-				splinePieces( 1 ),
-				start, end, 0.1 );
-
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/ker2.csv", 
-				splinePieces( 2 ),
-				start, end, 0.1 );
-
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/ker3.csv", 
-				splinePieces( 3 ),
-				start, end, 0.1 );
-
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/ker4.csv", 
-				splinePieces( 4 ),
-				start, end, 0.1 );
-//
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/ker5.csv", 
-				splinePieces( 5 ),
-				start, end, 0.1 );
-		
+		return (double)( order + 1 ) / 2.0;
 	}
 	
 	public static void centeredPolysToCsv() throws IOException
@@ -236,57 +154,31 @@ public class GenBsplineKernels {
 		double start = -7.0;
 		double end = 7.00001;
 
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker0.csv", 
-				splinePieces( 0 ),
+		toCsv( 	"src/test/resources/cker0.csv", 
+				centeredSplinePieces( 0 ),
 				start, end, 0.1, 0.5 );
 
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker1.csv", 
-				splinePieces( 1 ),
+		toCsv( 	"src/test/resources/cker1.csv", 
+				centeredSplinePieces( 1 ),
 				start, end, 0.1, 1 );
 
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker2.csv", 
-				splinePieces( 2 ),
+		toCsv( 	"src/test/resources/cker2.csv", 
+				centeredSplinePieces( 2 ),
 				start, end, 0.1, 1.5 );
 
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker3.csv", 
-				splinePieces( 3 ),
+		toCsv( 	"src/test/resources/cker3.csv", 
+				centeredSplinePieces( 3 ),
 				start, end, 0.1, 2.0 );
 
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker4.csv", 
-				splinePieces( 4 ),
+		toCsv( 	"src/test/resources/cker4.csv", 
+				centeredSplinePieces( 4 ),
 				start, end, 0.1, 2.5 );
 
-		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker5.csv", 
-				splinePieces( 5 ),
+		toCsv( 	"src/test/resources/cker5.csv", 
+				centeredSplinePieces( 5 ),
 				start, end, 0.1, 3.0 );
-
-
-//		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker0.csv", 
-//				centeredSplinePieces( 0 ),
-//				start, end, 0.1, 0.5 );
-//
-//		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker1.csv", 
-//				centeredSplinePieces( 1 ),
-//				start, end, 0.1, 1 );
-//
-//		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker2.csv", 
-//				centeredSplinePieces( 2 ),
-//				start, end, 0.1, 1.5 );
-//
-//		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker3.csv", 
-//				centeredSplinePieces( 3 ),
-//				start, end, 0.1, 2.0 );
-//
-//		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker4.csv", 
-//				centeredSplinePieces( 4 ),
-//				start, end, 0.1, 2.5 );
-//
-//		toCsv( 	"/home/john/tmp/bsplineKernelTests/cker5.csv", 
-//				centeredSplinePieces( 5 ),
-//				start, end, 0.1, 3.0 );
 	}
 	
-
 	/**
 	 * Return a new polynomial that is shifted in x by s.  Specifically if p is
 	 *   p_0 + p_1 * x + ... + p_n * x^n
@@ -332,17 +224,11 @@ public class GenBsplineKernels {
 			double y = 0.0;
 			if( i >= 0 &&  i < piecewisePolys.size() )
 			{
-//				System.out.println( " xx " + xx );
-//				System.out.println( " xo " + x  );
 				y = apply( piecewisePolys.get( i ), x );
 			}
-//			System.out.println( " y " + y );
-//			System.out.println( "  " );
-
 			s.append( String.format("%f,%f\n", xx, y ));
 		}
 		Files.write( Paths.get( fpath ), s.toString().getBytes(), StandardOpenOption.CREATE);
-
 	}
 	
 	public static void toCsv( String fpath, ArrayList<double[]> piecewisePolys, double start, double end, double step ) throws IOException
@@ -350,6 +236,10 @@ public class GenBsplineKernels {
 		toCsv( fpath, piecewisePolys, start, end, step, 0.0 );
 	}
 
+	/**
+	 * Uncentered polys only
+	 * 
+	 */
 	public static double apply( final ArrayList<double[]> polys, double x )
 	{
 		int i = (int)Math.floor( x );
@@ -382,29 +272,39 @@ public class GenBsplineKernels {
 		}
 		return y;	
 	}
-	
-	public static ArrayList<double[]> splinePieces( long n )
+
+	/**
+	 * Returns a list representing the bspline kernel of order n.
+	 * 
+	 * A polynomial is represented as a double array (p), where p[i] is the
+	 * coefficient of the ith term of the polynomial ( e.g. [2,1,0,4]
+	 * corresponds to 2 + x + 4(x^3))
+	 *
+	 * The ith array of represents the ith polynomial of the sum in Eq. 2.2 in
+	 * Unser et al.
+	 * 
+	 * @param n
+	 *            the spline order
+	 * @return a representation of the kernel
+	 */
+	public static ArrayList< double[] > splinePieces( long n )
 	{
 		ArrayList< double[] > piecewisePolys = new ArrayList<>();
 
 		double[] p;
 		double[] last = null;
-		for( long j = 0; j < n + 1; j++ )
+		for ( long j = 0; j < n + 1; j++ )
 		{
 			p = bsplinePolyPiece( n, j );
 
-//			System.out.println( "    p: " + Arrays.toString( p ));
-		
 			double[] q;
-			if( last != null )
+			if ( last != null )
 			{
 				q = add( last, p );
 			}
 			else
 				q = p;
 
-//			System.out.println( "  q: " + Arrays.toString( q ));
-//			System.out.println( "   ");
 			piecewisePolys.add( q );
 
 			last = q;
@@ -417,8 +317,11 @@ public class GenBsplineKernels {
 	 * Generate part of the polynomial that is present at x >= j
 	 * 
 	 * @param n
+	 *            spline order
 	 * @param j
-	 * @return
+	 *            offset
+	 * @return the polynomial
+	 * 
 	 */
 	public static double[] bsplinePolyPiece( long n, long j )
 	{
@@ -437,9 +340,12 @@ public class GenBsplineKernels {
 	
 	/**
 	 * returns the polynomial coefficients for (x + j)^n
+	 * 
 	 * @param n
+	 *            spline order
 	 * @param j
-	 * @return
+	 *            offset
+	 * @return the shifted polynomial
 	 */
 	public static double[] shiftedPoly( final long n, final double j )
 	{
@@ -452,19 +358,22 @@ public class GenBsplineKernels {
 	}
 	
 	/**
-	 * Multiply polynomial coefficients  
-	 * @param a first coefs 
-	 * @param b second coefs 
-	 * @return coefficients
+	 * Multiply polynomials defined by their coefficients.
+	 * 
+	 * @param a
+	 *            first coefs
+	 * @param b
+	 *            second coefs
+	 * @return coefficients of the new polynomial
 	 */
 	public static double[] polyMult( final double[] a, final double[] b )
 	{
 		int M = a.length + b.length - 1;
 
 		double[] out = new double[ M ];
-		for( int i = 0; i < a.length; i++ )
+		for ( int i = 0; i < a.length; i++ )
 		{
-			for( int j = 0; j < b.length; j++ )
+			for ( int j = 0; j < b.length; j++ )
 			{
 				out[ i + j ] += a[ i ] * b[ j ];
 			}
@@ -473,6 +382,15 @@ public class GenBsplineKernels {
 		return out;
 	}
 
+	/**
+	 * Add two polynomials of potentially different order.
+	 * 
+	 * @param a
+	 *            first polynomial
+	 * @param b
+	 *            second polynomial
+	 * @return resulting polynomial
+	 */
 	public static double[] add( final double[] a, final double[] b )
 	{
 		int Na = a.length;
@@ -480,43 +398,41 @@ public class GenBsplineKernels {
 		int N = Na > Nb ? Na : Nb;
 
 		double[] c = new double[ N ];
-		for( int i = 0; i < N; i++ )
+		for ( int i = 0; i < N; i++ )
 		{
-			if( i < Na && i < Nb )
+			if ( i < Na && i < Nb )
 				c[ i ] = a[ i ] + b[ i ];
-			else if( i < Na )
+			else if ( i < Na )
 				c[ i ] = a[ i ];
-			else if( i < Nb )
+			else if ( i < Nb )
 				c[ i ] = b[ i ];
 		}
 
 		return c;
 	}
 
+	/**
+	 * Factorial
+	 * 
+	 * @param i
+	 * @return
+	 */
 	public static long fact( long i )
 	{
 		long out = 1;
-		while( i > 1 )
+		while ( i > 1 )
 		{
 			out *= i;
 			i--;
 		}
 		return out;
 	}
-	
+
 	/**
-	 * Binomial coefficient 
-	 * n choose k
+	 * Binomial coefficient: n choose k
 	 */
 	public static long nCk( long n, long k )
 	{
-//		long out = 1;
-//		for( long i = 1; i <= k; i++ )
-//		{
-//			out *= (( n + 1 - i ) / i );
-//		}
-//		return out;
-
 		long num = fact( n );
 		long den = fact( k ) * fact( n - k );
 		return num / den;
