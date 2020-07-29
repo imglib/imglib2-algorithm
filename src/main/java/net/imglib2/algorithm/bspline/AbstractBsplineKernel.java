@@ -42,7 +42,10 @@ public abstract class AbstractBsplineKernel
 	
 	public abstract double evaluate( final double x );
 
-	public abstract double evaluateNorm( final double x );
+	public double evaluateNorm( final double x )
+	{
+		return c0() * evaluate( x ); // make more efficient (save a multiply)?
+	}
 	
 	protected static double powIntPositive( final double base, final int pow )
 	{

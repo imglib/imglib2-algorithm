@@ -55,6 +55,7 @@ public class BsplineKernel1 extends AbstractBsplineKernel
 			return 0.0;	
 	}
 
+	@Override
 	public double evaluateNorm( final double x )
 	{
 		return evaluate( x );
