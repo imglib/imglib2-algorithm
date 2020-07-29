@@ -27,11 +27,11 @@ public class BSplineCorrectnessTest
 	@Test
 	public void test3Spline1d()
 	{
-		RandomAccessibleInterval< DoubleType > p0 = ConstantUtils.constantRandomAccessibleInterval( new DoubleType( 1 ), 1, new FinalInterval( 32 ));
+		RandomAccessibleInterval< DoubleType > p0 = ConstantUtils.constantRandomAccessibleInterval( new DoubleType( 1 ), new FinalInterval( 32 ));
 		RandomAccessibleInterval<DoubleType> p1 = Views.interval( polynomialImg1dC( new double[]{ 1, 1 }), new FinalInterval( 32 ));
 		
-		BSplineInterpolatorFactory<DoubleType> factory4 = new BSplineInterpolatorFactory<>( 3, true, 4 );
-		BSplineInterpolatorFactory<DoubleType> factory8 = new BSplineInterpolatorFactory<>( 3, true, 8 );
+		BSplineInterpolatorFactory<DoubleType> factory4 = new BSplineInterpolatorFactory<>( true, 4 );
+		BSplineInterpolatorFactory<DoubleType> factory8 = new BSplineInterpolatorFactory<>( true, 8 );
 
 		BSplineInterpolator< DoubleType > spline3p0 = factory4.create( p0 );
 		BSplineInterpolator< DoubleType > spline3p1 = factory4.create( p1 );

@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,10 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-
 package net.imglib2.algorithm.interpolation.randomaccess;
-
-import java.util.Arrays;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
@@ -45,10 +42,9 @@ import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.position.transform.Floor;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.Util;
 
 /**
- * Performs cubic b-spline interpolation by computing coefficients on the fly.
+ * Performs cubic b-spline interpolation by pre-computing coefficients on the fly.
  * This will be less time efficient, in general, than pre-computing coefficients
  * using a {@link BSplineDecomposition}. This will be more memory-efficient
  * though.
@@ -70,7 +66,7 @@ public class BSplineInterpolator< T extends RealType< T > > extends Floor< Rando
 
 	// from Unser 1991 Table 2
 	public static final double ALPHA = SQRT3 - 2.0;
-	public static final double FACTOR = ( -6.0 * ALPHA ) / ( 1.0 - ( ALPHA * ALPHA ) ); // TODO where did that come from?
+	public static final double FACTOR = ( -6.0 * ALPHA ) / ( 1.0 - ( ALPHA * ALPHA ) );
 	public static final double ONESIXTH = 1.0 / 6.0;
 	public static final double TWOTHIRDS = 2.0 / 3.0;
 	public static final double FOURTHIRDS = 4.0 / 3.0;
@@ -83,7 +79,8 @@ public class BSplineInterpolator< T extends RealType< T > > extends Floor< Rando
 
 	final protected boolean clipping;
 
-	final protected int bsplineOrder;
+	// TODO implement arbitrary order 
+	//final protected int bsplineOrder;
 
 	final protected int radius;
 
@@ -95,31 +92,35 @@ public class BSplineInterpolator< T extends RealType< T > > extends Floor< Rando
 
 		this.shape = interpolator.shape;
 
-		this.bsplineOrder = interpolator.bsplineOrder;
-		this.radius = bsplineOrder + 1;
+//		this.bsplineOrder = interpolator.bsplineOrder;
+//		this.radius = bsplineOrder + 1;
+
+		this.radius = 4;
 		this.clipping = interpolator.clipping;
 		target.setPosition( new int[ numDimensions() ] );
 		value = target.get().firstElement().createVariable();
 		weights = new double[ numDimensions() ][ shape.getSpan() * 2 + 1 ];
 	}
 
-	private BSplineInterpolator( final RandomAccessible< T > source, final int order, final RectangleShape shape, final boolean clipping )
+	private BSplineInterpolator( final RandomAccessible< T > source, final RectangleShape shape, final boolean clipping )
 	{
 		super( shape.neighborhoodsRandomAccessible( source ).randomAccess() );
 
 		this.shape = shape;
 
-		this.bsplineOrder = order;
-		this.radius = bsplineOrder + 1;
+//		this.bsplineOrder = order;
+//		this.radius = bsplineOrder + 1;
+
+		this.radius = 4;
 		this.clipping = clipping;
 		target.setPosition( new int[ numDimensions() ] );
 		value = target.get().firstElement().createVariable();
 		weights = new double[ numDimensions() ][ shape.getSpan() * 2 + 1 ];
 	}
 
-	public BSplineInterpolator( final RandomAccessible< T > source, final int order, final int radius, final boolean clipping )
+	public BSplineInterpolator( final RandomAccessible< T > source, final int radius, final boolean clipping )
 	{
-		this( source, order, new RectangleShape( radius, false ), clipping );
+		this( source, new RectangleShape( radius, false ), clipping );
 	}
 
 	/**
@@ -130,13 +131,7 @@ public class BSplineInterpolator< T extends RealType< T > > extends Floor< Rando
 	 */
 	protected BSplineInterpolator( final RandomAccessibleInterval< T > randomAccessible )
 	{
-		this( randomAccessible, 3, 4, true );
-	}
-
-	public void printPosition()
-	{
-		System.out.println( "interp position : " + Arrays.toString( position ) );
-		System.out.println( "target position : " + Util.printCoordinates( target ) );
+		this( randomAccessible, 4, true );
 	}
 
 	@Override

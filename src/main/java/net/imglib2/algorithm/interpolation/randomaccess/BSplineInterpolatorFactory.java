@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,7 +31,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-
 package net.imglib2.algorithm.interpolation.randomaccess;
 
 import net.imglib2.RandomAccessible;
@@ -40,13 +39,9 @@ import net.imglib2.interpolation.InterpolatorFactory;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.RealType;
 
-/**
- * TODO
- *
- */
 public class BSplineInterpolatorFactory< T extends RealType< T > > implements InterpolatorFactory< T, RandomAccessible< T > >
 {
-	final int order;
+//	final int order; // TODO implement arbitrary order
 
 	final boolean clipping;
 
@@ -56,8 +51,6 @@ public class BSplineInterpolatorFactory< T extends RealType< T > > implements In
 	 * Creates a new {@link BSplineInterpolatorFactory} using the BSpline
 	 * interpolation in a certain window
 	 *
-	 * @param order
-	 *            the order of the bspline
 	 * @param clipping
 	 *            the bspline-interpolation can create values that are bigger or
 	 *            smaller than the original values, so they can be clipped to
@@ -65,9 +58,9 @@ public class BSplineInterpolatorFactory< T extends RealType< T > > implements In
 	 * @param radius
 	 * 			  the radius of the interpolating kernel.
 	 */
-	public BSplineInterpolatorFactory( final int order, final boolean clipping, final int radius )
+	public BSplineInterpolatorFactory( final boolean clipping, final int radius )
 	{
-		this.order = order;
+//		this.order = order;
 		this.clipping = clipping;
 		this.radius = radius;
 	}
@@ -76,30 +69,25 @@ public class BSplineInterpolatorFactory< T extends RealType< T > > implements In
 	 * Creates a new {@link BSplineInterpolatorFactory} using the BSpline
 	 * interpolation in a certain window
 	 *
-	 * @param order
-	 *            the order of the bspline
 	 * @param clipping
 	 *            the bspline-interpolation can create values that are bigger or
 	 *            smaller than the original values, so they can be clipped to
 	 *            the range of the {@link Type} if wanted
 	 *
 	 */
-	public BSplineInterpolatorFactory( final int order, final boolean clipping )
+	public BSplineInterpolatorFactory( final boolean clipping )
 	{
-		this( order, clipping, order + 1 );
+		this( clipping, 4 );
 	}
 
 	/**
 	 * Creates a new {@link BSplineInterpolatorFactory} using the BSpline
 	 * interpolation in a certain window
 	 *
-	 * @param order
-	 *            the order of the bspline
-	 *
 	 */
 	public BSplineInterpolatorFactory( final int order )
 	{
-		this( order, true, order + 1 );
+		this( true, 4 );
 	}
 
 	/**
@@ -108,13 +96,13 @@ public class BSplineInterpolatorFactory< T extends RealType< T > > implements In
 	 */
 	public BSplineInterpolatorFactory()
 	{
-		this( 3, true );
+		this( true );
 	}
 
 	@Override
 	public BSplineInterpolator< T > create( final RandomAccessible< T > randomAccessible )
 	{
-		return new BSplineInterpolator< T >( randomAccessible, order, radius, clipping );
+		return new BSplineInterpolator< T >( randomAccessible, radius, clipping );
 	}
 
 	/**
