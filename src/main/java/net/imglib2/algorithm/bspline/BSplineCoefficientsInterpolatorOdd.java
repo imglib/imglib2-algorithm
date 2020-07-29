@@ -41,7 +41,7 @@ import net.imglib2.position.transform.Floor;
 import net.imglib2.type.numeric.RealType;
 
 /**
- * Performs cubic b-spline interpolation
+ * Computes b-spline coefficients for splines of odd order.
  *
  * @author John Bogovic
  * @author Stephan Saalfeld

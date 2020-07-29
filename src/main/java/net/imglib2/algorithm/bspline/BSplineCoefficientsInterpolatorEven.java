@@ -41,7 +41,7 @@ import net.imglib2.position.transform.Round;
 import net.imglib2.type.numeric.RealType;
 
 /**
- * Performs cubic b-spline interpolation
+ * Computes b-spline coefficients for splines of even order.
  *
  * @author John Bogovic
  * @author Stephan Saalfeld
