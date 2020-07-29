@@ -85,9 +85,9 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 
 	protected boolean isPadded = true;
 
-	public BSplineDecomposition( final int order, final RandomAccessible<T> img )
+	public BSplineDecomposition( final int order, final RandomAccessible< T > img )
 	{
-		assert( order <= 5 );
+		assert ( order <= 5 );
 
 		this.order = order;
 		this.img = img;
@@ -99,7 +99,7 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 		padding = new double[ paddingWidth ];
 	}
 
-	public BSplineDecomposition( final RandomAccessible<T> img )
+	public BSplineDecomposition( final RandomAccessible< T > img )
 	{
 		this( 3, img );
 	}
@@ -109,14 +109,13 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 		this.isPadded = isPadded;
 	}
 	
-	public RandomAccessible<T> getImage()
+	public RandomAccessible< T > getImage()
 	{
 		return img;
 	}
 
-	public static double[] polesCi( double[] poles )
+	public static double[] polesCi( final double[] poles )
 	{
-		// TODO doc, source, and cite this 
 		double[] Ci = new double[ poles.length ];
 		for( int i = 0; i < poles.length; i++ )
 			Ci[ i ]= poles[ i ] / ( poles[ i ] * poles[ i ] - 1.0 );
@@ -124,14 +123,13 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 		return Ci;
 	}
 
-	public static double gainFromPoles( double[] poles )
+	public static double gainFromPoles( final double[] poles )
 	{
 		double c0 = 1;
 		// Compute over all gain
-		for (int k = 0; k < poles.length; k++)
+		for ( int k = 0; k < poles.length; k++ )
 		{
-			// Note for cubic splines lambda = 6
-			c0 = c0 * (1.0 - poles[k]) * ( 1.0 - ( 1.0 / poles[k] ));
+			c0 = c0 * ( 1.0 - poles[ k ] ) * ( 1.0 - ( 1.0 / poles[ k ] ) );
 		}
 		return c0;
 	}
@@ -139,18 +137,18 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 	@Override
 	public void accept( final RandomAccessibleInterval< S > coefficients )
 	{
-		if( isPadded )
+		if ( isPadded )
 		{
 			originalInterval = coefficients;
 
 			FinalInterval itvl = Intervals.expand( coefficients, paddingWidth );
-			Img<S> paddedImgZero = Util.getSuitableImgFactory( itvl, Util.getTypeFromInterval( coefficients )).create( itvl );
-			IntervalView<S> paddedImg = Views.translate( paddedImgZero, Intervals.minAsLongArray(itvl));
+			Img< S > paddedImgZero = Util.getSuitableImgFactory( itvl, Util.getTypeFromInterval( coefficients ) ).create( itvl );
+			IntervalView< S > paddedImg = Views.translate( paddedImgZero, Intervals.minAsLongArray( itvl ) );
 
 			acceptUnpadded( paddedImg );
 
-			IntervalView<S> subImg = Views.interval( paddedImg, coefficients );
-			LoopBuilder.setImages( subImg, coefficients ).forEachPixel( (x,y) -> y.set(x) );
+			IntervalView< S > subImg = Views.interval( paddedImg, coefficients );
+			LoopBuilder.setImages( subImg, coefficients ).forEachPixel( ( x, y ) -> y.set( x ) );
 		}
 		else
 		{
@@ -234,7 +232,6 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 					else
 					{
 						// do i really have to reset positions for every pole?
-
 						srcAccess = coefExtAccess;
 						srcAccess.setPosition( it );
 
@@ -380,7 +377,6 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 			}
 		}
 	}
-	
 
 	/**
 	 * Compute a 1d forward-backward recursion to compute bspline coefficients.
@@ -392,7 +388,7 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 	 * It is the caller's responsibility to ensure the 
 	 * access are positioned correctly before calling.
 	 * 
-	 * See also:
+	 * See also ITK's:
 	 * Core/ImageFunction/include/itkBSplineDecompositionImageFilter.hxx
 	 * 
 	 * @param srcAccess access for the data
@@ -455,9 +451,6 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 			srcAccess.bck( dimension );
 			destAccess.bck( dimension );
 		}
-
-		// TODO may need to back things up to make sure we're in the right place
-
 	}
 
 	private < R extends RealType<R>> double padOperation( RandomAccess< R > access, int dimension, double last, double z, double Ci )
@@ -525,10 +518,10 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 			final int dimension,
 			final RandomAccess<T> dataAccess )
 	{
-		// TODO this method is wasteful if the interval is zero-extended
+		// this method is wasteful if the interval is zero-extended
 		// Need this when working block-wise though
 
-		// TODO consider switching to below
+		// consider switching to below
 		int horizon = 6;
 //		if( tolerance > 0.0 )
 //		{
@@ -579,7 +572,7 @@ public class BSplineDecomposition<T extends RealType<T>, S extends RealType<S>> 
 	 * Returns the poles for the filter for a spline of a given order. 
 	 * See Unser, 1997. Part II, Table I for Pole values.
 	 * 
-	 * From:
+	 * See ITK's:
 	 * Modules/Core/ImageFunction/include/itkBSplineDecompositionImageFilter.hxx
 	 * 
 	 * @param splineOrder the order of the bspline
