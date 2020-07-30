@@ -45,6 +45,9 @@ public class BsplineKernel4 extends AbstractBsplineKernel
 
 	public final double evaluate( final double x )
 	{
+		/* 
+		 * see GenBSplineKernels
+		 */
 		final double xa = Math.abs( x ) + 2.5;
 		final double x2 = xa * xa;
 		final double x3 = x2 * xa;

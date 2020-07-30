@@ -150,7 +150,7 @@ public class BSplineLazyCoefficientsInterpolatorFactory<T extends RealType<T>, S
 		this.oobFactory = oobFactory;
 
 		// Cache and compute coefficients over a "nearly infinite" range
-		// TODO how big can we make this?
+		// how big can we make this?
 		long[] min = new long[ img.numDimensions() ];
 		Arrays.fill( min, -Integer.MAX_VALUE / 1000 );
 
@@ -223,7 +223,6 @@ public class BSplineLazyCoefficientsInterpolatorFactory<T extends RealType<T>, S
 	@Override
 	public RealRandomAccess< S > create( RandomAccessible< T > f )
 	{
-		// TODO generalize coef extension
 		return BSplineCoefficientsInterpolator.build( order, coefficientAccess, coefficientType.copy() );
 	}
 

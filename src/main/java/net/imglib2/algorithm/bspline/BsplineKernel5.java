@@ -43,12 +43,11 @@ public class BsplineKernel5 extends AbstractBsplineKernel
 		return 120.0;
 	}
 
-	/* 
-	 * see GenBSplineKernels(non-Javadoc)
-	 */
-
 	public final double evaluate( final double x )
 	{
+		/* 
+		 * see GenBSplineKernels
+		 */
 		final double xa = Math.abs( x ) + 3;
 		final double x2 = xa * xa;
 		final double x3 = x2 * xa;
