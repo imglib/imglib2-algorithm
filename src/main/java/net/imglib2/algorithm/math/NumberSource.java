@@ -29,40 +29,4 @@ public final class NumberSource implements IFunction
 	{
 		return new NumericSource< O >( tmp.copy(), this.number );
 	}
-
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view()
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view( final O outputType )
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view( final O outputType, final Converter< RealType< ? >, O > converter )
-	{
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunctionDouble< O > viewDouble()
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunctionDouble< O > viewDouble( final O outputType )
-	{
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunctionDouble< O > viewDouble( final O outputType, final Converter< RealType< ? >, O > converter )
-	{
-		throw new UnsupportedOperationException();
-	}
 }
