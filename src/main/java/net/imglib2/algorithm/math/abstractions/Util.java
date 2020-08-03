@@ -14,6 +14,7 @@ import net.imglib2.algorithm.math.Let;
 import net.imglib2.algorithm.math.NumberSource;
 import net.imglib2.algorithm.math.Var;
 import net.imglib2.converter.Converter;
+import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
@@ -184,6 +185,18 @@ public class Util
 			public final void convert( final RealType< ? > input, final O output)
 			{
 				output.setReal( input.getRealDouble() );
+			}
+		};
+	}
+	
+	static public final< I extends IntegerType< I >, O extends IntegerType< O > > Converter< I, O > genericIntegerTypeConverter()
+	{
+		return new Converter< I, O >()
+		{
+			@Override
+			public final void convert( final I input, O output )
+			{
+				output.setInteger( input.getIntegerLong() );
 			}
 		};
 	}
