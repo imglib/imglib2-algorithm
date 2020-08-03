@@ -21,10 +21,12 @@ public class BlockReadingDirect< O extends RealType< O > > extends BlockReading<
 	{
 		this.ra.setPosition( loc );
 		this.ra.move( this.moves[ 0 ] );
+		this.scrap.set( this.ra.get() );
 		this.scrap.mul( this.signs[ 0 ] );
 		for ( int i = 1; i < this.moves.length; ++i )
 		{
 			this.ra.move( this.moves[ i ] );
+			this.tmp.set( this.ra.get() );
 			// this.tmp.mul( this.signs[ i ] );
 			// this.scrap.add( tmp );
 			// Less method calls: theoretically faster, but branching

@@ -35,11 +35,15 @@ public class BlockReading< I extends RealType< I >, O extends RealType< O > > im
 		this.converter = converter;
 		this.ra = src.randomAccess();
 		this.moves = new long[ corners.length ][ corners[ 0 ].length ];
-		this.moves[ 0 ] = corners[ 0 ]; // corners are relative
+		this.moves[ 0 ] = corners[ 0 ]; // corners are relative to a pixel position
 		for ( int i = 1; i < corners.length; ++i )
-			for ( int j = 0; j < corners[ 0 ].length; ++ j )
-				this.moves[ i ][ 0 ] = corners[ i ][ j ] - corners[ i - 1 ][ j ];
+			for ( int j = 0; j < corners[ 0 ].length; ++j )
+				this.moves[ i ][ j ] = corners[ i ][ j ] - corners[ i - 1 ][ j ];
 		this.signs = signs;
+		
+		for (int i=0; i<this.moves.length; ++i)
+			for (int j=0; j<this.moves[0].length; ++j)
+				System.out.println( "moves[" + i + "][" + j + "] = " + this.moves[i][j]);
 	}
 	
 	@Override
