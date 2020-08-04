@@ -40,7 +40,7 @@ implements RandomAccessibleInterval< O >, IterableInterval< O >, View
 
 	public IterableRandomAccessibleFunction( final IFunction operation, final O outputType, final Converter< RealType< ? >, O > converter )
 	{
-		super( Util.findFirstImg( operation ) );
+		super( Util.findFirstInterval( operation ) );
 		this.operation = operation;
 		this.firstImg = Util.findFirstImg( operation ); // Twice: unavoidable
 		this.outputType = outputType;
@@ -62,7 +62,7 @@ implements RandomAccessibleInterval< O >, IterableInterval< O >, View
 	@SuppressWarnings("unchecked")
 	public IterableRandomAccessibleFunction( final IFunction operation )
 	{
-		super( Util.findFirstImg( operation ) );
+		super( Util.findFirstInterval( operation ) );
 		this.operation = operation;
 		this.firstImg = Util.findFirstImg( operation ); // Twice: unavoidable
 		this.outputType = ( ( O ) this.firstImg.randomAccess().get() ).createVariable();

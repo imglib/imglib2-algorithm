@@ -90,9 +90,8 @@ public class BlockReading< I extends RealType< I >, O extends RealType< O > > im
 	public final double evalDouble( final Localizable loc )
 	{
 		this.ra.setPosition( loc );
-		this.ra.move( this.moves[ 0 ] );
-		double sum = this.ra.get().getRealDouble() * this.signs[ 0 ];
-		for ( int i = 1; i < this.moves.length; ++i )
+		double sum = 0;
+		for ( int i = 0; i < this.moves.length; ++i )
 		{
 			this.ra.move( this.moves[ i ] );
 			sum += this.ra.get().getRealDouble() * this.signs[ i ];

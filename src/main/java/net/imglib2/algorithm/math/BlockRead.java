@@ -48,12 +48,12 @@ public final class BlockRead< I extends RealType< I > > extends ViewableFunction
 			{
 				if ( 0 == i % cycle) inc *= -1;
 				corners[ i ][ d ] = inc;
-				System.out.println("corners[" + i + "][" + d + "] = " + corners[i][d]);
+				//System.out.println("corners[" + i + "][" + d + "] = " + corners[i][d]);
 			}
 		}
 		this.signs = BlockRead.signsArray( src );
-		for (int i=0; i<signs.length; ++i)
-			System.out.println("signs[" + i + "] = " + signs[i]);
+		//for (int i=0; i<signs.length; ++i)
+		//	System.out.println("signs[" + i + "] = " + signs[i]);
 	}
 	
 	static public byte[] signsArray( final RandomAccessible< ? > src )

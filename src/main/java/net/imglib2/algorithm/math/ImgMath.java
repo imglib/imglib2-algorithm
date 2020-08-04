@@ -1,5 +1,8 @@
 package net.imglib2.algorithm.math;
 
+import net.imglib2.Interval;
+import net.imglib2.KDTree;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
@@ -77,6 +80,11 @@ public class ImgMath
 	static public final Compute compute( final IFunction operation )
 	{
 		return new Compute( operation );
+	}
+	
+	static public final < I extends RealType< I > > Compute compute( final RandomAccessibleInterval< I > src )
+	{
+		return compute( img( src ) );
 	}
 	
 	static public final RandomAccessibleInterval< FloatType > computeIntoFloat( final IFunction operation )
@@ -304,8 +312,51 @@ public class ImgMath
 		return new ImgSource< T >( rai );
 	}
 	
+	/** Synonym of {@code img(RandomAccessibleInterval)}, given that {@code img} is a widely used variable name. */
+	static public final < T extends RealType< T > > ImgSource< T > intervalSource( final RandomAccessibleInterval< T > rai )
+	{
+		return new ImgSource< T >( rai );
+	}
+	
 	static public final NumberSource number( final Number number )
 	{
 		return new NumberSource( number );
+	}
+	
+	static public final < T extends RealType< T > > BlockRead< T > block( final RandomAccessible< T > src, final long[] dimensions )
+	{
+		return new BlockRead< T >( src, dimensions );
+	}
+	
+	static public final < T extends RealType< T > > BlockRead< T > block( final RandomAccessible< T > src, final long[][] corners )
+	{
+		return new BlockRead< T >( src, corners );
+	}
+	
+	static public final < T extends RealType< T > > RandomAccessibleSource< T > offset( final RandomAccessible< T > src, final long[] offset )
+	{
+		return new RandomAccessibleSource< T >( src, offset );
+	}
+	
+	static public final < T extends RealType< T > > IFunction source( final RandomAccessible< T > src )
+	{
+		if ( src instanceof RandomAccessibleInterval< ? > )
+			return intervalSource( ( RandomAccessibleInterval< T > )src );
+		return new RandomAccessibleSource< T >( src );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final KDTree< T > kdtree, final double radius )
+	{
+		return new KDTreeSource< T >( kdtree, radius );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final KDTree< T > kdtree, final double radius, final Object outside )
+	{
+		return new KDTreeSource< T >( kdtree, radius, outside );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final KDTree< T > kdtree, final double radius, final Object outside, final Interval interval )
+	{
+		return new KDTreeSource< T >( kdtree, radius, outside, interval );
 	}
 }

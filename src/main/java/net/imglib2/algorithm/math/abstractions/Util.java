@@ -8,10 +8,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import net.imglib2.Interval;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.ImgSource;
 import net.imglib2.algorithm.math.Let;
 import net.imglib2.algorithm.math.NumberSource;
+import net.imglib2.algorithm.math.RandomAccessibleSource;
 import net.imglib2.algorithm.math.Var;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.IntegerType;
@@ -72,19 +75,23 @@ public class Util
 	{
 		if ( o instanceof RandomAccessibleInterval< ? > )
 		{
-			return new ImgSource( (RandomAccessibleInterval) o );
+			return new ImgSource( ( RandomAccessibleInterval )o );
+		}
+		else if ( o instanceof RandomAccessible< ? > )
+		{
+			return new RandomAccessibleSource( ( RandomAccessible )o );
 		}
 		else if ( o instanceof Number )
 		{
-			return new NumberSource( ( (Number) o ).doubleValue() );
+			return new NumberSource( ( ( Number )o ).doubleValue() );
 		}
 		else if ( o instanceof IFunction )
 		{
-			return ( (IFunction) o );
+			return ( ( IFunction ) o );
 		}
 		else if ( o instanceof String )
 		{
-			return new Var( (String)o );
+			return new Var( ( String )o );
 		}
 		
 		// Make it fail
@@ -135,6 +142,37 @@ public class Util
 			
 			if ( op instanceof ImgSource )
 				return ( ( ImgSource< ? > )op ).getRandomAccessibleInterval();
+			else if ( op instanceof IUnaryFunction )
+			{
+				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
+				
+				if ( op instanceof IBinaryFunction )
+				{
+					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+					
+					if ( op instanceof ITrinaryFunction )
+					{
+						ops.addLast( ( ( ITrinaryFunction )op ).getThird() );
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	static public final Interval findFirstInterval ( final IFunction f )
+	{
+		final LinkedList< IFunction > ops = new LinkedList<>();
+		ops.add( f );
+		
+		// Iterate into the nested operations
+		while ( ! ops.isEmpty() )
+		{
+			final IFunction  op = ops.removeFirst();
+			
+			if ( op instanceof SourceInterval )
+				return ( ( SourceInterval )op ).getInterval();
 			else if ( op instanceof IUnaryFunction )
 			{
 				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );

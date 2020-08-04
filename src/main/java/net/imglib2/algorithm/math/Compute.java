@@ -192,8 +192,9 @@ public class Compute
 	 *                 implementation of the mathematical operations.
 	 * 
 	 * @param outConverter The {@code Converter} that transfers the {@code computingType} to the {@code Type}
-	 *                 of the {@code target}; when null, a new one is created, which is the identity when the
-	 *                 {@code computingType} equal the {@code Type} of the {@code target}, and a generic
+	 *                 of the {@code target}; will not be used if the {@code computeType} is the same as
+	 *                 the {@code Type} of the {@code output}; when null, a new one is created, which is the identity
+	 *                 when the {@code computingType} equal the {@code Type} of the {@code target}, and a generic
 	 *                 {@code RealType} converter that uses floating-point values (with {@code RealType#setReal(double)})
 	 *                 created with {@code Util#genericRealTypeConverter()} is used.
 	 * 
@@ -210,23 +211,10 @@ public class Compute
 		if ( null == inConverter )
 			inConverter = Util.genericRealTypeConverter();
 		
-		if ( null == outConverter )
-		{
-			final boolean are_same_type = computingType.getClass() == target.randomAccess().get().createVariable().getClass();
-			if ( are_same_type )
-			{
-				outConverter = ( Converter< C, O > )new Converter< C, C >() {
-					@Override
-					public final void convert( final C comp, final C out) {
-						out.set( comp );
-					}
-				};
-			}
-			else
-			{
-				outConverter = ( Converter< C, O > )Util.genericRealTypeConverter();
-			}
-		}
+		final boolean are_same_type = computingType.getClass() == target.randomAccess().get().createVariable().getClass();
+		
+		if ( null == outConverter && !are_same_type )
+			outConverter = ( Converter< C, O > )Util.genericRealTypeConverter();
 
 		// Recursive copy: initializes interval iterators and sets temporary computation holder
 		final OFunction< C > f = this.operation.reInit(
@@ -234,22 +222,48 @@ public class Compute
 				new HashMap< String, LetBinding< C > >(),
 				inConverter, null );
 		
-		// Check compatible iteration order and dimensions
-		if ( this.params.compatible_iteration_order && !this.params.contains_RandomAccessOnly )
+		if ( are_same_type )
 		{
-				// Evaluate function for every pixel
-				for ( final O output : Views.iterable( target ) )
-					outConverter.convert( f.eval(), output );
+			// Skip outputConverter: same type
+			final RandomAccessibleInterval< C > targetC = ( RandomAccessibleInterval< C > )target;
+			// Check compatible iteration order and dimensions
+			if ( this.params.compatible_iteration_order && !this.params.must_run_as_RandomAccess )
+			{
+					// Evaluate function for every pixel
+					for ( final C output : Views.iterable( targetC ) )
+						output.set( f.eval() );
+			}
+			else
+			{
+				// Incompatible iteration order
+				final Cursor< C > cursor = Views.iterable( targetC ).cursor();
+				
+				while ( cursor.hasNext() )
+				{
+					cursor.fwd();
+					cursor.get().set( f.eval( cursor ) );
+				}
+			}
 		}
 		else
 		{
-			// Incompatible iteration order
-			final Cursor< O > cursor = Views.iterable( target ).cursor();
-			
-			while ( cursor.hasNext() )
+			// Check compatible iteration order and dimensions
+			if ( this.params.compatible_iteration_order && !this.params.must_run_as_RandomAccess )
 			{
-				cursor.fwd();
-				outConverter.convert( f.eval( cursor ), cursor.get() );
+					// Evaluate function for every pixel
+					for ( final O output : Views.iterable( target ) )
+						outConverter.convert( f.eval(), output );
+			}
+			else
+			{
+				// Incompatible iteration order
+				final Cursor< O > cursor = Views.iterable( target ).cursor();
+				
+				while ( cursor.hasNext() )
+				{
+					cursor.fwd();
+					outConverter.convert( f.eval( cursor ), cursor.get() );
+				}
 			}
 		}
 		
@@ -481,7 +495,7 @@ public class Compute
 	static public class Parameters {
 		public boolean compatible_iteration_order;
 		public List< RandomAccessibleInterval< ? > > images;
-		public boolean contains_RandomAccessOnly;
+		public boolean must_run_as_RandomAccess = false;
 	}
 	
 	static public Parameters validate( final IFunction f )
@@ -545,7 +559,8 @@ public class Compute
 			}
 			else if ( op instanceof RandomAccessOnly )
 			{
-				p.contains_RandomAccessOnly = true;
+				if ( !p.must_run_as_RandomAccess )
+					p.must_run_as_RandomAccess = ( ( RandomAccessOnly )op ).isRandomAccessOnly();
 			}
 		}
 		
@@ -650,7 +665,7 @@ public class Compute
 	
 	public < O extends RealType< O > > Cursor< O > cursorDouble( final O outputType, final Converter< RealType< ? >, O > converter )
 	{
-		if ( this.params.compatible_iteration_order && !this.params.contains_RandomAccessOnly )
+		if ( this.params.compatible_iteration_order && !this.params.must_run_as_RandomAccess )
 			return new FunctionCursorDouble< O >( this.operation, outputType, converter );
 		return new FunctionCursorDoubleIncompatibleOrder< O >( this.operation, outputType, converter );
 	}

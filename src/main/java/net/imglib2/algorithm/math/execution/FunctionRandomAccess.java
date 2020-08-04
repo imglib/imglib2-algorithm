@@ -17,7 +17,7 @@ public class FunctionRandomAccess< O extends RealType< O > > extends Point imple
 
 	public FunctionRandomAccess( final IFunction operation, final O outputType, final Converter< RealType< ? >, O > converter )
 	{
-		super( Util.findFirstImg( operation ).numDimensions() );
+		super( Util.findFirstInterval( operation ).numDimensions() );
 		this.sampler = new FunctionSampler( this, operation, outputType, converter );
 	}
 	
