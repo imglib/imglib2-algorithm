@@ -4,9 +4,9 @@ import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 import net.imglib2.type.numeric.RealType;
 
-public class OffsetReadingDirect< O extends RealType< O > > extends OffsetReading< O, O >
+public class RandomAccessibleOffsetSourceDirect< O extends RealType< O > > extends RandomAccessibleOffsetSource< O, O >
 {	
-	public OffsetReadingDirect( final O scrap, final RandomAccessible< O > src, final long[] offset )
+	public RandomAccessibleOffsetSourceDirect( final O scrap, final RandomAccessible< O > src, final long[] offset )
 	{
 		super( scrap, null, src, offset );
 	}

@@ -12,19 +12,34 @@ import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
-public class OffsetReading< I extends RealType< I >, O extends RealType< O > > implements OFunction< O >, RandomAccessOnly
+public class RandomAccessibleOffsetSource< I extends RealType< I >, O extends RealType< O > > implements OFunction< O >, RandomAccessOnly
 {
 	private final RandomAccessible< I > src;
 	protected final RandomAccess< I > ra;
 	protected final O scrap;
 	private final Converter< RealType< ? >, O > converter;
 	
-	public OffsetReading( final O scrap,  final Converter< RealType< ? >, O > converter, final RandomAccessible< I > src, final long[] offset )
+	public RandomAccessibleOffsetSource( final O scrap,  final Converter< RealType< ? >, O > converter, final RandomAccessible< I > src, final long[] offset )
 	{
 		this.scrap = scrap;
 		this.src = src;
 		this.converter = converter;
-		this.ra = Views.translate( src, offset ).randomAccess();
+		boolean zeros = true;
+		for ( int i = 0; i < offset.length; ++i )
+			if ( 0 != offset[ i ] )
+			{
+				zeros = false;
+				break;
+			}
+		if ( zeros )
+			this.ra = src.randomAccess();
+		else
+		{
+			final long[] offsetNegative = new long[ offset.length ];
+			for ( int i = 0; i < offset.length; ++i )
+				offsetNegative[ i ] = - offset[ i ];
+			this.ra = Views.translate( src, offsetNegative ).randomAccess();
+		}
 	}
 	
 	@Override
