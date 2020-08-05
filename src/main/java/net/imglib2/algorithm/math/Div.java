@@ -24,14 +24,18 @@ public final class Div extends ABinaryFunction
 	}
 
 	@Override
-	public < O extends RealType< O > > Division< O > reInit(
+	public < O extends RealType< O > > OFunction< O > reInit(
 			final O tmp,
 			final Map< String, LetBinding< O > > bindings,
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return new Division< O >( tmp.copy(),
-				this.a.reInit( tmp, bindings, converter, imgSources ),
-				this.b.reInit( tmp, bindings, converter, imgSources ) );
+		final OFunction< O > a = this.a.reInit( tmp, bindings, converter, imgSources ),
+					         b = this.b.reInit( tmp, bindings, converter, imgSources );
+		
+		if ( a.isZero() || b.isOne() )
+			return a;
+		
+		return new Division< O >( tmp.copy(), a, b );
 	}
 }
