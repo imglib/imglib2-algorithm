@@ -296,7 +296,7 @@ public class Util
 		// Iterate into the nested operations, depth-first
 		while ( ! ops.isEmpty() )
 		{
-			final IFunction  op = ops.removeFirst();
+			final IFunction op = ops.removeFirst();
 
 			String indent = indents.removeFirst();
 			String pre = "";
@@ -332,6 +332,34 @@ public class Util
 			hierarchy.append( indent + pre + op.getClass().getSimpleName() + post + "\n");
 		}
 
+		return hierarchy.toString();
+	}
+	
+	public static final String hierarchy( final OFunction< ? > f )
+	{	
+		final StringBuilder hierarchy = new StringBuilder();
+		final LinkedList< String > indents = new LinkedList<>();
+		indents.add("");
+		
+		final LinkedList< OFunction< ? > > ops = new LinkedList<>();
+		ops.addLast( f );
+		
+		// Iterate into the nested operations
+		while ( ! ops.isEmpty() )
+		{
+			final OFunction< ? >  op = ops.removeFirst();
+			
+			final String indent = indents.removeFirst();
+			
+			for ( final OFunction< ? > cf : op.children() )
+			{
+				ops.addFirst( cf );
+				indents.addFirst( indent + "  " );
+			}
+			
+			hierarchy.append( indent + op.getClass().getSimpleName() + "\n");
+		}
+		
 		return hierarchy.toString();
 	}
 }

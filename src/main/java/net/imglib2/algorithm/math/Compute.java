@@ -177,6 +177,16 @@ public class Compute
 		return into( target, inConverter, target.randomAccess().get().createVariable(), null );
 	}
 
+	public < O extends RealType< O >, C extends RealType< C > > RandomAccessibleInterval< O > into(
+			final RandomAccessibleInterval< O > target,
+			Converter< RealType< ? >, C > inConverter,
+			final C computingType,
+			Converter< C, O > outConverter
+			)
+	{
+		return into( target, inConverter, computingType, outConverter, false );
+	}
+
 	/**
 	 * Execute the mathematical operations and store the result into the given {@code RandomAccessibleInterval}.
 	 * Takes into account whether all images involved in the computation are iterable in a compatible way.
@@ -197,6 +207,8 @@ public class Compute
 	 *                 when the {@code computingType} equal the {@code Type} of the {@code target}, and a generic
 	 *                 {@code RealType} converter that uses floating-point values (with {@code RealType#setReal(double)})
 	 *                 created with {@code Util#genericRealTypeConverter()} is used.
+	 *                 
+	 * @param printHierarchy Emits to stdout the hierarchy of {@code OFunction} types.
 	 * 
 	 * @return The {@code target}.
 	 */
@@ -205,7 +217,8 @@ public class Compute
 			final RandomAccessibleInterval< O > target,
 			Converter< RealType< ? >, C > inConverter,
 			final C computingType,
-			Converter< C, O > outConverter
+			Converter< C, O > outConverter,
+			final boolean printHierarchy
 			)
 	{
 		if ( null == inConverter )
@@ -221,6 +234,9 @@ public class Compute
 				computingType,
 				new HashMap< String, LetBinding< C > >(),
 				inConverter, null );
+		
+		if ( printHierarchy )
+			System.out.println( Util.hierarchy( f ) );
 		
 		if ( are_same_type )
 		{
