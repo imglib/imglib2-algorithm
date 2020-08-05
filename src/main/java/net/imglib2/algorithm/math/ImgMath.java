@@ -137,6 +137,11 @@ public class ImgMath
 		return new Sub( obs );
 	}
 	
+	static public final Minus minus( final Object o1 )
+	{
+		return new Minus( o1 );
+	}
+	
 	static public final Mul mul( final Object o1, final Object o2 )
 	{
 		return new Mul( o1, o2 );
