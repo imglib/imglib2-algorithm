@@ -4,8 +4,6 @@ import java.util.Map;
 
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
-import net.imglib2.algorithm.math.execution.IterableRandomAccessibleFunction;
-import net.imglib2.algorithm.math.execution.IterableRandomAccessibleFunctionDouble;
 import net.imglib2.algorithm.math.execution.LetBinding;
 import net.imglib2.algorithm.math.execution.NumericSource;
 import net.imglib2.algorithm.math.execution.Variable;
