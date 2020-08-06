@@ -12,4 +12,8 @@ public interface OFunction< O extends RealType< O > >
 	public O eval( final Localizable loc );
 	
 	public List< OFunction< O > > children();
+	
+	public double evalDouble();
+	
+	public double evalDouble( final Localizable loc );
 }

@@ -2,31 +2,35 @@ package net.imglib2.algorithm.math;
 
 import java.util.Map;
 
-import net.imglib2.algorithm.math.abstractions.AUnaryFunction;
+import net.imglib2.algorithm.math.abstractions.ABinaryFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.algorithm.math.execution.LetBinding;
-import net.imglib2.algorithm.math.execution.Printing;
+import net.imglib2.algorithm.math.execution.Power;
 import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public final class Print extends AUnaryFunction
+public final class Pow extends ABinaryFunction
 {
-	private final String title;
-	
-	public Print( final String title, final Object o )
+	public Pow( final Object o1, final Object o2 )
 	{
-		super( o );
-		this.title = title;
+		super( o1, o2 );
+	}
+	
+	public Pow( final Object... obs )
+	{
+		super( obs );
 	}
 
 	@Override
-	public < O extends RealType< O > > Printing< O > reInit(
+	public < O extends RealType< O > > Power< O > reInit(
 			final O tmp,
 			final Map< String, LetBinding< O > > bindings,
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return new Printing< O >( this.title, this.a.reInit( tmp, bindings, converter, imgSources ) );
+		return new Power< O >( tmp.copy(),
+				this.a.reInit( tmp, bindings, converter, imgSources ),
+				this.b.reInit( tmp, bindings, converter, imgSources ) );
 	}
 }

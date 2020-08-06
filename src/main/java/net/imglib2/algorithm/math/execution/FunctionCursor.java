@@ -13,16 +13,17 @@ import net.imglib2.type.numeric.RealType;
 
 public class FunctionCursor< O extends RealType< O > > extends AbstractCursor< O >
 {
-	private final O outputType;
-	private final IFunction operation;
-	private final Converter< RealType< ? >, O > converter;
+	protected final O outputType;
+	protected final IFunction operation;
+	protected final Converter< RealType< ? >, O > converter;
 	
 	protected OFunction< O > f;
 	protected O scrap;
 	protected IImgSourceIterable ii;
 	protected List< IImgSourceIterable > all_ii;
  	
-	public FunctionCursor( final IFunction operation, final O outputType, final Converter< RealType< ? >, O > converter ) {
+	public FunctionCursor( final IFunction operation, final O outputType, final Converter< RealType< ? >, O > converter )
+	{
 		super( Util.findFirstImg( operation ).numDimensions() );
 		this.operation = operation;
 		this.outputType = outputType;
@@ -50,7 +51,7 @@ public class FunctionCursor< O extends RealType< O > > extends AbstractCursor< O
 
 	@Override
 	public void reset() {
-		this.f = this.operation.reInit( this.outputType.createVariable() , new HashMap< String, O >(), this.converter, null );
+		this.f = this.operation.reInit( this.outputType.createVariable() , new HashMap< String, LetBinding< O > >(), this.converter, null );
 		this.ii = Util.findFirstIterableImgSource( this.f );
 		this.all_ii = Util.findAllIterableImgSource( this.f );
 	}

@@ -7,49 +7,51 @@ import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.type.numeric.RealType;
 
-public class Subtraction< O extends RealType< O > > implements OFunction< O >
+/**
+ * Doesn't use {@code NumericType} math because it lacks the log function.
+ *
+ * @param <O>
+ */
+public class Exponential< O extends RealType< O > > implements OFunction< O >
 {
-	private final OFunction< O > a, b;
+	private final OFunction< O > a;
 	private final O scrap;
 	
-	public Subtraction( final O scrap, final OFunction< O > a, final OFunction< O > b )
+	public Exponential( final O scrap, final OFunction< O > a )
 	{
 		this.scrap = scrap;
 		this.a = a;
-		this.b = b;
 	}
 	
 	@Override
 	public final O eval()
 	{
-		this.scrap.set( this.a.eval() );
-		this.scrap.sub( this.b.eval() );
+		this.scrap.setReal( Math.exp( this.a.eval().getRealDouble() ) );
 		return this.scrap;
 	}
 
 	@Override
 	public final O eval( final Localizable loc )
 	{
-		this.scrap.set( this.a.eval( loc ) );
-		this.scrap.sub( this.b.eval( loc ) );
+		this.scrap.setReal( Math.exp( this.a.eval( loc ).getRealDouble() ) );
 		return this.scrap;
 	}
 	
 	@Override
 	public List< OFunction< O > > children()
 	{
-		return Arrays.asList( this.a, this.b );
+		return Arrays.asList( this.a );
 	}
 	
 	@Override
 	public final double evalDouble()
 	{
-		return this.a.evalDouble() - this.b.evalDouble();
+		return Math.exp( this.a.evalDouble() );
 	}
 	
 	@Override
 	public final double evalDouble( final Localizable loc )
 	{
-		return this.a.evalDouble( loc ) - this.b.evalDouble( loc );
+		return Math.exp( this.a.evalDouble( loc ) );
 	}
 }

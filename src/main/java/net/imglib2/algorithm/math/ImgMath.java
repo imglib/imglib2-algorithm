@@ -5,6 +5,7 @@ import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.converter.Converter;
 import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
@@ -98,6 +99,16 @@ public class ImgMath
 		return new Compute( operation ).into( target, converter );
 	}
 	
+	static public final < O extends NativeType< O > & RealType< O > > RandomAccessibleInterval< O > computeIntoImg( final IFunction operation )
+	{
+		return compute( operation ).intoImg();
+	}
+	
+	static public final < O extends NativeType< O > & RealType< O > > RandomAccessibleInterval< O > computeIntoArrayImg( final IFunction operation )
+	{
+		return compute( operation ).intoArrayImg();
+	}
+	
 	static public final Add add( final Object o1, final Object o2 )
 	{
 		return new Add( o1, o2 );
@@ -138,6 +149,26 @@ public class ImgMath
 		return new Div( obs );
 	}
 	
+	static public final Pow pow( final Object o1, final Object o2 )
+	{
+		return new Pow( o1, o2 );
+	}
+	
+	static public final Pow power( final Object... obs )
+	{
+		return new Pow( obs );
+	}
+	
+	static public final Pow power( final Object o1, final Object o2 )
+	{
+		return new Pow( o1, o2 );
+	}
+	
+	static public final Pow pow( final Object... obs )
+	{
+		return new Pow( obs );
+	}
+
 	static public final Max max( final Object o1, final Object o2 )
 	{
 		return new Max( o1, o2 );
@@ -178,6 +209,21 @@ public class ImgMath
 		return new Min( obs );
 	}
 	
+	static public final Log log( final Object o1 )
+	{
+		return new Log( o1 );
+	}
+	
+	static public final Log logarithm( final Object o1 )
+	{
+		return new Log( o1 );
+	}
+	
+	static public final Exp exp( final Object o1 )
+	{
+		return new Exp( o1 );
+	}
+	
 	static public final Let let( final String varName, final Object varValue, final Object body )
 	{
 		return new Let( varName, varValue, body );
@@ -203,7 +249,17 @@ public class ImgMath
 		return new Equal( o1, o2 );
 	}
 	
+	static public final Equal equal( final Object o1, final Object o2 )
+	{
+		return new Equal( o1, o2 );
+	}
+	
 	static public final NotEqual NEQ( final Object o1, final Object o2 )
+	{
+		return new NotEqual( o1, o2 );
+	}
+	
+	static public final NotEqual notEqual( final Object o1, final Object o2 )
 	{
 		return new NotEqual( o1, o2 );
 	}
@@ -213,7 +269,17 @@ public class ImgMath
 		return new LessThan( o1, o2 );
 	}
 	
+	static public final LessThan lessThan( final Object o1, final Object o2 )
+	{
+		return new LessThan( o1, o2 );
+	}
+	
 	static public final GreaterThan GT( final Object o1, final Object o2 )
+	{
+		return new GreaterThan( o1, o2 );
+	}
+	
+	static public final GreaterThan greaterThan( final Object o1, final Object o2 )
 	{
 		return new GreaterThan( o1, o2 );
 	}

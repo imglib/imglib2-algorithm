@@ -7,12 +7,12 @@ import net.imglib2.Localizable;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.type.numeric.RealType;
 
-public class Subtraction< O extends RealType< O > > implements OFunction< O >
+public class Power< O extends RealType< O > > implements OFunction< O >
 {
 	private final OFunction< O > a, b;
 	private final O scrap;
 	
-	public Subtraction( final O scrap, final OFunction< O > a, final OFunction< O > b )
+	public Power( final O scrap, final OFunction< O > a, final OFunction< O > b )
 	{
 		this.scrap = scrap;
 		this.a = a;
@@ -23,7 +23,7 @@ public class Subtraction< O extends RealType< O > > implements OFunction< O >
 	public final O eval()
 	{
 		this.scrap.set( this.a.eval() );
-		this.scrap.sub( this.b.eval() );
+		this.scrap.pow( this.b.eval() );
 		return this.scrap;
 	}
 
@@ -31,7 +31,7 @@ public class Subtraction< O extends RealType< O > > implements OFunction< O >
 	public final O eval( final Localizable loc )
 	{
 		this.scrap.set( this.a.eval( loc ) );
-		this.scrap.sub( this.b.eval( loc ) );
+		this.scrap.pow( this.b.eval( loc ) );
 		return this.scrap;
 	}
 	
@@ -44,12 +44,12 @@ public class Subtraction< O extends RealType< O > > implements OFunction< O >
 	@Override
 	public final double evalDouble()
 	{
-		return this.a.evalDouble() - this.b.evalDouble();
+		return Math.pow( this.a.evalDouble(), this.b.evalDouble() );
 	}
 	
 	@Override
 	public final double evalDouble( final Localizable loc )
 	{
-		return this.a.evalDouble( loc ) - this.b.evalDouble( loc );
+		return Math.pow( this.a.evalDouble( loc ), this.b.evalDouble( loc ) );
 	}
 }

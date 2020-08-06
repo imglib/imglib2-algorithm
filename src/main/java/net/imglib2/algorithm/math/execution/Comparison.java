@@ -53,4 +53,17 @@ abstract public class Comparison< O extends RealType< O > > implements OFunction
 	{
 		return Arrays.asList( this.a, this.b );
 	}
+	
+	
+	@Override
+	public final double evalDouble()
+	{
+		return this.compare( this.a.eval(), this.b.eval() ) ? 1.0 : 0.0;
+	}
+	
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		return this.compare( this.a.eval( loc ), this.b.eval( loc ) ) ? 1.0 : 0.0;
+	}
 }

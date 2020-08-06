@@ -33,10 +33,10 @@ public class IterableRandomAccessibleFunction< O extends RealType< O > >
 extends AbstractInterval
 implements RandomAccessibleInterval< O >, IterableInterval< O >, View
 {
-	private final IFunction operation;
+	protected final IFunction operation;
 	private final RandomAccessibleInterval< ? > firstImg;
-	private final O outputType;
-	private final Converter< RealType< ? >, O > converter;
+	protected final O outputType;
+	protected final Converter< RealType< ? >, O > converter;
 
 	public IterableRandomAccessibleFunction( final IFunction operation, final O outputType, final Converter< RealType< ? >, O > converter )
 	{

@@ -4,6 +4,7 @@ import java.util.Map;
 
 import net.imglib2.algorithm.math.abstractions.Compare;
 import net.imglib2.algorithm.math.abstractions.OFunction;
+import net.imglib2.algorithm.math.execution.LetBinding;
 import net.imglib2.algorithm.math.execution.NotEquality;
 import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
@@ -18,7 +19,7 @@ public final class NotEqual extends Compare
 	@Override
 	public < O extends RealType< O > > NotEquality< O > reInit(
 			final O tmp,
-			final Map< String, O > bindings,
+			final Map< String, LetBinding< O > > bindings,
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
