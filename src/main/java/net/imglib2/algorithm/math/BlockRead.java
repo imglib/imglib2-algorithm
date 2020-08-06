@@ -1,6 +1,7 @@
 package net.imglib2.algorithm.math;
 
 import java.util.Map;
+import java.util.stream.LongStream;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.algorithm.math.abstractions.IFunction;
@@ -54,6 +55,17 @@ public final class BlockRead< I extends RealType< I > > extends ViewableFunction
 		this.signs = BlockRead.signsArray( src );
 		//for (int i=0; i<signs.length; ++i)
 		//	System.out.println("signs[" + i + "] = " + signs[i]);
+	}
+	
+	/**
+	 * A block centered on a particular pixel.
+	 * 
+	 * @param src A {@code RandomAccessible} such as an @{code IntegralImg}, presumably a {@code RandomAccessibleInterval} that was extended with an {@code OutOfBounds} strategy.
+	 * @param blockRadius Half of the length of the side of the block in every dimension.
+	 */
+	public BlockRead( final RandomAccessible< I > src, final long blockRadius )
+	{
+		this( src, LongStream.generate( () -> blockRadius ).limit( src.numDimensions() ).toArray() );
 	}
 	
 	static public byte[] signsArray( final RandomAccessible< ? > src )

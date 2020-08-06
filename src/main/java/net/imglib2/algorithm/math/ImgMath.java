@@ -328,9 +328,14 @@ public class ImgMath
 		return new NumberSource( number );
 	}
 	
-	static public final < T extends RealType< T > > BlockRead< T > block( final RandomAccessible< T > src, final long[] dimensions )
+	static public final < T extends RealType< T > > BlockRead< T > block( final RandomAccessible< T > src, final long[] radius )
 	{
-		return new BlockRead< T >( src, dimensions );
+		return new BlockRead< T >( src, radius );
+	}
+	
+	static public final < T extends RealType< T > > BlockRead< T > block( final RandomAccessible< T > src, final long radius )
+	{
+		return new BlockRead< T >( src, radius );
 	}
 	
 	static public final < T extends RealType< T > > BlockRead< T > block( final RandomAccessible< T > src, final long[][] corners )
