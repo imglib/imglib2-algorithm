@@ -6,6 +6,7 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
+import net.imglib2.algorithm.math.abstractions.ViewableFunction;
 import net.imglib2.converter.Converter;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.NativeType;
@@ -115,6 +116,28 @@ public class ImgMath
 	static public final < O extends NativeType< O > & RealType< O > > RandomAccessibleInterval< O > computeIntoArrayImg( final IFunction operation )
 	{
 		return compute( operation ).intoArrayImg();
+	}
+	
+	/**
+	 * Almost all {@code IFunction} are also {@code ViewableFunction}. 
+	 * 
+	 * @param operation
+	 * @return
+	 */
+	static public final < O extends RealType< O > > RandomAccessibleInterval< O > view( final ViewableFunction operation )
+	{
+		return operation.view();
+	}
+	
+	/**
+	 * Almost all {@code IFunction} are also {@code ViewableFunction}. 
+	 * 
+	 * @param operation
+	 * @return
+	 */
+	static public final RandomAccessibleInterval< FloatType > viewFloats( final ViewableFunction operation )
+	{
+		return operation.view( new FloatType() );
 	}
 	
 	static public final Add add( final Object o1, final Object o2 )
