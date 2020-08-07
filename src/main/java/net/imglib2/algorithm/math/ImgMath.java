@@ -87,7 +87,7 @@ public class ImgMath
 		return compute( img( src ) );
 	}
 	
-	static public final RandomAccessibleInterval< FloatType > computeIntoFloat( final IFunction operation )
+	static public final RandomAccessibleInterval< FloatType > computeIntoFloats( final IFunction operation )
 	{
 		return new Compute( operation ).into( new ArrayImgFactory< FloatType >( new FloatType() ).create( Util.findImg( operation ).iterator().next() ) );
 	}
