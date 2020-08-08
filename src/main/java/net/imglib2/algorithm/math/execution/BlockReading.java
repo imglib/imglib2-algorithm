@@ -41,9 +41,9 @@ public class BlockReading< I extends RealType< I >, O extends RealType< O > > im
 				this.moves[ i ][ j ] = corners[ i ][ j ] - corners[ i - 1 ][ j ];
 		this.signs = signs;
 		
-		for (int i=0; i<this.moves.length; ++i)
-			for (int j=0; j<this.moves[0].length; ++j)
-				System.out.println( "moves[" + i + "][" + j + "] = " + this.moves[i][j]);
+		//for (int i=0; i<this.moves.length; ++i)
+		//	for (int j=0; j<this.moves[0].length; ++j)
+		//		System.out.println( "moves[" + i + "][" + j + "] = " + this.moves[i][j]);
 	}
 	
 	@Override
