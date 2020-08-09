@@ -152,7 +152,7 @@ public class Compute
 	 */
 	public < O extends RealType< O > > RandomAccessibleInterval< O > into( final RandomAccessibleInterval< O > target )
 	{
-		return this.into( target, null );
+		return this.into( target, null, target.randomAccess().get().createVariable(), null );
 	}
 	
 	/**
@@ -175,6 +175,14 @@ public class Compute
 			)
 	{
 		return into( target, inConverter, target.randomAccess().get().createVariable(), null );
+	}
+	
+	public < O extends RealType< O >, C extends RealType< C > > RandomAccessibleInterval< O > into(
+			final RandomAccessibleInterval< O > target,
+			final C computingType
+			)
+	{
+		return into( target, null, computingType, null );
 	}
 
 	public < O extends RealType< O >, C extends RealType< C > > RandomAccessibleInterval< O > into(
