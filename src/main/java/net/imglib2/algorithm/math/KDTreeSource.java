@@ -1,10 +1,13 @@
 package net.imglib2.algorithm.math;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.KDTree;
+import net.imglib2.Point;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.algorithm.math.abstractions.SourceInterval;
@@ -22,6 +25,23 @@ public class KDTreeSource< I extends RealType< I > > extends ViewableFunction im
 	private final double radius;
 	private final I outside;
 	private final Interval interval;
+
+	/*
+	public KDTreeSource( final Collection< List< Number > > points, final List< I > values, final double radius )
+	{
+		this( new KDTree< I >( values, points.stream().map( ( coords ) -> Point.wrap( coords.stream().mapToLong( Number::longValue ).toArray() ) ).collect( Collectors.toList() ) ), radius );
+	}
+	*/
+	
+	public KDTreeSource( final List< Point > points, final I value, final double radius )
+	{
+		this( new KDTree< I >( points.stream().map( ( p ) -> value ).collect( Collectors.toList() ), points ), radius );
+	}
+	
+	public KDTreeSource( final List< Point > points, final List< I > values, final double radius )
+	{
+		this( new KDTree< I >( values, points ), radius );
+	}
 	
 	public KDTreeSource( final KDTree< I > kdtree, final double radius )
 	{
