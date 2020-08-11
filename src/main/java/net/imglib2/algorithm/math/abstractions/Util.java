@@ -19,6 +19,7 @@ import net.imglib2.algorithm.math.Var;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 
 public class Util
@@ -135,6 +136,8 @@ public class Util
 		final LinkedList< IFunction > ops = new LinkedList<>();
 		ops.add( f );
 		
+		RandomAccessibleInterval< ? > extended = null;
+		
 		// Iterate into the nested operations
 		while ( ! ops.isEmpty() )
 		{
@@ -142,6 +145,12 @@ public class Util
 			
 			if ( op instanceof ImgSource )
 				return ( ( ImgSource< ? > )op ).getRandomAccessibleInterval();
+			if ( null == extended && op instanceof RandomAccessOnly )
+			{
+				final RandomAccessOnly< ? > rao = ( RandomAccessOnly< ? > )op;
+				if ( rao.getRandomAccessible() instanceof ExtendedRandomAccessibleInterval )
+					extended = ( ( ExtendedRandomAccessibleInterval< ?, ? > )rao.getRandomAccessible() ).getSource();
+			}
 			else if ( op instanceof IUnaryFunction )
 			{
 				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
@@ -158,10 +167,49 @@ public class Util
 			}
 		}
 		
-		return null;
+		return extended;
 	}
 	
 	static public final Interval findFirstInterval ( final IFunction f )
+	{
+		final LinkedList< IFunction > ops = new LinkedList<>();
+		ops.add( f );
+		
+		Interval extended = null;
+		
+		// Iterate into the nested operations
+		while ( ! ops.isEmpty() )
+		{
+			final IFunction  op = ops.removeFirst();
+			
+			if ( op instanceof SourceInterval )
+				return ( ( SourceInterval )op ).getInterval();
+			if ( null == extended && op instanceof RandomAccessOnly )
+			{
+				final RandomAccessOnly< ? > rao = ( RandomAccessOnly< ? > )op;
+				if ( rao.getRandomAccessible() instanceof ExtendedRandomAccessibleInterval )
+					extended = ( ( ExtendedRandomAccessibleInterval< ?, ? > )rao.getRandomAccessible() ).getSource();
+			}
+			else if ( op instanceof IUnaryFunction )
+			{
+				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
+				
+				if ( op instanceof IBinaryFunction )
+				{
+					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+					
+					if ( op instanceof ITrinaryFunction )
+					{
+						ops.addLast( ( ( ITrinaryFunction )op ).getThird() );
+					}
+				}
+			}
+		}
+		
+		return extended; // may be null
+	}
+	
+	static public final int dimensions ( final IFunction f )
 	{
 		final LinkedList< IFunction > ops = new LinkedList<>();
 		ops.add( f );
@@ -172,7 +220,9 @@ public class Util
 			final IFunction  op = ops.removeFirst();
 			
 			if ( op instanceof SourceInterval )
-				return ( ( SourceInterval )op ).getInterval();
+				return ( ( SourceInterval )op ).getInterval().numDimensions();
+			if ( op instanceof RandomAccessOnly )
+				return ( ( RandomAccessOnly< ? > )op ).getRandomAccessible().numDimensions();
 			else if ( op instanceof IUnaryFunction )
 			{
 				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
@@ -189,7 +239,7 @@ public class Util
 			}
 		}
 		
-		return null;
+		return 0;
 	}
 
 	static final public IFunction[] wrapMap( final Object caller, final Object[] obs )
