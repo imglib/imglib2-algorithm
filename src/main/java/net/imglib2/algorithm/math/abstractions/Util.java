@@ -289,7 +289,7 @@ public class Util
 		};
 	}
 
-	public static final < O extends RealType< O > > IImgSourceIterable findFirstIterableImgSource( final OFunction< O > f )
+	public static final < O extends RealType< O > > IImgSourceIterable< ? > findFirstIterableImgSource( final OFunction< O > f )
 	{
 		final LinkedList< OFunction< O > > ops = new LinkedList<>();
 		ops.addLast( f );
@@ -300,8 +300,8 @@ public class Util
 			final OFunction< O >  op = ops.removeFirst();
 			for ( final OFunction< O > cf : op.children() )
 			{
-				if ( cf instanceof IImgSourceIterable )
-					return ( IImgSourceIterable ) cf;
+				if ( cf instanceof IImgSourceIterable< ? > )
+					return ( IImgSourceIterable< ? > ) cf;
 				ops.addLast( cf );
 			}
 		}
@@ -309,12 +309,12 @@ public class Util
 		return null;
 	}
 	
-	public static final < O extends RealType< O > > List< IImgSourceIterable > findAllIterableImgSource( final OFunction< O > f )
+	public static final < O extends RealType< O > > List< IImgSourceIterable< ? > > findAllIterableImgSource( final OFunction< O > f )
 	{
 		final LinkedList< OFunction< O > > ops = new LinkedList<>();
 		ops.addLast( f );
 		
-		final List< IImgSourceIterable > iis = new ArrayList<>();
+		final List< IImgSourceIterable< ? > > iis = new ArrayList<>();
 		
 		// Iterate into the nested operations
 		while ( ! ops.isEmpty() )
@@ -322,8 +322,8 @@ public class Util
 			final OFunction< O >  op = ops.removeFirst();
 			for ( final OFunction< O > cf : op.children() )
 			{
-				if ( cf instanceof IImgSourceIterable )
-					iis.add( ( IImgSourceIterable ) cf );
+				if ( cf instanceof IImgSourceIterable< ? > )
+					iis.add( ( IImgSourceIterable< ? > ) cf );
 				else
 					ops.addLast( cf );
 			}
