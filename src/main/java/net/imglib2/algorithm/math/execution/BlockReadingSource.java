@@ -11,7 +11,7 @@ import net.imglib2.algorithm.math.abstractions.RandomAccessOnly;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public class BlockReading< I extends RealType< I >, O extends RealType< O > > implements OFunction< O >, RandomAccessOnly
+public class BlockReadingSource< I extends RealType< I >, O extends RealType< O > > implements OFunction< O >, RandomAccessOnly< I >
 {
 	private final RandomAccessible< I > src;
 	protected final RandomAccess< I > ra;
@@ -21,7 +21,7 @@ public class BlockReading< I extends RealType< I >, O extends RealType< O > > im
 	protected final long[][] moves;
 	protected final byte[] signs;
 	
-	public BlockReading(
+	public BlockReadingSource(
 			final O scrap,
 			final Converter< RealType< ? >, O > converter,
 			final RandomAccessible< I > src,

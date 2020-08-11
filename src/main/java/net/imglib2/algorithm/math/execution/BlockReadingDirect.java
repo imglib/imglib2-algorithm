@@ -4,7 +4,7 @@ import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 import net.imglib2.type.numeric.RealType;
 
-public class BlockReadingDirect< O extends RealType< O > > extends BlockReading< O, O >
+public class BlockReadingDirect< O extends RealType< O > > extends BlockReadingSource< O, O >
 {
 	public BlockReadingDirect(
 			final O scrap,

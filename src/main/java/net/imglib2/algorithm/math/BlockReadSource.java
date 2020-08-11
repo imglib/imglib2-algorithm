@@ -8,7 +8,7 @@ import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.algorithm.math.abstractions.RandomAccessOnly;
 import net.imglib2.algorithm.math.abstractions.ViewableFunction;
-import net.imglib2.algorithm.math.execution.BlockReading;
+import net.imglib2.algorithm.math.execution.BlockReadingSource;
 import net.imglib2.algorithm.math.execution.BlockReadingDirect;
 import net.imglib2.algorithm.math.execution.LetBinding;
 import net.imglib2.algorithm.math.execution.Variable;
@@ -22,7 +22,7 @@ import net.imglib2.type.numeric.RealType;
  *
  * @param <I> The {@code Type} of the {@code RandomAccessible} from which to read blocks.
  */
-public final class BlockRead< I extends RealType< I > > extends ViewableFunction implements IFunction, RandomAccessOnly
+public final class BlockReadSource< I extends RealType< I > > extends ViewableFunction implements IFunction, RandomAccessOnly< I >
 {
 	final private RandomAccessible< I > src;
 	final private long[][] corners;
@@ -34,7 +34,7 @@ public final class BlockRead< I extends RealType< I > > extends ViewableFunction
 	 * @param src A {@code RandomAccessible} such as an @{code IntegralImg}, presumably a {@code RandomAccessibleInterval} that was extended with an {@code OutOfBounds} strategy.
 	 * @param blockRadius Array of half of the length of each side of the block.
 	 */
-	public BlockRead( final RandomAccessible< I > src, final long[] blockRadius )
+	public BlockReadSource( final RandomAccessible< I > src, final long[] blockRadius )
 	{
 		this.src = src;
 		this.corners = new long[ ( int )Math.pow( 2,  blockRadius.length ) ][ blockRadius.length ];
@@ -52,7 +52,7 @@ public final class BlockRead< I extends RealType< I > > extends ViewableFunction
 				//System.out.println("corners[" + i + "][" + d + "] = " + corners[i][d]);
 			}
 		}
-		this.signs = BlockRead.signsArray( src );
+		this.signs = BlockReadSource.signsArray( src );
 		//for (int i=0; i<signs.length; ++i)
 		//	System.out.println("signs[" + i + "] = " + signs[i]);
 	}
@@ -63,7 +63,7 @@ public final class BlockRead< I extends RealType< I > > extends ViewableFunction
 	 * @param src A {@code RandomAccessible} such as an @{code IntegralImg}, presumably a {@code RandomAccessibleInterval} that was extended with an {@code OutOfBounds} strategy.
 	 * @param blockRadius Half of the length of the side of the block in every dimension.
 	 */
-	public BlockRead( final RandomAccessible< I > src, final long blockRadius )
+	public BlockReadSource( final RandomAccessible< I > src, final long blockRadius )
 	{
 		this( src, LongStream.generate( () -> blockRadius ).limit( src.numDimensions() ).toArray() );
 	}
@@ -104,11 +104,11 @@ public final class BlockRead< I extends RealType< I > > extends ViewableFunction
 	 * @param src
 	 * @param corners In coordinate moves relative to a pixel's location.
 	 */
-	public BlockRead( final RandomAccessible< I > src, final long[][] corners )
+	public BlockReadSource( final RandomAccessible< I > src, final long[][] corners )
 	{
 		this.src = src;
 		this.corners = corners;
-		this.signs = BlockRead.signsArray( src );
+		this.signs = BlockReadSource.signsArray( src );
 	}
 
 	@SuppressWarnings("unchecked")
@@ -121,7 +121,7 @@ public final class BlockRead< I extends RealType< I > > extends ViewableFunction
 	{
 		if ( tmp.getClass() == src.randomAccess().get().getClass() )
 			return new BlockReadingDirect< O >( tmp.copy(), ( RandomAccessible< O > )this.src, this.corners, this.signs );
-		return new BlockReading< I, O >(
+		return new BlockReadingSource< I, O >(
 				tmp.copy(),
 				converter,
 				this.src,
