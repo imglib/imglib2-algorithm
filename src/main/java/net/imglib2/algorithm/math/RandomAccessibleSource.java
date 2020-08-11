@@ -13,7 +13,7 @@ import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public final class RandomAccessibleSource< I extends RealType< I > > extends ViewableFunction implements IFunction, RandomAccessOnly
+public class RandomAccessibleSource< I extends RealType< I > > extends ViewableFunction implements IFunction, RandomAccessOnly< I >
 {
 	final private RandomAccessible< I > src;
 	final private long[] offset;
