@@ -29,30 +29,59 @@ import net.imglib2.view.Views;
  *
  * @param <O> The {@link RealType}.
  */
-public class IterableRandomAccessibleFunction< O extends RealType< O > >
+public class IterableRandomAccessibleFunction< C extends RealType< C >, O extends RealType< O > >
 extends AbstractInterval
 implements RandomAccessibleInterval< O >, IterableInterval< O >, View
 {
 	protected final IFunction operation;
 	private final RandomAccessibleInterval< ? > firstImg;
+	protected final C computeType;
 	protected final O outputType;
-	protected final Converter< RealType< ? >, O > converter;
+	protected final Converter< RealType< ? >, C > inConverter;
+	protected final Converter< C, O > outConverter;
 
-	public IterableRandomAccessibleFunction( final IFunction operation, final O outputType, final Converter< RealType< ? >, O > converter )
+	/**
+	 * 
+	 * @param operation
+	 * @param inConverter Can be null
+	 * @param computeType
+	 * @param outputType
+	 * @param outConverter Can be null.
+	 * @param interval Necessary only when there aren't any intervals already as inputs to the operations, or to crop
+	 */
+	public IterableRandomAccessibleFunction(
+			final IFunction operation,
+			final Converter< RealType< ? >, C > inConverter,
+			final C computeType,
+			final O outputType,
+			final Converter< C, O > outConverter
+			)
 	{
 		super( Util.findFirstInterval( operation ) );
 		this.operation = operation;
-		this.firstImg = Util.findFirstImg( operation ); // Twice: unavoidable
+		this.firstImg = Util.findFirstImg( operation );
+		this.computeType = computeType;
 		this.outputType = outputType;
-		this.converter = converter;
+		this.inConverter = inConverter;
+		this.outConverter = outConverter;
 	}
 	
 	/**
 	 * Use a default {@link Converter} as defined by {@link Util#genericRealTypeConverter()}.
 	 */
+	@SuppressWarnings("unchecked")
 	public IterableRandomAccessibleFunction( final IFunction operation, final O outputType )
 	{
-		this( operation, outputType, null );
+		this( operation, null, (C) outputType.createVariable(), outputType, null );
+	}
+	
+	/**
+	 * Use a default {@link Converter} as defined by {@link Util#genericRealTypeConverter()}.
+	 */
+	@SuppressWarnings("unchecked")
+	public IterableRandomAccessibleFunction( final IFunction operation, final O outputType, final Converter< C, O > outConverter )
+	{
+		this( operation, null, (C) outputType.createVariable(), outputType, outConverter );
 	}
 	
 	/**
@@ -62,17 +91,13 @@ implements RandomAccessibleInterval< O >, IterableInterval< O >, View
 	@SuppressWarnings("unchecked")
 	public IterableRandomAccessibleFunction( final IFunction operation )
 	{
-		super( Util.findFirstInterval( operation ) );
-		this.operation = operation;
-		this.firstImg = Util.findFirstImg( operation ); // Twice: unavoidable
-		this.outputType = ( ( O ) this.firstImg.randomAccess().get() ).createVariable();
-		this.converter = null;
+		this( operation, ( ( O )Util.findFirstImg( operation ).randomAccess().get() ).createVariable() );
 	}
 
 	@Override
 	public RandomAccess< O > randomAccess()
 	{
-		return new Compute( this.operation ).randomAccess( this.outputType, this.converter );
+		return new Compute( this.operation ).randomAccess( this.computeType, this.outputType, this.outConverter );
 	}
 
 	@Override
@@ -108,7 +133,7 @@ implements RandomAccessibleInterval< O >, IterableInterval< O >, View
 	@Override
 	public Cursor< O > cursor()
 	{
-		return new Compute( this.operation ).cursor( this.outputType, this.converter );
+		return new Compute( this.operation ).cursor( this.inConverter, this.computeType, this.outputType, this.outConverter );
 	}
 
 	@Override
