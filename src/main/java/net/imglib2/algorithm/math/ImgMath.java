@@ -371,6 +371,11 @@ public class ImgMath
 		return new RandomAccessibleSource< T >( src, offset );
 	}
 	
+	static public final < T extends RealType< T > > OffsetSource< T > offset( final IFunction f, final long[] offset )
+	{
+		return new OffsetSource< T >( f, offset );
+	}
+	
 	static public final < T extends RealType< T > > IFunction source( final RandomAccessible< T > src )
 	{
 		if ( src instanceof RandomAccessibleInterval< ? > )
