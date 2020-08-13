@@ -12,7 +12,7 @@ import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
-public class RandomAccessibleOffsetSource< I extends RealType< I >, O extends RealType< O > > implements OFunction< O >, RandomAccessOnly
+public class RandomAccessibleOffsetSource< I extends RealType< I >, O extends RealType< O > > implements OFunction< O >, RandomAccessOnly< I >
 {
 	private final RandomAccessible< I > src;
 	protected final RandomAccess< I > ra;
