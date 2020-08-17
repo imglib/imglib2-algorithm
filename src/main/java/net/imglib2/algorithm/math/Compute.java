@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
@@ -67,10 +68,23 @@ public class Compute
 	public < O extends RealType< O > & NativeType< O >, C  extends RealType< C > & NativeType< C > > RandomAccessibleInterval< O >
 	intoArrayImg( final C computeType, final O outputType )
 	{
-		final RandomAccessibleInterval< ? > rai = Util.findImg( operation ).iterator().next();
-		final ArrayImg< O, ? > target = new ArrayImgFactory< O >( outputType ).create( rai );
-		this.params.compatible_iteration_order = Util.compatibleIterationOrder( Arrays.asList( rai, target ) );
-		return this.into( new ArrayImgFactory< O >( outputType ).create( rai ), null, computeType, null );
+		final Set< RandomAccessibleInterval< ? > > imgs = Util.findImg( operation );
+		final Interval interval;
+		final ArrayList< RandomAccessibleInterval< ? > > ls = new ArrayList<>();
+		if ( imgs.isEmpty() )
+		{
+			interval = Util.findFirstInterval( operation );
+			this.params.compatible_iteration_order = true; // no images present, only RandomAccessible like e.g. KDTreeSource
+		}
+		else
+		{
+			interval = imgs.iterator().next();
+			ls.addAll( imgs );
+		}
+		final ArrayImg< O, ? > target = new ArrayImgFactory< O >( outputType ).create( interval );
+		ls.add( target );
+		this.params.compatible_iteration_order = Util.compatibleIterationOrder( ls );
+		return this.into( target, null, computeType, null );
 	}
 	
 	public < O extends RealType< O > & NativeType< O >, C  extends RealType< C > > RandomAccessibleInterval< O >
