@@ -335,6 +335,41 @@ public class ImgMath
 		return new Else( o );
 	}
 	
+	static public final AndLogical AND( final Object o1, final Object o2 )
+	{
+		return new AndLogical( o1, o2 );
+	}
+	
+	static public final AndLogical AND( final Object... o )
+	{
+		return new AndLogical( o );
+	}
+	
+	static public final OrLogical OR( final Object o1, final Object o2 )
+	{
+		return new OrLogical( o1, o2 );
+	}
+	
+	static public final OrLogical OR( final Object... o )
+	{
+		return new OrLogical( o );
+	}
+	
+	static public final XorLogical XOR( final Object o1, final Object o2 )
+	{
+		return new XorLogical( o1, o2 );
+	}
+	
+	static public final XorLogical XOR( final Object... o )
+	{
+		return new XorLogical( o );
+	}
+	
+	static public final NotLogical NOT( final Object o )
+	{
+		return new NotLogical( o );
+	}
+	
 	static public final < T extends RealType< T > > ImgSource< T > img( final RandomAccessibleInterval< T > rai )
 	{
 		return new ImgSource< T >( rai );
@@ -397,4 +432,5 @@ public class ImgMath
 	{
 		return new KDTreeSource< T >( kdtree, radius, outside, interval );
 	}
+
 }
