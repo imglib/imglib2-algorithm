@@ -31,11 +31,11 @@ public class IfStatement< O extends RealType< O > > implements OFunction< O >
 	@Override
 	public final O eval( final Localizable loc )
 	{
-		return 0 != this.a.eval().getRealFloat() ?
+		return 0 != this.a.eval( loc ).getRealFloat() ?
 			// Then
-			this.b.eval()
+			this.b.eval( loc )
 			// Else
-			: this.c.eval();
+			: this.c.eval( loc );
 	}
 	
 	@Override
