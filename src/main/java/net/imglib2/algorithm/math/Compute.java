@@ -313,7 +313,7 @@ public class Compute
 	
 	public < O extends RealType< O >, C extends RealType< C > > RandomAccessibleInterval< O > view(
 			final Interval interval,
-			final Converter< ? extends RealType< ? >, C > inConverter,
+			final Converter< RealType< ? >, C > inConverter,
 			final C computingType,
 			final O outputType,
 			final Converter< C, O > outConverter )
@@ -329,13 +329,13 @@ public class Compute
 			@Override
 			public RandomAccess< O > randomAccess()
 			{
-				return Compute.this.randomAccess();
+				return Compute.this.randomAccess( inConverter, computingType, outputType, outConverter );
 			}
 
 			@Override
 			public RandomAccess< O > randomAccess( final Interval interval )
 			{
-				return Compute.this.randomAccess();
+				return this.randomAccess();
 			}
 		}, interval );
 	}
