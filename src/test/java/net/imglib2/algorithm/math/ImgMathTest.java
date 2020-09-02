@@ -16,12 +16,22 @@ import static net.imglib2.algorithm.math.ImgMath.EQ;
 import static net.imglib2.algorithm.math.ImgMath.NEQ;
 import static net.imglib2.algorithm.math.ImgMath.LT;
 import static net.imglib2.algorithm.math.ImgMath.GT;
+import static net.imglib2.algorithm.math.ImgMath.power;
+import static net.imglib2.algorithm.math.ImgMath.log;
+import static net.imglib2.algorithm.math.ImgMath.exp;
+import static net.imglib2.algorithm.math.ImgMath.AND;
+import static net.imglib2.algorithm.math.ImgMath.OR;
+import static net.imglib2.algorithm.math.ImgMath.XOR;
+import static net.imglib2.algorithm.math.ImgMath.NOT;
+
 
 import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -38,8 +48,11 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.converter.Converters;
+import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.type.numeric.ARGBType;
@@ -47,7 +60,10 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
+import net.imglib2.util.RealSum;
 import net.imglib2.view.Views;
 
 
@@ -664,13 +680,13 @@ public class ImgMathTest
 	
 	@Test
 	public void test1() {
-		System.out.println("test1");
+		System.out.println("testImgMath1");
 		assertTrue( testImgMath1() );
 	}
 	
 	@Test
 	public void test2() {
-		System.out.println("test2");
+		System.out.println("testIterationOrder");
 		assertTrue( testIterationOrder() );
 	}
 	
@@ -682,7 +698,7 @@ public class ImgMathTest
 	
 	@Test
 	public void test4() {
-		System.out.println("test4");
+		System.out.println("testVarags");
 		assertTrue( testVarags() );
 	}
 	
@@ -732,6 +748,109 @@ public class ImgMathTest
 	public void test6GT() {
 		System.out.println("test6GT");
 		assertTrue( testGT() );
+	}
+	
+	@Test
+	public void test7PowView() {
+		System.out.println("test7PowView");
+		final ArrayImg< FloatType, ? > img = ArrayImgs.floats(2, 2);
+		final float value = 3.0f;
+		for ( final FloatType t : img )
+			t.set( value );
+		final RealSum sum = new RealSum();
+		for ( final FloatType t : Views.iterable( compute( power( img, 2 ) ).view( img, new FloatType() ) ) )
+			sum.add( t.get() );
+		assertTrue( Math.pow( value, 2 ) * Intervals.numElements( img ) == sum.getSum() );
+	}
+	
+	@Test
+	public void test8LogView() {
+		System.out.println("test8LogView");
+		final ArrayImg< DoubleType, ? > img = ArrayImgs.doubles(2, 2);
+		final double value = Math.E;
+		for ( final DoubleType t : img )
+			t.set( value );
+		final RandomAccess< DoubleType> ra = compute( log( power( img, 3.0 ) ) ).view( img, new DoubleType() ).randomAccess();
+		ra.setPosition( new long[]{ 0, 0 } );
+		assertTrue( 3.0 == ra.get().get() );
+	}
+	
+	@Test
+	public void test9ExpView() {
+		System.out.println("test9ExpView");
+		final ArrayImg< DoubleType, ? > img = ArrayImgs.doubles(2, 2);
+		final double value = 3.0;
+		for ( final DoubleType t : img )
+			t.set( value );
+		final RandomAccess< DoubleType> ra = compute( log( exp( img ) ) ).view( img, new DoubleType() ).randomAccess();
+		ra.setPosition( new long[]{ 0, 0 } );
+		assertTrue( 3.0 == ra.get().get() );
+	}
+	
+	static private final Img< UnsignedByteType > into4x4Img( final byte[] pixels )
+	{
+		final ArrayImg< UnsignedByteType, ByteArray > img = ArrayImgs.unsignedBytes( 4, 4 );
+		System.arraycopy(pixels, 0, img.update( null ).getCurrentStorageArray(), 0, pixels.length );
+		return img;
+	}
+	
+	static private final < T extends RealType< T > > boolean same( final Img< T > img1, final Img< T > img2 ) {
+		  final Cursor< T > c1 = img1.cursor(),
+				  			c2 = img2.cursor();
+		  while ( c1.hasNext() )
+		    if ( !c1.next().valueEquals( c2.next() ) )
+		      return false;
+		  return true;
+	}
+	
+	@Test
+	public void test10Logical() {
+		System.out.println("test10Logical");
+		final byte[] pixels1 = new byte[]{
+						 0, 0, 0, 0,
+		                 0, 1, 0, 0,
+		                 0, 0, 1, 0,
+		                 0, 0, 0, 0},
+		             pixels2 = new byte[]{
+		            	 1, 0, 0, 0,
+		                 0, 1, 1, 0,
+		                 0, 1, 1, 0,
+		                 0, 0, 0, 1},
+		             pixels3 = new byte[]{
+		            	 1, 0, 0, 0, // XOR of 1 and 2
+		                 0, 0, 1, 0,
+		                 0, 1, 0, 0,
+		                 0, 0, 0, 1},
+		             pixels4 = new byte[]{
+		            	 1, 1, 1, 1, // NOT of 1
+		                 1, 0, 1, 1,
+		                 1, 1, 0, 1,
+		                 1, 1, 1, 1};
+		
+		final Img< UnsignedByteType > img1 = into4x4Img( pixels1 ),
+									  img2 = into4x4Img( pixels2 ),
+									  img3 = into4x4Img( pixels3 ),
+									  img4 = into4x4Img( pixels4 );
+		
+		// AND
+		assertTrue( same( img1, (Img< UnsignedByteType >) compute(AND(img1, img2)).intoArrayImg() ) );
+		// OR
+		assertTrue( same( img2, (Img< UnsignedByteType >) compute(OR(img1, img2)).intoArrayImg() ) );
+		// XOR
+		assertTrue( same( img3, (Img< UnsignedByteType >) compute(XOR(img1, img2)).intoArrayImg() ) );
+		// NOT
+		assertTrue( same( img4, (Img< UnsignedByteType >) compute(NOT(img1)).intoArrayImg() ) );
+		
+		// Test LogicalAndBoolean
+		final Img< UnsignedByteType> imgIFAND = (Img< UnsignedByteType>) compute(IF(AND(LT(img1, 1), LT(img2, 1)),
+		                     THEN(1),
+		                     ELSE(0))).intoArrayImg();
+
+		final byte[] pixels5 = new byte[ pixels1.length ];
+		for ( int i = 0; i < pixels1.length; ++i )
+			pixels5[ i ] = ( byte )( pixels1[ i ] < 1 && pixels2[ i ] < 1 ? 1 : 0 );
+		final Img< UnsignedByteType > imgTEST = into4x4Img( pixels5 );
+		assertTrue(  same(imgTEST, imgIFAND ) );
 	}
 	
 	static public void main(String[] args) {
