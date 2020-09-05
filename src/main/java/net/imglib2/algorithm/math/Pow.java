@@ -17,11 +17,6 @@ public final class Pow extends ABinaryFunction
 	{
 		super( o1, o2 );
 	}
-	
-	public Pow( final Object... obs )
-	{
-		super( obs );
-	}
 
 	@Override
 	public < O extends RealType< O > > OFunction< O > reInit(

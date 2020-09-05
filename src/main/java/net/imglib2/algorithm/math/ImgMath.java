@@ -190,19 +190,9 @@ public class ImgMath
 		return new Pow( o1, o2 );
 	}
 	
-	static public final Pow power( final Object... obs )
-	{
-		return new Pow( obs );
-	}
-	
 	static public final Pow power( final Object o1, final Object o2 )
 	{
 		return new Pow( o1, o2 );
-	}
-	
-	static public final Pow pow( final Object... obs )
-	{
-		return new Pow( obs );
 	}
 
 	static public final Max max( final Object o1, final Object o2 )
