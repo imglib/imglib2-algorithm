@@ -811,7 +811,6 @@ public class ImgMathTest
 		  return true;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Test
 	public void test10Logical() {
 		System.out.println("test10Logical");
@@ -842,18 +841,18 @@ public class ImgMathTest
 									  img4 = into4x4Img( pixels4 );
 		
 		// AND
-		assertTrue( same( img1, ( Img< UnsignedByteType > )compute(AND(img1, img2)).intoArrayImg() ) );
+		assertTrue( same( img1, compute(AND(img1, img2)).intoArrayImg( new UnsignedByteType() ) ) );
 		// OR
-		assertTrue( same( img2, ( Img< UnsignedByteType > )compute(OR(img1, img2)).intoArrayImg() ) );
+		assertTrue( same( img2, compute(OR(img1, img2)).intoArrayImg( new UnsignedByteType() ) ) );
 		// XOR
-		assertTrue( same( img3, ( Img< UnsignedByteType > )compute(XOR(img1, img2)).intoArrayImg() ) );
+		assertTrue( same( img3, compute(XOR(img1, img2)).intoArrayImg( new UnsignedByteType() ) ) );
 		// NOT
-		assertTrue( same( img4, ( Img< UnsignedByteType > )compute(NOT(img1)).intoArrayImg() ) );
+		assertTrue( same( img4, compute(NOT(img1)).intoArrayImg( new UnsignedByteType() ) ) );
 		
 		// Test LogicalAndBoolean
 		final Img< UnsignedByteType> imgIFAND = ( Img< UnsignedByteType> )compute(IF(AND(LT(img1, 1), LT(img2, 1)),
 		                     THEN(1),
-		                     ELSE(0))).intoArrayImg();
+		                     ELSE(0))).intoArrayImg( new UnsignedByteType() );
 
 		final byte[] pixels5 = new byte[ pixels1.length ];
 		for ( int i = 0; i < pixels1.length; ++i )

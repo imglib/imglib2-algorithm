@@ -55,17 +55,18 @@ public class Compute
 		this.params = Compute.validate( this.operation );
 	}
 	
-	public < O extends RealType< O > & NativeType< O > > RandomAccessibleInterval< O >
+	public < O extends RealType< O > & NativeType< O > > ArrayImg< O, ? >
 	intoArrayImg()
 	{
 		@SuppressWarnings("unchecked")
 		final RandomAccessibleInterval< O > rai = ( RandomAccessibleInterval< O > )Util.findImg( operation ).iterator().next();
 		final ArrayImg< O, ? > target = new ArrayImgFactory< O >( rai.randomAccess().get().createVariable() ).create( rai );
 		this.params.compatible_iteration_order = Util.compatibleIterationOrder( Arrays.asList( rai, target ) );
-		return this.into( target );
+		this.into( target );
+		return target;
 	}
 	
-	public < O extends RealType< O > & NativeType< O >, C  extends RealType< C > & NativeType< C > > RandomAccessibleInterval< O >
+	public < O extends RealType< O > & NativeType< O >, C  extends RealType< C > & NativeType< C > > ArrayImg< O, ? >
 	intoArrayImg( final C computeType, final O outputType )
 	{
 		final Set< RandomAccessibleInterval< ? > > imgs = Util.findImg( operation );
@@ -84,10 +85,11 @@ public class Compute
 		final ArrayImg< O, ? > target = new ArrayImgFactory< O >( outputType ).create( interval );
 		ls.add( target );
 		this.params.compatible_iteration_order = Util.compatibleIterationOrder( ls );
-		return this.into( target, null, computeType, null );
+		this.into( target, null, computeType, null );
+		return target;
 	}
 	
-	public < O extends RealType< O > & NativeType< O >, C  extends RealType< C > > RandomAccessibleInterval< O >
+	public < O extends RealType< O > & NativeType< O >, C  extends RealType< C > > ArrayImg< O, ? >
 	intoArrayImg( final O outputType )
 	{
 		return intoArrayImg( outputType.createVariable(), outputType );
