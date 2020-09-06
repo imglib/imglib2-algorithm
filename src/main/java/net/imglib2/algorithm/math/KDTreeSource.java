@@ -38,9 +38,29 @@ public class KDTreeSource< I extends RealType< I > > extends ViewableFunction im
 		this( new KDTree< I >( points.stream().map( ( p ) -> value ).collect( Collectors.toList() ), points ), radius );
 	}
 	
+	public KDTreeSource( final List< Point > points, final I value, final double radius, final Object outside )
+	{
+		this( new KDTree< I >( points.stream().map( ( p ) -> value ).collect( Collectors.toList() ), points ), radius, outside, null );
+	}
+	
+	public KDTreeSource( final List< Point > points, final I value, final double radius, final Object outside, final Interval interval )
+	{
+		this( new KDTree< I >( points.stream().map( ( p ) -> value ).collect( Collectors.toList() ), points ), radius, outside, interval );
+	}
+	
 	public KDTreeSource( final List< Point > points, final List< I > values, final double radius )
 	{
 		this( new KDTree< I >( values, points ), radius );
+	}
+	
+	public KDTreeSource( final List< Point > points, final List< I > values, final double radius, final Object outside )
+	{
+		this( new KDTree< I >( values, points ), radius, outside, null );
+	}
+	
+	public KDTreeSource( final List< Point > points, final List< I > values, final double radius, final Object outside, final Interval interval )
+	{
+		this( new KDTree< I >( values, points ), radius, outside, interval );
 	}
 	
 	public KDTreeSource( final KDTree< I > kdtree, final double radius )

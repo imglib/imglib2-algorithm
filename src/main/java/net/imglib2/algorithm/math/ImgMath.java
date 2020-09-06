@@ -1,7 +1,10 @@
 package net.imglib2.algorithm.math;
 
+import java.util.List;
+
 import net.imglib2.Interval;
 import net.imglib2.KDTree;
+import net.imglib2.Point;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IFunction;
@@ -406,6 +409,36 @@ public class ImgMath
 		if ( src instanceof RandomAccessibleInterval< ? > )
 			return intervalSource( ( RandomAccessibleInterval< T > )src );
 		return new RandomAccessibleSource< T >( src );
+	}
+
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final T value, final double radius )
+	{
+		return new KDTreeSource< T >( positions, value, radius );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final T value, final double radius, final Object outside )
+	{
+		return new KDTreeSource< T >( positions, value, radius, outside );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final T value, final double radius, final Object outside, final Interval interval )
+	{
+		return new KDTreeSource< T >( positions, value, radius, outside, interval );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final List< T > values, final double radius )
+	{
+		return new KDTreeSource< T >( positions, values, radius );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final List< T > values, final double radius, final Object outside )
+	{
+		return new KDTreeSource< T >( positions, values, radius, outside );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final List< T > values, final double radius, final Object outside, final Interval interval )
+	{
+		return new KDTreeSource< T >( positions, values, radius, outside, interval );
 	}
 	
 	static public final < T extends RealType< T > > KDTreeSource< T > gen( final KDTree< T > kdtree, final double radius )
