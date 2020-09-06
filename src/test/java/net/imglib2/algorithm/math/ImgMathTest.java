@@ -23,6 +23,8 @@ import static net.imglib2.algorithm.math.ImgMath.AND;
 import static net.imglib2.algorithm.math.ImgMath.OR;
 import static net.imglib2.algorithm.math.ImgMath.XOR;
 import static net.imglib2.algorithm.math.ImgMath.NOT;
+import static net.imglib2.algorithm.math.ImgMath.block;
+import static net.imglib2.algorithm.math.ImgMath.gen;
 
 
 import static org.junit.Assert.assertTrue;
@@ -36,6 +38,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -43,10 +46,14 @@ import org.junit.Test;
 
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
+import net.imglib2.KDTree;
+import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.integral.IntegralImg;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
+import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
@@ -59,6 +66,7 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedLongType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -803,6 +811,7 @@ public class ImgMathTest
 		  return true;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void test10Logical() {
 		System.out.println("test10Logical");
@@ -833,16 +842,16 @@ public class ImgMathTest
 									  img4 = into4x4Img( pixels4 );
 		
 		// AND
-		assertTrue( same( img1, (Img< UnsignedByteType >) compute(AND(img1, img2)).intoArrayImg() ) );
+		assertTrue( same( img1, ( Img< UnsignedByteType > )compute(AND(img1, img2)).intoArrayImg() ) );
 		// OR
-		assertTrue( same( img2, (Img< UnsignedByteType >) compute(OR(img1, img2)).intoArrayImg() ) );
+		assertTrue( same( img2, ( Img< UnsignedByteType > )compute(OR(img1, img2)).intoArrayImg() ) );
 		// XOR
-		assertTrue( same( img3, (Img< UnsignedByteType >) compute(XOR(img1, img2)).intoArrayImg() ) );
+		assertTrue( same( img3, ( Img< UnsignedByteType > )compute(XOR(img1, img2)).intoArrayImg() ) );
 		// NOT
-		assertTrue( same( img4, (Img< UnsignedByteType >) compute(NOT(img1)).intoArrayImg() ) );
+		assertTrue( same( img4, ( Img< UnsignedByteType > )compute(NOT(img1)).intoArrayImg() ) );
 		
 		// Test LogicalAndBoolean
-		final Img< UnsignedByteType> imgIFAND = (Img< UnsignedByteType>) compute(IF(AND(LT(img1, 1), LT(img2, 1)),
+		final Img< UnsignedByteType> imgIFAND = ( Img< UnsignedByteType> )compute(IF(AND(LT(img1, 1), LT(img2, 1)),
 		                     THEN(1),
 		                     ELSE(0))).intoArrayImg();
 
@@ -851,6 +860,49 @@ public class ImgMathTest
 			pixels5[ i ] = ( byte )( pixels1[ i ] < 1 && pixels2[ i ] < 1 ? 1 : 0 );
 		final Img< UnsignedByteType > imgTEST = into4x4Img( pixels5 );
 		assertTrue(  same(imgTEST, imgIFAND ) );
+	}
+	
+	@Test
+	public void test11IntegralBlockReading() {
+		System.out.println("test11IntegralBlockReading");
+		final Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( 3, 3 );
+		for ( final UnsignedByteType t : img )
+			t.setOne();
+		final IntegralImg< UnsignedByteType, UnsignedLongType > ii = new IntegralImg< UnsignedByteType, UnsignedLongType >( img, new UnsignedLongType(),
+				new Converter< UnsignedByteType, UnsignedLongType >() {
+					@Override
+					public void convert( final UnsignedByteType input, final UnsignedLongType output) {
+						output.setInteger( input.getIntegerLong() );
+					}
+				});
+		ii.process();
+		final Img< UnsignedLongType > integralImg = ii.getResult();
+		final RandomAccessibleInterval< UnsignedLongType > view = block( Views.extendBorder( integralImg ), 3 ).view( new UnsignedLongType() );
+		final RandomAccess< UnsignedLongType > ra = view.randomAccess();
+		ra.setPosition( new long[]{ 1, 1 } );
+		assertTrue( 9 == ra.get().get() );
+	}
+	
+	@Test
+	public void test12KDTreeGen()
+	{
+		System.out.println("test12KDTreeGen");
+		final ArrayList< UnsignedByteType > values = new ArrayList<>();
+		values.add( new UnsignedByteType( 1 ) );
+		values.add( new UnsignedByteType( 2 ) );
+		final ArrayList< Point > positions = new ArrayList<>();
+		positions.add( Point.wrap( new long[]{ 25, 25 } ) );
+		positions.add( Point.wrap( new long[]{ 200, 400 } ) );
+		final KDTree< UnsignedByteType > kdtree = new KDTree<>( values, positions );
+		final RandomAccess< UnsignedByteType > ra = gen( kdtree, 5 ).view( new UnsignedByteType() ).randomAccess();
+		ra.setPosition( new long[]{ 20, 20 } );
+		assertTrue( 0 == ra.get().get() );
+		ra.setPosition( new long[]{ 23, 29 } );
+		assertTrue( 1 == ra.get().get() );
+		ra.setPosition( new long[]{ 200, 400 } );
+		assertTrue( 2 == ra.get().get() );
+		ra.setPosition( new long[]{ -200, -400 } );
+		assertTrue( 0 == ra.get().get() );
 	}
 	
 	static public void main(String[] args) {
