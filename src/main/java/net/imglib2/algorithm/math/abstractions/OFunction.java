@@ -16,4 +16,15 @@ public interface OFunction< O extends RealType< O > >
 	public double evalDouble();
 	
 	public double evalDouble( final Localizable loc );
+	
+
+	default public boolean isOne()
+	{
+		return false;
+	}
+
+	default public boolean isZero()
+	{
+		return false;
+	}
 }

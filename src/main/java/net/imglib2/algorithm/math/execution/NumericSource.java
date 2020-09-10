@@ -51,4 +51,16 @@ public class NumericSource< O extends RealType< O > > implements OFunction< O >
 	{
 		return this.number.doubleValue();
 	}
+	
+	@Override
+	public boolean isOne()
+	{
+		return 1.0 == this.number.doubleValue();
+	}
+	
+	@Override
+	public boolean isZero()
+	{
+		return 0.0 == this.number.doubleValue();
+	}
 }

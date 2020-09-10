@@ -8,13 +8,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import net.imglib2.Interval;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.ImgSource;
 import net.imglib2.algorithm.math.Let;
 import net.imglib2.algorithm.math.NumberSource;
+import net.imglib2.algorithm.math.RandomAccessibleSource;
 import net.imglib2.algorithm.math.Var;
 import net.imglib2.converter.Converter;
+import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 
 public class Util
@@ -71,19 +76,23 @@ public class Util
 	{
 		if ( o instanceof RandomAccessibleInterval< ? > )
 		{
-			return new ImgSource( (RandomAccessibleInterval) o );
+			return new ImgSource( ( RandomAccessibleInterval )o );
+		}
+		else if ( o instanceof RandomAccessible< ? > )
+		{
+			return new RandomAccessibleSource( ( RandomAccessible )o );
 		}
 		else if ( o instanceof Number )
 		{
-			return new NumberSource( ( (Number) o ).doubleValue() );
+			return new NumberSource( ( ( Number )o ).doubleValue() );
 		}
 		else if ( o instanceof IFunction )
 		{
-			return ( (IFunction) o );
+			return ( ( IFunction ) o );
 		}
 		else if ( o instanceof String )
 		{
-			return new Var( (String)o );
+			return new Var( ( String )o );
 		}
 		
 		// Make it fail
@@ -127,6 +136,8 @@ public class Util
 		final LinkedList< IFunction > ops = new LinkedList<>();
 		ops.add( f );
 		
+		RandomAccessibleInterval< ? > extended = null;
+		
 		// Iterate into the nested operations
 		while ( ! ops.isEmpty() )
 		{
@@ -134,6 +145,12 @@ public class Util
 			
 			if ( op instanceof ImgSource )
 				return ( ( ImgSource< ? > )op ).getRandomAccessibleInterval();
+			if ( null == extended && op instanceof RandomAccessOnly )
+			{
+				final RandomAccessOnly< ? > rao = ( RandomAccessOnly< ? > )op;
+				if ( rao.getRandomAccessible() instanceof ExtendedRandomAccessibleInterval )
+					extended = ( ( ExtendedRandomAccessibleInterval< ?, ? > )rao.getRandomAccessible() ).getSource();
+			}
 			else if ( op instanceof IUnaryFunction )
 			{
 				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
@@ -150,7 +167,79 @@ public class Util
 			}
 		}
 		
-		return null;
+		return extended;
+	}
+	
+	static public final Interval findFirstInterval ( final IFunction f )
+	{
+		final LinkedList< IFunction > ops = new LinkedList<>();
+		ops.add( f );
+		
+		Interval extended = null;
+		
+		// Iterate into the nested operations
+		while ( ! ops.isEmpty() )
+		{
+			final IFunction  op = ops.removeFirst();
+			
+			if ( op instanceof SourceInterval )
+				return ( ( SourceInterval )op ).getInterval();
+			if ( null == extended && op instanceof RandomAccessOnly )
+			{
+				final RandomAccessOnly< ? > rao = ( RandomAccessOnly< ? > )op;
+				if ( rao.getRandomAccessible() instanceof ExtendedRandomAccessibleInterval )
+					extended = ( ( ExtendedRandomAccessibleInterval< ?, ? > )rao.getRandomAccessible() ).getSource();
+			}
+			else if ( op instanceof IUnaryFunction )
+			{
+				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
+				
+				if ( op instanceof IBinaryFunction )
+				{
+					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+					
+					if ( op instanceof ITrinaryFunction )
+					{
+						ops.addLast( ( ( ITrinaryFunction )op ).getThird() );
+					}
+				}
+			}
+		}
+		
+		return extended; // may be null
+	}
+	
+	static public final int dimensions ( final IFunction f )
+	{
+		final LinkedList< IFunction > ops = new LinkedList<>();
+		ops.add( f );
+		
+		// Iterate into the nested operations
+		while ( ! ops.isEmpty() )
+		{
+			final IFunction  op = ops.removeFirst();
+			
+			if ( op instanceof SourceInterval )
+				return ( ( SourceInterval )op ).getInterval().numDimensions();
+			if ( op instanceof RandomAccessOnly )
+				return ( ( RandomAccessOnly< ? > )op ).getRandomAccessible().numDimensions();
+			else if ( op instanceof IUnaryFunction )
+			{
+				ops.addLast( ( ( IUnaryFunction )op ).getFirst() );
+				
+				if ( op instanceof IBinaryFunction )
+				{
+					ops.addLast( ( ( IBinaryFunction )op ).getSecond() );
+					
+					if ( op instanceof ITrinaryFunction )
+					{
+						ops.addLast( ( ( ITrinaryFunction )op ).getThird() );
+					}
+				}
+			}
+		}
+		
+		return 0;
 	}
 
 	static final public IFunction[] wrapMap( final Object caller, final Object[] obs )
@@ -187,8 +276,20 @@ public class Util
 			}
 		};
 	}
+	
+	static public final< I extends IntegerType< I >, O extends IntegerType< O > > Converter< I, O > genericIntegerTypeConverter()
+	{
+		return new Converter< I, O >()
+		{
+			@Override
+			public final void convert( final I input, O output )
+			{
+				output.setInteger( input.getIntegerLong() );
+			}
+		};
+	}
 
-	public static final < O extends RealType< O > > IImgSourceIterable findFirstIterableImgSource( final OFunction< O > f )
+	public static final < O extends RealType< O > > IImgSourceIterable< ? > findFirstIterableImgSource( final OFunction< O > f )
 	{
 		final LinkedList< OFunction< O > > ops = new LinkedList<>();
 		ops.addLast( f );
@@ -199,8 +300,8 @@ public class Util
 			final OFunction< O >  op = ops.removeFirst();
 			for ( final OFunction< O > cf : op.children() )
 			{
-				if ( cf instanceof IImgSourceIterable )
-					return ( IImgSourceIterable ) cf;
+				if ( cf instanceof IImgSourceIterable< ? > )
+					return ( IImgSourceIterable< ? > ) cf;
 				ops.addLast( cf );
 			}
 		}
@@ -208,12 +309,12 @@ public class Util
 		return null;
 	}
 	
-	public static final < O extends RealType< O > > List< IImgSourceIterable > findAllIterableImgSource( final OFunction< O > f )
+	public static final < O extends RealType< O > > List< IImgSourceIterable< ? > > findAllIterableImgSource( final OFunction< O > f )
 	{
 		final LinkedList< OFunction< O > > ops = new LinkedList<>();
 		ops.addLast( f );
 		
-		final List< IImgSourceIterable > iis = new ArrayList<>();
+		final List< IImgSourceIterable< ? > > iis = new ArrayList<>();
 		
 		// Iterate into the nested operations
 		while ( ! ops.isEmpty() )
@@ -221,8 +322,8 @@ public class Util
 			final OFunction< O >  op = ops.removeFirst();
 			for ( final OFunction< O > cf : op.children() )
 			{
-				if ( cf instanceof IImgSourceIterable )
-					iis.add( ( IImgSourceIterable ) cf );
+				if ( cf instanceof IImgSourceIterable< ? > )
+					iis.add( ( IImgSourceIterable< ? > ) cf );
 				else
 					ops.addLast( cf );
 			}
@@ -245,7 +346,7 @@ public class Util
 		// Iterate into the nested operations, depth-first
 		while ( ! ops.isEmpty() )
 		{
-			final IFunction  op = ops.removeFirst();
+			final IFunction op = ops.removeFirst();
 
 			String indent = indents.removeFirst();
 			String pre = "";
@@ -281,6 +382,34 @@ public class Util
 			hierarchy.append( indent + pre + op.getClass().getSimpleName() + post + "\n");
 		}
 
+		return hierarchy.toString();
+	}
+	
+	public static final String hierarchy( final OFunction< ? > f )
+	{	
+		final StringBuilder hierarchy = new StringBuilder();
+		final LinkedList< String > indents = new LinkedList<>();
+		indents.add("");
+		
+		final LinkedList< OFunction< ? > > ops = new LinkedList<>();
+		ops.addLast( f );
+		
+		// Iterate into the nested operations
+		while ( ! ops.isEmpty() )
+		{
+			final OFunction< ? >  op = ops.removeFirst();
+			
+			final String indent = indents.removeFirst();
+			
+			for ( final OFunction< ? > cf : op.children() )
+			{
+				ops.addFirst( cf );
+				indents.addFirst( indent + "  " );
+			}
+			
+			hierarchy.append( indent + op.getClass().getSimpleName() + "\n");
+		}
+		
 		return hierarchy.toString();
 	}
 }

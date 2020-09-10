@@ -7,37 +7,36 @@ import net.imglib2.type.numeric.RealType;
 
 public abstract class ViewableFunction implements IFunction
 {
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view()
+	public < C extends RealType< C >, O extends RealType< O > > IterableRandomAccessibleFunction< C, O > view()
 	{
-		return new IterableRandomAccessibleFunction< O >( this );
+		return new IterableRandomAccessibleFunction< C, O >( this );
 	}
 	
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view( final O outputType )
+	public < C extends RealType< C >, O extends RealType< O > > IterableRandomAccessibleFunction< C, O > view( final O outputType )
 	{
-		return new IterableRandomAccessibleFunction< O >( this, outputType );
+		return new IterableRandomAccessibleFunction< C, O >( this, outputType );
 	}
 	
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view( final O outputType, final Converter< RealType< ? >, O > converter )
+	public < C extends RealType< C >, O extends RealType< O > > IterableRandomAccessibleFunction< C, O > view( final C computeType, final O outputType )
 	{
-		return new IterableRandomAccessibleFunction< O >( this, outputType, converter );
+		return new IterableRandomAccessibleFunction< C, O >( this, null, computeType, outputType, null );
 	}
 	
-	@Override
+	public < C extends RealType< C >, O extends RealType< O > > IterableRandomAccessibleFunction< C, O > view( final O outputType, final Converter< C, O > converter )
+	{
+		return new IterableRandomAccessibleFunction< C, O >( this, outputType, converter );
+	}
+	
 	public < O extends RealType< O > > IterableRandomAccessibleFunctionDouble< O > viewDouble()
 	{
 		return new IterableRandomAccessibleFunctionDouble< O >( this );
 	}
 	
-	@Override
 	public < O extends RealType< O > > IterableRandomAccessibleFunctionDouble< O > viewDouble( final O outputType )
 	{
 		return new IterableRandomAccessibleFunctionDouble< O >( this, outputType );
 	}
 	
-	@Override
 	public < O extends RealType< O > > IterableRandomAccessibleFunctionDouble< O > viewDouble( final O outputType, final Converter< RealType< ? >, O > converter )
 	{
 		return new IterableRandomAccessibleFunctionDouble< O >( this, outputType, converter );

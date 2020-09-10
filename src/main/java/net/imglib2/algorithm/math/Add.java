@@ -23,14 +23,21 @@ public final class Add extends ABinaryFunction
 	}
 
 	@Override
-	public < O extends RealType< O > > Addition< O > reInit(
+	public < O extends RealType< O > > OFunction< O > reInit(
 			final O tmp,
 			final Map< String, LetBinding< O > > bindings,
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return new Addition< O >( tmp.copy(),
-				this.a.reInit( tmp, bindings, converter, imgSources ),
-				this.b.reInit( tmp, bindings, converter, imgSources ) );
+		final OFunction< O > a = this.a.reInit( tmp, bindings, converter, imgSources ),
+	             			 b = this.b.reInit( tmp, bindings, converter, imgSources );
+
+		// Optimization: remove null ops
+		if ( a.isZero() )
+			return b;
+		if ( b.isZero() )
+			return a;
+				
+		return new Addition< O >( tmp.copy(), a, b );
 	}
 }

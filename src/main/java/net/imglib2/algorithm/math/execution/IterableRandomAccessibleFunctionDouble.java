@@ -8,11 +8,11 @@ import net.imglib2.algorithm.math.abstractions.Util;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public class IterableRandomAccessibleFunctionDouble< O extends RealType< O >> extends IterableRandomAccessibleFunction< O >
+public class IterableRandomAccessibleFunctionDouble< O extends RealType< O >> extends IterableRandomAccessibleFunction< O, O >
 {
 	public IterableRandomAccessibleFunctionDouble( final IFunction operation, final O outputType, final Converter< RealType< ? >, O > converter )
 	{
-		super( operation, outputType, converter );
+		super( operation, null, outputType.createVariable(), outputType, ( Converter< O, O > )converter );
 	}
 	
 	/**
@@ -31,12 +31,12 @@ public class IterableRandomAccessibleFunctionDouble< O extends RealType< O >> ex
 	@Override
 	public RandomAccess< O > randomAccess()
 	{
-		return new Compute( this.operation ).randomAccessDouble( this.outputType, this.converter );
+		return new Compute( this.operation ).randomAccessDouble( this.outputType, ( Converter< RealType< ? >, O > )this.outConverter );
 	}
 
 	@Override
 	public Cursor< O > cursor()
 	{
-		return new Compute( this.operation ).cursorDouble( this.outputType, this.converter );
+		return new Compute( this.operation ).cursorDouble( this.outputType, ( Converter< RealType< ? >, O > )this.outConverter );
 	}
 }

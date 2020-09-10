@@ -4,8 +4,6 @@ import java.util.Map;
 
 import net.imglib2.algorithm.math.abstractions.IVar;
 import net.imglib2.algorithm.math.abstractions.OFunction;
-import net.imglib2.algorithm.math.execution.IterableRandomAccessibleFunction;
-import net.imglib2.algorithm.math.execution.IterableRandomAccessibleFunctionDouble;
 import net.imglib2.algorithm.math.execution.LetBinding;
 import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
@@ -34,41 +32,5 @@ public final class Var implements IVar
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
 		return new Variable< O >( this.name, bindings.get( this.name ) );
-	}
-
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view()
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view( final O outputType )
-	{
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunction< O > view( final O outputType, final Converter< RealType< ? >, O > converter )
-	{
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunctionDouble< O > viewDouble()
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunctionDouble< O > viewDouble( final O outputType )
-	{
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public < O extends RealType< O > > IterableRandomAccessibleFunctionDouble< O > viewDouble( final O outputType, final Converter< RealType< ? >, O > converter )
-	{
-		throw new UnsupportedOperationException();
 	}
 }
