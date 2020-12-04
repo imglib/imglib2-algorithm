@@ -173,6 +173,18 @@ public class BSplineCoefficientsInterpolatorFactory<T extends RealType<T>, S ext
 		this( img, img, order, true, (S)new DoubleType() );
 	}
 
+	public BSplineCoefficientsInterpolatorFactory(
+			final RandomAccessibleInterval<S> coefficients,
+			final int order,
+			final boolean clipping,
+			final OutOfBoundsFactory<? extends RealType<?>, ?> oobFactory )
+	{
+		this.order = order;
+		this.clipping = clipping;
+		this.coefficients = coefficients;
+		this.oobFactory = oobFactory;
+	}
+
 	@Override
 	public BSplineCoefficientsInterpolator<S> create( RandomAccessible<T> f )
 	{
