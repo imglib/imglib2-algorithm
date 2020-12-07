@@ -16,10 +16,12 @@ public class InformationMetricsTests
 	private Img< IntType > imgZeros;
 	private Img< IntType > img3;
 	private Img< IntType > img3Shifted;
+	private Img< IntType > img3SmallErr;
 	private Img< IntType > imgTwo;
 	
 	// mutual info of a set with itself
 	private double MI_id = 1.0986122886681096;
+	private double log2 = Math.log( 2.0 );
 	
 	@Before
 	public void setup()
@@ -32,8 +34,11 @@ public class InformationMetricsTests
 
 		imgZeros = ArrayImgs.ints( new int[ 9 ], 9 );
 
-		int[] c = new int[]{ 0, 1, 0, 1, 0, 1, 0, 1 };
-		imgTwo = ArrayImgs.ints( c, c.length );
+		int[] c = new int[]{ 0, 1, 2, 0, 2, 1, 0, 1, 2 };
+		img3SmallErr = ArrayImgs.ints( c, c.length );
+
+		int[] twodat = new int[]{ 0, 1, 0, 1, 0, 1, 0, 1 };
+		imgTwo = ArrayImgs.ints( twodat, twodat.length );
 	}
 
 	@Test
@@ -42,13 +47,8 @@ public class InformationMetricsTests
 		double entropyZeros = InformationMetrics.entropy( imgZeros, 0, 1, 2 );
 		double entropyCoinFlip = InformationMetrics.entropy( imgTwo, 0, 1, 2 );
 
-		/*
-		 * These tests fail
-		 */
-//		assertEquals( 0.0, entropyZeros, 1e-6 );
-//		assertEquals( 1.0, entropyCoinFlip, 1e-6 );
-
-//		System.out.println( "entropy zeros : " + entropyZeros );
+		assertEquals( "entropy zeros", 0.0, entropyZeros, 1e-6 );
+		assertEquals( "entropy fair coin", log2, entropyCoinFlip, 1e-6 );
 	}
 	
 	@Test
@@ -56,6 +56,7 @@ public class InformationMetricsTests
 	{
 		double miAA = InformationMetrics.mutualInformation( img3, img3, 0, 2, 3 );
 		double nmiAA = InformationMetrics.normalizedMutualInformation( img3, img3, 0, 2, 3 );
+		double nmiBB = InformationMetrics.normalizedMutualInformation( img3Shifted, img3Shifted, 0, 2, 3 );
 
 		double miAB = InformationMetrics.mutualInformation( img3, img3Shifted, 0, 2, 3 );
 		double nmiAB = InformationMetrics.normalizedMutualInformation( img3, img3Shifted, 0, 2, 3 );
@@ -66,16 +67,11 @@ public class InformationMetricsTests
 		double miBB = InformationMetrics.mutualInformation( img3Shifted, img3Shifted, 0, 2, 3 );
 
 		assertEquals( "self MI", MI_id, miAA, 1e-6 );
-		assertEquals( "self MI", MI_id, miBB, 1e-6 );
+		assertEquals( "self NMI", 1.0, nmiAA, 1e-6 );
 
-//		assertEquals( "MI symmetry", miAA, miBA, 1e-6 );
-//
-//		System.out.println( "mi:" );
-//		System.out.println( miAA );
-//		System.out.println( miAB );
-//		System.out.println( "nmi:" );
-//		System.out.println( nmiAA );
-//		System.out.println( nmiAB );
+		assertEquals( "MI permutation", miAB, 0.0, 1e-6 );
+		assertEquals( "NMI permutation", nmiAB, 0.0, 1e-6 );
+		
 	}
 
 }

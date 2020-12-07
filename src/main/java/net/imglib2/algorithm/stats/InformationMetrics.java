@@ -30,16 +30,26 @@ public class InformationMetrics
 	 * @return the normalized mutual information
 	 */
 	public static <T extends RealType< T >> double normalizedMutualInformation(
-			IterableInterval< T > dataA,
-			IterableInterval< T > dataB,
+			final IterableInterval< T > dataA,
+			final IterableInterval< T > dataB,
 			double histmin, double histmax, int numBins )
 	{
 		HistogramNd< T > jointHist = jointHistogram( dataA, dataB, histmin, histmax, numBins );
+		return normalizedMutualInformation( jointHist );
+	}
 
+	/**
+	 * Returns the normalized mutual information of the inputs
+	 * @param jointHist the joint histogram
+	 * @return the normalized mutual information
+	 */
+	public static <T extends RealType< T >> double normalizedMutualInformation(
+		final HistogramNd< T > jointHist )
+	{
 		double HA = marginalEntropy( jointHist, 0 );
 		double HB = marginalEntropy( jointHist, 1 );
 		double HAB = entropy( jointHist );
-		return ( HA + HB ) / HAB;
+		return 2 * ( HA + HB - HAB ) / ( HA + HB );
 	}
 	
 	/**
@@ -61,21 +71,46 @@ public class InformationMetrics
 
 		return HA + HB - HAB;
 	}
-	
-	public static <T extends RealType< T >> HistogramNd<T> jointHistogram(
-			IterableInterval< T > dataA,
-			IterableInterval< T > dataB,
-			double histmin, double histmax, int numBins )
+
+	/**
+	 * Returns the normalized mutual information of the inputs
+	 * @param ra the RandomAccessible
+	 * @return the normalized mutual information
+	 */
+	public static <T extends RealType< T >> double mutualInformation(
+			final HistogramNd< T > jointHist )
 	{
-		Real1dBinMapper<T> binMapper = new Real1dBinMapper<T>( histmin, histmax, numBins, false );
-		ArrayList<BinMapper1d<T>> binMappers = new ArrayList<BinMapper1d<T>>( 2 );
+		double HA = marginalEntropy( jointHist, 0 );
+		double HB = marginalEntropy( jointHist, 1 );
+		double HAB = entropy( jointHist );
+		return HA + HB - HAB;
+	}
+	
+	/**
+	 * Compute a the joint histogram.
+	 * @param dataA
+	 * @param dataB
+	 * @param histmin
+	 * @param histmax
+	 * @param numBins
+	 * @return the joint histogram
+	 */
+	public static < T extends RealType< T > > HistogramNd< T > jointHistogram( 
+			final IterableInterval< T > dataA,
+			final IterableInterval< T > dataB,
+			final double histmin,
+			final double histmax,
+			final int numBins )
+	{
+		Real1dBinMapper< T > binMapper = new Real1dBinMapper< T >( histmin, histmax, numBins, false );
+		ArrayList< BinMapper1d< T > > binMappers = new ArrayList< BinMapper1d< T > >( 2 );
 		binMappers.add( binMapper );
 		binMappers.add( binMapper );
 
-		List<Iterable<T>> data = new ArrayList<Iterable<T>>( 2 );
+		List< Iterable< T > > data = new ArrayList< Iterable< T > >( 2 );
 		data.add( dataA );
 		data.add( dataB );
-		return new HistogramNd<T>( data, binMappers );
+		return new HistogramNd< T >( data, binMappers );
 	}
 	
 	/**
@@ -102,9 +137,8 @@ public class InformationMetrics
 			IterableInterval< T > data,
 			double histmin, double histmax, int numBins )
 	{
-		Real1dBinMapper<T> binMapper = new Real1dBinMapper<T>(
-				histmin, histmax, numBins, false );
-		final Histogram1d<T> hist = new Histogram1d<T>( binMapper );
+		Real1dBinMapper< T > binMapper = new Real1dBinMapper< T >( histmin, histmax, numBins, false );
+		final Histogram1d< T > hist = new Histogram1d< T >( binMapper );
 		hist.countData( data );
 
 		return entropy( hist );
@@ -153,7 +187,6 @@ public class InformationMetrics
 	
 	public static < T > double marginalEntropy( HistogramNd< T > hist, int dim )
 	{
-		
 		final long ni = hist.dimension( dim );
 		final long total = hist.valueCount();
 		long count = 0;
@@ -170,7 +203,7 @@ public class InformationMetrics
 		}
 		return entropy;
 	}
-	
+
 	private static < T > long subHistCount( HistogramNd< T > hist, int dim, int pos )
 	{
 		long count = 0;
