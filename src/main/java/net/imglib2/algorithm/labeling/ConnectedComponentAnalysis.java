@@ -406,7 +406,8 @@ public class ConnectedComponentAnalysis
 			final UnionFind uf,
 			final long firstIndex )
 	{
-		final ExtendedRandomAccessibleInterval< L, RandomAccessibleInterval< L > > extendedLabeling = Views.extendValue( labeling, Util.getTypeFromInterval( labeling ).createVariable() );
+		final ExtendedRandomAccessibleInterval< L, RandomAccessibleInterval< L > > extendedLabeling =
+				Views.extendValue( labeling, Util.getTypeFromInterval( labeling ).createVariable() );
 
 		/* populate labeling with index */
 		long index = firstIndex;
@@ -418,7 +419,13 @@ public class ConnectedComponentAnalysis
 
 		@SuppressWarnings( "unchecked" )
 		final Cursor< L >[] offsetLabelingCursors = new Cursor[ affinityOffsets.length ];
-		Arrays.setAll( offsetLabelingCursors, i -> Views.flatIterable( Views.interval( Views.offset( extendedLabeling, affinityOffsets[ i ] ), labeling ) ).cursor() );
+		Arrays.setAll( offsetLabelingCursors, i -> Views.flatIterable(
+				Views.interval(
+						Views.offset(
+								extendedLabeling,
+								affinityOffsets[ i ] ),
+						labeling ) )
+				.cursor() );
 
 		final Cursor< L > target = Views.flatIterable( labeling ).cursor();
 		final Cursor< C > affinitiesCursor = Views.flatIterable( Views.interval( affinities, labeling ) ).cursor();
@@ -427,7 +434,7 @@ public class ConnectedComponentAnalysis
 		{
 			final C affinitiesVector = affinitiesCursor.next();
 			final L targetLabel = target.next();
-			final long labelId = uf.findRoot( targetLabel.getIntegerLong() );
+			long labelId = uf.findRoot( targetLabel.getIntegerLong() );
 
 			for ( int i = 0; i < affinityOffsets.length; ++i )
 			{
@@ -436,7 +443,11 @@ public class ConnectedComponentAnalysis
 				{
 					final long otherLabelId = uf.findRoot( offsetLabelingCursors[ i ].get().getIntegerLong() );
 					if ( labelId != otherLabelId )
+					{
 						uf.join( labelId, otherLabelId );
+						if ( i + 1 < affinityOffsets.length )
+							labelId = uf.findRoot( targetLabel.getIntegerLong() );
+					}
 				}
 			}
 		}
