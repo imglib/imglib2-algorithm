@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>27.0.1</version>
+		<version>29.2.1</version>
 		<relativePath />
 	</parent>
 
 	<groupId>net.imglib2</groupId>
 	<artifactId>imglib2-algorithm</artifactId>
-	<version>0.11.2-SNAPSHOT</version>
+	<version>0.11.3-SNAPSHOT</version>
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>

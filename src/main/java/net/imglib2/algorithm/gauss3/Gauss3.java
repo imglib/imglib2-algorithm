@@ -226,26 +226,86 @@ public final class Gauss3
 		return size;
 	}
 
+	/**
+	 * Returns a gaussian half kernel with the given sigma and size.
+	 * <p>
+	 * The edges are smoothed by a second degree polynomial.
+	 * This improves the first derivative and the fourier spectrum
+	 * of the gaussian kernel.
+	 */
 	public static double[] halfkernel( final double sigma, final int size, final boolean normalize )
 	{
-		final double two_sq_sigma = 2 * sigma * sigma;
+		final double two_sq_sigma = 2 * square( sigma );
 		final double[] kernel = new double[ size ];
 
 		kernel[ 0 ] = 1;
 		for ( int x = 1; x < size; ++x )
-			kernel[ x ] = Math.exp( -( x * x ) / two_sq_sigma );
+			kernel[ x ] = Math.exp( -square( x ) / two_sq_sigma );
+
+		smoothEdge( kernel );
 
 		if ( normalize )
-		{
-			double sum = 0.5;
-			for ( int x = 1; x < size; ++x )
-				sum += kernel[ x ];
-			sum *= 2;
-
-			for ( int x = 0; x < size; ++x )
-				kernel[ x ] /= sum;
-		}
+			normalizeHalfkernel( kernel );
 
 		return kernel;
+	}
+
+	/**
+	 * This method smooths the truncated end of the gaussian kernel.
+	 * The code is taken from ImageJ1 "Gaussian Blur ...".
+	 * <p>
+	 * Detailed explanation:
+	 * <p>
+	 * The values kernel[x] for r < x < L are replaced by the values
+	 * of a polynomial p(x) = slope * (x - L) ^ 2.
+	 * Where L equals kernel.length. And the "slope" and "r" are chosen
+	 * such that there is a smooth transition between the kernel and
+	 * the polynomial. Thus their value and first derivative
+	 * match for x = r: p(r) = kernel[r] and p'(r) = kernel'[r].
+	 */
+	private static void smoothEdge( double[] kernel )
+	{
+		int L = kernel.length;
+		double slope = Double.MAX_VALUE;
+		int r = L;
+		while ( r > L / 2 )
+		{
+			r--;
+			double a = kernel[ r ] / square( L - r );
+			if ( a < slope )
+				slope = a;
+			else
+			{
+				r++;
+				break;
+			}
+		}
+		for ( int x = r + 1; x < L; x++ )
+			kernel[ x ] = slope * square( L - x );
+	}
+
+	/**
+	 * Normalizes a half kernel such that the values sum up to 1.
+	 */
+	private static void normalizeHalfkernel( double[] kernel )
+	{
+		double sum = 0.5 * kernel[ 0 ];
+		for ( int x = 1; x < kernel.length; ++x )
+			sum += kernel[ x ];
+		sum *= 2;
+		multiply( kernel, 1 / sum );
+	}
+
+	// -- Helper methods --
+
+	private static double square( double x )
+	{
+		return x * x;
+	}
+
+	private static void multiply( double[] values, double factor )
+	{
+		for ( int x = 0; x < values.length; ++x )
+			values[ x ] *= factor;
 	}
 }

@@ -12,7 +12,7 @@ import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
-public class ImgSourceIterableDirect< O extends RealType< O > > implements OFunction< O >, IImgSourceIterable
+public class ImgSourceIterableDirect< O extends RealType< O > > implements OFunction< O >, IImgSourceIterable< O >
 {
 	private final RandomAccessibleInterval< O > rai;
 	private final Cursor< O > it;
@@ -44,26 +44,27 @@ public class ImgSourceIterableDirect< O extends RealType< O > > implements OFunc
 	}
 
 	@Override
-	public boolean hasNext()
-	{
-		return this.it.hasNext();
-	}
-
-	@Override
-	public Localizable localizable()
+	public Cursor< O > getCursor()
 	{
 		return this.it;
-	}
-
-	@Override
-	public void localize(long[] position)
-	{
-		this.it.localize( position );
 	}
 	
 	@Override
 	public List< OFunction< O > > children()
 	{
 		return Arrays.asList();
+	}
+	
+	@Override
+	public final double evalDouble()
+	{
+		return this.it.next().getRealDouble();
+	}
+
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		this.ra.setPosition( loc );
+		return this.ra.get().getRealDouble();
 	}
 }

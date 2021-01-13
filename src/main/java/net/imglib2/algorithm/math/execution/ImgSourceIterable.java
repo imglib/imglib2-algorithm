@@ -13,7 +13,7 @@ import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
-public class ImgSourceIterable< I extends RealType< I >, O extends RealType< O > > implements OFunction< O >, IImgSourceIterable
+public class ImgSourceIterable< I extends RealType< I >, O extends RealType< O > > implements OFunction< O >, IImgSourceIterable< I >
 {
 	private final RandomAccessibleInterval< I > rai;
 	private final Cursor< I > it;
@@ -51,26 +51,27 @@ public class ImgSourceIterable< I extends RealType< I >, O extends RealType< O >
 	}
 
 	@Override
-	public boolean hasNext()
-	{
-		return this.it.hasNext();
-	}
-
-	@Override
-	public Localizable localizable()
+	public Cursor< I > getCursor()
 	{
 		return this.it;
-	}
-
-	@Override
-	public void localize(long[] position)
-	{
-		this.it.localize( position );
 	}
 	
 	@Override
 	public List< OFunction< O > > children()
 	{
 		return Arrays.asList();
+	}
+	
+	@Override
+	public final double evalDouble()
+	{
+		return this.it.next().getRealDouble();
+	}
+
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		this.ra.setPosition( loc );
+		return this.ra.get().getRealDouble();
 	}
 }

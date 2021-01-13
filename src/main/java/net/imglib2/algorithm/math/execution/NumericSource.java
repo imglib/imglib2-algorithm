@@ -10,9 +10,11 @@ import net.imglib2.type.numeric.RealType;
 public class NumericSource< O extends RealType< O > > implements OFunction< O >
 {
 	private final O value;
+	private final Number number;
 	
 	public NumericSource( final O scrap, final Number number )
 	{
+		this.number = number;
 		this.value = scrap;
 		if ( number instanceof Float )
 			this.value.setReal( number.floatValue() );
@@ -36,5 +38,29 @@ public class NumericSource< O extends RealType< O > > implements OFunction< O >
 	public List< OFunction< O > > children()
 	{
 		return Arrays.asList();
+	}
+	
+	@Override
+	public final double evalDouble()
+	{
+		return this.number.doubleValue();
+	}
+	
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		return this.number.doubleValue();
+	}
+	
+	@Override
+	public boolean isOne()
+	{
+		return 1.0 == this.number.doubleValue();
+	}
+	
+	@Override
+	public boolean isZero()
+	{
+		return 0.0 == this.number.doubleValue();
 	}
 }

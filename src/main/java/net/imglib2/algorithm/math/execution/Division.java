@@ -38,4 +38,16 @@ public class Division< O extends RealType< O > > implements OFunction< O >
 	{
 		return Arrays.asList( this.a, this.b );
 	}
+	
+	@Override
+	public final double evalDouble()
+	{
+		return this.a.evalDouble() / this.b.evalDouble();
+	}
+	
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		return this.a.evalDouble( loc ) / this.b.evalDouble( loc );
+	}
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 import net.imglib2.algorithm.math.abstractions.ABinaryFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.algorithm.math.execution.Division;
+import net.imglib2.algorithm.math.execution.LetBinding;
 import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
@@ -23,14 +24,18 @@ public final class Div extends ABinaryFunction
 	}
 
 	@Override
-	public < O extends RealType< O > > Division< O > reInit(
+	public < O extends RealType< O > > OFunction< O > reInit(
 			final O tmp,
-			final Map< String, O > bindings,
+			final Map< String, LetBinding< O > > bindings,
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return new Division< O >( tmp.copy(),
-				this.a.reInit( tmp, bindings, converter, imgSources ),
-				this.b.reInit( tmp, bindings, converter, imgSources ) );
+		final OFunction< O > a = this.a.reInit( tmp, bindings, converter, imgSources ),
+					         b = this.b.reInit( tmp, bindings, converter, imgSources );
+		
+		if ( a.isZero() || b.isOne() )
+			return a;
+		
+		return new Division< O >( tmp.copy(), a, b );
 	}
 }

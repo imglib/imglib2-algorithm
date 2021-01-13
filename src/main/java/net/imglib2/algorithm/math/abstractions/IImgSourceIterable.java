@@ -1,12 +1,8 @@
 package net.imglib2.algorithm.math.abstractions;
 
-import net.imglib2.Localizable;
+import net.imglib2.Cursor;
 
-public interface IImgSourceIterable
-{
-	public boolean hasNext();
-	
-	public Localizable localizable();
-	
-	public void localize( final long[] position );
+public interface IImgSourceIterable< I >
+{	
+	public Cursor< I > getCursor();
 }

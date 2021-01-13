@@ -1,10 +1,18 @@
 package net.imglib2.algorithm.math;
 
+import java.util.List;
+
+import net.imglib2.Interval;
+import net.imglib2.KDTree;
+import net.imglib2.Point;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.Util;
+import net.imglib2.algorithm.math.abstractions.ViewableFunction;
 import net.imglib2.converter.Converter;
 import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
@@ -78,7 +86,12 @@ public class ImgMath
 		return new Compute( operation );
 	}
 	
-	static public final RandomAccessibleInterval< FloatType > computeIntoFloat( final IFunction operation )
+	static public final < I extends RealType< I > > Compute compute( final RandomAccessibleInterval< I > src )
+	{
+		return compute( img( src ) );
+	}
+	
+	static public final RandomAccessibleInterval< FloatType > computeIntoFloats( final IFunction operation )
 	{
 		return new Compute( operation ).into( new ArrayImgFactory< FloatType >( new FloatType() ).create( Util.findImg( operation ).iterator().next() ) );
 	}
@@ -96,6 +109,38 @@ public class ImgMath
 			final Converter< RealType< ? >, O > converter )
 	{
 		return new Compute( operation ).into( target, converter );
+	}
+	
+	static public final < O extends NativeType< O > & RealType< O > > RandomAccessibleInterval< O > computeIntoImg( final IFunction operation )
+	{
+		return compute( operation ).intoImg();
+	}
+	
+	static public final < O extends NativeType< O > & RealType< O > > RandomAccessibleInterval< O > computeIntoArrayImg( final IFunction operation )
+	{
+		return compute( operation ).intoArrayImg();
+	}
+	
+	/**
+	 * Almost all {@code IFunction} are also {@code ViewableFunction}. 
+	 * 
+	 * @param operation
+	 * @return
+	 */
+	static public final < O extends RealType< O > > RandomAccessibleInterval< O > view( final ViewableFunction operation )
+	{
+		return operation.view();
+	}
+	
+	/**
+	 * Almost all {@code IFunction} are also {@code ViewableFunction}. 
+	 * 
+	 * @param operation
+	 * @return
+	 */
+	static public final RandomAccessibleInterval< FloatType > viewFloats( final ViewableFunction operation )
+	{
+		return operation.view( new FloatType() );
 	}
 	
 	static public final Add add( final Object o1, final Object o2 )
@@ -118,6 +163,11 @@ public class ImgMath
 		return new Sub( obs );
 	}
 	
+	static public final Minus minus( final Object o1 )
+	{
+		return new Minus( o1 );
+	}
+	
 	static public final Mul mul( final Object o1, final Object o2 )
 	{
 		return new Mul( o1, o2 );
@@ -138,6 +188,16 @@ public class ImgMath
 		return new Div( obs );
 	}
 	
+	static public final Pow pow( final Object o1, final Object o2 )
+	{
+		return new Pow( o1, o2 );
+	}
+	
+	static public final Pow power( final Object o1, final Object o2 )
+	{
+		return new Pow( o1, o2 );
+	}
+
 	static public final Max max( final Object o1, final Object o2 )
 	{
 		return new Max( o1, o2 );
@@ -178,6 +238,21 @@ public class ImgMath
 		return new Min( obs );
 	}
 	
+	static public final Log log( final Object o1 )
+	{
+		return new Log( o1 );
+	}
+	
+	static public final Log logarithm( final Object o1 )
+	{
+		return new Log( o1 );
+	}
+	
+	static public final Exp exp( final Object o1 )
+	{
+		return new Exp( o1 );
+	}
+	
 	static public final Let let( final String varName, final Object varValue, final Object body )
 	{
 		return new Let( varName, varValue, body );
@@ -203,7 +278,17 @@ public class ImgMath
 		return new Equal( o1, o2 );
 	}
 	
+	static public final Equal equal( final Object o1, final Object o2 )
+	{
+		return new Equal( o1, o2 );
+	}
+	
 	static public final NotEqual NEQ( final Object o1, final Object o2 )
+	{
+		return new NotEqual( o1, o2 );
+	}
+	
+	static public final NotEqual notEqual( final Object o1, final Object o2 )
 	{
 		return new NotEqual( o1, o2 );
 	}
@@ -213,7 +298,17 @@ public class ImgMath
 		return new LessThan( o1, o2 );
 	}
 	
+	static public final LessThan lessThan( final Object o1, final Object o2 )
+	{
+		return new LessThan( o1, o2 );
+	}
+	
 	static public final GreaterThan GT( final Object o1, final Object o2 )
+	{
+		return new GreaterThan( o1, o2 );
+	}
+	
+	static public final GreaterThan greaterThan( final Object o1, final Object o2 )
 	{
 		return new GreaterThan( o1, o2 );
 	}
@@ -233,7 +328,48 @@ public class ImgMath
 		return new Else( o );
 	}
 	
+	static public final AndLogical AND( final Object o1, final Object o2 )
+	{
+		return new AndLogical( o1, o2 );
+	}
+	
+	static public final AndLogical AND( final Object... o )
+	{
+		return new AndLogical( o );
+	}
+	
+	static public final OrLogical OR( final Object o1, final Object o2 )
+	{
+		return new OrLogical( o1, o2 );
+	}
+	
+	static public final OrLogical OR( final Object... o )
+	{
+		return new OrLogical( o );
+	}
+	
+	static public final XorLogical XOR( final Object o1, final Object o2 )
+	{
+		return new XorLogical( o1, o2 );
+	}
+	
+	static public final XorLogical XOR( final Object... o )
+	{
+		return new XorLogical( o );
+	}
+	
+	static public final NotLogical NOT( final Object o )
+	{
+		return new NotLogical( o );
+	}
+	
 	static public final < T extends RealType< T > > ImgSource< T > img( final RandomAccessibleInterval< T > rai )
+	{
+		return new ImgSource< T >( rai );
+	}
+	
+	/** Synonym of {@code img(RandomAccessibleInterval)}, given that {@code img} is a widely used variable name. */
+	static public final < T extends RealType< T > > ImgSource< T > intervalSource( final RandomAccessibleInterval< T > rai )
 	{
 		return new ImgSource< T >( rai );
 	}
@@ -242,4 +378,82 @@ public class ImgMath
 	{
 		return new NumberSource( number );
 	}
+	
+	static public final < T extends RealType< T > > BlockReadSource< T > block( final RandomAccessible< T > src, final long[] radius )
+	{
+		return new BlockReadSource< T >( src, radius );
+	}
+	
+	static public final < T extends RealType< T > > BlockReadSource< T > block( final RandomAccessible< T > src, final long radius )
+	{
+		return new BlockReadSource< T >( src, radius );
+	}
+	
+	static public final < T extends RealType< T > > BlockReadSource< T > block( final RandomAccessible< T > src, final long[][] corners )
+	{
+		return new BlockReadSource< T >( src, corners );
+	}
+	
+	static public final < T extends RealType< T > > RandomAccessibleSource< T > offset( final RandomAccessible< T > src, final long[] offset )
+	{
+		return new RandomAccessibleSource< T >( src, offset );
+	}
+	
+	static public final < T extends RealType< T > > OffsetSource< T > offset( final IFunction f, final long[] offset )
+	{
+		return new OffsetSource< T >( f, offset );
+	}
+	
+	static public final < T extends RealType< T > > IFunction source( final RandomAccessible< T > src )
+	{
+		if ( src instanceof RandomAccessibleInterval< ? > )
+			return intervalSource( ( RandomAccessibleInterval< T > )src );
+		return new RandomAccessibleSource< T >( src );
+	}
+
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final T value, final double radius )
+	{
+		return new KDTreeSource< T >( positions, value, radius );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final T value, final double radius, final Object outside )
+	{
+		return new KDTreeSource< T >( positions, value, radius, outside );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final T value, final double radius, final Object outside, final Interval interval )
+	{
+		return new KDTreeSource< T >( positions, value, radius, outside, interval );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final List< T > values, final double radius )
+	{
+		return new KDTreeSource< T >( positions, values, radius );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final List< T > values, final double radius, final Object outside )
+	{
+		return new KDTreeSource< T >( positions, values, radius, outside );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final List< T > values, final double radius, final Object outside, final Interval interval )
+	{
+		return new KDTreeSource< T >( positions, values, radius, outside, interval );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final KDTree< T > kdtree, final double radius )
+	{
+		return new KDTreeSource< T >( kdtree, radius );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final KDTree< T > kdtree, final double radius, final Object outside )
+	{
+		return new KDTreeSource< T >( kdtree, radius, outside );
+	}
+	
+	static public final < T extends RealType< T > > KDTreeSource< T > gen( final KDTree< T > kdtree, final double radius, final Object outside, final Interval interval )
+	{
+		return new KDTreeSource< T >( kdtree, radius, outside, interval );
+	}
+
 }

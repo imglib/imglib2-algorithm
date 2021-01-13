@@ -4,6 +4,7 @@ import java.util.Map;
 
 import net.imglib2.algorithm.math.abstractions.ABinaryFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
+import net.imglib2.algorithm.math.execution.LetBinding;
 import net.imglib2.algorithm.math.execution.Multiplication;
 import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
@@ -22,14 +23,25 @@ public final class Mul extends ABinaryFunction
 	}
 
 	@Override
-	public < O extends RealType< O > > Multiplication< O > reInit(
+	public < O extends RealType< O > > OFunction< O > reInit(
 			final O tmp,
-			final Map< String, O > bindings,
+			final Map< String, LetBinding< O > > bindings,
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
-		return new Multiplication< O >( tmp.copy(),
-				this.a.reInit( tmp, bindings, converter, imgSources ),
-				this.b.reInit( tmp, bindings, converter, imgSources ) );
+		final OFunction< O > a = this.a.reInit( tmp, bindings, converter, imgSources ),
+				             b = this.b.reInit( tmp, bindings, converter, imgSources );
+		
+		// Optimization: remove null ops
+		if ( a.isOne() )
+			return b;
+		if ( b.isOne() )
+			return a;
+		if ( a.isZero() )
+			return a;
+		if ( b.isZero() )
+			return b;
+		
+		return new Multiplication< O >( tmp.copy(), a, b );
 	}
 }

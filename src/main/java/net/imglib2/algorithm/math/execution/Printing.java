@@ -39,4 +39,20 @@ public class Printing< O extends RealType< O > > implements OFunction< O >
 	{
 		return Arrays.asList( this.a );
 	}
+	
+	@Override
+	public final double evalDouble()
+	{
+		final double result = this.a.evalDouble();
+		System.out.println( this.title + " :: " + result );
+		return result;
+	}
+
+	@Override
+	public final double evalDouble( final Localizable loc)
+	{
+		final double result = this.a.evalDouble( loc );
+		System.out.println( this.title + " :: " + result );
+		return result;
+	}
 }

@@ -4,15 +4,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.imglib2.Localizable;
+import net.imglib2.algorithm.math.abstractions.ABooleanFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.type.numeric.RealType;
 
 public class IfStatementBoolean< O extends RealType< O > > implements OFunction< O >
 {
-	private final Comparison< O > abool;
+	private final ABooleanFunction< O > abool;
 	private final OFunction< O > b, c;
 	
-	public IfStatementBoolean( final Comparison< O > f1, final OFunction< O > f2, final OFunction< O > f3 )
+	public IfStatementBoolean( final ABooleanFunction< O > f1, final OFunction< O > f2, final OFunction< O > f3 )
 	{
 		this.abool = f1;
 		this.b = f2;
@@ -39,5 +40,21 @@ public class IfStatementBoolean< O extends RealType< O > > implements OFunction<
 	public List< OFunction< O > > children()
 	{
 		return Arrays.asList( this.abool, this.b, this.c );
+	}
+
+	@Override
+	public final double evalDouble()
+	{
+		return this.abool.evalBoolean() ?
+				this.b.evalDouble()
+				: this.c.evalDouble();
+	}
+
+	@Override
+	public final double evalDouble( final Localizable loc )
+	{
+		return this.abool.evalBoolean( loc ) ?
+				this.b.evalDouble( loc )
+				: this.c.evalDouble( loc );
 	}
 }

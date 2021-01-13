@@ -2,17 +2,20 @@ package net.imglib2.algorithm.math;
 
 import java.util.Map;
 
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.math.abstractions.IFunction;
 import net.imglib2.algorithm.math.abstractions.OFunction;
+import net.imglib2.algorithm.math.abstractions.SourceInterval;
 import net.imglib2.algorithm.math.abstractions.ViewableFunction;
 import net.imglib2.algorithm.math.execution.ImgSourceIterable;
 import net.imglib2.algorithm.math.execution.ImgSourceIterableDirect;
+import net.imglib2.algorithm.math.execution.LetBinding;
 import net.imglib2.algorithm.math.execution.Variable;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
 
-public class ImgSource< I extends RealType< I > > extends ViewableFunction implements IFunction
+public class ImgSource< I extends RealType< I > > extends ViewableFunction implements IFunction, SourceInterval
 {
 	private final RandomAccessibleInterval< I > rai;
 
@@ -25,7 +28,7 @@ public class ImgSource< I extends RealType< I > > extends ViewableFunction imple
 	@Override
 	public < O extends RealType< O > > OFunction< O > reInit(
 			final O tmp,
-			final Map< String, O > bindings,
+			final Map< String, LetBinding< O > > bindings,
 			final Converter< RealType< ? >, O > converter,
 			final Map< Variable< O >, OFunction< O > > imgSources )
 	{
@@ -51,6 +54,11 @@ public class ImgSource< I extends RealType< I > > extends ViewableFunction imple
 	}
 	
 	public RandomAccessibleInterval< I > getRandomAccessibleInterval()
+	{
+		return this.rai;
+	}
+	
+	public Interval getInterval()
 	{
 		return this.rai;
 	}

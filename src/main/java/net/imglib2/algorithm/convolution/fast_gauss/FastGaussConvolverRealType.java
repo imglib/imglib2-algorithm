@@ -99,7 +99,6 @@ public class FastGaussConvolverRealType implements LineConvolverFactory< RealTyp
 			for ( int i = -offset; i < 0; ++i )
 			{
 				fg.update( boundaryValue + tmpE[ i + offset ] );
-				in.fwd( d );
 			}
 
 			for ( int i = 0; i < lineLength; ++i )
