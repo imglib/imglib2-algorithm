@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>29.0.0</version>
+		<version>29.2.1</version>
 		<relativePath />
 	</parent>
 
@@ -201,7 +201,12 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
-		<imglib2.version>5.10.0</imglib2.version>
+		<!-- TODO remove when pom-scijava-base is updated -->
+		<scijava.jvm.version>8</scijava.jvm.version>
+		<scijava.jvm.build.version>[1.8.0-101,)</scijava.jvm.build.version>
+
+		<maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
+		<jacoco-maven-plugin.version>0.8.6</jacoco-maven-plugin.version>
 	</properties>
 
 	<repositories>
@@ -273,4 +278,16 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>java-9</id>
+			<activation>
+				<jdk>[9,)</jdk>
+			</activation>
+			<properties>
+				<maven.compiler.release>${scijava.jvm.version}</maven.compiler.release>
+			</properties>
+		</profile>
+	</profiles>
 </project>

@@ -34,6 +34,7 @@
 
 package net.imglib2.algorithm.labeling;
 
+import java.util.Arrays;
 import java.util.function.LongFunction;
 import java.util.function.LongUnaryOperator;
 import java.util.function.ToLongBiFunction;
@@ -55,7 +56,10 @@ import net.imglib2.type.BooleanType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
+import net.imglib2.util.Util;
+import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
+import net.imglib2.view.composite.RealComposite;
 
 /**
  *
@@ -133,7 +137,8 @@ public class ConnectedComponentAnalysis
 	 *
 	 * Implementation of connected component analysis that uses
 	 * {@link IntArrayRankedUnionFind} to find sets of pixels that are connected
-	 * with respect to a neighborhood ({@code shape}) over a binary mask. {@code mask}
+	 * with respect to a neighborhood ({@code shape}) over a binary mask.
+	 * {@code mask}
 	 * and {@code labeling} are expected to have equal min and max.
 	 *
 	 * @param mask
@@ -313,7 +318,139 @@ public class ConnectedComponentAnalysis
 				}
 			}
 		}
-
 	}
 
+	/**
+	 * Connected components on a regular arbitrary boolean affinity graph.
+	 *
+	 * @param <B>
+	 *            boolean type used for affinity scalars
+	 * @param <C>
+	 *            affinity vector
+	 * @param <L>
+	 *            label output must fit number of components
+	 * @param affinities
+	 *            affinity vector for each pixel
+	 * @param affinityOffsets
+	 *            offset vector for each affinity index
+	 * @param labeling
+	 *            output
+	 * @param uf
+	 *            union find
+	 * @param id
+	 *            id generator for pixels/ locations
+	 * @param idForSet
+	 *            id generator for components
+	 */
+	public static < B extends BooleanType< B >, C extends RealComposite< B >, L extends IntegerType< L > > void connectedComponentsOnAffinities(
+			final RandomAccessible< C > affinities,
+			final long[][] affinityOffsets,
+			final RandomAccessibleInterval< L > labeling,
+			final UnionFind uf,
+			final ToLongBiFunction< Localizable, L > id,
+			final LongUnaryOperator idForSet )
+	{
+		final ExtendedRandomAccessibleInterval< L, RandomAccessibleInterval< L > > extendedLabeling = Views.extendValue( labeling, Util.getTypeFromInterval( labeling ).createVariable() );
+
+		@SuppressWarnings( "unchecked" )
+		final Cursor< L >[] offsetLabelingCursors = new Cursor[ affinityOffsets.length ];
+		Arrays.setAll( offsetLabelingCursors, i -> Views.flatIterable( Views.interval( Views.offset( extendedLabeling, affinityOffsets[ i ] ), labeling ) ).cursor() );
+
+		final Cursor< L > target = Views.flatIterable( labeling ).cursor();
+		final Cursor< C > affinitiesCursor = Views.flatIterable( Views.interval( affinities, labeling ) ).cursor();
+
+		while ( target.hasNext() )
+		{
+			final C affinitiesVector = affinitiesCursor.next();
+			final L targetLabel = target.next();
+			final long labelId = uf.findRoot( id.applyAsLong( target, targetLabel ) );
+			targetLabel.setInteger( labelId );
+
+			for ( int i = 0; i < affinityOffsets.length; ++i )
+			{
+				offsetLabelingCursors[ i ].fwd();
+				if ( affinitiesVector.get( i ).get() )
+				{
+					final long otherLabelId = uf.findRoot( id.applyAsLong( offsetLabelingCursors[ i ], offsetLabelingCursors[ i ].get() ) );
+					if ( labelId != otherLabelId )
+						uf.join( labelId, otherLabelId );
+				}
+			}
+		}
+		uf.relabel( labeling, id, idForSet );
+	}
+
+	/**
+	 * Connected components on a regular arbitrary boolean affinity graph.
+	 * Each component gets the id of the first pixel (in flat iteration order)
+	 * inside the component increased by firstIndex.
+	 *
+	 * @param <B>
+	 *            boolean type used for affinity scalars
+	 * @param <C>
+	 *            affinity vector
+	 * @param <L>
+	 *            label output must fit number of components
+	 * @param affinities
+	 *            affinity vector for each pixel
+	 * @param affinityOffsets
+	 *            offset vector for each affinity index
+	 * @param labeling
+	 *            output
+	 * @param firstIndex
+	 */
+	public static < B extends BooleanType< B >, C extends RealComposite< B >, L extends IntegerType< L > > void connectedComponentsOnAffinities(
+			final RandomAccessible< C > affinities,
+			final long[][] affinityOffsets,
+			final RandomAccessibleInterval< L > labeling,
+			final UnionFind uf,
+			final long firstIndex )
+	{
+		final ExtendedRandomAccessibleInterval< L, RandomAccessibleInterval< L > > extendedLabeling =
+				Views.extendValue( labeling, Util.getTypeFromInterval( labeling ).createVariable() );
+
+		/* populate labeling with index */
+		long index = firstIndex;
+		for ( final L label : Views.flatIterable( labeling ) )
+		{
+			label.setInteger( index );
+			++index;
+		}
+
+		@SuppressWarnings( "unchecked" )
+		final Cursor< L >[] offsetLabelingCursors = new Cursor[ affinityOffsets.length ];
+		Arrays.setAll( offsetLabelingCursors, i -> Views.flatIterable(
+				Views.interval(
+						Views.offset(
+								extendedLabeling,
+								affinityOffsets[ i ] ),
+						labeling ) )
+				.cursor() );
+
+		final Cursor< L > target = Views.flatIterable( labeling ).cursor();
+		final Cursor< C > affinitiesCursor = Views.flatIterable( Views.interval( affinities, labeling ) ).cursor();
+
+		while ( target.hasNext() )
+		{
+			final C affinitiesVector = affinitiesCursor.next();
+			final L targetLabel = target.next();
+			long labelId = uf.findRoot( targetLabel.getIntegerLong() );
+
+			for ( int i = 0; i < affinityOffsets.length; ++i )
+			{
+				offsetLabelingCursors[ i ].fwd();
+				if ( affinitiesVector.get( i ).get() )
+				{
+					final long otherLabelId = uf.findRoot( offsetLabelingCursors[ i ].get().getIntegerLong() );
+					if ( labelId != otherLabelId )
+					{
+						uf.join( labelId, otherLabelId );
+						if ( i + 1 < affinityOffsets.length )
+							labelId = uf.findRoot( targetLabel.getIntegerLong() );
+					}
+				}
+			}
+		}
+		uf.relabel( labeling );
+	}
 }

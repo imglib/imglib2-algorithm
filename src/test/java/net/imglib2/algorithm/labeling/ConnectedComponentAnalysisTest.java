@@ -34,19 +34,28 @@
 
 package net.imglib2.algorithm.labeling;
 
+import java.util.function.LongUnaryOperator;
+
 import org.junit.Assert;
 import org.junit.Test;
 
+import gnu.trove.map.hash.TLongLongHashMap;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
+import net.imglib2.algorithm.util.unionfind.IntArrayUnionFind;
+import net.imglib2.algorithm.util.unionfind.UnionFind;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.LongArray;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.logic.BoolType;
+import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.type.numeric.integer.UnsignedLongType;
 import net.imglib2.view.Views;
+import net.imglib2.view.composite.RealComposite;
 
 /**
  *
@@ -148,6 +157,32 @@ public class ConnectedComponentAnalysisTest
 			0, 0, 0, 0, 0,
 			1, 1, 0, 0, 0,
 			1, 0, 0, 0, 3
+	};
+
+	private final long[] components = new long[] {
+			0, 0, 0, 0, 0,
+			0, 6, 7, 7, 0,
+			0, 6, 6, 7, 0,
+			0, 0, 0, 0, 0
+	};
+
+	private final long[] componentsCompact = new long[] {
+			1, 1, 1, 1, 1,
+			1, 2, 3, 3, 1,
+			1, 2, 2, 3, 1,
+			1, 1, 1, 1, 1
+	};
+
+	private final byte[] affinities = new byte[] {
+			0, 1, 1, 1, 1,
+			0, 0, 0, 1, 0,
+			0, 0, 1, 0, 0,
+			0, 1, 1, 1, 1,
+
+			0, 0, 0, 0, 0,
+			1, 0, 0, 0, 1,
+			1, 1, 0, 1, 1,
+			1, 0, 0, 0, 1
 	};
 
 	private final RandomAccessibleInterval< UnsignedLongType > maskStore2D = ArrayImgs.unsignedLongs( maskData2D, dims2D );
@@ -265,4 +300,62 @@ public class ConnectedComponentAnalysisTest
 		Assert.assertArrayEquals( labelingStore1, labelingStore2 );
 	}
 
+	@Test
+	public void testAffinities()
+	{
+
+		final RandomAccessible< RealComposite< BoolType > > affinityMap = Views.collapseReal(
+				Views.extendValue(
+						Converters.convert(
+								( RandomAccessibleInterval< ByteType > ) ArrayImgs.bytes( affinities, 5, 4, 2 ),
+								( a, b ) -> { b.set( a.get() > 0 ); },
+								new BoolType() ),
+						new BoolType() ),
+				2 );
+
+		final UnionFind uf = new IntArrayUnionFind( 4 * 5 );
+
+		final long[] labels = new long[ 4 * 5 ];
+		final ArrayImg< UnsignedLongType, LongArray > labelMap = ArrayImgs.unsignedLongs( labels, 5, 4 );
+
+		ConnectedComponentAnalysis.connectedComponentsOnAffinities(
+				affinityMap,
+				new long[][] {
+					{ -1, 0 },
+					{ 0, -1 } },
+				labelMap,
+				uf,
+				0 );
+
+		Assert.assertArrayEquals( components, labels );
+
+		final LongUnaryOperator startAtOneIdForNextSet = new LongUnaryOperator()
+		{
+
+			private final TLongLongHashMap setMappings = new TLongLongHashMap();
+
+			@Override
+			public long applyAsLong( final long root )
+			{
+
+				if ( !setMappings.containsKey( root ) )
+				{
+					setMappings.put( root, setMappings.size() + 1 );
+				}
+				return setMappings.get( root );
+			}
+		};
+
+		ConnectedComponentAnalysis.connectedComponentsOnAffinities(
+				affinityMap,
+				new long[][] {
+					{ -1, 0 },
+					{ 0, -1 } },
+				labelMap,
+				uf,
+				ConnectedComponentAnalysis.idFromIntervalIndexer( labelMap ),
+				startAtOneIdForNextSet );
+
+		Assert.assertArrayEquals( componentsCompact, labels );
+	}
 }
