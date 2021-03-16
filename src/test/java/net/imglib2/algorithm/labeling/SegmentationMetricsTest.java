@@ -54,7 +54,7 @@ public class SegmentationMetricsTest {
     }
 
     @Test
-    public void testSEGPrecisionOverlapping(){
+    public void testSEGSimpleOverlapping(){
         long[] dims = {16,16};
         final Img<IntType> groundtruth = ArrayImgs.ints( dims );
         final Img<IntType> prediction = ArrayImgs.ints( dims );
@@ -69,7 +69,37 @@ public class SegmentationMetricsTest {
         paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 12);
 
         double min_overlap = 0.5;
-        double seg = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt,min_pred, min_pred, max_pred, max_pred, min_overlap);
+        double seg = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred, min_overlap);
+
+        assertEquals(seg, SegmentationMetrics.computeSEG(new ImgLabeling(groundtruth), new ImgLabeling(prediction), min_overlap), 0.0001);
+    }
+
+    @Test
+    public void testSEGDoubleOverlapping(){
+        long[] dims = {32,32};
+        final Img<IntType> groundtruth = ArrayImgs.ints( dims );
+        final Img<IntType> prediction = ArrayImgs.ints( dims );
+
+        int min_gt = 2;
+        int max_gt = 11;
+        int min_pred = min_gt+1;
+        int max_pred = max_gt+1;
+
+        int min_gt2 = 15;
+        int max_gt2 = 20;
+        int min_pred2 = min_gt+1;
+        int max_pred2 = max_gt+1;
+
+        // paint
+        paintRectangle(groundtruth, min_gt, min_gt, max_gt, max_gt, 9);
+        paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 12);
+        paintRectangle(groundtruth, min_gt2, min_gt2, max_gt2, max_gt2, 2);
+        paintRectangle(prediction, min_pred2, min_pred2, max_pred2, max_pred2, 5);
+
+        double min_overlap = 0.5;
+        double seg1 = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred, min_overlap);
+        double seg2 = getSEGBetweenRectangles(min_gt2, min_gt2, max_gt2, max_gt2, min_pred2, min_pred2, max_pred2, max_pred2, min_overlap);
+        double seg = (seg1 + seg2)/2;
 
         assertEquals(seg, SegmentationMetrics.computeSEG(new ImgLabeling(groundtruth), new ImgLabeling(prediction), min_overlap), 0.0001);
     }
