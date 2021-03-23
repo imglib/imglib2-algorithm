@@ -285,7 +285,7 @@ public class BSplineLazyCoefficientsInterpolatorFactory<T extends RealType<T>, S
 		@Override
 		public Img< S > create( long[] dim, S type )
 		{
-			return Lazy.process( interval, blockSize, type, AccessFlags.setOf( AccessFlags.VOLATILE ), decomposition );
+			return Lazy.generate( interval, blockSize, type, AccessFlags.setOf( AccessFlags.VOLATILE ), decomposition );
 		}
 	}
 
