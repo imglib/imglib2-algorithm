@@ -101,24 +101,6 @@ import java.util.*;
  */
 public class SegmentationMetrics {
 
-    public static <T, I extends IntegerType<I>, U, J extends IntegerType<J>> PixelWiseMetrics<I, J> computePixelWiseMetrics(
-            final ImgLabeling<T, I> groundTruth,
-            final ImgLabeling<U, J> prediction
-    ) {
-        if(hasIntersectingLabels(groundTruth) || hasIntersectingLabels(prediction))
-            throw new UnsupportedOperationException("ImgLabeling with intersecting labels are not supported.");
-
-        return computePixelWiseMetrics(groundTruth.getIndexImg(), prediction.getIndexImg());
-    }
-
-    public static <I extends IntegerType<I>, J extends IntegerType<J>> PixelWiseMetrics<I, J> computePixelWiseMetrics(
-            final RandomAccessibleInterval<I> groundtruth,
-            final RandomAccessibleInterval<J> prediction
-    ) {
-        return new PixelWiseMetrics<I, J>(groundtruth, prediction);
-    }
-
-
     public static <T, I extends IntegerType<I>, U, J extends IntegerType<J>> double computeSEG(
             final ImgLabeling<T, I> groundTruth,
             final ImgLabeling<U, J> prediction,
@@ -222,93 +204,38 @@ public class SegmentationMetrics {
         return precision / (double) numGtLabels;
     }
 
-    public static class PixelWiseMetrics<I extends IntegerType<I>, J extends  IntegerType<J>> {
+    public static double computePrecision(long tp, long fp){
+        return tp+fp>0 ? (double) tp / (double) (tp + fp) : 0.;
+    }
 
-        private final double precision;
-        private final double recall;
-        private final double jaccard;
-        private final double f1;
+    public static double computeRecall(long tp, long fn){
+        return tp+fn>0 ? (double) tp / (double) (tp + fn) : 0.;
+    }
 
-        public PixelWiseMetrics(RandomAccessibleInterval<I> groundtruth, RandomAccessibleInterval<J> prediction) {
+    public static double computeJaccard(long tp, long fp, long fn){
+        return tp+fn+fp>0 ? (double) tp / (double) (tp + fp + fn) : 0.;
+    }
 
-            // TODO sanity checks: images of equal sizes
+    public static double computeF1(long tp, long fp, long fn){
+        double precision = computePrecision(tp, fp);
+        double recall = computeRecall(tp, fn);
 
-            Cursor<I> cGT = Views.iterable(groundtruth).localizingCursor();
-            RandomAccess<J> cPD = prediction.randomAccess();
-            long tp = 0, fp = 0, fn = 0;
-            long n = 0;
-            while (cGT.hasNext()) {
+        return precision+recall>0 ? 2 * precision * recall / (precision + recall) : 0.;
+    }
 
-                n++;
+    public static double computeF1(double precision, double recall){
+        return precision+recall>0 ? 2 * precision * recall / (precision + recall) : 0.;
+    }
 
-                int gtLabel = cGT.next().getInteger();
-                cPD.setPosition(cGT);
-                int pdLabel = cPD.get().getInteger();
+    public static double computeFbeta(long tp, long fp, long fn, double beta){
+        double precision = computePrecision(tp, fp);
+        double recall = computeRecall(tp, fn);
 
-                if ((gtLabel > 0 && pdLabel > 0) || (gtLabel == 0 && pdLabel == 0)) {
-                    tp++;
-                } else if (gtLabel == 0) {
-                    fn++;
-                } else {
-                    fp++;
-                }
-            }
+        return beta*beta*precision+recall>0 ? (1+beta*beta) * precision * recall / (beta*beta*precision + recall) : 0.;
+    }
 
-            precision = computePrecision(tp, fp);
-            recall = computeRecall(tp, fn);
-            jaccard = computeJaccard(tp, fp, fn);
-            f1 = computeF1(tp, fp, fn);
-        }
-
-        private static double computePrecision(long tp, long fp){
-            return tp+fp>0 ? (double) tp / (double) (tp + fp) : 0.;
-        }
-
-        private static double computeRecall(long tp, long fn){
-            return tp+fn>0 ? (double) tp / (double) (tp + fn) : 0.;
-        }
-
-        private static double computeJaccard(long tp, long fp, long fn){
-            return tp+fn+fp>0 ? (double) tp / (double) (tp + fp + fn) : 0.;
-        }
-
-        private static double computeF1(long tp, long fp, long fn){
-            double precision = computePrecision(tp, fp);
-            double recall = computeRecall(tp, fn);
-
-            return precision+recall>0 ? 2 * precision * recall / (precision + recall) : 0.;
-        }
-
-        private static double computeFbeta(long tp, long fp, long fn, double beta){
-            double precision = computePrecision(tp, fp);
-            double recall = computeRecall(tp, fn);
-
-            return beta*beta*precision+recall>0 ? (1+beta*beta) * precision * recall / (beta*beta*precision + recall) : 0.;
-        }
-
-        private static double computeFbeta(double precision, double recall, double beta){
-            return beta*beta*precision+recall>0 ? (1+beta*beta) * precision * recall / (beta*beta*precision + recall) : 0.;
-        }
-
-        public double getPrecision(){
-            return precision;
-        }
-
-        public double getRecall(){
-            return recall;
-        }
-
-        public double getJaccard(){
-            return jaccard;
-        }
-
-        public double getF1() {
-            return f1;
-        }
-
-        public double getFbeta(double beta){
-            return computeFbeta(precision, recall, beta);
-        }
+    public static double computeFbeta(double precision, double recall, double beta){
+        return beta*beta*precision+recall>0 ? (1+beta*beta) * precision * recall / (beta*beta*precision + recall) : 0.;
     }
 
     private class ConfusionMatrix<I extends IntegerType<I>, J extends  IntegerType<J>> {

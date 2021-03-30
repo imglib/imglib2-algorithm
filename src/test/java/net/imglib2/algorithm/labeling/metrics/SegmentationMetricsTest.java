@@ -16,15 +16,15 @@ import static org.junit.Assert.*;
 
 public class SegmentationMetricsTest {
 
-    // TODO: test for pixel wise
 
-
+    //////////////////////////////////////////////////////
+    //////// Test SEG
     @Test(expected = UnsupportedOperationException.class)
     public void testSEGException(){
         final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
         final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleIntersectingLabels));
 
-        assertEquals(1., SegmentationMetrics.computeSEG(labeling, labeling, 0.5), 0.0001);
+        SegmentationMetrics.computeSEG(labeling, labeling, 0.5);
     }
 
     @Test
@@ -32,7 +32,7 @@ public class SegmentationMetricsTest {
         final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
         final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleNonIntersectingLabels));
 
-        assertEquals(1., SegmentationMetrics.computeSEG(labeling, labeling, 0.5), 0.0001);
+        SegmentationMetrics.computeSEG(labeling, labeling, 0.5);
     }
 
     @Test
@@ -48,28 +48,16 @@ public class SegmentationMetricsTest {
     }
 
     @Test
-    public void testSEGEmptyPrediction(){
-        long[] dims = {64,64};
-        final Img<IntType> groundtruth = ArrayImgs.ints( dims );
-        final Img<IntType> empty = ArrayImgs.ints( dims );
-
-        // paint
-        paintRectangle(groundtruth, 12, 28, 42, 56, 9);
-
-        assertEquals(0., SegmentationMetrics.computeSEG(groundtruth, empty, 0.5), 0.0001);
-    }
-
-    @Test
     public void testSEGEmpty(){
         long[] dims = {64,64};
-        final Img<IntType> prediction = ArrayImgs.ints( dims );
+        final Img<IntType> nonEmpty = ArrayImgs.ints( dims );
         final Img<IntType> empty = ArrayImgs.ints( dims );
 
         // paint
-        paintRectangle(prediction, 12, 28, 42, 56, 9);
+        paintRectangle(nonEmpty, 12, 28, 42, 56, 9);
 
-        assertEquals(0., SegmentationMetrics.computeSEG(empty, prediction, 0.5), 0.0001);
-        assertEquals(0., SegmentationMetrics.computeSEG(prediction, empty, 0.5), 0.0001);
+        assertEquals(0., SegmentationMetrics.computeSEG(empty, nonEmpty, 0.5), 0.0001);
+        assertEquals(0., SegmentationMetrics.computeSEG(nonEmpty, empty, 0.5), 0.0001);
         assertEquals(1., SegmentationMetrics.computeSEG(empty, empty, 0.5), 0.0001);
     }
 
@@ -208,6 +196,13 @@ public class SegmentationMetricsTest {
         return labelings;
     }
 
+    private static void paintRectangle(Img<IntType> img, long[] interval, int value){
+        IntervalView<IntType> intView = Views.interval(img, Intervals.createMinMax(interval));
+        Cursor<IntType> cur = intView.cursor();
+        while(cur.hasNext()){
+            cur.next().set(value);
+        }
+    }
     private static void paintRectangle(Img<IntType> img, int min_x, int min_y, int max_x, int max_y, int value){
         long[] interval = {min_x, min_y, max_x, max_y};
         IntervalView<IntType> intView = Views.interval(img, Intervals.createMinMax(interval));
