@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.labeling;
+package net.imglib2.algorithm.labeling.metrics;
 
 import net.imglib2.Cursor;
 import net.imglib2.img.Img;
@@ -10,9 +10,30 @@ import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 public class SegmentationMetricsTest {
+
+    // TODO: test for pixel wise
+
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSEGException(){
+        final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
+        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleIntersectingLabels));
+
+        assertEquals(1., SegmentationMetrics.computeSEG(labeling, labeling, 0.5), 0.0001);
+    }
+
+    @Test
+    public void testSEGNoException(){
+        final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
+        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleNonIntersectingLabels));
+
+        assertEquals(1., SegmentationMetrics.computeSEG(labeling, labeling, 0.5), 0.0001);
+    }
 
     @Test
     public void testSEGIdentity(){
@@ -23,9 +44,7 @@ public class SegmentationMetricsTest {
         paintRectangle(img, 12, 28, 42, 56, 9);
         paintRectangle(img, 43, 9, 52, 18, 12);
 
-        ImgLabeling imgLabeling = new ImgLabeling<>(img);
-
-        assertEquals(1., SegmentationMetrics.computeSEG(imgLabeling, imgLabeling, 0.5), 0.0001);
+        assertEquals(1., SegmentationMetrics.computeSEG(img, img, 0.5), 0.0001);
     }
 
     @Test
@@ -37,7 +56,21 @@ public class SegmentationMetricsTest {
         // paint
         paintRectangle(groundtruth, 12, 28, 42, 56, 9);
 
-        assertEquals(0., SegmentationMetrics.computeSEG(new ImgLabeling(groundtruth), new ImgLabeling(empty), 0.5), 0.0001);
+        assertEquals(0., SegmentationMetrics.computeSEG(groundtruth, empty, 0.5), 0.0001);
+    }
+
+    @Test
+    public void testSEGEmpty(){
+        long[] dims = {64,64};
+        final Img<IntType> prediction = ArrayImgs.ints( dims );
+        final Img<IntType> empty = ArrayImgs.ints( dims );
+
+        // paint
+        paintRectangle(prediction, 12, 28, 42, 56, 9);
+
+        assertEquals(0., SegmentationMetrics.computeSEG(empty, prediction, 0.5), 0.0001);
+        assertEquals(0., SegmentationMetrics.computeSEG(prediction, empty, 0.5), 0.0001);
+        assertEquals(1., SegmentationMetrics.computeSEG(empty, empty, 0.5), 0.0001);
     }
 
     @Test
@@ -47,10 +80,10 @@ public class SegmentationMetricsTest {
         final Img<IntType> prediction = ArrayImgs.ints( dims );
 
         // paint
-        paintRectangle(groundtruth, 12, 28, 42, 56, 9);
-        paintRectangle(prediction, 12, 28, 42, 56, 12);
+        paintRectangle(groundtruth, 12, 5, 25, 13, 9);
+        paintRectangle(prediction, 28, 15, 42, 32, 12);
 
-        assertEquals(0., SegmentationMetrics.computeSEG(new ImgLabeling(groundtruth), new ImgLabeling(prediction),0.5), 0.0001);
+        assertEquals(0., SegmentationMetrics.computeSEG(groundtruth, prediction,0.5), 0.0001);
     }
 
     @Test
@@ -71,7 +104,7 @@ public class SegmentationMetricsTest {
         double min_overlap = 0.5;
         double seg = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred, min_overlap);
 
-        assertEquals(seg, SegmentationMetrics.computeSEG(new ImgLabeling(groundtruth), new ImgLabeling(prediction), min_overlap), 0.0001);
+        assertEquals(seg, SegmentationMetrics.computeSEG(groundtruth, prediction, min_overlap), 0.0001);
     }
 
     @Test
@@ -101,7 +134,7 @@ public class SegmentationMetricsTest {
         double seg2 = getSEGBetweenRectangles(min_gt2, min_gt2, max_gt2, max_gt2, min_pred2, min_pred2, max_pred2, max_pred2, min_overlap);
         double seg = (seg1 + seg2)/2;
 
-        assertEquals(seg, SegmentationMetrics.computeSEG(new ImgLabeling(groundtruth), new ImgLabeling(prediction), min_overlap), 0.0001);
+        assertEquals(seg, SegmentationMetrics.computeSEG(groundtruth, prediction, min_overlap), 0.0001);
     }
 
     @Test
@@ -121,7 +154,7 @@ public class SegmentationMetricsTest {
 
         for(double overlap = 0.1; overlap < 0.9; overlap += 0.05) {
             double seg = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred, overlap);
-            assertEquals(seg, SegmentationMetrics.computeSEG(new ImgLabeling(groundtruth), new ImgLabeling(prediction), overlap), 0.0001);
+            assertEquals(seg, SegmentationMetrics.computeSEG(groundtruth, prediction, overlap), 0.0001);
         }
     }
 
@@ -145,6 +178,34 @@ public class SegmentationMetricsTest {
         } else {
             return 0.;
         }
+    }
+
+    ////////////// Helpers
+    private final long[] exampleIndexArrayDims = new long[] {4, 5};
+    private final String[] exampleIntersectingLabels = new String[] { "A", "A,B", "C", "D", "D,E"};
+    private final String[] exampleNonIntersectingLabels = new String[] { "A", "A,B", "C", "D", "E"};
+    private final int[] exampleIndexArray = new int[] {
+            1, 0, 0, 0, 0,
+            0, 1, 0, 5, 0,
+            0, 0, 0, 3, 3,
+            0, 0, 3, 3, 0
+    };
+
+    private static List<Set<String>> getLabelingSet(String[] labels){
+        List< Set<String> > labelings = new ArrayList<>();
+
+        labelings.add(new HashSet<>());
+
+        // Add label Sets
+        for(String entries: labels){
+            Set<String> subLabelSet = new HashSet<>();
+            for(String entry: entries.split(",")){
+                subLabelSet.add(entry);
+            }
+            labelings.add(subLabelSet);
+        }
+
+        return labelings;
     }
 
     private static void paintRectangle(Img<IntType> img, int min_x, int min_y, int max_x, int max_y, int value){
