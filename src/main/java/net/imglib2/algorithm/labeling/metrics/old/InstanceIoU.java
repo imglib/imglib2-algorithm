@@ -44,7 +44,7 @@ public class InstanceIoU {
         // fill in cost matrix
         for (int i=0; i < M; i++) {
             for (int j=0; j < N; j++){
-                double cost = computeLocalIoU(i, j, confusionMatrix);
+                double cost = computeLocalIoU(i, j, null);//confusionMatrix);
                 costMatrix[i][j] = cost >= threshold ? - cost : 0;
             }
         }
@@ -54,13 +54,13 @@ public class InstanceIoU {
 
     private double computeLocalIoU(int i, int j, ConfusionMatrix confusionMatrix) {
         double tp = confusionMatrix.getConfusionMatrix()[i][j];
-        double sumI = confusionMatrix.getGtHistogram();
-        double sumJ = IntStream.range(0, confusionMatrix.length).mapToDouble(k -> confusionMatrix[k][j]).sum();
+       //double sumI = confusionMatrix.getGtHistogram();
+       // double sumJ = IntStream.range(0, confusionMatrix.length).mapToDouble(k -> confusionMatrix[k][j]).sum();
 
-        double fn = sumI - tp;
-        double fp = sumJ - tp;
+        //double fn = sumI - tp;
+        //double fp = sumJ - tp;
 
-        return tp / (tp + fp + fn);
+        return 0;//tp / (tp + fp + fn);
     }
 
     private class ConfusionMatrix<I extends IntegerType<I>, J extends IntegerType<J>>{

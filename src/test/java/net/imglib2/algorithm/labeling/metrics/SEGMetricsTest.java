@@ -1,13 +1,15 @@
 package net.imglib2.algorithm.labeling.metrics;
 
-import net.imglib2.algorithm.labeling.metrics.old.SEG;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.integer.IntType;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class SEGMetricsTest {
@@ -23,23 +25,23 @@ public class SEGMetricsTest {
     };
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testSEGException(){
+    public void testException(){
         final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
         final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, SegmentationHelper.getLabelingSet(exampleIntersectingLabels));
 
-        new SEG().computeMetrics(labeling, labeling, 0.5);
+        new SEGMetrics().computeMetrics(labeling, labeling, 0.5);
     }
 
     @Test
-    public void testSEGNoException(){
+    public void testNoException(){
         final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
         final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, SegmentationHelper.getLabelingSet(exampleNonIntersectingLabels));
 
-        new SEG().computeMetrics(labeling, labeling, 0.5);
+        new SEGMetrics().computeMetrics(labeling, labeling, 0.5);
     }
 
     @Test
-    public void testSEGIdentity(){
+    public void testIdentity(){
         long[] dims = {64,64};
         final Img<IntType> img = ArrayImgs.ints( dims );
 
@@ -47,11 +49,11 @@ public class SEGMetricsTest {
         SegmentationHelper.paintRectangle(img, 12, 28, 42, 56, 9);
         SegmentationHelper.paintRectangle(img, 43, 9, 52, 18, 12);
 
-        assertEquals(1., new SEG().computeMetrics(img, img, 0.5), 0.0001);
+        assertEquals(1., new SEGMetrics().computeMetrics(img, img, 0.5), 0.0001);
     }
 
     @Test
-    public void testSEGEmpty(){
+    public void testEmpty(){
         long[] dims = {64,64};
         final Img<IntType> nonEmpty = ArrayImgs.ints( dims );
         final Img<IntType> empty = ArrayImgs.ints( dims );
@@ -59,13 +61,13 @@ public class SEGMetricsTest {
         // paint
         SegmentationHelper.paintRectangle(nonEmpty, 12, 28, 42, 56, 9);
 
-        assertEquals(0., new SEG().computeMetrics(empty, nonEmpty, 0.5), 0.0001);
-        assertEquals(0., new SEG().computeMetrics(nonEmpty, empty, 0.5), 0.0001);
-        assertEquals(1., new SEG().computeMetrics(empty, empty, 0.5), 0.0001);
+        assertEquals(0., new SEGMetrics().computeMetrics(empty, nonEmpty, 0.5), 0.0001);
+        assertEquals(0., new SEGMetrics().computeMetrics(nonEmpty, empty, 0.5), 0.0001);
+        assertEquals(1., new SEGMetrics().computeMetrics(empty, empty, 0.5), 0.0001);
     }
 
     @Test
-    public void testSEGNonOverlapping(){
+    public void testNonOverlapping(){
         long[] dims = {64,64};
         final Img<IntType> groundtruth = ArrayImgs.ints( dims );
         final Img<IntType> prediction = ArrayImgs.ints( dims );
@@ -74,11 +76,11 @@ public class SEGMetricsTest {
         SegmentationHelper.paintRectangle(groundtruth, 12, 5, 25, 13, 9);
         SegmentationHelper.paintRectangle(prediction, 28, 15, 42, 32, 12);
 
-        assertEquals(0., new SEG().computeMetrics(groundtruth, prediction,0.5), 0.0001);
+        assertEquals(0., new SEGMetrics().computeMetrics(groundtruth, prediction,0.5), 0.0001);
     }
 
     @Test
-    public void testSEGSimpleOverlapping(){
+    public void testSimpleOverlapping(){
         long[] dims = {16,16};
         final Img<IntType> groundtruth = ArrayImgs.ints( dims );
         final Img<IntType> prediction = ArrayImgs.ints( dims );
@@ -95,11 +97,11 @@ public class SEGMetricsTest {
         double min_overlap = 0.5;
         double seg = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred, min_overlap);
 
-        assertEquals(seg, new SEG().computeMetrics(groundtruth, prediction, min_overlap), 0.0001);
+        assertEquals(seg, new SEGMetrics().computeMetrics(groundtruth, prediction, min_overlap), 0.0001);
     }
 
     @Test
-    public void testSEGDoubleOverlapping(){
+    public void testDoubleOverlapping(){
         long[] dims = {32,32};
         final Img<IntType> groundtruth = ArrayImgs.ints( dims );
         final Img<IntType> prediction = ArrayImgs.ints( dims );
@@ -125,11 +127,11 @@ public class SEGMetricsTest {
         double seg2 = getSEGBetweenRectangles(min_gt2, min_gt2, max_gt2, max_gt2, min_pred2, min_pred2, max_pred2, max_pred2, min_overlap);
         double seg = (seg1 + seg2)/2;
 
-        assertEquals(seg, new SEG().computeMetrics(groundtruth, prediction, min_overlap), 0.0001);
+        assertEquals(seg, new SEGMetrics().computeMetrics(groundtruth, prediction, min_overlap), 0.0001);
     }
 
     @Test
-    public void testSEGCutOff(){
+    public void testCutOff(){
         long[] dims = {16,16};
         final Img<IntType> groundtruth = ArrayImgs.ints( dims );
         final Img<IntType> prediction = ArrayImgs.ints( dims );
@@ -145,7 +147,7 @@ public class SEGMetricsTest {
 
         for(double overlap = 0.1; overlap < 0.9; overlap += 0.05) {
             double seg = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred, overlap);
-            assertEquals(seg, new SEG().computeMetrics(groundtruth, prediction, overlap), 0.0001);
+            assertEquals(seg, new SEGMetrics().computeMetrics(groundtruth, prediction, overlap), 0.0001);
         }
     }
 

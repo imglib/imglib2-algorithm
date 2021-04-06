@@ -50,24 +50,6 @@ public class MunkresKuhnAlgorithmTest {
             {3, 1}
     };
 
-
-    @Test
-    public void test(){
-        int j = 2;
-        double r1 = IntStream.range(0, exampleAsymmetricalCost.length).mapToDouble(i -> exampleAsymmetricalCost[i][j]).sum();
-        IntStream.range(0, exampleAsymmetricalCost.length).mapToDouble(i -> exampleAsymmetricalCost[i][j]).forEach(System.out::println);
-        System.out.println("-------");
-        System.out.println(r1);
-
-        System.out.println("-------");
-        double r2 = Arrays.stream(exampleAsymmetricalCost).mapToDouble(a -> exampleAsymmetricalCost[0][j]).sum();
-        Arrays.stream(exampleAsymmetricalCost).mapToDouble(a -> exampleAsymmetricalCost[0][j]).forEach(System.out::println);
-        System.out.println("-------");
-        System.out.println(r2);
-
-
-    }
-
     @Test
     public void testSimple(){
         int[][] mka = new MunkresKuhnAlgorithm().computeAssignments(exampleCost);
@@ -80,13 +62,10 @@ public class MunkresKuhnAlgorithmTest {
         int[][] mka = new MunkresKuhnAlgorithm().computeAssignments(exampleAsymmetricalCost);
 
         assertTrue(compareAssignments(exampleAsymmetricalAssignment, mka));
-        //assertTrue(compareAssignments(exampleAsymmetricalAssignment, jva));
 
         int[][] mka2 = new MunkresKuhnAlgorithm().computeAssignments(exampleAsymmetrical2Cost);
-        //int[][] jva2 = new JonkerVolgenantAlgorithm().computeAssignments(exampleAsymmetrical2Cost);
 
         assertTrue(compareAssignments(exampleAsymmetrical2Assignment, mka2));
-        //assertTrue(compareAssignments(exampleAsymmetrical2Assignment, jva2));
     }
 
     private boolean compareAssignments(int[][] groundTruth, int[][] prediction){
