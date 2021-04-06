@@ -10,283 +10,200 @@ import net.imglib2.view.Views;
 import java.util.*;
 
 /**
- * Instance segmentation metrics
- * The task at hand is to compute metrics comparing two IntType images and their classes,
- * where the pixel values indicate class membership. The reference image will be referred
- * to as the ground truth, and the other classification as the prediction. We consider here
- * that labels are not ordered, label A in the ground truth might be label B in the prediction.
- * Label 0 always corresponds to background.
- *
- * However, in the following examples and metrics definitions, label correspondences is
- * assumed to have been already established.
- *
- * Given a confusion matrix CM:
- *   |  A |  B | <- predicted labels
- * A | aa | ab |
- * B | ba | bb |
- *
- * It is interpreted for the ground truth label A as:
- *
- *   |  A  |  B  |
- * A | TPa | FNa |
- * B | FPa | TNa |
- *
- * Then the metrics are as follow:
- *
- * ----------------
- * --- Accuracy ---
- * ----------------
- * Accuracy: sum(TP) / sum(CM)
- *
- *  --> acc = (aa + bb) / (aa + ab + ba + bb)
- *
- * ---------------------
- * --- Jaccard / IOU ---
- * ---------------------
- * Jaccard / IoU: mean( TP / (TP+FP+FN) )
- *
- *  --> jacc = [ aa /(aa + ba + ab) + ( bb/(bb + ba + ab) ) ]/2
- *
- * -------------------------
- * --- Average precision ---
- * -------------------------
- * Average precision: mean( TP/(TP+FP) )
- *
- *  --> avprec = [ aa /(aa + ba) + ( bb/(bb + ab) ) ]/2
- *
- * ----------------------
- * --- Average recall ---
- * ----------------------
- * Average recall: mean( TP/(TP+FN) )
- *
- *  --> avrec = [ aa /(aa + ab) + ( bb/(bb + ba) ) ]/2
- *
- * -----------------
- * --- F1 / Dice ---
- * -----------------
- * F1 / Dice: (2 * Precision * Recall) / (Precision + Recall)
- *
- *  --> f1 = (2 * avrec * avprec) / (avrec + avprec)
- *
- * -------------
- * --- Fbeta ---
- * -------------
- * Fbeta: ((1 + beta^2) * Precision * Recall) / (beta^2 * Precision + Recall)
- *
- *  --> fbeta = ((1 + beta^2) * avprec * avrec) / (beta^2 * avprec + avrec)
- *
- * -----------
- * --- SEG ---
- * -----------
- * SEG: The SEG metrics compute the Jaccard / IoU metrics between classes that have
- * at least > beta percentage overlap, where beta is a parameter. The score is averaged
- * over all ground truth labels.
- * See: Ulman, V., Maška, M., Magnusson, K. et al. An objective comparison of cell-tracking
- * algorithms. Nat Methods 14, 1141–1152 (2017).
- * https://github.com/CellTrackingChallenge/CTC-FijiPlugins
- *
+ * Segmentation metrics computed by building a confusion matrix (intersection between labels)
+ * and a cost matrix (metrics score between two labels) between the labels of a ground-truth
+ * image and a prediction image.
  *
  * @author Joran Deschamps
  */
+public abstract class SegmentationMetrics {
 
-
-// TODO : think about the followinG:
-
-/**
- * Pixel wise measures vs Instance metrics: instance metrics just match labels and compute TP,FP,FN at the instance level
- * one can also have a criterium and include pixel numbers in those, in instance metrics the pixel numbers contribute to
- * the score that is used to match labels but not directly to the metrics value itself.
- * check stardist implementation: https://github.com/stardist/stardist/blob/810dec4727e8e8bf05bd9620f91a3a0dd70de289/stardist/matching.py#L42
- * they use linear sum assignment
- */
-public class SegmentationMetrics {
-
-    public static <T, I extends IntegerType<I>, U, J extends IntegerType<J>> double computeSEG(
+    /**
+     * Compute the global metrics score between labels from a ground-truth and a prediction image.
+     * The labels are represented by the pixel values. A threshold can be applied to reject pairing
+     * between labels below a certain relative score.
+     *
+     * The methods throws an exception if either of the images has intersecting labels.
+     *
+     * @param groundTruth Ground-truth image
+     * @param prediction Prediction image
+     * @param threshold Threshold
+     * @param <T> The type of labels assigned to the ground-truth pixels
+     * @param <I> The pixel type of the ground-truth image
+     * @param <U>The type of labels assigned to the prediction pixels
+     * @param <J> The pixel type of the prediction image
+     * @return Metrics score
+     */
+    public <T, I extends IntegerType<I>, U, J extends IntegerType<J>> double computeMetrics(
             final ImgLabeling<T, I> groundTruth,
             final ImgLabeling<U, J> prediction,
-            final double minOverlap
+            final double threshold
     ) {
         if(hasIntersectingLabels(groundTruth) || hasIntersectingLabels(prediction))
             throw new UnsupportedOperationException("ImgLabeling with intersecting labels are not supported.");
 
-        return computeSEG(groundTruth.getIndexImg(), prediction.getIndexImg(), minOverlap);
+        return computeMetrics(groundTruth.getIndexImg(), prediction.getIndexImg(), threshold);
     }
 
-    public static <I extends IntegerType<I>, J extends IntegerType<J>> double computeSEG(
-            final RandomAccessibleInterval<I> groundtruth,
-            final RandomAccessibleInterval<J> prediction,
-            final double minOverlap
-    ) {
+    /**
+     * Compute the global metrics score between labels from a ground-truth and a prediction image.
+     * The labels are represented by the pixel values. A threshold can be applied to reject pairing
+     * between labels below a certain relative score.
+     *
+     * @param groundTruth Ground-truth image
+     * @param prediction Prediction image
+     * @param threshold Threshold at which
+     * @param <I> The pixel type of the ground-truth image
+     * @param <J> The pixel type of the prediction image
+     * @return Metrics score
+     */
+     public <I extends IntegerType<I>, J extends IntegerType<J>> double computeMetrics(
+            RandomAccessibleInterval<I> groundTruth,
+            RandomAccessibleInterval<J> prediction,
+            double threshold) {
 
-        // TODO check dimensions are equal and give an illegalargumentexception
-        // TODO check for null and empty images
-        // TODO check 2D or extend to stacks
+        if(Arrays.equals(groundTruth.dimensionsAsLongArray(), prediction.dimensionsAsLongArray()))
+            throw new IllegalArgumentException("Image dimensions must match.");
 
-        double precision = 0.;
+        if(threshold < 0 || threshold > 1)
+            throw new IllegalArgumentException("Threshold must be comprised between 0 and 1.");
 
-        // histograms pixels / label
-        LinkedHashMap<Integer, Integer> gtHist = new LinkedHashMap<Integer, Integer>();
-        LinkedHashMap<Integer, Integer> predictionHist = new LinkedHashMap<Integer, Integer>();
+        // compute confusion matrix
+        final ConfusionMatrix confusionMatrix = new ConfusionMatrix(groundTruth, prediction);
 
-        Cursor<I> cGT = Views.iterable(groundtruth).localizingCursor();
-        RandomAccess<J> cPD = prediction.randomAccess();
-        while (cGT.hasNext()) {
-            // update gt histogram
-            int gtLabel = cGT.next().getInteger();
-            Integer count = gtHist.get(gtLabel);
-            gtHist.put(gtLabel, count == null ? 1 : count + 1);
+        // compute cost matrix
+        double[][] costMatrix = computeCostMatrix(confusionMatrix, threshold);
 
-            // update prediction histogram
-            cPD.setPosition(cGT);
-            int pdLabel = cPD.get().getInteger();
-            count = predictionHist.get(pdLabel);
-            predictionHist.put(pdLabel, count == null ? 1 : count + 1);
-        }
+        return computeMetrics(confusionMatrix, costMatrix, threshold);
+    }
 
-        // remove 0 / background
-        Integer zero = new Integer(0);
-        if (gtHist.containsKey(zero)) {
-            gtHist.remove(zero);
-        }
-        if (predictionHist.containsKey(zero)) {
-            predictionHist.remove(zero);
-        }
+    /**
+     * Compute the global metrics value.
+     *
+     * @param confusionMatrix Confusion matrix
+     * @param costMatrix Cost matrix
+     * @param threshold Threshold
+     * @return Metrics score
+     */
+    protected abstract double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold);
 
-        // if the histograms are empty
-        if(gtHist.isEmpty() || predictionHist.isEmpty()){
-            boolean result = !(gtHist.isEmpty() ^ predictionHist.isEmpty());
-            return result ? 1 : 0;
-        }
+    /**
+     * Compute the cost matrix, where each element eij is the score of the local metrics between
+     * the ground-truth label i and the prediction label j. If the confusion matrix has more rows
+     * than columns, then empty columns (= prediction labels) are added to the cost matrix to make
+     * it square. Therefore, the cost matrix can have a different shape than the confusion matrix.
+     *
+     * @param cM Confusion matrix
+     * @param threshold Threshold to zero the local score
+     * @return Cost matrix
+     */
+    protected double[][] computeCostMatrix(ConfusionMatrix cM, double threshold){
+        int M = cM.getNumberGroundTruthLabels();
+        int N = cM.getNumberPredictionLabels();
 
-        // prepare confusion matrix
-        final int numGtLabels = gtHist.size();
-        final int numPredLabels = predictionHist.size();
-        final int[] confusionMatrix = new int[numGtLabels * numPredLabels];
-        final ArrayList<Integer> gtLabels = new ArrayList<Integer>(gtHist.keySet());
-        final ArrayList<Integer> predLabels = new ArrayList<Integer>(predictionHist.keySet());
+        // empty cost matrix
+        double[][] costMatrix = new double[M][Math.max(M, N)];
 
-        // calculate intersection
-        cGT.reset();
-        while (cGT.hasNext()) {
-            cGT.next();
-            cPD.setPosition(cGT);
-
-            int gtLabel  = cGT.get().getInteger();
-            int predLabel = cPD.get().getInteger();
-
-            // if the pixel belongs to an instance in both cases
-            if (gtLabel > 0 && predLabel > 0)
-                confusionMatrix[gtLabels.indexOf(gtLabel) + numGtLabels * predLabels.indexOf(predLabel)] += 1;
-        }
-
-        // for every gt label, find the pred label with >0.5
-        for (int i=0; i < numGtLabels; i++) {
-            int matchingLabel = -1;
-            for (int j=0; j < numPredLabels; j++){
-
-                double overlap = (double) confusionMatrix[i + numGtLabels * j] / (double) gtHist.get(gtLabels.get(i));
-                if(overlap > minOverlap){
-                    matchingLabel = j;
-                    break;
-                }
-            }
-
-            if (matchingLabel >= 0) {
-                double intersection = (double) confusionMatrix[i + numGtLabels * matchingLabel];
-                double n_gt = gtHist.get(gtLabels.get(i));
-                double n_pred = predictionHist.get(predLabels.get(matchingLabel));
-
-                precision += intersection / (double) (n_gt + n_pred - intersection);
+        // fill in cost matrix
+        for (int i=0; i < M; i++) {
+            for (int j=0; j < N; j++){
+                costMatrix[i][j] = computeLocalMetrics(i, j, cM, threshold);
             }
         }
 
-        // TODO check original code, do they devide by number of gt labels?
-        return precision / (double) numGtLabels;
+        return costMatrix;
     }
 
-    public static double computePrecision(long tp, long fp){
-        return tp+fp>0 ? (double) tp / (double) (tp + fp) : 0.;
+    /**
+     * Compute the metrics between two labels and returns its negation (-m) so as to correspond
+     * to a minimum cost problem. If the positive score is smaller than the threshold, the method
+     * returns 0.
+     *
+     * @param iGT Index of the ground-truth label
+     * @param jPred Index of the prediction label
+     * @param cM Confusion matrix
+     * @param threshold Threshold
+     * @return Score between the two labels or 0 if the score is smaller than the threshold
+     */
+    protected double computeLocalMetrics(int iGT, int jPred, ConfusionMatrix cM, double threshold) {
+        // number of true positive pixels
+        double tp = cM.getIntersection(iGT, jPred);
+
+        // size of each label (number of pixels in each label)
+        double sumI = cM.getGroundTruthLabelSize(iGT);
+        double sumJ = cM.getPredictionLabelSize(jPred);
+
+        // false positives and false negatives
+        double fn = sumI - tp;
+        double fp = sumJ - tp;
+
+        double iou = (tp + fp + fn) > 0 ? tp / (tp + fp + fn) : 0;
+
+        if(iou < threshold){
+            iou = 0;
+        }
+
+        return -iou;
     }
 
-    public static double computeRecall(long tp, long fn){
-        return tp+fn>0 ? (double) tp / (double) (tp + fn) : 0.;
-    }
+    /**
+     * A confusion matrix represent the number of pixels shared between all labels of two
+     * images: ground-truth and prediction. It is backed by a 2D array, with the ground-truth
+     * labels indexing the rows, and the prediction labels indexing the columns.
+     *
+     * @param <I> The pixel type of the ground-truth image
+     * @param <J> The pixel type of the prediction image
+     */
+    protected class ConfusionMatrix<I extends IntegerType<I>, J extends IntegerType<J>>{
 
-    public static double computeJaccard(long tp, long fp, long fn){
-        return tp+fn+fp>0 ? (double) tp / (double) (tp + fp + fn) : 0.;
-    }
+        // key = label, element = corresponding number of pixels
+        final private Map<I,Integer> gtHistogram;
+        final private Map<J,Integer> predHistogram;
 
-    public static double computeF1(long tp, long fp, long fn){
-        double precision = computePrecision(tp, fp);
-        double recall = computeRecall(tp, fn);
+        // labels indexed by their position in the row/column of the confusion matrix
+        final private ArrayList<I> groundTruthLabels;
+        final private ArrayList<J> predictionLabels;
 
-        return precision+recall>0 ? 2 * precision * recall / (precision + recall) : 0.;
-    }
+        // rows = ground-truth labels, columns = prediction labels
+        final private int[][] confusionMatrix;
 
-    public static double computeF1(double precision, double recall){
-        return precision+recall>0 ? 2 * precision * recall / (precision + recall) : 0.;
-    }
+        /**
+         * Constructor.
+         *
+         * @param groundTruth Ground-truth image
+         * @param prediction Prediction image
+         */
+        public ConfusionMatrix(RandomAccessibleInterval<I> groundTruth, RandomAccessibleInterval<J> prediction){
 
-    public static double computeFbeta(long tp, long fp, long fn, double beta){
-        double precision = computePrecision(tp, fp);
-        double recall = computeRecall(tp, fn);
+            // histograms label / number of pixels
+            gtHistogram = new LinkedHashMap<>();
+            predHistogram = new LinkedHashMap<>();
 
-        return beta*beta*precision+recall>0 ? (1+beta*beta) * precision * recall / (beta*beta*precision + recall) : 0.;
-    }
-
-    public static double computeFbeta(double precision, double recall, double beta){
-        return beta*beta*precision+recall>0 ? (1+beta*beta) * precision * recall / (beta*beta*precision + recall) : 0.;
-    }
-
-    private class ConfusionMatrix<I extends IntegerType<I>, J extends  IntegerType<J>> {
-
-        // IntType images
-        final RandomAccessibleInterval<I> groundtruth;
-        final RandomAccessibleInterval<J> prediction;
-
-        // Label to int look-up table
-        final ArrayList<Integer> gtLabelsOrder;
-        final ArrayList<Integer> predLabelsOrder;
-
-        // Confusion matrix
-        final int[] confusionMatrix;
-
-        // Label matching (max)
-        final HashMap<Integer, Integer> matchingPredLabels;
-        final HashMap<Integer, Integer> matchingGTLabels;
-
-        public ConfusionMatrix(RandomAccessibleInterval<I> groundtruth, RandomAccessibleInterval<J> prediction, double iou_threshold) {
-
-            // TODO sanity cheks
-
-            this.groundtruth = groundtruth;
-            this.prediction = prediction;
-
-            // histograms pixels / label
-            LinkedHashMap<Integer,Integer> gtHist = new LinkedHashMap<Integer,Integer>();
-            LinkedHashMap<Integer,Integer> predictionHist = new LinkedHashMap<Integer,Integer>();
-
-            Cursor<I> cGT = Views.iterable(groundtruth).localizingCursor();
-            RandomAccess<J> cPD = prediction.randomAccess();
+            final Cursor<I> cGT = Views.iterable(groundTruth).localizingCursor();
+            final RandomAccess<J> cPD = prediction.randomAccess();
             while(cGT.hasNext()){
                 // update gt histogram
-                int gtLabel = cGT.next().getInteger();
-                Integer count = gtHist.get(gtLabel);
-                gtHist.put(gtLabel, count == null ? 1 : count+1);
+                I gtLabel = cGT.next();
+                Integer count = gtHistogram.get(gtLabel);
+                gtHistogram.put(gtLabel, count == null ? 1 : count+1);
 
                 // update prediction histogram
                 cPD.setPosition(cGT);
-                int pdLabel = cPD.get().getInteger();
-                count = predictionHist.get(pdLabel);
-                predictionHist.put(pdLabel, count == null ? 1 : count+1);
+                J pdLabel = cPD.get();
+                count = predHistogram.get(pdLabel);
+                predHistogram.put(pdLabel, count == null ? 1 : count+1);
             }
 
+            // remove 0 / background
+            if (gtHistogram.containsKey(0)) gtHistogram.remove(0);
+            if (predHistogram.containsKey(0)) predHistogram.remove(0);
+
             // prepare confusion matrix
-            final int numGtLabels = gtHist.size();
-            final int numPredLabels = predictionHist.size();
-            confusionMatrix = new int[numGtLabels * numPredLabels];
-            gtLabelsOrder = new ArrayList<Integer>(gtHist.keySet());
-            predLabelsOrder = new ArrayList<Integer>(predictionHist.keySet());
+            confusionMatrix = new int[gtHistogram.size()][predHistogram.size()];
+
+            // list of labels value, index corresponds to the confusion matrix indices
+            groundTruthLabels = new ArrayList<>(gtHistogram.keySet());
+            predictionLabels = new ArrayList<>(predHistogram.keySet());
 
             // populate confusion matrix
             cGT.reset();
@@ -294,47 +211,116 @@ public class SegmentationMetrics {
                 cGT.next();
                 cPD.setPosition(cGT);
 
-                int gtLabel  = cGT.get().getInteger();
-                int predLabel = cPD.get().getInteger();
+                I gtLabel  = cGT.get();
+                J predLabel = cPD.get();
 
-                confusionMatrix[gtLabelsOrder.indexOf(gtLabel) + numGtLabels * predLabelsOrder.indexOf(predLabel)] += 1;
-            }
-
-            // match labels with max intersection
-            matchingPredLabels = new HashMap<Integer, Integer>();
-            matchingGTLabels = new HashMap<Integer, Integer>();
-
-            // TODO linear assignment instead of first found? what happens when one prediction matches well with two gt? or the inverse?
-
-
-            // first find maximum intersect
-            for (int i=0; i < numGtLabels; i++) {
-
-                int matchingLabel = -1;
-                int matchingMax = -1;
-                for (int j=0; j < numPredLabels; j++){
-                    int overlap = confusionMatrix[i + numGtLabels * j];
-
-                    // TODO
-                }
+                int i = groundTruthLabels.indexOf(gtLabel);
+                int j = predictionLabels.indexOf(predLabel);
+                confusionMatrix[i][j] += 1;
             }
         }
+
+        /**
+         * Return the ground-truth label at index {@code labelIndex}.
+         *
+         * @param labelIndex Index of the label
+         * @return Label at index {@code labelIndex}
+         */
+        private I getGroundTruthLabel(int labelIndex) {
+            return groundTruthLabels.get(labelIndex);
+        }
+
+        /**
+         * Return the prediction label at index {@code labelIndex}.
+         *
+         * @param labelIndex Index of the label
+         * @return Label at index {@code labelIndex}
+         */
+        private J getPredictionIndex(int labelIndex) {
+            return predictionLabels.get(labelIndex);
+        }
+
+        /**
+         * Return the number of pixels corresponding to the ground-truth
+         * label indexed by {@code labelIndex}.
+         *
+         * @param labelIndex Index of the label
+         * @return Number of pixels.
+         */
+        public int getGroundTruthLabelSize(int labelIndex) {
+            I label = getGroundTruthLabel(labelIndex);
+            return gtHistogram.get(label);
+        }
+
+        /**
+         * Return the number of pixels corresponding to the prediction
+         * label indexed by {@code labelIndex}.
+         *
+         * @param labelIndex Index of the label
+         * @return Number of pixels.
+         */
+        public int getPredictionLabelSize(int labelIndex){
+            J label = getPredictionIndex(labelIndex);
+            return predHistogram.get(label);
+        }
+
+        /**
+         * Return the number of pixels shared by the ground-truth label
+         * indexed by {@code gtIndex} and the prediction label indexed
+         * by {@code predIndex}.
+         *
+         * @param gtIndex Index of the ground-truth label
+         * @param predIndex Index of the prediction label
+         * @return Number of pixels shared by the two labels
+         */
+        public int getIntersection(int gtIndex, int predIndex) { return confusionMatrix[gtIndex][predIndex]; }
+
+        /**
+         * Return the number of ground-truth labels.
+         *
+         * @return Number of ground-truth labels
+         */
+        public int getNumberGroundTruthLabels() { return confusionMatrix.length; }
+
+        /**
+         * Return the number of prediction labels.
+         *
+         * @return Number of prediction labels
+         */
+        public int getNumberPredictionLabels() { return confusionMatrix[0].length; }
     }
 
-    // TODO: would this belong to imglabeling (imglib2-roi)?
-    private static <T, I extends IntegerType<I>> Set<Integer> getOccurringValues(ImgLabeling<T, I> img){
-        Set<Integer> occurringValues = new HashSet<>();
+    /**
+     * Return the Set of values or labels occurring in the ImgLabeling index image. Existing
+     * labels that do not exist in the index image are absent from the occurring set.
+     *
+     * @param img Image from which to extract the occuring labels
+     * @param <T> The type of labels assigned to pixels
+     * @param <I> The pixel type of the backing image
+     * @return Set of occurring labels
+     */
+    public static <T, I extends IntegerType<I>> Set<I> getOccurringLabels(ImgLabeling<T, I> img){
+        Set<I> occurringValues = new HashSet<>();
         for(I pixel : Views.iterable(img.getIndexImg())) {
-            occurringValues.add(pixel.getInteger());
+            occurringValues.add(pixel);
         }
 
         return occurringValues;
     }
 
-    private static <T, I extends IntegerType<I>> boolean hasIntersectingLabels(ImgLabeling<T, I> img){
+    /**
+     * Test if intersecting labels exist in the image labeling. Two labels intersect if there
+     * is at least one pixel labeled with the two labels.
+     *
+     * @param img Image
+     * @param <T> The type of labels assigned to pixels
+     * @param <I> The pixel type of the backing image
+     * @return True if the labeling has intersection labels, false otherwise.
+     */
+    public static <T, I extends IntegerType<I>> boolean hasIntersectingLabels(ImgLabeling<T, I> img){
         List<Set<T>> labelSets = img.getMapping().getLabelSets();
-        for(Integer i: getOccurringValues(img)){
-            if(labelSets.get(i).size() > 1){
+        for(I i: getOccurringLabels(img)){
+            if(labelSets.get(i.getInteger()).size() > 1){
                 return true;
             }
         }

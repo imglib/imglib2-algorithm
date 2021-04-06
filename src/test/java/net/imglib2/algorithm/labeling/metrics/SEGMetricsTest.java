@@ -1,38 +1,41 @@
 package net.imglib2.algorithm.labeling.metrics;
 
-import net.imglib2.Cursor;
+import net.imglib2.algorithm.labeling.metrics.old.SEG;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.util.Intervals;
-import net.imglib2.view.IntervalView;
-import net.imglib2.view.Views;
 import org.junit.Test;
 
-import java.util.*;
-
-import static org.junit.Assert.*;
-
-public class SegmentationMetricsTest {
+import static org.junit.Assert.assertEquals;
 
 
-    //////////////////////////////////////////////////////
-    //////// Test SEG
+public class SEGMetricsTest {
+
+    private final long[] exampleIndexArrayDims = new long[] {4, 5};
+    private final String[] exampleIntersectingLabels = new String[] { "A", "A,B", "C", "D", "D,E"};
+    private final String[] exampleNonIntersectingLabels = new String[] { "A", "A,B", "C", "D", "E"};
+    private final int[] exampleIndexArray = new int[] {
+            1, 0, 0, 0, 0,
+            0, 1, 0, 5, 0,
+            0, 0, 0, 3, 3,
+            0, 0, 3, 3, 0
+    };
+
     @Test(expected = UnsupportedOperationException.class)
     public void testSEGException(){
         final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
-        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleIntersectingLabels));
+        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, SegmentationHelper.getLabelingSet(exampleIntersectingLabels));
 
-        SegmentationMetrics.computeSEG(labeling, labeling, 0.5);
+        new SEG().computeMetrics(labeling, labeling, 0.5);
     }
 
     @Test
     public void testSEGNoException(){
         final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
-        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleNonIntersectingLabels));
+        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, SegmentationHelper.getLabelingSet(exampleNonIntersectingLabels));
 
-        SegmentationMetrics.computeSEG(labeling, labeling, 0.5);
+        new SEG().computeMetrics(labeling, labeling, 0.5);
     }
 
     @Test
@@ -41,10 +44,10 @@ public class SegmentationMetricsTest {
         final Img<IntType> img = ArrayImgs.ints( dims );
 
         // paint
-        paintRectangle(img, 12, 28, 42, 56, 9);
-        paintRectangle(img, 43, 9, 52, 18, 12);
+        SegmentationHelper.paintRectangle(img, 12, 28, 42, 56, 9);
+        SegmentationHelper.paintRectangle(img, 43, 9, 52, 18, 12);
 
-        assertEquals(1., SegmentationMetrics.computeSEG(img, img, 0.5), 0.0001);
+        assertEquals(1., new SEG().computeMetrics(img, img, 0.5), 0.0001);
     }
 
     @Test
@@ -54,11 +57,11 @@ public class SegmentationMetricsTest {
         final Img<IntType> empty = ArrayImgs.ints( dims );
 
         // paint
-        paintRectangle(nonEmpty, 12, 28, 42, 56, 9);
+        SegmentationHelper.paintRectangle(nonEmpty, 12, 28, 42, 56, 9);
 
-        assertEquals(0., SegmentationMetrics.computeSEG(empty, nonEmpty, 0.5), 0.0001);
-        assertEquals(0., SegmentationMetrics.computeSEG(nonEmpty, empty, 0.5), 0.0001);
-        assertEquals(1., SegmentationMetrics.computeSEG(empty, empty, 0.5), 0.0001);
+        assertEquals(0., new SEG().computeMetrics(empty, nonEmpty, 0.5), 0.0001);
+        assertEquals(0., new SEG().computeMetrics(nonEmpty, empty, 0.5), 0.0001);
+        assertEquals(1., new SEG().computeMetrics(empty, empty, 0.5), 0.0001);
     }
 
     @Test
@@ -68,10 +71,10 @@ public class SegmentationMetricsTest {
         final Img<IntType> prediction = ArrayImgs.ints( dims );
 
         // paint
-        paintRectangle(groundtruth, 12, 5, 25, 13, 9);
-        paintRectangle(prediction, 28, 15, 42, 32, 12);
+        SegmentationHelper.paintRectangle(groundtruth, 12, 5, 25, 13, 9);
+        SegmentationHelper.paintRectangle(prediction, 28, 15, 42, 32, 12);
 
-        assertEquals(0., SegmentationMetrics.computeSEG(groundtruth, prediction,0.5), 0.0001);
+        assertEquals(0., new SEG().computeMetrics(groundtruth, prediction,0.5), 0.0001);
     }
 
     @Test
@@ -86,13 +89,13 @@ public class SegmentationMetricsTest {
         int max_pred = max_gt+1;
 
         // paint
-        paintRectangle(groundtruth, min_gt, min_gt, max_gt, max_gt, 9);
-        paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 12);
+        SegmentationHelper.paintRectangle(groundtruth, min_gt, min_gt, max_gt, max_gt, 9);
+        SegmentationHelper.paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 12);
 
         double min_overlap = 0.5;
         double seg = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred, min_overlap);
 
-        assertEquals(seg, SegmentationMetrics.computeSEG(groundtruth, prediction, min_overlap), 0.0001);
+        assertEquals(seg, new SEG().computeMetrics(groundtruth, prediction, min_overlap), 0.0001);
     }
 
     @Test
@@ -112,17 +115,17 @@ public class SegmentationMetricsTest {
         int max_pred2 = max_gt+1;
 
         // paint
-        paintRectangle(groundtruth, min_gt, min_gt, max_gt, max_gt, 9);
-        paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 12);
-        paintRectangle(groundtruth, min_gt2, min_gt2, max_gt2, max_gt2, 2);
-        paintRectangle(prediction, min_pred2, min_pred2, max_pred2, max_pred2, 5);
+        SegmentationHelper.paintRectangle(groundtruth, min_gt, min_gt, max_gt, max_gt, 9);
+        SegmentationHelper.paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 12);
+        SegmentationHelper.paintRectangle(groundtruth, min_gt2, min_gt2, max_gt2, max_gt2, 2);
+        SegmentationHelper.paintRectangle(prediction, min_pred2, min_pred2, max_pred2, max_pred2, 5);
 
         double min_overlap = 0.5;
         double seg1 = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred, min_overlap);
         double seg2 = getSEGBetweenRectangles(min_gt2, min_gt2, max_gt2, max_gt2, min_pred2, min_pred2, max_pred2, max_pred2, min_overlap);
         double seg = (seg1 + seg2)/2;
 
-        assertEquals(seg, SegmentationMetrics.computeSEG(groundtruth, prediction, min_overlap), 0.0001);
+        assertEquals(seg, new SEG().computeMetrics(groundtruth, prediction, min_overlap), 0.0001);
     }
 
     @Test
@@ -137,12 +140,12 @@ public class SegmentationMetricsTest {
         int max_pred = max_gt+1;
 
         // paint
-        paintRectangle(groundtruth, min_gt, min_gt, max_gt, max_gt, 9);
-        paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 12);
+        SegmentationHelper.paintRectangle(groundtruth, min_gt, min_gt, max_gt, max_gt, 9);
+        SegmentationHelper.paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 12);
 
         for(double overlap = 0.1; overlap < 0.9; overlap += 0.05) {
             double seg = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred, overlap);
-            assertEquals(seg, SegmentationMetrics.computeSEG(groundtruth, prediction, overlap), 0.0001);
+            assertEquals(seg, new SEG().computeMetrics(groundtruth, prediction, overlap), 0.0001);
         }
     }
 
@@ -167,49 +170,4 @@ public class SegmentationMetricsTest {
             return 0.;
         }
     }
-
-    ////////////// Helpers
-    private final long[] exampleIndexArrayDims = new long[] {4, 5};
-    private final String[] exampleIntersectingLabels = new String[] { "A", "A,B", "C", "D", "D,E"};
-    private final String[] exampleNonIntersectingLabels = new String[] { "A", "A,B", "C", "D", "E"};
-    private final int[] exampleIndexArray = new int[] {
-            1, 0, 0, 0, 0,
-            0, 1, 0, 5, 0,
-            0, 0, 0, 3, 3,
-            0, 0, 3, 3, 0
-    };
-
-    private static List<Set<String>> getLabelingSet(String[] labels){
-        List< Set<String> > labelings = new ArrayList<>();
-
-        labelings.add(new HashSet<>());
-
-        // Add label Sets
-        for(String entries: labels){
-            Set<String> subLabelSet = new HashSet<>();
-            for(String entry: entries.split(",")){
-                subLabelSet.add(entry);
-            }
-            labelings.add(subLabelSet);
-        }
-
-        return labelings;
-    }
-
-    private static void paintRectangle(Img<IntType> img, long[] interval, int value){
-        IntervalView<IntType> intView = Views.interval(img, Intervals.createMinMax(interval));
-        Cursor<IntType> cur = intView.cursor();
-        while(cur.hasNext()){
-            cur.next().set(value);
-        }
-    }
-    private static void paintRectangle(Img<IntType> img, int min_x, int min_y, int max_x, int max_y, int value){
-        long[] interval = {min_x, min_y, max_x, max_y};
-        IntervalView<IntType> intView = Views.interval(img, Intervals.createMinMax(interval));
-        Cursor<IntType> cur = intView.cursor();
-        while(cur.hasNext()){
-            cur.next().set(value);
-        }
-    }
-
 }
