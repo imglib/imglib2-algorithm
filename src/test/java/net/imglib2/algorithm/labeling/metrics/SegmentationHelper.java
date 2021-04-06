@@ -14,24 +14,7 @@ import java.util.Set;
 
 public class SegmentationHelper {
 
-    public static List<Set<String>> getLabelingSet(String[] labels){
-        List< Set<String> > labelings = new ArrayList<>();
-
-        labelings.add(new HashSet<>());
-
-        // Add label Sets
-        for(String entries: labels){
-            Set<String> subLabelSet = new HashSet<>();
-            for(String entry: entries.split(",")){
-                subLabelSet.add(entry);
-            }
-            labelings.add(subLabelSet);
-        }
-
-        return labelings;
-    }
-
-    public static void paintRectangle(Img<IntType> img, long[] interval, int value){
+     public static void paintRectangle(Img<IntType> img, long[] interval, int value){
         IntervalView<IntType> intView = Views.interval(img, Intervals.createMinMax(interval));
         Cursor<IntType> cur = intView.cursor();
         while(cur.hasNext()){

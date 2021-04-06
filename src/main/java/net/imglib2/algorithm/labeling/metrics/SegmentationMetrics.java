@@ -74,7 +74,7 @@ public abstract class SegmentationMetrics {
         // compute cost matrix
         double[][] costMatrix = computeCostMatrix(confusionMatrix, threshold);
 
-        return computeMetrics(confusionMatrix, costMatrix, threshold);
+        return costMatrix.length == 0 ? 0 : computeMetrics(confusionMatrix, costMatrix, threshold);
     }
 
     /**
@@ -88,7 +88,7 @@ public abstract class SegmentationMetrics {
     protected abstract double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold);
 
     /**
-     * Compute the cost matrix, where each element eij is the score of the local metrics between
+     * Compute the cost matrix, where each element Eij is the score of the local metrics between
      * the ground-truth label i and the prediction label j. If the confusion matrix has more rows
      * than columns, then empty columns (= prediction labels) are added to the cost matrix to make
      * it square. Therefore, the cost matrix can have a different shape than the confusion matrix.
@@ -157,12 +157,12 @@ public abstract class SegmentationMetrics {
     protected class ConfusionMatrix<I extends IntegerType<I>, J extends IntegerType<J>> {
 
         // key = label, element = corresponding number of pixels
-        final private Map<I, Integer> gtHistogram;
-        final private Map<J, Integer> predHistogram;
+        final private Map<Integer, Integer> gtHistogram;
+        final private Map<Integer, Integer> predHistogram;
 
         // labels indexed by their position in the row/column of the confusion matrix
-        final private ArrayList<I> groundTruthLabels;
-        final private ArrayList<J> predictionLabels;
+        final private ArrayList<Integer> groundTruthLabels;
+        final private ArrayList<Integer> predictionLabels;
 
         // rows = ground-truth labels, columns = prediction labels
         final private int[][] confusionMatrix;
@@ -183,13 +183,13 @@ public abstract class SegmentationMetrics {
             final RandomAccess<J> cPD = prediction.randomAccess();
             while (cGT.hasNext()) {
                 // update gt histogram
-                I gtLabel = cGT.next();
+                Integer gtLabel = cGT.next().getInteger();
                 Integer count = gtHistogram.get(gtLabel);
                 gtHistogram.put(gtLabel, count == null ? 1 : count + 1);
 
                 // update prediction histogram
                 cPD.setPosition(cGT);
-                J pdLabel = cPD.get();
+                Integer pdLabel = cPD.get().getInteger();
                 count = predHistogram.get(pdLabel);
                 predHistogram.put(pdLabel, count == null ? 1 : count + 1);
             }
@@ -211,12 +211,15 @@ public abstract class SegmentationMetrics {
                 cGT.next();
                 cPD.setPosition(cGT);
 
-                I gtLabel = cGT.get();
-                J predLabel = cPD.get();
+                Integer gtLabel = cGT.get().getInteger();
+                Integer predLabel = cPD.get().getInteger();
 
                 int i = groundTruthLabels.indexOf(gtLabel);
                 int j = predictionLabels.indexOf(predLabel);
-                confusionMatrix[i][j] += 1;
+
+                // ignore background (absent from the lists)
+                if(i >= 0 && j >= 0)
+                    confusionMatrix[i][j] += 1;
             }
         }
 
@@ -226,7 +229,7 @@ public abstract class SegmentationMetrics {
          * @param labelIndex Index of the label
          * @return Label at index {@code labelIndex}
          */
-        private I getGroundTruthLabel(int labelIndex) {
+        private Integer getGroundTruthLabel(int labelIndex) {
             return groundTruthLabels.get(labelIndex);
         }
 
@@ -236,7 +239,7 @@ public abstract class SegmentationMetrics {
          * @param labelIndex Index of the label
          * @return Label at index {@code labelIndex}
          */
-        private J getPredictionIndex(int labelIndex) {
+        private Integer getPredictionIndex(int labelIndex) {
             return predictionLabels.get(labelIndex);
         }
 
@@ -248,7 +251,7 @@ public abstract class SegmentationMetrics {
          * @return Number of pixels.
          */
         public int getGroundTruthLabelSize(int labelIndex) {
-            I label = getGroundTruthLabel(labelIndex);
+            Integer label = getGroundTruthLabel(labelIndex);
             return gtHistogram.get(label);
         }
 
@@ -260,7 +263,7 @@ public abstract class SegmentationMetrics {
          * @return Number of pixels.
          */
         public int getPredictionLabelSize(int labelIndex) {
-            J label = getPredictionIndex(labelIndex);
+            Integer label = getPredictionIndex(labelIndex);
             return predHistogram.get(label);
         }
 
@@ -292,6 +295,8 @@ public abstract class SegmentationMetrics {
          * @return Number of prediction labels
          */
         public int getNumberPredictionLabels() {
+            if(getNumberGroundTruthLabels() == 0)
+                return 0;
             return confusionMatrix[0].length;
         }
     }
@@ -308,7 +313,7 @@ public abstract class SegmentationMetrics {
     public static <T, I extends IntegerType<I>> Set<I> getOccurringLabels(ImgLabeling<T, I> img) {
         Set<I> occurringValues = new HashSet<>();
         for (I pixel : Views.iterable(img.getIndexImg())) {
-            occurringValues.add(pixel);
+            occurringValues.add(pixel.copy());
         }
 
         return occurringValues;

@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.labeling.metrics;
+package net.imglib2.algorithm.labeling.metrics.assignment;
 
 import net.imglib2.algorithm.labeling.metrics.assignment.MunkresKuhnAlgorithm;
 import org.junit.Test;

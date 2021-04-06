@@ -59,7 +59,7 @@ public class SEGMetrics extends SegmentationMetrics {
         if(overlap >= threshold ){
             double predSize = cM.getPredictionLabelSize(jPred);
 
-            return intersection / (intersection + gtSize + predSize);
+            return intersection / (gtSize + predSize - intersection);
         } else {
             return 0.;
         }
