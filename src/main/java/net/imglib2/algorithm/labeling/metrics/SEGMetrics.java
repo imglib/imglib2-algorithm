@@ -18,7 +18,8 @@ public class SEGMetrics extends SegmentationMetrics {
 
     /**
      * Compute the metrics score as the sum of the IoU for all pairs of labels with at least
-     * {@code threshold} percent overlap, divided by the number of ground-truth labels.
+     * {@code threshold} percent overlap, divided by the number of ground-truth labels. If
+     * there is no ground-truth label, nor prediction label, the metrics score is 1.
      *
      * @param confusionMatrix Confusion matrix
      * @param costMatrix Cost matrix
@@ -27,17 +28,23 @@ public class SEGMetrics extends SegmentationMetrics {
      */
     @Override
     protected double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold) {
-        final int M = costMatrix.length;
-        final int N = costMatrix[0].length;
+        if(costMatrix.length != 0 && costMatrix[0].length != 0) {
+            final int M = costMatrix.length;
+            final int N = costMatrix[0].length;
 
-        double precision = 0.;
-        for(int i=0; i<M; i++){
-            for(int j=0; j<N; j++){
-                precision += costMatrix[i][j];
+            double precision = 0.;
+            for (int i = 0; i < M; i++) {
+                for (int j = 0; j < N; j++) {
+                    precision += costMatrix[i][j];
+                }
             }
-        }
 
-        return precision / (double) M;
+            return precision / (double) M;
+        } else if (confusionMatrix.getNumberGroundTruthLabels() == 0 &&
+                confusionMatrix.getNumberPredictionLabels() == 0){
+            return 1.;
+        }
+        return 0.;
     }
 
     /**

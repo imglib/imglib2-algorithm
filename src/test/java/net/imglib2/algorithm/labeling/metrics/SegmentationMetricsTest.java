@@ -1,9 +1,13 @@
 package net.imglib2.algorithm.labeling.metrics;
 
+import net.imglib2.Cursor;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.util.Intervals;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -80,8 +84,8 @@ public class SegmentationMetricsTest {
         int max_pred = 11;
 
         // paint
-        SegmentationHelper.paintRectangle(gt, min_gt, min_gt, max_gt, max_gt, 9);
-        SegmentationHelper.paintRectangle(pred, min_pred, min_pred, max_pred, max_pred, 5);
+        paintRectangle(gt, min_gt, min_gt, max_gt, max_gt, 9);
+        paintRectangle(pred, min_pred, min_pred, max_pred, max_pred, 5);
 
         // confusion metrics
         SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
@@ -105,8 +109,8 @@ public class SegmentationMetricsTest {
         int max_pred = 11;
 
         // paint
-        SegmentationHelper.paintRectangle(gt, min_gt, min_gt, max_gt, max_gt, 9);
-        SegmentationHelper.paintRectangle(pred, min_pred, min_pred, max_pred, max_pred, 5);
+        paintRectangle(gt, min_gt, min_gt, max_gt, max_gt, 9);
+        paintRectangle(pred, min_pred, min_pred, max_pred, max_pred, 5);
 
         // confusion metrics
         SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
@@ -127,8 +131,8 @@ public class SegmentationMetricsTest {
         int max_pred = 11;
 
         // paint
-        SegmentationHelper.paintRectangle(gt, min_gt, min_gt, max_gt, max_gt, 9);
-        SegmentationHelper.paintRectangle(pred, min_pred, min_pred, max_pred, max_pred, 5);
+        paintRectangle(gt, min_gt, min_gt, max_gt, max_gt, 9);
+        paintRectangle(pred, min_pred, min_pred, max_pred, max_pred, 5);
 
         // confusion metrics
         SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
@@ -148,8 +152,8 @@ public class SegmentationMetricsTest {
         int[] predRect = {3,4,11,5};
 
         // paint
-        SegmentationHelper.paintRectangle(gt, gtRect, 9);
-        SegmentationHelper.paintRectangle(pred, predRect, 5);
+        paintRectangle(gt, gtRect, 9);
+        paintRectangle(pred, predRect, 5);
 
         // confusion metrics
         SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
@@ -177,8 +181,8 @@ public class SegmentationMetricsTest {
         int[] predRect = {9,7,14,9};
 
         // paint
-        SegmentationHelper.paintRectangle(gt, gtRect, 9);
-        SegmentationHelper.paintRectangle(pred, predRect, 5);
+        paintRectangle(gt, gtRect, 9);
+        paintRectangle(pred, predRect, 5);
 
         // confusion metrics
         SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
@@ -198,7 +202,7 @@ public class SegmentationMetricsTest {
         int[] predRect = {9,7,14,9};
 
         // paint
-        SegmentationHelper.paintRectangle(pred, predRect, 5);
+        paintRectangle(pred, predRect, 5);
 
         // confusion metrics
         SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
@@ -218,7 +222,7 @@ public class SegmentationMetricsTest {
         int[] gtRect = {2,4,8,6};
 
         // paint
-        SegmentationHelper.paintRectangle(gt, gtRect, 9);
+        paintRectangle(gt, gtRect, 9);
 
         // confusion metrics
         SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
@@ -245,9 +249,9 @@ public class SegmentationMetricsTest {
         int predLabel = 5;
 
         // paint
-        SegmentationHelper.paintRectangle(gt, gtRect1, gtLabel1);
-        SegmentationHelper.paintRectangle(gt, gtRect2, gtLabel2);
-        SegmentationHelper.paintRectangle(pred, predRect, predLabel);
+        paintRectangle(gt, gtRect1, gtLabel1);
+        paintRectangle(gt, gtRect2, gtLabel2);
+        paintRectangle(pred, predRect, predLabel);
 
         // confusion metrics
         SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
@@ -279,9 +283,9 @@ public class SegmentationMetricsTest {
         int predLabel2 = 5;
 
         // paint
-        SegmentationHelper.paintRectangle(gt, gtRect, gtLabel);
-        SegmentationHelper.paintRectangle(pred, predRect1, predLabel1);
-        SegmentationHelper.paintRectangle(pred, predRect2, predLabel2);
+        paintRectangle(gt, gtRect, gtLabel);
+        paintRectangle(pred, predRect1, predLabel1);
+        paintRectangle(pred, predRect2, predLabel2);
 
         // confusion metrics
         SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
@@ -354,6 +358,24 @@ public class SegmentationMetricsTest {
         @Override
         protected double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold) {
             return 0;
+        }
+    }
+
+    public static void paintRectangle(Img<IntType> img, int[] rect, int value) {
+        long[] interval = {rect[0], rect[1], rect[2], rect[3]};
+        IntervalView<IntType> intView = Views.interval(img, Intervals.createMinMax(interval));
+        Cursor<IntType> cur = intView.cursor();
+        while (cur.hasNext()) {
+            cur.next().set(value);
+        }
+    }
+
+    public static void paintRectangle(Img<IntType> img, int min_x, int min_y, int max_x, int max_y, int value){
+        long[] interval = {min_x, min_y, max_x, max_y};
+        IntervalView<IntType> intView = Views.interval(img, Intervals.createMinMax(interval));
+        Cursor<IntType> cur = intView.cursor();
+        while(cur.hasNext()){
+            cur.next().set(value);
         }
     }
 }

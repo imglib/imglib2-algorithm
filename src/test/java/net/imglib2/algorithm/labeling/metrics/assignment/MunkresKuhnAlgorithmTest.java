@@ -1,12 +1,8 @@
 package net.imglib2.algorithm.labeling.metrics.assignment;
 
-import net.imglib2.algorithm.labeling.metrics.assignment.MunkresKuhnAlgorithm;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.stream.IntStream;
-
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class MunkresKuhnAlgorithmTest {

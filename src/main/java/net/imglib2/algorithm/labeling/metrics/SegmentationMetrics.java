@@ -74,7 +74,7 @@ public abstract class SegmentationMetrics {
         // compute cost matrix
         double[][] costMatrix = computeCostMatrix(confusionMatrix, threshold);
 
-        return (costMatrix.length == 0 || costMatrix[0].length == 0) ? 0 : computeMetrics(confusionMatrix, costMatrix, threshold);
+        return computeMetrics(confusionMatrix, costMatrix, threshold);
     }
 
     /**

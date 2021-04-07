@@ -12,15 +12,15 @@ public class AveragePrecision extends SegmentationMetrics {
     /**
      * Compute the metrics score by running a minimum cost linear assignment (Munkres-Kuhn)
      * to pair ground-truth and prediction labels based on the cost matrix, then by calculating
-     * the score as the Jaccard / IoU index:
+     * the score as the Jaccard index of the assignment:
      *
      * J = TP / (TP + FP + FN)
      *
-     * Where TP is the number of ground-truth labels matched with an absolute score greater or equal
-     * to the threshold, FP is the number of unassigned prediction labels and FN the number of
-     * unassigned ground-truth labels.
+     * Where TP is the number of ground-truth labels matched with a prediction label with an absolute
+     * score (IoU) greater or equal to the threshold, FP is the number of unassigned prediction labels
+     * and FN the number of unassigned ground-truth labels.
      *
-     * See average precision at threshold
+     * See description of the "average precision at a specific threshold"
      * https://www.kaggle.com/c/data-science-bowl-2018/overview/evaluation
      *
      * @param confusionMatrix Confusion matrix
@@ -48,6 +48,9 @@ public class AveragePrecision extends SegmentationMetrics {
             double fp = confusionMatrix.getNumberPredictionLabels() - tp;
 
             return (tp + fn + fp) > 0 ? tp / (tp + fn + fp) : 0;
+        } else if (confusionMatrix.getNumberGroundTruthLabels() == 0 &&
+                confusionMatrix.getNumberPredictionLabels() == 0){
+            return 1.;
         }
         return 0.;
     }
