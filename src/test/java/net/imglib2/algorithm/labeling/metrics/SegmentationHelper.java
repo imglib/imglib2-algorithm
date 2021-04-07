@@ -14,10 +14,11 @@ import java.util.Set;
 
 public class SegmentationHelper {
 
-     public static void paintRectangle(Img<IntType> img, long[] interval, int value){
+    public static void paintRectangle(Img<IntType> img, int[] rect, int value) {
+        long[] interval = {rect[0], rect[1], rect[2], rect[3]};
         IntervalView<IntType> intView = Views.interval(img, Intervals.createMinMax(interval));
         Cursor<IntType> cur = intView.cursor();
-        while(cur.hasNext()){
+        while (cur.hasNext()) {
             cur.next().set(value);
         }
     }

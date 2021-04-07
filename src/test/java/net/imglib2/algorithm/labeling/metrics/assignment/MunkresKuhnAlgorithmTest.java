@@ -50,6 +50,15 @@ public class MunkresKuhnAlgorithmTest {
             {3, 1}
     };
 
+    private final double[][] exampleSingleGTCost = {
+            {-0.2, 0}
+    };
+
+    private final int[][] exampleSingleAssignment = {
+            {0, 0}
+    };
+
+
     @Test
     public void testSimple(){
         int[][] mka = new MunkresKuhnAlgorithm().computeAssignments(exampleCost);
@@ -67,6 +76,14 @@ public class MunkresKuhnAlgorithmTest {
 
         assertTrue(compareAssignments(exampleAsymmetrical2Assignment, mka2));
     }
+
+    @Test
+    public void testSingleGT(){
+        int[][] mka = new MunkresKuhnAlgorithm().computeAssignments(exampleSingleGTCost);
+
+        assertTrue(compareAssignments(exampleSingleAssignment, mka));
+    }
+
 
     private boolean compareAssignments(int[][] groundTruth, int[][] prediction){
         boolean allOk = true;

@@ -1,8 +1,5 @@
 package net.imglib2.algorithm.labeling.metrics;
 
-import net.imglib2.algorithm.labeling.metrics.SEGMetrics;
-import net.imglib2.algorithm.labeling.metrics.SegmentationHelper;
-import net.imglib2.algorithm.labeling.metrics.SegmentationMetrics;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.labeling.ImgLabeling;
@@ -13,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
 
 public class SegmentationMetricsTest {
 
@@ -25,7 +24,6 @@ public class SegmentationMetricsTest {
             0, 0, 0, 3, 3,
             0, 0, 3, 3, 0
     };
-
 
     public static List<Set<String>> getLabelingSet(String[] labels){
         List< Set<String> > labelings = new ArrayList<>();
@@ -71,32 +69,285 @@ public class SegmentationMetricsTest {
     }
 
     @Test
-    public void testComputeLocalMetrics(){
-        long[] dims = {32,32};
-        final Img<IntType> groundtruth = ArrayImgs.ints( dims );
-        final Img<IntType> prediction = ArrayImgs.ints( dims );
+    public void testConfusionMatrixSizes(){
+        long[] dims = {15,15};
+        final Img<IntType> gt = ArrayImgs.ints( dims );
+        final Img<IntType> pred = ArrayImgs.ints( dims );
 
         int min_gt = 2;
-        int max_gt = 11;
-        int min_pred = min_gt+1;
-        int max_pred = max_gt+1;
-
-        int min_gt2 = 15;
-        int max_gt2 = 20;
-        int min_pred2 = min_gt+1;
-        int max_pred2 = max_gt+1;
+        int max_gt = 9;
+        int min_pred = 7;
+        int max_pred = 11;
 
         // paint
-        SegmentationHelper.paintRectangle(groundtruth, min_gt, min_gt, max_gt, max_gt, 9);
-        SegmentationHelper.paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 5);
-        SegmentationHelper.paintRectangle(groundtruth, min_gt2, min_gt2, max_gt2, max_gt2, 2);
-        SegmentationHelper.paintRectangle(prediction, min_pred2, min_pred2, max_pred2, max_pred2, 8);
+        SegmentationHelper.paintRectangle(gt, min_gt, min_gt, max_gt, max_gt, 9);
+        SegmentationHelper.paintRectangle(pred, min_pred, min_pred, max_pred, max_pred, 5);
 
-        
+        // confusion metrics
+        SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
 
+        // total sizes
+        int gt_size = getRectangleSize(min_gt, min_gt, max_gt, max_gt);
+        int pred_size = getRectangleSize(min_pred, min_pred, max_pred, max_pred);
+        assertEquals(gt_size, cm.getGroundTruthLabelSize(0));
+        assertEquals(pred_size, cm.getPredictionLabelSize(0));
     }
 
+    @Test
+    public void testConfusionMatrixNonIntersecting(){
+        long[] dims = {15,15};
+        final Img<IntType> gt = ArrayImgs.ints( dims );
+        final Img<IntType> pred = ArrayImgs.ints( dims );
 
+        int min_gt = 2;
+        int max_gt = 6;
+        int min_pred = 8;
+        int max_pred = 11;
+
+        // paint
+        SegmentationHelper.paintRectangle(gt, min_gt, min_gt, max_gt, max_gt, 9);
+        SegmentationHelper.paintRectangle(pred, min_pred, min_pred, max_pred, max_pred, 5);
+
+        // confusion metrics
+        SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
+
+        // intersection
+        assertEquals(0, cm.getIntersection(0, 0));
+    }
+
+    @Test
+    public void testConfusionMatrixIntersecting(){
+        long[] dims = {15,15};
+        final Img<IntType> gt = ArrayImgs.ints( dims );
+        final Img<IntType> pred = ArrayImgs.ints( dims );
+
+        int min_gt = 2;
+        int max_gt = 10;
+        int min_pred = 5;
+        int max_pred = 11;
+
+        // paint
+        SegmentationHelper.paintRectangle(gt, min_gt, min_gt, max_gt, max_gt, 9);
+        SegmentationHelper.paintRectangle(pred, min_pred, min_pred, max_pred, max_pred, 5);
+
+        // confusion metrics
+        SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
+
+        // intersection
+        int intersection = getIntersectionBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred);
+        assertEquals(intersection, cm.getIntersection(0, 0));
+    }
+
+    @Test
+    public void testComputeLocalMetricsOverlapping(){
+        long[] dims = {15, 15};
+        final Img<IntType> gt = ArrayImgs.ints( dims );
+        final Img<IntType> pred = ArrayImgs.ints( dims );
+
+        int[] gtRect = {2,4,8,6};
+        int[] predRect = {3,4,11,5};
+
+        // paint
+        SegmentationHelper.paintRectangle(gt, gtRect, 9);
+        SegmentationHelper.paintRectangle(pred, predRect, 5);
+
+        // confusion metrics
+        SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
+
+        // Metrics
+        SegmentationMetrics metrics = new DummyMetrics();
+
+        // values
+        double localIoU = getIoUBetweenRectangles(gtRect, predRect);
+
+        // local iou
+        for(double t = 0.; t < 1.; t+=0.05) {
+            double iou = -localIoU > t ? localIoU : 0;
+            assertEquals(iou, metrics.computeLocalMetrics(0, 0, cm, t), 0.00001);
+        }
+    }
+
+    @Test
+    public void testComputeLocalMetricsDisjoint(){
+        long[] dims = {15, 15};
+        final Img<IntType> gt = ArrayImgs.ints( dims );
+        final Img<IntType> pred = ArrayImgs.ints( dims );
+
+        int[] gtRect = {2,4,8,6};
+        int[] predRect = {9,7,14,9};
+
+        // paint
+        SegmentationHelper.paintRectangle(gt, gtRect, 9);
+        SegmentationHelper.paintRectangle(pred, predRect, 5);
+
+        // confusion metrics
+        SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
+
+        // Metrics
+        SegmentationMetrics metrics = new DummyMetrics();
+
+        assertEquals(0., metrics.computeLocalMetrics(0, 0, cm, 0.), 0.00001);
+    }
+
+    @Test
+    public void testComputeLocalMetricsEmptyGT(){
+        long[] dims = {15, 15};
+        final Img<IntType> gt = ArrayImgs.ints( dims );
+        final Img<IntType> pred = ArrayImgs.ints( dims );
+
+        int[] predRect = {9,7,14,9};
+
+        // paint
+        SegmentationHelper.paintRectangle(pred, predRect, 5);
+
+        // confusion metrics
+        SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
+
+        // Metrics
+        SegmentationMetrics metrics = new DummyMetrics();
+
+        assertEquals(0, metrics.computeLocalMetrics(0, 0, cm, 0.), 0.00001);
+    }
+
+    @Test
+    public void testComputeLocalMetricsEmptyPrediction(){
+        long[] dims = {15, 15};
+        final Img<IntType> gt = ArrayImgs.ints( dims );
+        final Img<IntType> pred = ArrayImgs.ints( dims );
+
+        int[] gtRect = {2,4,8,6};
+
+        // paint
+        SegmentationHelper.paintRectangle(gt, gtRect, 9);
+
+        // confusion metrics
+        SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
+
+        // Metrics
+        SegmentationMetrics metrics = new DummyMetrics();
+
+        assertEquals(0, metrics.computeLocalMetrics(0, 0, cm, 0.), 0.00001);
+    }
+
+    @Test
+    public void testComputeLocalMetricsWithMoreGTLabels(){
+        long[] dims = {15, 15};
+        final Img<IntType> gt = ArrayImgs.ints( dims );
+        final Img<IntType> pred = ArrayImgs.ints( dims );
+
+        int[] gtRect1 = {12,7,14,11};
+        int[] gtRect2 = {2,4,8,6};
+
+        int[] predRect = {3,4,11,5};
+
+        int gtLabel1 = 9;
+        int gtLabel2 = 5;
+        int predLabel = 5;
+
+        // paint
+        SegmentationHelper.paintRectangle(gt, gtRect1, gtLabel1);
+        SegmentationHelper.paintRectangle(gt, gtRect2, gtLabel2);
+        SegmentationHelper.paintRectangle(pred, predRect, predLabel);
+
+        // confusion metrics
+        SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
+
+        // Metrics
+        SegmentationMetrics metrics = new DummyMetrics();
+
+        // values
+        double localIoU1 = getIoUBetweenRectangles(gtRect1, predRect);
+        double localIoU2 = getIoUBetweenRectangles(gtRect2, predRect);
+
+        assertEquals(localIoU1, metrics.computeLocalMetrics(cm.getGroundTruthIndex(gtLabel1), cm.getPredictionIndex(predLabel), cm, 0.), 0.00001);
+        assertEquals(localIoU2, metrics.computeLocalMetrics(cm.getGroundTruthIndex(gtLabel2), cm.getPredictionIndex(predLabel), cm, 0.), 0.00001);
+    }
+
+    @Test
+    public void testComputeLocalMetricsWithMorePredLabels(){
+        long[] dims = {15, 15};
+        final Img<IntType> gt = ArrayImgs.ints( dims );
+        final Img<IntType> pred = ArrayImgs.ints( dims );
+
+        int[] gtRect = {2,4,8,6};
+
+        int[] predRect1 = {12,7,14,11};
+        int[] predRect2 = {3,4,11,5};
+
+        int gtLabel = 5;
+        int predLabel1 = 9;
+        int predLabel2 = 5;
+
+        // paint
+        SegmentationHelper.paintRectangle(gt, gtRect, gtLabel);
+        SegmentationHelper.paintRectangle(pred, predRect1, predLabel1);
+        SegmentationHelper.paintRectangle(pred, predRect2, predLabel2);
+
+        // confusion metrics
+        SegmentationMetrics.ConfusionMatrix<IntType, IntType> cm = new SegmentationMetrics.ConfusionMatrix<>(gt, pred);
+
+        // Metrics
+        SegmentationMetrics metrics = new DummyMetrics();
+
+        // values
+        double localIoU1 = getIoUBetweenRectangles(gtRect, predRect1);
+        double localIoU2 = getIoUBetweenRectangles(gtRect, predRect2);
+
+        assertEquals(localIoU1, metrics.computeLocalMetrics(cm.getGroundTruthIndex(gtLabel), cm.getPredictionIndex(predLabel1), cm, 0.), 0.00001);
+        assertEquals(localIoU2, metrics.computeLocalMetrics(cm.getGroundTruthIndex(gtLabel), cm.getPredictionIndex(predLabel2), cm, 0.), 0.00001);
+    }
+
+    private static int getIntersectionBetweenRectangles(int[] a_rect, int[] b_rect){
+        return getIntersectionBetweenRectangles(a_rect[0],a_rect[1],a_rect[2],a_rect[3],
+                b_rect[0],b_rect[1],b_rect[2],b_rect[3]);
+    }
+
+    private static int getIntersectionBetweenRectangles(int a_x_min, int a_y_min, int a_x_max, int a_y_max,
+                                                        int b_x_min, int b_y_min, int b_x_max, int b_y_max){
+        int left = Math.max(a_x_min, b_x_min);
+        int right = Math.min(a_x_max, b_x_max);
+        int bottom = Math.max(a_y_min, b_y_min);
+        int top = Math.min(a_y_max, b_y_max);
+
+        if(left < right && bottom < top){
+            int intersection = (right-left+1)*(top-bottom+1);
+
+            return intersection;
+        } else {
+            return 0;
+        }
+    }
+
+    private static int getRectangleSize(int[] rect){
+        return getRectangleSize(rect[0],rect[1],rect[2],rect[3]);
+    }
+
+    private static int getRectangleSize(int x_min, int y_min, int x_max, int y_max){
+        return (x_max-x_min+1)*(y_max-y_min+1);
+    }
+
+    private static double getIoUBetweenRectangles(int[] a_rect, int[] b_rect){
+        return getIoUBetweenRectangles(a_rect[0],a_rect[1],a_rect[2],a_rect[3],
+                b_rect[0],b_rect[1],b_rect[2],b_rect[3]);
+    }
+
+    private static double getIoUBetweenRectangles(int a_x_min, int a_y_min, int a_x_max, int a_y_max,
+                                                  int b_x_min, int b_y_min, int b_x_max, int b_y_max){
+        int left = Math.max(a_x_min, b_x_min);
+        int right = Math.min(a_x_max, b_x_max);
+        int bottom = Math.max(a_y_min, b_y_min);
+        int top = Math.min(a_y_max, b_y_max);
+
+        if(left < right && bottom < top){
+            double intersection = (double) (right-left+1)*(top-bottom+1);
+            double a_area = getRectangleSize(a_x_min, a_y_min, a_x_max, a_y_max);
+            double b_area = getRectangleSize(b_x_min, b_y_min, b_x_max, b_y_max);
+
+            return -intersection / (a_area + b_area - intersection);
+        } else {
+            return 0.;
+        }
+    }
 
     private class DummyMetrics extends SegmentationMetrics{
 

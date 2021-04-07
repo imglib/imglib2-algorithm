@@ -23,21 +23,6 @@ public class SEGMetricsTest {
     }
 
     @Test
-    public void testIdentical(){
-        long[] dims = {64,64};
-        final Img<IntType> img = ArrayImgs.ints( dims );
-        final Img<IntType> img2 = ArrayImgs.ints( dims );
-
-        // paint
-        SegmentationHelper.paintRectangle(img, 12, 28, 42, 56, 9);
-        SegmentationHelper.paintRectangle(img2, 12, 28, 42, 56, 2);
-        SegmentationHelper.paintRectangle(img, 43, 9, 52, 18, 12);
-        SegmentationHelper.paintRectangle(img2, 43, 9, 52, 18, 10);
-
-        assertEquals(1., new SEGMetrics().computeMetrics(img, img2, 0.5), 0.0001);
-    }
-
-    @Test
     public void testEmpty(){
         long[] dims = {64,64};
         final Img<IntType> nonEmpty = ArrayImgs.ints( dims );

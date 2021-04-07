@@ -148,42 +148,46 @@ public class MultiMetrics  extends SegmentationMetrics {
      */
     @Override
     protected double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold) {
-        metrics = new HashMap<>();
-        int tp = 0;
-
         // Note: MunkresKuhnAlgorithm, as implemented, does not change the cost matrix
         int[][] assignment = new MunkresKuhnAlgorithm().computeAssignments(costMatrix);
-        double sumIoU = 0;
-        for (int i = 0; i < assignment.length; i++) {
-            // cost matrix values were negative to obtain a minimum assignment problem
-            // we retain only "good" assignments
-            if(-costMatrix[ assignment[i][0] ][ assignment[i][1] ] >= threshold) {
-                tp++;
-                sumIoU += -costMatrix[ assignment[i][0] ][ assignment[i][1] ];
+
+        if(assignment.length !=0 && assignment[0].length != 0) {
+            int tp = 0;
+            double sumIoU = 0;
+            metrics = new HashMap<>();
+
+            for (int i = 0; i < assignment.length; i++) {
+                // cost matrix values were negative to obtain a minimum assignment problem
+                // we retain only "good" assignments, i.e. with -cost > threshold
+                if (-costMatrix[assignment[i][0]][assignment[i][1]] >= threshold) {
+                    tp++;
+                    sumIoU += -costMatrix[assignment[i][0]][assignment[i][1]];
+                }
             }
+
+            // compute all metrics
+            double fn = confusionMatrix.getNumberGroundTruthLabels() - tp;
+            double fp = confusionMatrix.getNumberPredictionLabels() - tp;
+            double meanMatched = sumIoU / tp;
+            double meanTrue = sumIoU / confusionMatrix.getNumberGroundTruthLabels();
+            double precision = (tp + fp) > 0 ? tp / (fp + fp) : 0;
+            double recall = (tp + fn) > 0 ? tp / (fp + fn) : 0;
+            double avPrecision = (tp + fn + fp) > 0 ? tp / (tp + fn + fp) : 0;
+            double f1 = (precision + recall) > 0 ? 2 * precision * recall / (precision + recall) : 0;
+
+            // add to the map
+            metrics.put(TP, (double) tp);
+            metrics.put(FP, fp);
+            metrics.put(FN, fn);
+            metrics.put(MEAN_MATCHED_IOU, meanMatched);
+            metrics.put(MEAN_TRUE_IOU, meanTrue);
+            metrics.put(PRECISION, precision);
+            metrics.put(RECALL, recall);
+            metrics.put(AV_PRECISION, avPrecision);
+            metrics.put(F1, f1);
+
+            return avPrecision;
         }
-
-        // compute all metrics
-        double fn = confusionMatrix.getNumberGroundTruthLabels() - tp;
-        double fp = confusionMatrix.getNumberPredictionLabels() - tp;
-        double meanMatched = sumIoU / tp;
-        double meanTrue = sumIoU / confusionMatrix.getNumberGroundTruthLabels();
-        double precision = (tp + fp) > 0 ? tp / (fp + fp) : 0;
-        double recall = (tp + fn) > 0 ? tp / (fp + fn) : 0;
-        double avPrecision = (tp + fn + fp) > 0 ? tp / (tp + fn + fp) : 0;
-        double f1 = (precision + recall) > 0 ? 2*precision*recall / (precision + recall) : 0;
-
-        // add to the map
-        metrics.put(TP, (double) tp);
-        metrics.put(FP, fp);
-        metrics.put(FN, fn);
-        metrics.put(MEAN_MATCHED_IOU, meanMatched);
-        metrics.put(MEAN_TRUE_IOU, meanTrue);
-        metrics.put(PRECISION, precision);
-        metrics.put(RECALL, recall);
-        metrics.put(AV_PRECISION, avPrecision);
-        metrics.put(F1, f1);
-
-        return avPrecision;
+        return 0.;
     }
 }

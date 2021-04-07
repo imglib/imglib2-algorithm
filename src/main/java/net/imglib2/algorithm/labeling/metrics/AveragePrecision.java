@@ -30,21 +30,25 @@ public class AveragePrecision extends SegmentationMetrics {
      */
     @Override
     protected double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold) {
-        int tp = 0;
-
         // Note: MunkresKuhnAlgorithm, as implemented, does not change the cost matrix
         int[][] assignment = new MunkresKuhnAlgorithm().computeAssignments(costMatrix);
-        for (int i = 0; i < assignment.length; i++) {
-            // cost matrix values were negative to obtain a minimum assignment problem
-            // we retain only "good" assignments
-            if(-costMatrix[ assignment[i][0] ][ assignment[i][1] ] >= threshold) {
-                tp++;
+
+        if(assignment.length !=0 && assignment[0].length != 0) {
+            int tp = 0;
+
+            for (int i = 0; i < assignment.length; i++) {
+                // cost matrix values were negative to obtain a minimum assignment problem
+                // we retain only "good" assignments
+                if (-costMatrix[assignment[i][0]][assignment[i][1]] >= threshold) {
+                    tp++;
+                }
             }
+
+            double fn = confusionMatrix.getNumberGroundTruthLabels() - tp;
+            double fp = confusionMatrix.getNumberPredictionLabels() - tp;
+
+            return (tp + fn + fp) > 0 ? tp / (tp + fn + fp) : 0;
         }
-
-        double fn = confusionMatrix.getNumberGroundTruthLabels() - tp;
-        double fp = confusionMatrix.getNumberPredictionLabels() - tp;
-
-        return (tp + fn + fp) > 0 ? tp / (tp + fn + fp) : 0;
+        return 0.;
     }
 }
