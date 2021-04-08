@@ -18,6 +18,9 @@ import java.util.*;
  */
 public abstract class SegmentationMetrics {
 
+    // TODO Everything was written with the assumption of 2D images, make the necessary checks
+    // TODO in case of higher dimensionality, either UnsupportedException, or at least extend to plane by plane of a 3D volume
+
     /**
      * Compute the global metrics score between labels from a ground-truth and a prediction image.
      * The labels are represented by the pixel values. A threshold can be applied to reject pairing
