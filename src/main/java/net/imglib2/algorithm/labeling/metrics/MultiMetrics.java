@@ -32,17 +32,37 @@ import java.util.Map;
  */
 public class MultiMetrics  extends SegmentationMetrics {
 
-    public static String AV_PRECISION = "Average precision";
-    public static String MEAN_MATCHED_IOU = "Mean matched IoU";
-    public static String MEAN_TRUE_IOU = "Mean true IoU";
-    public static String TP = "True positives";
-    public static String FP = "False positives";
-    public static String FN = "False negatives";
-    public static String PRECISION = "Precision";
-    public static String RECALL = "Recall";
-    public static String F1 = "F1";
+    public enum Metrics {
+        AV_PRECISION("Average precision"),
+        MEAN_MATCHED_IOU("Mean matched IoU"),
+        MEAN_TRUE_IOU("Mean true IoU"),
+        TP("True positives"),
+        FP("False positives"),
+        FN("False negatives"),
+        PRECISION("Precision"),
+        RECALL("Recall"),
+        F1("F1");
 
-    private Map<String, Double> metrics;
+        final private String name;
+
+        Metrics(String name) {
+            this.name = name;
+        }
+
+        public String getName(){
+            return name;
+        }
+    }
+
+    private Map<Metrics, Double> metricsResult;
+
+    private Metrics defaultMetrics = Metrics.AV_PRECISION;
+
+    public MultiMetrics(){}
+
+    public MultiMetrics(Metrics defaultMetrics){
+        this.defaultMetrics = defaultMetrics;
+    }
 
     /**
      * Compute all metrics score by running a minimum cost linear assignment (Munkres-Kuhn)
@@ -58,7 +78,7 @@ public class MultiMetrics  extends SegmentationMetrics {
      * @param <J> The pixel type of the prediction image
      * @return Metrics scores summary
      */
-    public <T, I extends IntegerType<I>, U, J extends IntegerType<J>> Map<String, Double> computeAllMetrics(
+    public <T, I extends IntegerType<I>, U, J extends IntegerType<J>> Map<Metrics, Double> computeAllMetrics(
             final ImgLabeling<T, I> groundTruth,
             final ImgLabeling<U, J> prediction,
             final double threshold
@@ -79,54 +99,29 @@ public class MultiMetrics  extends SegmentationMetrics {
      * @param threshold Threshold
      * @return Metrics scores summary
      */
-    public <I extends IntegerType<I>, J extends IntegerType<J>> Map<String, Double> computeAllMetrics(
+    public <I extends IntegerType<I>, J extends IntegerType<J>> Map<Metrics, Double> computeAllMetrics(
             RandomAccessibleInterval<I> groundTruth,
             RandomAccessibleInterval<J> prediction,
             double threshold) {
 
         this.computeMetrics(groundTruth, prediction, threshold);
 
-        return metrics;
-    }
-
-    /**
-     * Compute the specified metrics score by running a minimum cost linear assignment (Munkres-Kuhn)
-     * to pair ground-truth and prediction labels based on the cost matrix, then by calculating
-     * the metrics score.
-     *
-     * All other metrics can be accessed afterwards by calling {@see getMetrics(String)}.
-     *
-     * @param groundTruth Ground-truth image
-     * @param prediction Prediction image
-     * @param threshold Threshold
-     * @param metricsName Name of the metrics
-     * @return Metrics score
-     */
-    public <I extends IntegerType<I>, J extends IntegerType<J>> double computeMetrics(
-            RandomAccessibleInterval<I> groundTruth,
-            RandomAccessibleInterval<J> prediction,
-            double threshold,
-            String metricsName) {
-
-        this.computeMetrics(groundTruth, prediction, threshold);
-
-        return metrics.get(metricsName);
+        return metricsResult;
     }
 
     /**
      * Returns the score of the specified metrics. The metrics must have been computed beforehand
      * otherwise the methods will throw an exception.
      *
-     * @param metricsName Name of the metrics score to be returned
+     * @param metrics Metrics score to be returned
      * @return Metrics score
      */
-    public double getMetrics(String metricsName) {
-        if(metrics == null)
-            throw new NullPointerException("No metrics has been calculated yet");
+    public double getMetrics(Metrics metrics) {
+        if(metricsResult == null)
+            throw new NullPointerException("No metrics has been calculated yet.");
 
-        return metrics.get(metricsName);
+        return metricsResult.get(metrics);
     }
-
 
     /**
      * Compute all metrics score by running a minimum cost linear assignment (Munkres-Kuhn)
@@ -148,7 +143,7 @@ public class MultiMetrics  extends SegmentationMetrics {
      */
     @Override
     protected double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold) {
-        metrics = new HashMap<>();
+        metricsResult = new HashMap<>();
 
         // Note: MunkresKuhnAlgorithm, as implemented, does not change the cost matrix
         int[][] assignment = new MunkresKuhnAlgorithm().computeAssignments(costMatrix);
@@ -177,45 +172,41 @@ public class MultiMetrics  extends SegmentationMetrics {
             double f1 = (precision + recall) > 0 ? 2 * precision * recall / (precision + recall) : 0;
 
             // add to the map
-            metrics.put(TP, (double) tp);
-            metrics.put(FP, fp);
-            metrics.put(FN, fn);
-            metrics.put(MEAN_MATCHED_IOU, meanMatched);
-            metrics.put(MEAN_TRUE_IOU, meanTrue);
-            metrics.put(PRECISION, precision);
-            metrics.put(RECALL, recall);
-            metrics.put(AV_PRECISION, avPrecision);
-            metrics.put(F1, f1);
-
-            return avPrecision;
+            metricsResult.put(Metrics.TP, (double) tp);
+            metricsResult.put(Metrics.FP, fp);
+            metricsResult.put(Metrics.FN, fn);
+            metricsResult.put(Metrics.MEAN_MATCHED_IOU, meanMatched);
+            metricsResult.put(Metrics.MEAN_TRUE_IOU, meanTrue);
+            metricsResult.put(Metrics.PRECISION, precision);
+            metricsResult.put(Metrics.RECALL, recall);
+            metricsResult.put(Metrics.AV_PRECISION, avPrecision);
+            metricsResult.put(Metrics.F1, f1);
         } else if (confusionMatrix.getNumberGroundTruthLabels() == 0 &&
                 confusionMatrix.getNumberPredictionLabels() == 0){
-            metrics.put(TP, 0.);
-            metrics.put(FP, 0.);
-            metrics.put(FN, 0.);
-            metrics.put(MEAN_MATCHED_IOU, 1.);
-            metrics.put(MEAN_TRUE_IOU, 1.);
-            metrics.put(PRECISION, 1.);
-            metrics.put(RECALL, 1.);
-            metrics.put(AV_PRECISION, 1.);
-            metrics.put(F1, 1.);
-
-            return 1.;
+            metricsResult.put(Metrics.TP, 0.);
+            metricsResult.put(Metrics.FP, 0.);
+            metricsResult.put(Metrics.FN, 0.);
+            metricsResult.put(Metrics.MEAN_MATCHED_IOU, 1.);
+            metricsResult.put(Metrics.MEAN_TRUE_IOU, 1.);
+            metricsResult.put(Metrics.PRECISION, 1.);
+            metricsResult.put(Metrics.RECALL, 1.);
+            metricsResult.put(Metrics.AV_PRECISION, 1.);
+            metricsResult.put(Metrics.F1, 1.);
         }else {
             double fn = confusionMatrix.getNumberGroundTruthLabels();
             double fp = confusionMatrix.getNumberPredictionLabels();
 
-            metrics.put(TP, 0.);
-            metrics.put(FP, fp);
-            metrics.put(FN, fn);
-            metrics.put(MEAN_MATCHED_IOU, 0.);
-            metrics.put(MEAN_TRUE_IOU, 0.);
-            metrics.put(PRECISION, 0.);
-            metrics.put(RECALL, 0.);
-            metrics.put(AV_PRECISION, 0.);
-            metrics.put(F1, 0.);
-
-            return 0.;
+            metricsResult.put(Metrics.TP, 0.);
+            metricsResult.put(Metrics.FP, fp);
+            metricsResult.put(Metrics.FN, fn);
+            metricsResult.put(Metrics.MEAN_MATCHED_IOU, 0.);
+            metricsResult.put(Metrics.MEAN_TRUE_IOU, 0.);
+            metricsResult.put(Metrics.PRECISION, 0.);
+            metricsResult.put(Metrics.RECALL, 0.);
+            metricsResult.put(Metrics.AV_PRECISION, 0.);
+            metricsResult.put(Metrics.F1, 0.);
         }
+
+        return metricsResult.get(defaultMetrics);
     }
 }

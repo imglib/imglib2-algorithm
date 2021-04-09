@@ -1,6 +1,8 @@
 package net.imglib2.algorithm.labeling.metrics;
 
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.labeling.metrics.assignment.MunkresKuhnAlgorithm;
+import net.imglib2.type.numeric.IntegerType;
 
 /**
  * Computes the average precision at a certain threshold, corresponding to the Jaccard index (or
@@ -8,6 +10,27 @@ import net.imglib2.algorithm.labeling.metrics.assignment.MunkresKuhnAlgorithm;
  * labels.
  */
 public class AveragePrecision extends SegmentationMetrics {
+
+    /**
+     * Compute the average precision score between labels from a ground-truth and a prediction image in
+     * which the labels are represented by the pixel values. The threshold is the minimum IoU between
+     * two labels for them to be considered a potential match.
+     *
+     * @param groundTruth Ground-truth image
+     * @param prediction  Prediction image
+     * @param threshold   IoU threshold to be considered a potential label pair
+     * @param <I>         The pixel type of the ground-truth image
+     * @param <J>         The pixel type of the prediction image
+     * @return Metrics score
+     */
+    @Override
+    protected <I extends IntegerType<I>, J extends IntegerType<J>> double computeMetrics(
+            RandomAccessibleInterval<I> groundTruth,
+            RandomAccessibleInterval<J> prediction,
+            double threshold) {
+        return super.computeMetrics(groundTruth, prediction, threshold);
+    }
+
 
     /**
      * Compute the metrics score by running a minimum cost linear assignment (Munkres-Kuhn)
@@ -39,7 +62,7 @@ public class AveragePrecision extends SegmentationMetrics {
             for (int i = 0; i < assignment.length; i++) {
                 // cost matrix values were negative to obtain a minimum assignment problem
                 // we retain only "good" assignments
-                if (-costMatrix[assignment[i][0]][assignment[i][1]] >= threshold) {
+                if (-costMatrix[ assignment[i][0] ][ assignment[i][1] ] >= threshold) {
                     tp++;
                 }
             }

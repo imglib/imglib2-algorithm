@@ -18,9 +18,11 @@ import java.util.*;
  */
 public abstract class SegmentationMetrics {
 
-    // TODO Everything was written with the assumption of 2D images, make the necessary checks
-    // TODO in case of higher dimensionality, either UnsupportedException, or at least extend to plane by plane of a 3D volume
+    // TODO in child classes override computeMetrics and call super, then write javadoc to clarify use of threshold
 
+    // TODO write in doc about threshold == 0 and consequences to the cost matrix
+
+    // TODO try turning this class into a static helper class and call from the former child
     /**
      * Compute the global metrics score between labels from a ground-truth and a prediction image.
      * The labels are represented by the pixel values. A threshold can be applied to reject pairing
@@ -37,7 +39,7 @@ public abstract class SegmentationMetrics {
      * @param <J>         The pixel type of the prediction image
      * @return Metrics score
      */
-    public <T, I extends IntegerType<I>, U, J extends IntegerType<J>> double computeMetrics(
+    protected <T, I extends IntegerType<I>, U, J extends IntegerType<J>> double computeMetrics(
             final ImgLabeling<T, I> groundTruth,
             final ImgLabeling<U, J> prediction,
             final double threshold
@@ -49,18 +51,18 @@ public abstract class SegmentationMetrics {
     }
 
     /**
-     * Compute the global metrics score between labels from a ground-truth and a prediction image.
-     * The labels are represented by the pixel values. A threshold can be applied to reject pairing
-     * between labels below a certain relative score.
+     * Compute the global metrics score between labels from a ground-truth and a prediction image in
+     * which the labels are represented by the pixel values. The threshold can be used to reject pairing
+     * between labels.
      *
      * @param groundTruth Ground-truth image
      * @param prediction  Prediction image
-     * @param threshold   Threshold at which
+     * @param threshold   Threshold at which pairing between labels is accepted
      * @param <I>         The pixel type of the ground-truth image
      * @param <J>         The pixel type of the prediction image
      * @return Metrics score
      */
-    public <I extends IntegerType<I>, J extends IntegerType<J>> double computeMetrics(
+    protected <I extends IntegerType<I>, J extends IntegerType<J>> double computeMetrics(
             RandomAccessibleInterval<I> groundTruth,
             RandomAccessibleInterval<J> prediction,
             double threshold) {
@@ -189,19 +191,25 @@ public abstract class SegmentationMetrics {
             while (cGT.hasNext()) {
                 // update gt histogram
                 Integer gtLabel = cGT.next().getInteger();
+
+                // TODO simplify the two lines by using compute()
+                //gtHistogram.compute(gtLabel)
+
                 Integer count = gtHistogram.get(gtLabel);
                 gtHistogram.put(gtLabel, count == null ? 1 : count + 1);
 
                 // update prediction histogram
                 cPD.setPosition(cGT);
+
+                // TODO same here
                 Integer pdLabel = cPD.get().getInteger();
                 count = predHistogram.get(pdLabel);
                 predHistogram.put(pdLabel, count == null ? 1 : count + 1);
             }
 
             // remove 0 / background
-            if (gtHistogram.containsKey(0)) gtHistogram.remove(0);
-            if (predHistogram.containsKey(0)) predHistogram.remove(0);
+            gtHistogram.remove(0);
+            predHistogram.remove(0);
 
             // prepare confusion matrix
             confusionMatrix = new int[gtHistogram.size()][predHistogram.size()];
@@ -209,6 +217,10 @@ public abstract class SegmentationMetrics {
             // list of labels value, index corresponds to the confusion matrix indices
             groundTruthLabels = new ArrayList<>(gtHistogram.keySet());
             predictionLabels = new ArrayList<>(predHistogram.keySet());
+            // TODO precompute List.indexOf() and keep it in memory
+
+            // TODO is there a way to have the histogram indexed the same way than the matrices, so that we can
+            // forget about the look up list altogether?
 
             // populate confusion matrix
             cGT.reset();
@@ -216,8 +228,8 @@ public abstract class SegmentationMetrics {
                 cGT.next();
                 cPD.setPosition(cGT);
 
-                Integer gtLabel = cGT.get().getInteger();
-                Integer predLabel = cPD.get().getInteger();
+                int gtLabel = cGT.get().getInteger();
+                int predLabel = cPD.get().getInteger();
 
                 int i = groundTruthLabels.indexOf(gtLabel);
                 int j = predictionLabels.indexOf(predLabel);
@@ -344,7 +356,7 @@ public abstract class SegmentationMetrics {
      * @param <I> The pixel type of the backing image
      * @return Set of occurring labels
      */
-    public static <T, I extends IntegerType<I>> Set<I> getOccurringLabels(ImgLabeling<T, I> img) {
+    private static <T, I extends IntegerType<I>> Set<I> getOccurringLabelSets(ImgLabeling<T, I> img) {
         Set<I> occurringValues = new HashSet<>();
         for (I pixel : Views.iterable(img.getIndexImg())) {
             occurringValues.add(pixel.copy());
@@ -364,7 +376,7 @@ public abstract class SegmentationMetrics {
      */
     public static <T, I extends IntegerType<I>> boolean hasIntersectingLabels(ImgLabeling<T, I> img) {
         List<Set<T>> labelSets = img.getMapping().getLabelSets();
-        for (I i : getOccurringLabels(img)) {
+        for (I i : getOccurringLabelSets(img)) {
             if (labelSets.get(i.getInteger()).size() > 1) {
                 return true;
             }

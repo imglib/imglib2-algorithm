@@ -98,4 +98,6 @@ public class MunkresKuhnAlgorithmTest {
 
         return allOk;
     }
+
+    // TODO show that cost matrix {{cost}} gives empty assignemnt
 }
