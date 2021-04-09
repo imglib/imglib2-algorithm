@@ -18,11 +18,6 @@ import java.util.*;
  */
 public abstract class SegmentationMetrics {
 
-    // TODO in child classes override computeMetrics and call super, then write javadoc to clarify use of threshold
-
-    // TODO write in doc about threshold == 0 and consequences to the cost matrix
-
-    // TODO try turning this class into a static helper class and call from the former child
     /**
      * Compute the global metrics score between labels from a ground-truth and a prediction image.
      * The labels are represented by the pixel values. A threshold can be applied to reject pairing
@@ -190,21 +185,11 @@ public abstract class SegmentationMetrics {
             final RandomAccess<J> cPD = prediction.randomAccess();
             while (cGT.hasNext()) {
                 // update gt histogram
-                Integer gtLabel = cGT.next().getInteger();
-
-                // TODO simplify the two lines by using compute()
-                //gtHistogram.compute(gtLabel)
-
-                Integer count = gtHistogram.get(gtLabel);
-                gtHistogram.put(gtLabel, count == null ? 1 : count + 1);
+                gtHistogram.compute(cGT.next().getInteger(), (k, v) -> v == null ? 1 : v+1);
 
                 // update prediction histogram
                 cPD.setPosition(cGT);
-
-                // TODO same here
-                Integer pdLabel = cPD.get().getInteger();
-                count = predHistogram.get(pdLabel);
-                predHistogram.put(pdLabel, count == null ? 1 : count + 1);
+                gtHistogram.compute(cPD.get().getInteger(), (k, v) -> v == null ? 1 : v+1);
             }
 
             // remove 0 / background
@@ -217,6 +202,7 @@ public abstract class SegmentationMetrics {
             // list of labels value, index corresponds to the confusion matrix indices
             groundTruthLabels = new ArrayList<>(gtHistogram.keySet());
             predictionLabels = new ArrayList<>(predHistogram.keySet());
+
             // TODO precompute List.indexOf() and keep it in memory
 
             // TODO is there a way to have the histogram indexed the same way than the matrices, so that we can
