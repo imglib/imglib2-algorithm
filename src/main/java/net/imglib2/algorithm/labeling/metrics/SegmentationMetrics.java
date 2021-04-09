@@ -189,7 +189,7 @@ public abstract class SegmentationMetrics {
 
                 // update prediction histogram
                 cPD.setPosition(cGT);
-                gtHistogram.compute(cPD.get().getInteger(), (k, v) -> v == null ? 1 : v+1);
+                predHistogram.compute(cPD.get().getInteger(), (k, v) -> v == null ? 1 : v+1);
             }
 
             // remove 0 / background
