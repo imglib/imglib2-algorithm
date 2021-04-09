@@ -158,13 +158,9 @@ public abstract class SegmentationMetrics {
      */
     protected static class ConfusionMatrix<I extends IntegerType<I>, J extends IntegerType<J>> {
 
-        // key = label, element = corresponding number of pixels
-        final private Map<Integer, Integer> gtHistogram;
-        final private Map<Integer, Integer> predHistogram;
-
-        // labels indexed by their position in the row/column of the confusion matrix
-        final private ArrayList<Integer> groundTruthLabels;
-        final private ArrayList<Integer> predictionLabels;
+        // key = index in the matrix, element = corresponding number of pixels
+        final private ArrayList<Integer> gtCMHistogram;
+        final private ArrayList<Integer> predCMHistogram;
 
         // rows = ground-truth labels, columns = prediction labels
         final private int[][] confusionMatrix;
@@ -177,9 +173,9 @@ public abstract class SegmentationMetrics {
          */
         public ConfusionMatrix(RandomAccessibleInterval<I> groundTruth, RandomAccessibleInterval<J> prediction) {
 
-            // histograms label / number of pixels
-            gtHistogram = new LinkedHashMap<>();
-            predHistogram = new LinkedHashMap<>();
+            // histograms: label / number of pixels
+            final Map<Integer, Integer> gtHistogram = new LinkedHashMap<>();
+            final Map<Integer, Integer> predHistogram = new LinkedHashMap<>();
 
             final Cursor<I> cGT = Views.iterable(groundTruth).localizingCursor();
             final RandomAccess<J> cPD = prediction.randomAccess();
@@ -199,14 +195,18 @@ public abstract class SegmentationMetrics {
             // prepare confusion matrix
             confusionMatrix = new int[gtHistogram.size()][predHistogram.size()];
 
-            // list of labels value, index corresponds to the confusion matrix indices
-            groundTruthLabels = new ArrayList<>(gtHistogram.keySet());
-            predictionLabels = new ArrayList<>(predHistogram.keySet());
+            // maps: labels value / confusion matrix indices
+            final LinkedHashMap<Integer, Integer> groundTruthLUT = new LinkedHashMap<>();
+            gtHistogram.keySet().forEach( key -> groundTruthLUT.put(key, groundTruthLUT.size() ));
 
-            // TODO precompute List.indexOf() and keep it in memory
+            final LinkedHashMap<Integer, Integer> predictionLUT = new LinkedHashMap<>();
+            predHistogram.keySet().forEach( key -> predictionLUT.put(key, predictionLUT.size() ));
 
-            // TODO is there a way to have the histogram indexed the same way than the matrices, so that we can
-            // forget about the look up list altogether?
+            // histograms: matrix index / number of pixels
+            // LikedHashMap ensures that the order is respected and we will traverse the images in the same way
+            // we will build the confusion matrix
+            gtCMHistogram = new ArrayList<>(gtHistogram.values());
+            predCMHistogram = new ArrayList<>(predHistogram.values());
 
             // populate confusion matrix
             cGT.reset();
@@ -217,57 +217,14 @@ public abstract class SegmentationMetrics {
                 int gtLabel = cGT.get().getInteger();
                 int predLabel = cPD.get().getInteger();
 
-                int i = groundTruthLabels.indexOf(gtLabel);
-                int j = predictionLabels.indexOf(predLabel);
-
                 // ignore background (absent from the lists)
-                if(i >= 0 && j >= 0)
+                if(gtLabel > 0 && predLabel > 0) {
+                    int i = groundTruthLUT.get(gtLabel);
+                    int j = predictionLUT.get(predLabel);
+
                     confusionMatrix[i][j] += 1;
+                }
             }
-        }
-
-        /**
-         * Return the ground-truth label at index {@code labelIndex}.
-         *
-         * @param labelIndex Index of the label
-         * @return Label at index {@code labelIndex} or -1 if {@code labelIndex} is out of bonds
-         */
-        public Integer getGroundTruthLabel(int labelIndex) {
-            if(labelIndex < 0 || labelIndex >= groundTruthLabels.size())
-                return -1;
-            return groundTruthLabels.get(labelIndex);
-        }
-
-        /**
-         * Return the prediction label at index {@code labelIndex}.
-         *
-         * @param labelIndex Index of the label
-         * @return Label at index {@code labelIndex}  or -1 if {@code labelIndex} is out of bonds
-         */
-        public Integer getPredictionLabel(int labelIndex) {
-            if(labelIndex < 0 || labelIndex >= predictionLabels.size())
-                return -1;
-            return predictionLabels.get(labelIndex);
-        }
-
-        /**
-         * Return the index of the ground-truth label {@code label}.
-         *
-         * @param label Label value
-         * @return Index of {@code label}
-         */
-        public int getGroundTruthIndex(int label) {
-            return groundTruthLabels.indexOf(label);
-        }
-
-        /**
-         * Return the index of the prediction label {@code label}.
-         *
-         * @param label Label value
-         * @return Index of {@code label}
-         */
-        public int getPredictionIndex(int label) {
-            return predictionLabels.indexOf(label);
         }
 
         /**
@@ -275,14 +232,13 @@ public abstract class SegmentationMetrics {
          * label indexed by {@code labelIndex}.
          *
          * @param labelIndex Index of the label
-         * @return Number of pixels.
+         * @return Number of pixels, or -1 if the index is out of bounds
          */
         public int getGroundTruthLabelSize(int labelIndex) {
-            Integer label = getGroundTruthLabel(labelIndex);
-            if(label.equals(-1))
-                return 0;
+            if(labelIndex < 0 || labelIndex >= gtCMHistogram.size())
+                return -1;
 
-            return gtHistogram.get(label);
+            return gtCMHistogram.get(labelIndex);
         }
 
         /**
@@ -290,14 +246,13 @@ public abstract class SegmentationMetrics {
          * label indexed by {@code labelIndex}.
          *
          * @param labelIndex Index of the label
-         * @return Number of pixels.
+         * @return Number of pixels, or -1 if the index is out of bounds
          */
         public int getPredictionLabelSize(int labelIndex) {
-            Integer label = getPredictionLabel(labelIndex);
-            if(label.equals(-1))
-                return 0;
+            if(labelIndex < 0 || labelIndex >= predCMHistogram.size())
+                return -1;
 
-            return predHistogram.get(label);
+            return predCMHistogram.get(labelIndex);
         }
 
         /**
@@ -322,7 +277,7 @@ public abstract class SegmentationMetrics {
          * @return Number of ground-truth labels
          */
         public int getNumberGroundTruthLabels() {
-            return gtHistogram.size();
+            return gtCMHistogram.size();
         }
 
         /**
@@ -330,7 +285,7 @@ public abstract class SegmentationMetrics {
          *
          * @return Number of prediction labels
          */
-        public int getNumberPredictionLabels() { return predHistogram.size(); }
+        public int getNumberPredictionLabels() { return predCMHistogram.size(); }
     }
 
     /**

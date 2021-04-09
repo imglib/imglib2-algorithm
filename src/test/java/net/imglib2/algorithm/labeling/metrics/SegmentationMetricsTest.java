@@ -263,8 +263,9 @@ public class SegmentationMetricsTest {
         double localIoU1 = getIoUBetweenRectangles(gtRect1, predRect);
         double localIoU2 = getIoUBetweenRectangles(gtRect2, predRect);
 
-        assertEquals(localIoU1, metrics.computeLocalMetrics(cm.getGroundTruthIndex(gtLabel1), cm.getPredictionIndex(predLabel), cm, 0.), 0.00001);
-        assertEquals(localIoU2, metrics.computeLocalMetrics(cm.getGroundTruthIndex(gtLabel2), cm.getPredictionIndex(predLabel), cm, 0.), 0.00001);
+        // gtLabel2 encountered first, gtLabel1 second
+        assertEquals(localIoU1, metrics.computeLocalMetrics(1, 0, cm, 0.), 0.00001);
+        assertEquals(localIoU2, metrics.computeLocalMetrics(0, 0, cm, 0.), 0.00001);
     }
 
     @Test
@@ -297,8 +298,9 @@ public class SegmentationMetricsTest {
         double localIoU1 = getIoUBetweenRectangles(gtRect, predRect1);
         double localIoU2 = getIoUBetweenRectangles(gtRect, predRect2);
 
-        assertEquals(localIoU1, metrics.computeLocalMetrics(cm.getGroundTruthIndex(gtLabel), cm.getPredictionIndex(predLabel1), cm, 0.), 0.00001);
-        assertEquals(localIoU2, metrics.computeLocalMetrics(cm.getGroundTruthIndex(gtLabel), cm.getPredictionIndex(predLabel2), cm, 0.), 0.00001);
+        // predLabel2 encountered first, predLabel1 second
+        assertEquals(localIoU1, metrics.computeLocalMetrics(0, 1, cm, 0.), 0.00001);
+        assertEquals(localIoU2, metrics.computeLocalMetrics(0, 0, cm, 0.), 0.00001);
     }
 
     private static int getIntersectionBetweenRectangles(int[] a_rect, int[] b_rect){
