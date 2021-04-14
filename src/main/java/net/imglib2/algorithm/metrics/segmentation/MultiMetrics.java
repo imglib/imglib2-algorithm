@@ -1,7 +1,7 @@
-package net.imglib2.algorithm.labeling.metrics;
+package net.imglib2.algorithm.metrics.segmentation;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.labeling.metrics.assignment.MunkresKuhnAlgorithm;
+import net.imglib2.algorithm.metrics.segmentation.assignment.MunkresKuhnAlgorithm;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.IntegerType;
 
@@ -24,13 +24,16 @@ import java.util.Map;
  * Mean matched IoU = sum of the matched labels score / TP
  * Mean true IoU = sum of the matched labels score / number of ground-truth labels
  *
+ * EXAMPLE USAGE // TODO
+ *
+ *
  * Adapted from matching.py
  * in https://github.com/stardist/stardist
  * by Uwe Schmidt and Martin Weigert
  *
  * @author Joran Deschamps
  */
-public class MultiMetrics  extends SegmentationMetrics {
+public class MultiMetrics extends AveragePrecision {
 
     public enum Metrics {
         AV_PRECISION("Average precision"),
@@ -56,37 +59,33 @@ public class MultiMetrics  extends SegmentationMetrics {
 
     private Map<Metrics, Double> metricsResult;
 
-    private Metrics defaultMetrics = Metrics.AV_PRECISION;
+    private Metrics defaultMetrics;
 
-    public MultiMetrics(){}
+    public MultiMetrics(){
+        this(Metrics.AV_PRECISION, 0.5);
+    }
 
-    public MultiMetrics(Metrics defaultMetrics){
+    public MultiMetrics(double defaultThreshold){
+        this(Metrics.AV_PRECISION, defaultThreshold);
+    }
+
+    public MultiMetrics(Metrics defaultMetrics, double defaultThreshold){
+        super(defaultThreshold);
         this.defaultMetrics = defaultMetrics;
     }
 
-    /**
-     * Compute all metrics score by running a minimum cost linear assignment (Munkres-Kuhn)
-     * to pair ground-truth and prediction labels based on the cost matrix, then by calculating
-     * the metrics scores.
-     *
-     * @param groundTruth Ground-truth image
-     * @param prediction Prediction image
-     * @param threshold Threshold
-     * @param <T> The type of labels assigned to the ground-truth pixels
-     * @param <I> The pixel type of the ground-truth image
-     * @param <U>The type of labels assigned to the prediction pixels
-     * @param <J> The pixel type of the prediction image
-     * @return Metrics scores summary
-     */
-    public <T, I extends IntegerType<I>, U, J extends IntegerType<J>> Map<Metrics, Double> computeAllMetrics(
-            final ImgLabeling<T, I> groundTruth,
-            final ImgLabeling<U, J> prediction,
-            final double threshold
-    ) {
-        if(hasIntersectingLabels(groundTruth) || hasIntersectingLabels(prediction))
-            throw new UnsupportedOperationException("ImgLabeling with intersecting labels are not supported.");
+    public Metrics getCurrentMetricsType() {
+        return defaultMetrics;
+    }
 
-        return computeAllMetrics(groundTruth.getIndexImg(), prediction.getIndexImg(), threshold);
+    public MultiMetrics setMetrics(Metrics metrics){
+        this.defaultMetrics = metrics;
+        return this;
+    }
+
+    @Override
+    public MultiMetrics setThreshold(double threshold) {
+        return (MultiMetrics) super.setThreshold(threshold);
     }
 
     /**
@@ -96,15 +95,13 @@ public class MultiMetrics  extends SegmentationMetrics {
      *
      * @param groundTruth Ground-truth image
      * @param prediction Prediction image
-     * @param threshold Threshold
      * @return Metrics scores summary
      */
     public <I extends IntegerType<I>, J extends IntegerType<J>> Map<Metrics, Double> computeAllMetrics(
             RandomAccessibleInterval<I> groundTruth,
-            RandomAccessibleInterval<J> prediction,
-            double threshold) {
+            RandomAccessibleInterval<J> prediction) {
 
-        this.computeMetrics(groundTruth, prediction, threshold);
+        this.computeMetrics(groundTruth, prediction);
 
         return metricsResult;
     }
@@ -138,11 +135,10 @@ public class MultiMetrics  extends SegmentationMetrics {
      *
      * @param confusionMatrix Confusion matrix
      * @param costMatrix Cost matrix
-     * @param threshold Threshold
      * @return Metrics score
      */
     @Override
-    protected double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold) {
+    protected double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix) {
         metricsResult = new HashMap<>();
 
         // Note: MunkresKuhnAlgorithm, as implemented, does not change the cost matrix
@@ -155,7 +151,7 @@ public class MultiMetrics  extends SegmentationMetrics {
             for (int i = 0; i < assignment.length; i++) {
                 // cost matrix values were negative to obtain a minimum assignment problem
                 // we retain only "good" assignments, i.e. with -cost > threshold
-                if (-costMatrix[assignment[i][0]][assignment[i][1]] >= threshold) {
+                if (-costMatrix[assignment[i][0]][assignment[i][1]] >= getThreshold()) {
                     tp++;
                     sumIoU += -costMatrix[assignment[i][0]][assignment[i][1]];
                 }

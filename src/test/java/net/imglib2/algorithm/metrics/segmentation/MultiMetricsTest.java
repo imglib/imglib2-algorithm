@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.labeling.metrics;
+package net.imglib2.algorithm.metrics.segmentation;
 
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
@@ -12,45 +12,21 @@ import static org.junit.Assert.assertEquals;
 
 public class MultiMetricsTest {
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testException() {
-        final Img<IntType> img = ArrayImgs.ints(SegmentationMetricsTest.exampleIndexArray,
-                SegmentationMetricsTest.exampleIndexArrayDims);
-        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img,
-                SegmentationMetricsTest.getLabelingSet(SegmentationMetricsTest.exampleIntersectingLabels));
-        final ImgLabeling<String, IntType> labeling2 = ImgLabeling.fromImageAndLabelSets(img,
-                SegmentationMetricsTest.getLabelingSet(SegmentationMetricsTest.exampleNonIntersectingLabels));
-
-        new MultiMetrics().computeMetrics(labeling, labeling2, 0.5);
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void testException2() {
-        final Img<IntType> img = ArrayImgs.ints(SegmentationMetricsTest.exampleIndexArray,
-                SegmentationMetricsTest.exampleIndexArrayDims);
-        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img,
-                SegmentationMetricsTest.getLabelingSet(SegmentationMetricsTest.exampleNonIntersectingLabels));
-        final ImgLabeling<String, IntType> labeling2 = ImgLabeling.fromImageAndLabelSets(img,
-                SegmentationMetricsTest.getLabelingSet(SegmentationMetricsTest.exampleIntersectingLabels));
-
-        new MultiMetrics().computeMetrics(labeling, labeling2, 0.5);
-    }
-
     @Test
     public void testIdentity() {
         long[] dims = {64, 64};
         final Img<IntType> img = ArrayImgs.ints(dims);
 
         // paint
-        SegmentationMetricsTest.paintRectangle(img, 12, 28, 42, 56, 9);
-        SegmentationMetricsTest.paintRectangle(img, 43, 9, 52, 18, 12);
+        SegmentationMetricsTestHelper.paintRectangle(img, 12, 28, 42, 56, 9);
+        SegmentationMetricsTestHelper.paintRectangle(img, 43, 9, 52, 18, 12);
 
         // default is the average precision
-        assertEquals(1., new MultiMetrics().computeMetrics(img, img, 0.5), 0.0001);
+        assertEquals(1., new MultiMetrics(0.5).computeMetrics(img, img), 0.0001);
 
         // get metrics
-        MultiMetrics mm = new MultiMetrics();
-        mm.computeMetrics(img, img, 0.5);
+        MultiMetrics mm = new MultiMetrics(0.5);
+        mm.computeMetrics(img, img);
 
         assertEquals(2., mm.getMetrics(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(0., mm.getMetrics(MultiMetrics.Metrics.FP), 0.0001);
@@ -63,18 +39,18 @@ public class MultiMetricsTest {
         assertEquals(1., mm.getMetrics(MultiMetrics.Metrics.F1), 0.0001);
 
         // call with a specific metrics
-        assertEquals(2., new MultiMetrics(MultiMetrics.Metrics.TP).computeMetrics(img, img, 0.5), 0.0001);
-        assertEquals(0., new MultiMetrics(MultiMetrics.Metrics.FP).computeMetrics(img, img, 0.5), 0.0001);
-        assertEquals(0., new MultiMetrics(MultiMetrics.Metrics.FN).computeMetrics(img, img, 0.5), 0.0001);
-        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.AV_PRECISION).computeMetrics(img, img, 0.5), 0.0001);
-        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.MEAN_MATCHED_IOU).computeMetrics(img, img, 0.5), 0.0001);
-        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.MEAN_TRUE_IOU).computeMetrics(img, img, 0.5), 0.0001);
-        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.PRECISION).computeMetrics(img, img, 0.5), 0.0001);
-        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.RECALL).computeMetrics(img, img, 0.5), 0.0001);
-        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.F1).computeMetrics(img, img, 0.5), 0.0001);
+        assertEquals(2., new MultiMetrics(MultiMetrics.Metrics.TP, 0.5).computeMetrics(img, img), 0.0001);
+        assertEquals(0., new MultiMetrics(MultiMetrics.Metrics.FP, 0.5).computeMetrics(img, img), 0.0001);
+        assertEquals(0., new MultiMetrics(MultiMetrics.Metrics.FN, 0.5).computeMetrics(img, img), 0.0001);
+        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.AV_PRECISION, 0.5).computeMetrics(img, img), 0.0001);
+        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.MEAN_MATCHED_IOU, 0.5).computeMetrics(img, img), 0.0001);
+        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.MEAN_TRUE_IOU, 0.5).computeMetrics(img, img), 0.0001);
+        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.PRECISION, 0.5).computeMetrics(img, img), 0.0001);
+        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.RECALL, 0.5).computeMetrics(img, img), 0.0001);
+        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.F1, 0.5).computeMetrics(img, img), 0.0001);
 
         // compute all metrics
-        Map<MultiMetrics.Metrics, Double> metrics = new MultiMetrics().computeAllMetrics(img, img, 0.5);
+        Map<MultiMetrics.Metrics, Double> metrics = new MultiMetrics(0.5).computeAllMetrics(img, img);
 
         assertEquals(2., metrics.get(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.FP), 0.0001);
@@ -94,10 +70,10 @@ public class MultiMetricsTest {
         final Img<IntType> empty = ArrayImgs.ints(dims);
 
         // paint
-        SegmentationMetricsTest.paintRectangle(nonEmpty, 12, 28, 42, 56, 9);
+        SegmentationMetricsTestHelper.paintRectangle(nonEmpty, 12, 28, 42, 56, 9);
 
         // empty gt, non empty pred
-        Map<MultiMetrics.Metrics, Double> metrics = new MultiMetrics().computeAllMetrics(empty, nonEmpty, 0.5);
+        Map<MultiMetrics.Metrics, Double> metrics = new MultiMetrics(0.5).computeAllMetrics(empty, nonEmpty);
 
         assertEquals(0., metrics.get(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.FP), 0.0001);
@@ -110,7 +86,7 @@ public class MultiMetricsTest {
         assertEquals(0., metrics.get(MultiMetrics.Metrics.F1), 0.0001);
 
         // non empty gt, empty pred
-        metrics = new MultiMetrics().computeAllMetrics(nonEmpty, empty, 0.5);
+        metrics = new MultiMetrics(0.5).computeAllMetrics(nonEmpty, empty);
 
         assertEquals(0., metrics.get(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.FP), 0.0001);
@@ -123,7 +99,7 @@ public class MultiMetricsTest {
         assertEquals(0., metrics.get(MultiMetrics.Metrics.F1), 0.0001);
 
         // both empty
-        metrics = new MultiMetrics().computeAllMetrics(empty, empty, 0.5);
+        metrics = new MultiMetrics(0.5).computeAllMetrics(empty, empty);
 
         assertEquals(0., metrics.get(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.FP), 0.0001);
@@ -143,10 +119,10 @@ public class MultiMetricsTest {
         final Img<IntType> prediction = ArrayImgs.ints(dims);
 
         // paint
-        SegmentationMetricsTest.paintRectangle(groundtruth, 12, 5, 25, 13, 9);
-        SegmentationMetricsTest.paintRectangle(prediction, 28, 15, 42, 32, 12);
+        SegmentationMetricsTestHelper.paintRectangle(groundtruth, 12, 5, 25, 13, 9);
+        SegmentationMetricsTestHelper.paintRectangle(prediction, 28, 15, 42, 32, 12);
 
-        Map<MultiMetrics.Metrics, Double> metrics = new MultiMetrics().computeAllMetrics(groundtruth, prediction, 0.5);
+        Map<MultiMetrics.Metrics, Double> metrics = new MultiMetrics(0.5).computeAllMetrics(groundtruth, prediction);
 
         assertEquals(0., metrics.get(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.FP), 0.0001);
@@ -172,14 +148,16 @@ public class MultiMetricsTest {
         int[] predRect2 = {16, 16, 22, 22};
 
         // paint
-        SegmentationMetricsTest.paintRectangle(groundtruth, gtRect1, 9);
-        SegmentationMetricsTest.paintRectangle(prediction, predRect1, 5);
+        SegmentationMetricsTestHelper.paintRectangle(groundtruth, gtRect1, 9);
+        SegmentationMetricsTestHelper.paintRectangle(prediction, predRect1, 5);
 
-        SegmentationMetricsTest.paintRectangle(groundtruth, gtRect2, 2);
-        SegmentationMetricsTest.paintRectangle(prediction, predRect2, 8);
+        SegmentationMetricsTestHelper.paintRectangle(groundtruth, gtRect2, 2);
+        SegmentationMetricsTestHelper.paintRectangle(prediction, predRect2, 8);
 
         double iou1 = AveragePrecisionTest.getIoUBetweenRectangles(gtRect1, predRect1);
         double iou2 = AveragePrecisionTest.getIoUBetweenRectangles(gtRect2, predRect2);
+
+        MultiMetrics multiMetrics = new MultiMetrics();
         for (double t = 0.1; t < 0.9; t += 0.05) {
             double tp, fp, fn, f1, avprec, prec, recall, meanTrue, meanMatched;
             if (Double.compare(iou1, t) >= 0 && Double.compare(iou2, t) >= 0) { // both are matched
@@ -214,7 +192,7 @@ public class MultiMetricsTest {
                 f1 = 1. / 2.;
             }
 
-            Map<MultiMetrics.Metrics, Double> metrics = new MultiMetrics().computeAllMetrics(groundtruth, prediction, t);
+            Map<MultiMetrics.Metrics, Double> metrics = multiMetrics.setThreshold(t).computeAllMetrics(groundtruth, prediction);
 
             assertEquals(tp, metrics.get(MultiMetrics.Metrics.TP), 0.0001);
             assertEquals(fp, metrics.get(MultiMetrics.Metrics.FP), 0.0001);

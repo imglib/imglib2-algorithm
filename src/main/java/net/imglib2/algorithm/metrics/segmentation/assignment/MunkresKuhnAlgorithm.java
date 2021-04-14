@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.labeling.metrics.assignment;
+package net.imglib2.algorithm.metrics.segmentation.assignment;
 
 
 /**

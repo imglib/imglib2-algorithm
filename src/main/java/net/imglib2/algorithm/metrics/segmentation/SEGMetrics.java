@@ -1,9 +1,9 @@
-package net.imglib2.algorithm.labeling.metrics;
+package net.imglib2.algorithm.metrics.segmentation;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.IntegerType;
 
-import java.util.stream.IntStream;
+import java.util.Arrays;
 
 /**
  * The SEG metrics compute the Jaccard / IoU metrics between ground-truth and prediction
@@ -19,31 +19,35 @@ import java.util.stream.IntStream;
  *
  * @author Joran Deschamps
  */
-public class SEGMetrics extends SegmentationMetrics {
-
+public class SEGMetrics implements SegmentationMetrics {
 
     /**
-     * Compute the SEG metrics score between labels from a ground-truth and a prediction image in
-     * which the labels are represented by the pixel values. Only labels with an overlap greater or
-     * equal to the threshold are considered potential matches.
-     *
-     * A threshold of 0.5 is recommended. For lower thresholds and in case of multiple candidates
-     * for a match with a ground-truth label, then the maximum IoU is considered a match.
+     * Compute the global metrics score between labels from a ground-truth and a prediction image in
+     * which the labels are represented by the pixel values. The threshold can be used to reject pairing
+     * between labels.
      *
      * @param groundTruth Ground-truth image
      * @param prediction  Prediction image
-     * @param threshold   Threshold at which pairing between labels is rejected
      * @param <I>         The pixel type of the ground-truth image
      * @param <J>         The pixel type of the prediction image
      * @return Metrics score
      */
-    @Override
-    protected <I extends IntegerType<I>, J extends IntegerType<J>> double computeMetrics(
+    public <I extends IntegerType<I>, J extends IntegerType<J>> double computeMetrics(
             RandomAccessibleInterval<I> groundTruth,
-            RandomAccessibleInterval<J> prediction,
-            double threshold) {
-        return super.computeMetrics(groundTruth, prediction, threshold);
+            RandomAccessibleInterval<J> prediction) {
+
+        if (!Arrays.equals(groundTruth.dimensionsAsLongArray(), prediction.dimensionsAsLongArray()))
+            throw new IllegalArgumentException("Image dimensions must match.");
+
+        // compute confusion matrix
+        final ConfusionMatrix confusionMatrix = new ConfusionMatrix(groundTruth, prediction);
+
+        // compute cost matrix
+        double[][] costMatrix = computeCostMatrix(confusionMatrix);
+
+        return computeMetrics(confusionMatrix, costMatrix);
     }
+
 
     /**
      * Compute the metrics score as the sum of the IoU for all pairs of labels with at least
@@ -52,22 +56,18 @@ public class SEGMetrics extends SegmentationMetrics {
      *
      * @param confusionMatrix Confusion matrix
      * @param costMatrix Cost matrix
-     * @param threshold Threshold
      * @return Metrics score
      */
-    @Override
-    protected double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold) {
+    private double computeMetrics(ConfusionMatrix confusionMatrix, double[][] costMatrix) {
         if(costMatrix.length != 0 && costMatrix[0].length != 0) {
             final int M = costMatrix.length;
             final int N = costMatrix[0].length;
 
             double precision = 0.;
             for (int i = 0; i < M; i++) {
-                // TODO is this correct when threshold is not 0.5? For t=0.5 we expect at max one match, but what about t<.5?
-
-                // get maximum over the row and add to precision
-                final int index = i;
-                precision += IntStream.range(0, N).mapToDouble(j -> costMatrix[index][j]).max().getAsDouble();
+                for(int j=0; j < N; j++) {
+                    precision += costMatrix[i][j];
+                }
             }
 
             return precision / (double) M;
@@ -78,28 +78,46 @@ public class SEGMetrics extends SegmentationMetrics {
         return 0.;
     }
 
+    private double[][] computeCostMatrix(ConfusionMatrix cM) {
+        int M = cM.getNumberGroundTruthLabels();
+        int N = cM.getNumberPredictionLabels();
+
+        // empty cost matrix
+        // make sure to obtain a rectangular matrix, with Npred > Ngt, in order
+        // to avoid empty assignments if using Munkres-Kuhn
+        double[][] costMatrix = new double[M][Math.max(M+1, N)];
+
+        // fill in cost matrix
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                costMatrix[i][j] = getLocalIoUScore(cM, i, j);
+            }
+        }
+
+        return costMatrix;
+    }
+
     /**
      * Compute the percentage of overlap between two labels and returns the IoU if the overlap
      * is greater or equal to the threshold, 0 otherwise.
      *
-     * @param iGT Index of the ground-truth label
-     * @param jPred Index of the prediction label
      * @param cM Confusion matrix
-     * @param threshold Threshold
+     * @param i Index of the ground-truth label
+     * @param j Index of the prediction label
      * @return IoU between the two labels or 0 if their overlap is smaller than the threshold
      */
-    @Override
-    protected double computeLocalMetrics(int iGT, int jPred, ConfusionMatrix cM, double threshold) {
-        double intersection = cM.getIntersection(iGT, jPred);
-        double gtSize = cM.getGroundTruthLabelSize(iGT);
+    private double getLocalIoUScore(ConfusionMatrix cM, int i, int j) {
+        double intersection = cM.getIntersection(i, j);
+        double gtSize = cM.getGroundTruthLabelSize(i);
 
         double overlap = intersection / gtSize;
-        if(overlap >= threshold ){
-            double predSize = cM.getPredictionLabelSize(jPred);
+        if (overlap > 0.5) {
+            double predSize = cM.getPredictionLabelSize(j);
 
             return intersection / (gtSize + predSize - intersection);
         } else {
             return 0.;
         }
     }
+
 }
