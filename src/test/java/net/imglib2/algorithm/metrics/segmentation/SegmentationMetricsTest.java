@@ -6,6 +6,8 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import org.junit.Test;
 
 import java.util.*;
@@ -85,10 +87,49 @@ public class SegmentationMetricsTest {
         new DummyMetrics().computeMetrics(labeling, labeling);
     }
 
+    @Test
+    public void testFunctionalInterface(){
+        long[] dims = {32,32};
+        final Img<IntType> groundtruth = ArrayImgs.ints( dims );
+        final Img<IntType> prediction = ArrayImgs.ints( dims );
+
+        int min_gt = 2;
+        int max_gt = 11;
+        int min_pred = min_gt+1;
+        int max_pred = max_gt+1;
+
+        // paint
+        SegmentationMetricsTestHelper.paintRectangle(groundtruth, min_gt, min_gt, max_gt, max_gt, 9);
+        SegmentationMetricsTestHelper.paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 5);
+
+        // metrics
+        double seg = SEGMetricsTest.getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred);
+        double iou = AveragePrecisionTest.getIoUBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred);
+        double avprec = 1.;
+
+        List< Pair< Img<IntType>, Img<IntType> > > images = new ArrayList<>();
+        for(int i=0; i<10; i++) images.add(new ValuePair<>(groundtruth.copy(), prediction.copy()));
+
+        final SegmentationMetrics segMetrics = new SEGMetrics();
+        images.stream().mapToDouble(p -> Consumer.computeMetrics(p, segMetrics)).forEach(d -> assertEquals(seg, d, 0.0001));
+
+        final SegmentationMetrics avPrecMetrics = new AveragePrecision(0.5);
+        images.stream().mapToDouble(p -> Consumer.computeMetrics(p, avPrecMetrics)).forEach(d -> assertEquals(avprec, d, 0.0001));
+
+        final SegmentationMetrics meanTrueMetrics = new MultiMetrics(MultiMetrics.Metrics.MEAN_TRUE_IOU, 0.5);
+        images.stream().mapToDouble(p -> Consumer.computeMetrics(p, meanTrueMetrics)).forEach(d -> assertEquals(iou, d, 0.0001));
+    }
+
     public static class DummyMetrics implements SegmentationMetrics {
         @Override
         public <I extends IntegerType<I>, J extends IntegerType<J>> double computeMetrics(RandomAccessibleInterval<I> groundTruth, RandomAccessibleInterval<J> prediction) {
             return 0;
+        }
+    }
+
+    private static class Consumer {
+        public static double computeMetrics(Pair<Img<IntType>, Img<IntType>> pair, SegmentationMetrics metrics){
+            return metrics.computeMetrics(pair.getA(), pair.getB());
         }
     }
 }

@@ -2,7 +2,6 @@ package net.imglib2.algorithm.metrics.segmentation;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.metrics.segmentation.assignment.MunkresKuhnAlgorithm;
-import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.IntegerType;
 
 import java.util.HashMap;

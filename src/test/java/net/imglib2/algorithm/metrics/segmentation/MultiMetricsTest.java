@@ -2,7 +2,6 @@ package net.imglib2.algorithm.metrics.segmentation;
 
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.integer.IntType;
 import org.junit.Test;
 

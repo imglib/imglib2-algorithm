@@ -98,7 +98,7 @@ public class SEGMetricsTest {
     }
 
 
-    private static double getSEGBetweenRectangles(int a_x_min, int a_y_min, int a_x_max, int a_y_max,
+    public static double getSEGBetweenRectangles(int a_x_min, int a_y_min, int a_x_max, int a_y_max,
                                                   int b_x_min, int b_y_min, int b_x_max, int b_y_max){
         int left = Math.max(a_x_min, b_x_min);
         int right = Math.min(a_x_max, b_x_max);
