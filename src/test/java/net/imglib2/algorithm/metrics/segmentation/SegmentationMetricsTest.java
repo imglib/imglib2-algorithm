@@ -14,122 +14,140 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-public class SegmentationMetricsTest {
+public class SegmentationMetricsTest
+{
 
-    public static final long[] exampleIndexArrayDims = new long[] {4, 5};
-    public static String[] exampleIntersectingLabels = new String[] { "A", "A,B", "C", "D", "D,E"};
-    public static String[] exampleNonIntersectingLabels = new String[] { "A", "A,B", "C", "D", "E"};
-    public static int[] exampleIndexArray = new int[] {
-            1, 0, 0, 0, 0,
-            0, 1, 0, 5, 0,
-            0, 0, 0, 3, 3,
-            0, 0, 3, 3, 0
-    };
+	public static final long[] exampleIndexArrayDims = new long[] { 4, 5 };
 
-    public static List<Set<String>> getLabelingSet(String[] labels){
-        List< Set<String> > labelings = new ArrayList<>();
+	public static String[] exampleIntersectingLabels = new String[] { "A", "A,B", "C", "D", "D,E" };
 
-        labelings.add(new HashSet<>());
+	public static String[] exampleNonIntersectingLabels = new String[] { "A", "A,B", "C", "D", "E" };
 
-        // Add label Sets
-        for(String entries: labels){
-            Set<String> subLabelSet = new HashSet<>();
-            for(String entry: entries.split(",")){
-                subLabelSet.add(entry);
-            }
-            labelings.add(subLabelSet);
-        }
+	public static int[] exampleIndexArray = new int[] {
+			1, 0, 0, 0, 0,
+			0, 1, 0, 5, 0,
+			0, 0, 0, 3, 3,
+			0, 0, 3, 3, 0
+	};
 
-        return labelings;
-    }
+	public static List< Set< String > > getLabelingSet( String[] labels )
+	{
+		List< Set< String > > labelings = new ArrayList<>();
 
-    @Test
-    public void testStaticMethods(){
-        final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
-        final ImgLabeling<String, IntType> labelingIntersect = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleIntersectingLabels));
-        final ImgLabeling<String, IntType> labelingNonIntersect = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleNonIntersectingLabels));
+		labelings.add( new HashSet<>() );
 
-        Set<IntType> occIntersect = SegmentationMetrics.getOccurringLabelSets(labelingIntersect);
-        assertEquals(3, occIntersect.size());
+		// Add label Sets
+		for ( String entries : labels )
+		{
+			Set< String > subLabelSet = new HashSet<>();
+			for ( String entry : entries.split( "," ) )
+			{
+				subLabelSet.add( entry );
+			}
+			labelings.add( subLabelSet );
+		}
 
-        for(IntType it: occIntersect){
-            int i = it.getInteger();
-            assertTrue(i == 1 || i == 3 || i == 5);
-        }
+		return labelings;
+	}
 
-        assertTrue(SegmentationMetrics.hasIntersectingLabels(labelingIntersect));
-        assertFalse(SegmentationMetrics.hasIntersectingLabels(labelingNonIntersect));
-    }
+	@Test
+	public void testStaticMethods()
+	{
+		final Img< IntType > img = ArrayImgs.ints( exampleIndexArray, exampleIndexArrayDims );
+		final ImgLabeling< String, IntType > labelingIntersect = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleIntersectingLabels ) );
+		final ImgLabeling< String, IntType > labelingNonIntersect = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testException(){
-        final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
-        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleIntersectingLabels));
-        final ImgLabeling<String, IntType> labeling2 = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleNonIntersectingLabels));
+		Set< IntType > occIntersect = SegmentationMetrics.getOccurringLabelSets( labelingIntersect );
+		assertEquals( 3, occIntersect.size() );
 
-        new DummyMetrics().computeMetrics(labeling, labeling2);
-    }
+		for ( IntType it : occIntersect )
+		{
+			int i = it.getInteger();
+			assertTrue( i == 1 || i == 3 || i == 5 );
+		}
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testException2(){
-        final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
-        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleNonIntersectingLabels));
-        final ImgLabeling<String, IntType> labeling2 = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleIntersectingLabels));
+		assertTrue( SegmentationMetrics.hasIntersectingLabels( labelingIntersect ) );
+		assertFalse( SegmentationMetrics.hasIntersectingLabels( labelingNonIntersect ) );
+	}
 
-        new DummyMetrics().computeMetrics(labeling, labeling2);
-    }
+	@Test( expected = UnsupportedOperationException.class )
+	public void testException()
+	{
+		final Img< IntType > img = ArrayImgs.ints( exampleIndexArray, exampleIndexArrayDims );
+		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleIntersectingLabels ) );
+		final ImgLabeling< String, IntType > labeling2 = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 
-    @Test
-    public void testNoException(){
-        final Img<IntType> img = ArrayImgs.ints(exampleIndexArray, exampleIndexArrayDims);
-        final ImgLabeling<String, IntType> labeling = ImgLabeling.fromImageAndLabelSets(img, getLabelingSet(exampleNonIntersectingLabels));
+		new DummyMetrics().computeMetrics( labeling, labeling2 );
+	}
 
-        new DummyMetrics().computeMetrics(labeling, labeling);
-    }
+	@Test( expected = UnsupportedOperationException.class )
+	public void testException2()
+	{
+		final Img< IntType > img = ArrayImgs.ints( exampleIndexArray, exampleIndexArrayDims );
+		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
+		final ImgLabeling< String, IntType > labeling2 = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleIntersectingLabels ) );
 
-    @Test
-    public void testFunctionalInterface(){
-        long[] dims = {32,32};
-        final Img<IntType> groundtruth = ArrayImgs.ints( dims );
-        final Img<IntType> prediction = ArrayImgs.ints( dims );
+		new DummyMetrics().computeMetrics( labeling, labeling2 );
+	}
 
-        int min_gt = 2;
-        int max_gt = 11;
-        int min_pred = min_gt+1;
-        int max_pred = max_gt+1;
+	@Test
+	public void testNoException()
+	{
+		final Img< IntType > img = ArrayImgs.ints( exampleIndexArray, exampleIndexArrayDims );
+		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 
-        // paint
-        SegmentationMetricsTestHelper.paintRectangle(groundtruth, min_gt, min_gt, max_gt, max_gt, 9);
-        SegmentationMetricsTestHelper.paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 5);
+		new DummyMetrics().computeMetrics( labeling, labeling );
+	}
 
-        // metrics
-        double seg = SEGTest.getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred);
-        double iou = AccuracyTest.getIoUBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred);
-        double avprec = 1.;
+	@Test
+	public void testFunctionalInterface()
+	{
+		long[] dims = { 32, 32 };
+		final Img< IntType > groundtruth = ArrayImgs.ints( dims );
+		final Img< IntType > prediction = ArrayImgs.ints( dims );
 
-        List< Pair< Img<IntType>, Img<IntType> > > images = new ArrayList<>();
-        for(int i=0; i<10; i++) images.add(new ValuePair<>(groundtruth.copy(), prediction.copy()));
+		int min_gt = 2;
+		int max_gt = 11;
+		int min_pred = min_gt + 1;
+		int max_pred = max_gt + 1;
 
-        final SegmentationMetrics segMetrics = new SEG();
-        images.stream().mapToDouble(p -> Consumer.computeMetrics(p, segMetrics)).forEach(d -> assertEquals(seg, d, 0.0001));
+		// paint
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, min_gt, min_gt, max_gt, max_gt, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, min_pred, min_pred, max_pred, max_pred, 5 );
 
-        final SegmentationMetrics avPrecMetrics = new Accuracy(0.5);
-        images.stream().mapToDouble(p -> Consumer.computeMetrics(p, avPrecMetrics)).forEach(d -> assertEquals(avprec, d, 0.0001));
+		// metrics
+		double seg = SEGTest.getSEGBetweenRectangles( min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred );
+		double iou = AccuracyTest.getIoUBetweenRectangles( min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred );
+		double avprec = 1.;
 
-        final SegmentationMetrics meanTrueMetrics = new MultiMetrics(MultiMetrics.Metrics.MEAN_TRUE_IOU, 0.5);
-        images.stream().mapToDouble(p -> Consumer.computeMetrics(p, meanTrueMetrics)).forEach(d -> assertEquals(iou, d, 0.0001));
-    }
+		List< Pair< Img< IntType >, Img< IntType > > > images = new ArrayList<>();
+		for ( int i = 0; i < 10; i++ )
+			images.add( new ValuePair<>( groundtruth.copy(), prediction.copy() ) );
 
-    public static class DummyMetrics implements SegmentationMetrics {
-        @Override
-        public <I extends IntegerType<I>, J extends IntegerType<J>> double computeMetrics(RandomAccessibleInterval<I> groundTruth, RandomAccessibleInterval<J> prediction) {
-            return 0;
-        }
-    }
+		final SegmentationMetrics segMetrics = new SEG();
+		images.stream().mapToDouble( p -> Consumer.computeMetrics( p, segMetrics ) ).forEach( d -> assertEquals( seg, d, 0.0001 ) );
 
-    private static class Consumer {
-        public static double computeMetrics(Pair<Img<IntType>, Img<IntType>> pair, SegmentationMetrics metrics){
-            return metrics.computeMetrics(pair.getA(), pair.getB());
-        }
-    }
+		final SegmentationMetrics avPrecMetrics = new Accuracy( 0.5 );
+		images.stream().mapToDouble( p -> Consumer.computeMetrics( p, avPrecMetrics ) ).forEach( d -> assertEquals( avprec, d, 0.0001 ) );
+
+		final SegmentationMetrics meanTrueMetrics = new MultiMetrics( MultiMetrics.Metrics.MEAN_TRUE_IOU, 0.5 );
+		images.stream().mapToDouble( p -> Consumer.computeMetrics( p, meanTrueMetrics ) ).forEach( d -> assertEquals( iou, d, 0.0001 ) );
+	}
+
+	public static class DummyMetrics implements SegmentationMetrics
+	{
+		@Override
+		public < I extends IntegerType< I >, J extends IntegerType< J > > double computeMetrics( RandomAccessibleInterval< I > groundTruth, RandomAccessibleInterval< J > prediction )
+		{
+			return 0;
+		}
+	}
+
+	public static class Consumer
+	{
+		public static double computeMetrics( Pair< Img< IntType >, Img< IntType > > pair, SegmentationMetrics metrics )
+		{
+			return metrics.computeMetrics( pair.getA(), pair.getB() );
+		}
+	}
 }
