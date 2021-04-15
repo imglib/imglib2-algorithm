@@ -27,21 +27,21 @@ public class MultiMetricsTest {
         MultiMetrics mm = new MultiMetrics(0.5);
         mm.computeMetrics(img, img);
 
-        assertEquals(2., mm.getMetrics(MultiMetrics.Metrics.TP), 0.0001);
-        assertEquals(0., mm.getMetrics(MultiMetrics.Metrics.FP), 0.0001);
-        assertEquals(0., mm.getMetrics(MultiMetrics.Metrics.FN), 0.0001);
-        assertEquals(1., mm.getMetrics(MultiMetrics.Metrics.AV_PRECISION), 0.0001);
-        assertEquals(1., mm.getMetrics(MultiMetrics.Metrics.MEAN_MATCHED_IOU), 0.0001);
-        assertEquals(1., mm.getMetrics(MultiMetrics.Metrics.MEAN_TRUE_IOU), 0.0001);
-        assertEquals(1., mm.getMetrics(MultiMetrics.Metrics.PRECISION), 0.0001);
-        assertEquals(1., mm.getMetrics(MultiMetrics.Metrics.RECALL), 0.0001);
-        assertEquals(1., mm.getMetrics(MultiMetrics.Metrics.F1), 0.0001);
+        assertEquals(2., mm.getScore(MultiMetrics.Metrics.TP), 0.0001);
+        assertEquals(0., mm.getScore(MultiMetrics.Metrics.FP), 0.0001);
+        assertEquals(0., mm.getScore(MultiMetrics.Metrics.FN), 0.0001);
+        assertEquals(1., mm.getScore(MultiMetrics.Metrics.ACCURACY), 0.0001);
+        assertEquals(1., mm.getScore(MultiMetrics.Metrics.MEAN_MATCHED_IOU), 0.0001);
+        assertEquals(1., mm.getScore(MultiMetrics.Metrics.MEAN_TRUE_IOU), 0.0001);
+        assertEquals(1., mm.getScore(MultiMetrics.Metrics.PRECISION), 0.0001);
+        assertEquals(1., mm.getScore(MultiMetrics.Metrics.RECALL), 0.0001);
+        assertEquals(1., mm.getScore(MultiMetrics.Metrics.F1), 0.0001);
 
         // call with a specific metrics
         assertEquals(2., new MultiMetrics(MultiMetrics.Metrics.TP, 0.5).computeMetrics(img, img), 0.0001);
         assertEquals(0., new MultiMetrics(MultiMetrics.Metrics.FP, 0.5).computeMetrics(img, img), 0.0001);
         assertEquals(0., new MultiMetrics(MultiMetrics.Metrics.FN, 0.5).computeMetrics(img, img), 0.0001);
-        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.AV_PRECISION, 0.5).computeMetrics(img, img), 0.0001);
+        assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.ACCURACY, 0.5).computeMetrics(img, img), 0.0001);
         assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.MEAN_MATCHED_IOU, 0.5).computeMetrics(img, img), 0.0001);
         assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.MEAN_TRUE_IOU, 0.5).computeMetrics(img, img), 0.0001);
         assertEquals(1., new MultiMetrics(MultiMetrics.Metrics.PRECISION, 0.5).computeMetrics(img, img), 0.0001);
@@ -54,7 +54,7 @@ public class MultiMetricsTest {
         assertEquals(2., metrics.get(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.FP), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.FN), 0.0001);
-        assertEquals(1., metrics.get(MultiMetrics.Metrics.AV_PRECISION), 0.0001);
+        assertEquals(1., metrics.get(MultiMetrics.Metrics.ACCURACY), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.MEAN_MATCHED_IOU), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.MEAN_TRUE_IOU), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.PRECISION), 0.0001);
@@ -77,7 +77,7 @@ public class MultiMetricsTest {
         assertEquals(0., metrics.get(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.FP), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.FN), 0.0001);
-        assertEquals(0., metrics.get(MultiMetrics.Metrics.AV_PRECISION), 0.0001);
+        assertEquals(0., metrics.get(MultiMetrics.Metrics.ACCURACY), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.MEAN_MATCHED_IOU), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.MEAN_TRUE_IOU), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.PRECISION), 0.0001);
@@ -90,7 +90,7 @@ public class MultiMetricsTest {
         assertEquals(0., metrics.get(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.FP), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.FN), 0.0001);
-        assertEquals(0., metrics.get(MultiMetrics.Metrics.AV_PRECISION), 0.0001);
+        assertEquals(0., metrics.get(MultiMetrics.Metrics.ACCURACY), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.MEAN_MATCHED_IOU), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.MEAN_TRUE_IOU), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.PRECISION), 0.0001);
@@ -103,7 +103,7 @@ public class MultiMetricsTest {
         assertEquals(0., metrics.get(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.FP), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.FN), 0.0001);
-        assertEquals(1., metrics.get(MultiMetrics.Metrics.AV_PRECISION), 0.0001);
+        assertEquals(1., metrics.get(MultiMetrics.Metrics.ACCURACY), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.MEAN_MATCHED_IOU), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.MEAN_TRUE_IOU), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.PRECISION), 0.0001);
@@ -126,7 +126,7 @@ public class MultiMetricsTest {
         assertEquals(0., metrics.get(MultiMetrics.Metrics.TP), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.FP), 0.0001);
         assertEquals(1., metrics.get(MultiMetrics.Metrics.FN), 0.0001);
-        assertEquals(0., metrics.get(MultiMetrics.Metrics.AV_PRECISION), 0.0001);
+        assertEquals(0., metrics.get(MultiMetrics.Metrics.ACCURACY), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.MEAN_MATCHED_IOU), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.MEAN_TRUE_IOU), 0.0001);
         assertEquals(0., metrics.get(MultiMetrics.Metrics.PRECISION), 0.0001);
@@ -153,8 +153,8 @@ public class MultiMetricsTest {
         SegmentationMetricsTestHelper.paintRectangle(groundtruth, gtRect2, 2);
         SegmentationMetricsTestHelper.paintRectangle(prediction, predRect2, 8);
 
-        double iou1 = AveragePrecisionTest.getIoUBetweenRectangles(gtRect1, predRect1);
-        double iou2 = AveragePrecisionTest.getIoUBetweenRectangles(gtRect2, predRect2);
+        double iou1 = AccuracyTest.getIoUBetweenRectangles(gtRect1, predRect1);
+        double iou2 = AccuracyTest.getIoUBetweenRectangles(gtRect2, predRect2);
 
         MultiMetrics multiMetrics = new MultiMetrics();
         for (double t = 0.1; t < 0.9; t += 0.05) {
@@ -196,7 +196,7 @@ public class MultiMetricsTest {
             assertEquals(tp, metrics.get(MultiMetrics.Metrics.TP), 0.0001);
             assertEquals(fp, metrics.get(MultiMetrics.Metrics.FP), 0.0001);
             assertEquals(fn, metrics.get(MultiMetrics.Metrics.FN), 0.0001);
-            assertEquals(avprec, metrics.get(MultiMetrics.Metrics.AV_PRECISION), 0.0001);
+            assertEquals(avprec, metrics.get(MultiMetrics.Metrics.ACCURACY), 0.0001);
             assertEquals(meanMatched, metrics.get(MultiMetrics.Metrics.MEAN_MATCHED_IOU), 0.0001);
             assertEquals(meanTrue, metrics.get(MultiMetrics.Metrics.MEAN_TRUE_IOU), 0.0001);
             assertEquals(prec, metrics.get(MultiMetrics.Metrics.PRECISION), 0.0001);

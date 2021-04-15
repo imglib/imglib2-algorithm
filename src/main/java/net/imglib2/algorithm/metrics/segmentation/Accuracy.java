@@ -11,15 +11,15 @@ import java.util.Arrays;
  * IoU) of the matched (i.e. labels with an IoU greater or equal to the threshold) and unmatched
  * labels.
  */
-public class AveragePrecision implements SegmentationMetrics {
+public class Accuracy implements SegmentationMetrics {
 
     private double threshold;
 
-    public AveragePrecision(){
+    public Accuracy(){
         this(0.5);
     }
 
-    public AveragePrecision(double threshold){
+    public Accuracy(double threshold){
         this.threshold = threshold;
     }
 
@@ -27,7 +27,7 @@ public class AveragePrecision implements SegmentationMetrics {
         return threshold;
     }
 
-    public AveragePrecision setThreshold(double threshold) {
+    public Accuracy setThreshold(double threshold) {
         this.threshold = threshold;
         return this;
     }

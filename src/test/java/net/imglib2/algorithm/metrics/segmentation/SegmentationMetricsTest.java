@@ -103,17 +103,17 @@ public class SegmentationMetricsTest {
         SegmentationMetricsTestHelper.paintRectangle(prediction, min_pred, min_pred, max_pred, max_pred, 5);
 
         // metrics
-        double seg = SEGMetricsTest.getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred);
-        double iou = AveragePrecisionTest.getIoUBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred);
+        double seg = SEGTest.getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred);
+        double iou = AccuracyTest.getIoUBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred);
         double avprec = 1.;
 
         List< Pair< Img<IntType>, Img<IntType> > > images = new ArrayList<>();
         for(int i=0; i<10; i++) images.add(new ValuePair<>(groundtruth.copy(), prediction.copy()));
 
-        final SegmentationMetrics segMetrics = new SEGMetrics();
+        final SegmentationMetrics segMetrics = new SEG();
         images.stream().mapToDouble(p -> Consumer.computeMetrics(p, segMetrics)).forEach(d -> assertEquals(seg, d, 0.0001));
 
-        final SegmentationMetrics avPrecMetrics = new AveragePrecision(0.5);
+        final SegmentationMetrics avPrecMetrics = new Accuracy(0.5);
         images.stream().mapToDouble(p -> Consumer.computeMetrics(p, avPrecMetrics)).forEach(d -> assertEquals(avprec, d, 0.0001));
 
         final SegmentationMetrics meanTrueMetrics = new MultiMetrics(MultiMetrics.Metrics.MEAN_TRUE_IOU, 0.5);

@@ -19,7 +19,7 @@ import java.util.Arrays;
  *
  * @author Joran Deschamps
  */
-public class SEGMetrics implements SegmentationMetrics {
+public class SEG implements SegmentationMetrics {
 
     /**
      * Compute the global metrics score between labels from a ground-truth and a prediction image in

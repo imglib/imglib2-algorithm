@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class SEGMetricsTest {
+public class SEGTest {
 
     @Test
     public void testIdentity(){
@@ -18,7 +18,7 @@ public class SEGMetricsTest {
         SegmentationMetricsTestHelper.paintRectangle(img, 12, 28, 42, 56, 9);
         SegmentationMetricsTestHelper.paintRectangle(img, 43, 9, 52, 18, 12);
 
-        assertEquals(1., new SEGMetrics().computeMetrics(img, img), 0.0001);
+        assertEquals(1., new SEG().computeMetrics(img, img), 0.0001);
     }
 
     @Test
@@ -30,9 +30,9 @@ public class SEGMetricsTest {
         // paint
         SegmentationMetricsTestHelper.paintRectangle(nonEmpty, 12, 28, 42, 56, 9);
 
-        assertEquals(0., new SEGMetrics().computeMetrics(empty, nonEmpty), 0.0001);
-        assertEquals(0., new SEGMetrics().computeMetrics(nonEmpty, empty), 0.0001);
-        assertEquals(1., new SEGMetrics().computeMetrics(empty, empty), 0.0001);
+        assertEquals(0., new SEG().computeMetrics(empty, nonEmpty), 0.0001);
+        assertEquals(0., new SEG().computeMetrics(nonEmpty, empty), 0.0001);
+        assertEquals(1., new SEG().computeMetrics(empty, empty), 0.0001);
     }
 
     @Test
@@ -45,7 +45,7 @@ public class SEGMetricsTest {
         SegmentationMetricsTestHelper.paintRectangle(groundtruth, 12, 5, 25, 13, 9);
         SegmentationMetricsTestHelper.paintRectangle(prediction, 28, 15, 42, 32, 12);
 
-        assertEquals(0., new SEGMetrics().computeMetrics(groundtruth, prediction), 0.0001);
+        assertEquals(0., new SEG().computeMetrics(groundtruth, prediction), 0.0001);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class SEGMetricsTest {
 
         double seg = getSEGBetweenRectangles(min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred);
 
-        assertEquals(seg, new SEGMetrics().computeMetrics(groundtruth, prediction), 0.0001);
+        assertEquals(seg, new SEG().computeMetrics(groundtruth, prediction), 0.0001);
     }
 
     @Test
@@ -94,7 +94,7 @@ public class SEGMetricsTest {
         double seg2 = getSEGBetweenRectangles(min_gt2, min_gt2, max_gt2, max_gt2, min_pred2, min_pred2, max_pred2, max_pred2);
         double seg = (seg1 + seg2)/2;
 
-        assertEquals(seg, new SEGMetrics().computeMetrics(groundtruth, prediction), 0.0001);
+        assertEquals(seg, new SEG().computeMetrics(groundtruth, prediction), 0.0001);
     }
 
 

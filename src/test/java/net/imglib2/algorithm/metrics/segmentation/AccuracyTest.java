@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class AveragePrecisionTest {
+public class AccuracyTest {
 
     @Test
     public void testIdentity(){
@@ -18,7 +18,7 @@ public class AveragePrecisionTest {
         SegmentationMetricsTestHelper.paintRectangle(img, 12, 28, 42, 56, 9);
         SegmentationMetricsTestHelper.paintRectangle(img, 43, 9, 52, 18, 12);
 
-        assertEquals(1., new AveragePrecision(0.5).computeMetrics(img, img), 0.0001);
+        assertEquals(1., new Accuracy(0.5).computeMetrics(img, img), 0.0001);
     }
 
     @Test
@@ -30,9 +30,9 @@ public class AveragePrecisionTest {
         // paint
         SegmentationMetricsTestHelper.paintRectangle(nonEmpty, 12, 28, 42, 56, 9);
 
-        assertEquals(0., new AveragePrecision(0.5).computeMetrics(empty, nonEmpty), 0.0001);
-        assertEquals(0., new AveragePrecision(0.5).computeMetrics(nonEmpty, empty), 0.0001);
-        assertEquals(1, new AveragePrecision(0.5).computeMetrics(empty, empty), 0.0001);
+        assertEquals(0., new Accuracy(0.5).computeMetrics(empty, nonEmpty), 0.0001);
+        assertEquals(0., new Accuracy(0.5).computeMetrics(nonEmpty, empty), 0.0001);
+        assertEquals(1, new Accuracy(0.5).computeMetrics(empty, empty), 0.0001);
     }
 
     @Test
@@ -45,7 +45,7 @@ public class AveragePrecisionTest {
         SegmentationMetricsTestHelper.paintRectangle(groundtruth, 12, 5, 25, 13, 9);
         SegmentationMetricsTestHelper.paintRectangle(prediction, 28, 15, 42, 32, 12);
 
-        assertEquals(0., new AveragePrecision(0.5).computeMetrics(groundtruth, prediction), 0.0001);
+        assertEquals(0., new Accuracy(0.5).computeMetrics(groundtruth, prediction), 0.0001);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class AveragePrecisionTest {
                 m = 1. / 3.;
             }
 
-            assertEquals(m, new AveragePrecision(t).computeMetrics(groundtruth, prediction), 0.0001);
+            assertEquals(m, new Accuracy(t).computeMetrics(groundtruth, prediction), 0.0001);
         }
     }
 
@@ -102,7 +102,7 @@ public class AveragePrecisionTest {
         ConfusionMatrix<IntType, IntType> cm = new ConfusionMatrix<>(gt, pred);
 
         // Metrics
-        AveragePrecision metrics = new AveragePrecision();
+        Accuracy metrics = new Accuracy();
 
         // values
         double localIoU = getIoUBetweenRectangles(gtRect, predRect);
@@ -131,7 +131,7 @@ public class AveragePrecisionTest {
         ConfusionMatrix<IntType, IntType> cm = new ConfusionMatrix<>(gt, pred);
 
         // Metrics
-        AveragePrecision metrics = new AveragePrecision();
+        Accuracy metrics = new Accuracy();
 
         assertEquals(0., metrics.getLocalIoUScore(cm,0, 0, 0.), 0.00001);
     }
@@ -151,7 +151,7 @@ public class AveragePrecisionTest {
         ConfusionMatrix<IntType, IntType> cm = new ConfusionMatrix<>(gt, pred);
 
         // Metrics
-        AveragePrecision metrics = new AveragePrecision();
+        Accuracy metrics = new Accuracy();
 
         assertEquals(0, metrics.getLocalIoUScore(cm, 0, 0, 0.), 0.00001);
     }
@@ -171,7 +171,7 @@ public class AveragePrecisionTest {
         ConfusionMatrix<IntType, IntType> cm = new ConfusionMatrix<>(gt, pred);
 
         // Metrics
-        AveragePrecision metrics = new AveragePrecision();
+        Accuracy metrics = new Accuracy();
 
         assertEquals(0, metrics.getLocalIoUScore(cm, 0, 0, 0.), 0.00001);
     }
@@ -200,7 +200,7 @@ public class AveragePrecisionTest {
         ConfusionMatrix<IntType, IntType> cm = new ConfusionMatrix<>(gt, pred);
 
         // Metrics
-        AveragePrecision metrics = new AveragePrecision();
+        Accuracy metrics = new Accuracy();
 
         // values
         double localIoU1 = getIoUBetweenRectangles(gtRect1, predRect);
@@ -235,7 +235,7 @@ public class AveragePrecisionTest {
         ConfusionMatrix<IntType, IntType> cm = new ConfusionMatrix<>(gt, pred);
 
         // Metrics
-        AveragePrecision metrics = new AveragePrecision();
+        Accuracy metrics = new Accuracy();
 
         // values
         double localIoU1 = getIoUBetweenRectangles(gtRect, predRect1);

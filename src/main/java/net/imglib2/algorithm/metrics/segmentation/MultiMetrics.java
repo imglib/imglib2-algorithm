@@ -4,8 +4,10 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.metrics.segmentation.assignment.MunkresKuhnAlgorithm;
 import net.imglib2.type.numeric.IntegerType;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Compute a set of metrics between the labels of a ground-truth and a prediction image at a certain
@@ -32,10 +34,10 @@ import java.util.Map;
  *
  * @author Joran Deschamps
  */
-public class MultiMetrics extends AveragePrecision {
+public class MultiMetrics extends Accuracy {
 
     public enum Metrics {
-        AV_PRECISION("Average precision"),
+        ACCURACY("Accuracy"),
         MEAN_MATCHED_IOU("Mean matched IoU"),
         MEAN_TRUE_IOU("Mean true IoU"),
         TP("True positives"),
@@ -54,6 +56,11 @@ public class MultiMetrics extends AveragePrecision {
         public String getName(){
             return name;
         }
+
+        public static Stream<Metrics> stream(){
+            Metrics[] all = {ACCURACY, MEAN_MATCHED_IOU, MEAN_TRUE_IOU, TP, FP, FN, PRECISION, RECALL, F1};
+            return Arrays.stream(all);
+        }
     }
 
     private Map<Metrics, Double> metricsResult;
@@ -61,11 +68,11 @@ public class MultiMetrics extends AveragePrecision {
     private Metrics defaultMetrics;
 
     public MultiMetrics(){
-        this(Metrics.AV_PRECISION, 0.5);
+        this(Metrics.ACCURACY, 0.5);
     }
 
     public MultiMetrics(double defaultThreshold){
-        this(Metrics.AV_PRECISION, defaultThreshold);
+        this(Metrics.ACCURACY, defaultThreshold);
     }
 
     public MultiMetrics(Metrics defaultMetrics, double defaultThreshold){
@@ -73,7 +80,7 @@ public class MultiMetrics extends AveragePrecision {
         this.defaultMetrics = defaultMetrics;
     }
 
-    public Metrics getCurrentMetricsType() {
+    public Metrics getCurrentMetrics() {
         return defaultMetrics;
     }
 
@@ -112,7 +119,7 @@ public class MultiMetrics extends AveragePrecision {
      * @param metrics Metrics score to be returned
      * @return Metrics score
      */
-    public double getMetrics(Metrics metrics) {
+    public double getScore(Metrics metrics) {
         if(metricsResult == null)
             throw new NullPointerException("No metrics has been calculated yet.");
 
@@ -163,7 +170,7 @@ public class MultiMetrics extends AveragePrecision {
             double meanTrue = sumIoU / confusionMatrix.getNumberGroundTruthLabels();
             double precision = (tp + fp) > 0 ? tp / (tp + fp) : 0;
             double recall = (tp + fn) > 0 ? tp / (tp + fn) : 0;
-            double avPrecision = (tp + fn + fp) > 0 ? tp / (tp + fn + fp) : 0;
+            double accuracy = (tp + fn + fp) > 0 ? tp / (tp + fn + fp) : 0;
             double f1 = (precision + recall) > 0 ? 2 * precision * recall / (precision + recall) : 0;
 
             // add to the map
@@ -174,7 +181,7 @@ public class MultiMetrics extends AveragePrecision {
             metricsResult.put(Metrics.MEAN_TRUE_IOU, meanTrue);
             metricsResult.put(Metrics.PRECISION, precision);
             metricsResult.put(Metrics.RECALL, recall);
-            metricsResult.put(Metrics.AV_PRECISION, avPrecision);
+            metricsResult.put(Metrics.ACCURACY, accuracy);
             metricsResult.put(Metrics.F1, f1);
         } else if (confusionMatrix.getNumberGroundTruthLabels() == 0 &&
                 confusionMatrix.getNumberPredictionLabels() == 0){
@@ -185,7 +192,7 @@ public class MultiMetrics extends AveragePrecision {
             metricsResult.put(Metrics.MEAN_TRUE_IOU, 1.);
             metricsResult.put(Metrics.PRECISION, 1.);
             metricsResult.put(Metrics.RECALL, 1.);
-            metricsResult.put(Metrics.AV_PRECISION, 1.);
+            metricsResult.put(Metrics.ACCURACY, 1.);
             metricsResult.put(Metrics.F1, 1.);
         }else {
             double fn = confusionMatrix.getNumberGroundTruthLabels();
@@ -198,7 +205,7 @@ public class MultiMetrics extends AveragePrecision {
             metricsResult.put(Metrics.MEAN_TRUE_IOU, 0.);
             metricsResult.put(Metrics.PRECISION, 0.);
             metricsResult.put(Metrics.RECALL, 0.);
-            metricsResult.put(Metrics.AV_PRECISION, 0.);
+            metricsResult.put(Metrics.ACCURACY, 0.);
             metricsResult.put(Metrics.F1, 0.);
         }
 
