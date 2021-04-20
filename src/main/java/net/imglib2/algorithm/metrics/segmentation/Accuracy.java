@@ -37,6 +37,8 @@ public class Accuracy implements SegmentationMetrics
 
 	private double threshold;
 
+	private ConfusionMatrix confusionMatrix;
+
 	/**
 	 * Constructor with a default {@code threshold} value of 0.5. The threshold is the minimum
 	 * IoU at which ground-truth and prediction labels can be considered to be a potential match.
@@ -107,7 +109,7 @@ public class Accuracy implements SegmentationMetrics
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// compute confusion matrix
-		final ConfusionMatrix confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
+		confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
 
 		// compute cost matrix
 		double[][] costMatrix = computeCostMatrix( confusionMatrix );
@@ -126,7 +128,7 @@ public class Accuracy implements SegmentationMetrics
 	 *
 	 * @return Cost matrix
 	 */
-	protected double[][] computeCostMatrix( ConfusionMatrix cM )
+	protected double[][] computeCostMatrix( final ConfusionMatrix cM )
 	{
 		int M = cM.getNumberGroundTruthLabels();
 		int N = cM.getNumberPredictionLabels();
@@ -165,7 +167,7 @@ public class Accuracy implements SegmentationMetrics
 	 * @return IoU between label {@code iGT} and {@code jPred}, or 0 if the IoU
 	 * is smaller than the {@code threshold}
 	 */
-	protected double getLocalIoUScore( ConfusionMatrix cM, int iGT, int jPred, double threshold )
+	protected double getLocalIoUScore( final ConfusionMatrix cM, int iGT, int jPred, double threshold )
 	{
 		// number of true positive pixels
 		double tp = cM.getIntersection( iGT, jPred );
@@ -208,7 +210,7 @@ public class Accuracy implements SegmentationMetrics
 	 *
 	 * @return Metrics score
 	 */
-	protected double computeMetrics( ConfusionMatrix confusionMatrix, double[][] costMatrix )
+	protected double computeMetrics( final ConfusionMatrix confusionMatrix, double[][] costMatrix )
 	{
 		// Note: MunkresKuhnAlgorithm, as implemented, does not change the cost matrix
 		int[][] assignment = new MunkresKuhnAlgorithm().computeAssignments( costMatrix );
@@ -238,5 +240,16 @@ public class Accuracy implements SegmentationMetrics
 			return Double.NaN;
 		}
 		return 0.;
+	}
+
+	/**
+	 * Return the last known confusion matrix. If {@link #computeMetrics(RandomAccessibleInterval, RandomAccessibleInterval) computeMetrics} has not
+	 * been called yet, then the method returns null.
+	 *
+	 * @return Confusion matrix
+	 */
+	public ConfusionMatrix getConfusionMatrix()
+	{
+		return confusionMatrix;
 	}
 }

@@ -222,7 +222,7 @@ public class MultiMetrics extends Accuracy
 	 * @return Default metrics score
 	 */
 	@Override
-	protected double computeMetrics( ConfusionMatrix confusionMatrix, double[][] costMatrix )
+	protected double computeMetrics( final ConfusionMatrix confusionMatrix, double[][] costMatrix )
 	{
 		metricsResult = new HashMap<>();
 
@@ -276,7 +276,7 @@ public class MultiMetrics extends Accuracy
 			metricsResult.put( Metrics.MEAN_TRUE_IOU, Double.NaN );
 			metricsResult.put( Metrics.PRECISION, Double.NaN );
 			metricsResult.put( Metrics.RECALL, Double.NaN );
-			metricsResult.put( Metrics.ACCURACY, Double.NaN);
+			metricsResult.put( Metrics.ACCURACY, Double.NaN );
 			metricsResult.put( Metrics.F1, Double.NaN );
 		}
 		else

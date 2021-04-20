@@ -26,6 +26,8 @@ import java.util.Arrays;
  */
 public class SEG implements SegmentationMetrics
 {
+	private ConfusionMatrix confusionMatrix;
+
 	/**
 	 * Compute the accuracy score between labels of a predicted and of a ground-truth image. If none
 	 * of the images have labels, then the metrics returns NaN.
@@ -57,7 +59,7 @@ public class SEG implements SegmentationMetrics
 			RandomAccessibleInterval< J > prediction )
 	{
 		// compute confusion matrix
-		final ConfusionMatrix confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
+		confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
 
 		// compute cost matrix
 		double[][] costMatrix = computeCostMatrix( confusionMatrix );
@@ -65,7 +67,7 @@ public class SEG implements SegmentationMetrics
 		return computeMetrics( confusionMatrix, costMatrix );
 	}
 
-	private double[][] computeCostMatrix( ConfusionMatrix cM )
+	private double[][] computeCostMatrix( final ConfusionMatrix cM )
 	{
 		int M = cM.getNumberGroundTruthLabels();
 		int N = cM.getNumberPredictionLabels();
@@ -87,7 +89,7 @@ public class SEG implements SegmentationMetrics
 		return costMatrix;
 	}
 
-	private double getLocalIoUScore( ConfusionMatrix cM, int i, int j )
+	private double getLocalIoUScore( final ConfusionMatrix cM, int i, int j )
 	{
 		double intersection = cM.getIntersection( i, j );
 		double gtSize = cM.getGroundTruthLabelSize( i );
@@ -105,7 +107,7 @@ public class SEG implements SegmentationMetrics
 		}
 	}
 
-	private double computeMetrics( ConfusionMatrix confusionMatrix, double[][] costMatrix )
+	private double computeMetrics( final ConfusionMatrix confusionMatrix, double[][] costMatrix )
 	{
 		if ( costMatrix.length != 0 && costMatrix[ 0 ].length != 0 )
 		{
@@ -129,5 +131,29 @@ public class SEG implements SegmentationMetrics
 			return Double.NaN;
 		}
 		return 0.;
+	}
+
+	/**
+	 * Return the last known confusion matrix. If {@link #computeMetrics(RandomAccessibleInterval, RandomAccessibleInterval) computeMetrics} has not
+	 * been called yet, then the method returns null.
+	 *
+	 * @return Confusion matrix
+	 */
+	public ConfusionMatrix getConfusionMatrix()
+	{
+		return confusionMatrix;
+	}
+
+	/**
+	 * Return the last known number of ground-truth labels. If {@link #computeMetrics(RandomAccessibleInterval, RandomAccessibleInterval) computeMetrics} has not
+	 * been called yet, then the method returns -1.
+	 *
+	 * @return Number of ground-truth labels, -1 if no metrics score has been calculated yet
+	 */
+	public int getGroundTruthLabelsNumber()
+	{
+		if ( confusionMatrix == null )
+			return -1;
+		return confusionMatrix.getNumberGroundTruthLabels();
 	}
 }
