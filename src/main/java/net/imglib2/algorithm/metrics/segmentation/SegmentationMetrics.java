@@ -17,7 +17,6 @@ import java.util.Set;
  *
  * @author Joran Deschamps
  */
-@FunctionalInterface
 public interface SegmentationMetrics
 {
 	/**
@@ -67,8 +66,8 @@ public interface SegmentationMetrics
 	 * @return Metrics score
 	 */
 	< I extends IntegerType< I >, J extends IntegerType< J > > double computeMetrics(
-			RandomAccessibleInterval< I > groundTruth,
-			RandomAccessibleInterval< J > prediction
+			final RandomAccessibleInterval< I > groundTruth,
+			final RandomAccessibleInterval< J > prediction
 	);
 
 	/**

@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  * slice-wise scoring, run the metrics on each slice individually.
  * <p>
  * Pixels with value 0 are considered background and are ignored during the metrics calculation. If
- * both images are only background, then the metrics score is 1.
+ * both images are only background, then the metrics returns NaN and TP=FP=FN=0.
  * <p>
  * All metrics are computed simultaneously. The default metrics, which can be set at instantiation or using
  * the {@link #setMetrics(Metrics)} method, defines which metrics score is returned by {@link #computeMetrics(RandomAccessibleInterval, RandomAccessibleInterval) computeMetrics}.
@@ -272,12 +272,12 @@ public class MultiMetrics extends Accuracy
 			metricsResult.put( Metrics.TP, 0. );
 			metricsResult.put( Metrics.FP, 0. );
 			metricsResult.put( Metrics.FN, 0. );
-			metricsResult.put( Metrics.MEAN_MATCHED_IOU, 1. );
-			metricsResult.put( Metrics.MEAN_TRUE_IOU, 1. );
-			metricsResult.put( Metrics.PRECISION, 1. );
-			metricsResult.put( Metrics.RECALL, 1. );
-			metricsResult.put( Metrics.ACCURACY, 1. );
-			metricsResult.put( Metrics.F1, 1. );
+			metricsResult.put( Metrics.MEAN_MATCHED_IOU, Double.NaN );
+			metricsResult.put( Metrics.MEAN_TRUE_IOU, Double.NaN );
+			metricsResult.put( Metrics.PRECISION, Double.NaN );
+			metricsResult.put( Metrics.RECALL, Double.NaN );
+			metricsResult.put( Metrics.ACCURACY, Double.NaN);
+			metricsResult.put( Metrics.F1, Double.NaN );
 		}
 		else
 		{

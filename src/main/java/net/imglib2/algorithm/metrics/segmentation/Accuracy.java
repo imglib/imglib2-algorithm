@@ -199,7 +199,7 @@ public class Accuracy implements SegmentationMetrics
 	 * and FN the number of unmatched ground-truth labels.
 	 * <p>
 	 * If the confusion matrix has neither ground-truth labels nor prediction labels, then the metrics score
-	 * is 1.
+	 * returns NaN.
 	 *
 	 * @param confusionMatrix
 	 * 		Confusion matrix
@@ -235,7 +235,7 @@ public class Accuracy implements SegmentationMetrics
 		else if ( confusionMatrix.getNumberGroundTruthLabels() == 0 &&
 				confusionMatrix.getNumberPredictionLabels() == 0 )
 		{
-			return 1.;
+			return Double.NaN;
 		}
 		return 0.;
 	}

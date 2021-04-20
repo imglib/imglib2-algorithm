@@ -16,7 +16,7 @@ import java.util.Arrays;
  * same label. For slice-wise scoring, run the metrics on each slice individually.
  * <p>
  * Finally, pixels with value 0 are considered background and are ignored during the metrics
- * calculation. If both images are only background, then the metrics score is 1.
+ * calculation. If both images are only background, then the metrics returns NaN.
  * <p>
  * Reference: Ulman, V., Maška, M., Magnusson, K. et al. An objective comparison of cell-tracking
  * algorithms. Nat Methods 14, 1141–1152 (2017).
@@ -26,9 +26,9 @@ import java.util.Arrays;
  */
 public class SEG implements SegmentationMetrics
 {
-
 	/**
-	 * Compute the accuracy score between labels of a predicted and of a ground-truth image.
+	 * Compute the accuracy score between labels of a predicted and of a ground-truth image. If none
+	 * of the images have labels, then the metrics returns NaN.
 	 *
 	 * @param groundTruth
 	 * 		Ground-truth image
@@ -49,6 +49,13 @@ public class SEG implements SegmentationMetrics
 		if ( !Arrays.equals( groundTruth.dimensionsAsLongArray(), prediction.dimensionsAsLongArray() ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
+		return run( groundTruth, prediction );
+	}
+
+	private < I extends IntegerType< I >, J extends IntegerType< J > > double run(
+			RandomAccessibleInterval< I > groundTruth,
+			RandomAccessibleInterval< J > prediction )
+	{
 		// compute confusion matrix
 		final ConfusionMatrix confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
 
@@ -119,7 +126,7 @@ public class SEG implements SegmentationMetrics
 		else if ( confusionMatrix.getNumberGroundTruthLabels() == 0 &&
 				confusionMatrix.getNumberPredictionLabels() == 0 )
 		{
-			return 1.;
+			return Double.NaN;
 		}
 		return 0.;
 	}
