@@ -57,7 +57,7 @@ public class SegmentationMetricsTest
 		final ImgLabeling< String, IntType > labelingIntersect = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleIntersectingLabels ) );
 		final ImgLabeling< String, IntType > labelingNonIntersect = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 
-		Set< IntType > occIntersect = SegmentationMetrics.getOccurringLabelSets( labelingIntersect );
+		Set< IntType > occIntersect = SegmentationHelper.getOccurringLabelSets( labelingIntersect );
 		assertEquals( 3, occIntersect.size() );
 
 		for ( IntType it : occIntersect )
@@ -66,8 +66,8 @@ public class SegmentationMetricsTest
 			assertTrue( i == 1 || i == 3 || i == 5 );
 		}
 
-		assertTrue( SegmentationMetrics.hasIntersectingLabels( labelingIntersect ) );
-		assertFalse( SegmentationMetrics.hasIntersectingLabels( labelingNonIntersect ) );
+		assertTrue( SegmentationHelper.hasIntersectingLabels( labelingIntersect ) );
+		assertFalse( SegmentationHelper.hasIntersectingLabels( labelingNonIntersect ) );
 	}
 
 	@Test( expected = UnsupportedOperationException.class )
@@ -124,17 +124,17 @@ public class SegmentationMetricsTest
 		for ( int i = 0; i < 10; i++ )
 			images.add( new ValuePair<>( groundtruth.copy(), prediction.copy() ) );
 
-		final SegmentationMetrics segMetrics = new SEG();
+		final SegmentationHelper segMetrics = new SEG();
 		images.stream().mapToDouble( p -> Consumer.computeMetrics( p, segMetrics ) ).forEach( d -> assertEquals( seg, d, 0.0001 ) );
 
-		final SegmentationMetrics avPrecMetrics = new Accuracy( 0.5 );
+		final SegmentationHelper avPrecMetrics = new Accuracy( 0.5 );
 		images.stream().mapToDouble( p -> Consumer.computeMetrics( p, avPrecMetrics ) ).forEach( d -> assertEquals( avprec, d, 0.0001 ) );
 
-		final SegmentationMetrics meanTrueMetrics = new MultiMetrics( MultiMetrics.Metrics.MEAN_TRUE_IOU, 0.5 );
+		final SegmentationHelper meanTrueMetrics = new MultiMetrics( MultiMetrics.Metrics.MEAN_TRUE_IOU, 0.5 );
 		images.stream().mapToDouble( p -> Consumer.computeMetrics( p, meanTrueMetrics ) ).forEach( d -> assertEquals( iou, d, 0.0001 ) );
 	}
 
-	public static class DummyMetrics implements SegmentationMetrics
+	public static class DummyMetrics implements SegmentationHelper
 	{
 		@Override
 		public < I extends IntegerType< I >, J extends IntegerType< J > > double computeMetrics( RandomAccessibleInterval< I > groundTruth, RandomAccessibleInterval< J > prediction )
@@ -145,7 +145,7 @@ public class SegmentationMetricsTest
 
 	public static class Consumer
 	{
-		public static double computeMetrics( Pair< Img< IntType >, Img< IntType > > pair, SegmentationMetrics metrics )
+		public static double computeMetrics( Pair< Img< IntType >, Img< IntType > > pair, SegmentationHelper metrics )
 		{
 			return metrics.computeMetrics( pair.getA(), pair.getB() );
 		}

@@ -1,10 +1,17 @@
 package net.imglib2.algorithm.metrics.segmentation;
 
+import java.util.ArrayList;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.metrics.segmentation.assignment.MunkresKuhnAlgorithm;
+import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.IntegerType;
 
 import java.util.Arrays;
+import net.imglib2.util.Intervals;
+import net.imglib2.util.Pair;
+import net.imglib2.view.Views;
+
+import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasIntersectingLabels;
 
 /**
  * Compute the accuracy at a specific {@code threshold} between the labels of a predicted and of a
@@ -24,7 +31,7 @@ import java.util.Arrays;
  * slice-wise scoring, run the metrics on each slice individually.
  * <p>
  * Pixels with value 0 are considered background and are ignored during the metrics calculation. If
- * both images are only background, then the metrics score is 1.
+ * both images are only background, then the metrics score is NaN.
  * <p>
  * Finally, the {@code threshold} can be set during instantiation, as well as in between calls to
  * {@link #computeMetrics(RandomAccessibleInterval, RandomAccessibleInterval) computMetrics} by using the {@link #setThreshold(double) setThreshold} method.
@@ -32,12 +39,12 @@ import java.util.Arrays;
  * @author Joran Deschamps
  * @see <a href="https://github.com/stardist/stardist">StarDist metrics</a>
  */
-public class Accuracy implements SegmentationMetrics
+public class Accuracy
 {
 
-	private double threshold;
+	// TODO T vs TZ or XY in javadoc
 
-	private ConfusionMatrix confusionMatrix;
+	private double threshold;
 
 	/**
 	 * Constructor with a default {@code threshold} value of 0.5. The threshold is the minimum
@@ -87,6 +94,37 @@ public class Accuracy implements SegmentationMetrics
 	}
 
 	/**
+	 * Compute a global metrics score between labels from a ground-truth and a predicted image. //TODO
+	 * <p>
+	 * The methods throws an {@link UnsupportedOperationException} if either of the images has intersecting labels.
+	 *
+	 * @param groundTruth
+	 * 		Ground-truth image
+	 * @param prediction
+	 * 		Predicted image
+	 * @param <T>
+	 * 		Label type associated to the ground-truth
+	 * @param <I>
+	 * 		Ground-truth pixel type
+	 * @param <U>
+	 * 		Label type associated to the prediction
+	 * @param <J>
+	 * 		Prediction pixel type
+	 *
+	 * @return Metrics score
+	 */
+	public < T, I extends IntegerType< I >, U, J extends IntegerType< J > > double computeMetrics(
+			final ImgLabeling< T, I > groundTruth,
+			final ImgLabeling< U, J > prediction
+	)
+	{
+		if ( hasIntersectingLabels( groundTruth ) || hasIntersectingLabels( prediction ) )
+			throw new UnsupportedOperationException( "ImgLabeling with intersecting labels are not supported." );
+
+		return computeMetrics( groundTruth.getIndexImg(), prediction.getIndexImg() );
+	}
+
+	/**
 	 * Compute the accuracy score between labels of a predicted and of a ground-truth image.
 	 *
 	 * @param groundTruth
@@ -108,8 +146,50 @@ public class Accuracy implements SegmentationMetrics
 		if ( !Arrays.equals( groundTruth.dimensionsAsLongArray(), prediction.dimensionsAsLongArray() ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
+		// check if it is a time-lapse
+		boolean timeLapse = groundTruth.dimension( 3 ) > 1;
+
+		if ( timeLapse )
+		{
+			return runAverageOverTime( groundTruth, prediction );
+		}
+		else
+		{
+			return runSingle( groundTruth, prediction );
+		}
+	}
+
+	// TODO
+	protected < I extends IntegerType< I >, J extends IntegerType< J > > double runAverageOverTime(
+			RandomAccessibleInterval< I > groundTruth,
+			RandomAccessibleInterval< J > prediction )
+	{
+		int nFrames = Intervals.dimensionsAsIntArray( groundTruth )[ 3 ];
+
+		final ArrayList< Double > scores = new ArrayList<>();
+
+		// run over all time indices, and compute metrics on each XY or XYZ hyperslice
+		for ( int i = 0; i < nFrames; i++ )
+		{
+			final RandomAccessibleInterval< I > gtFrame = Views.hyperSlice( groundTruth, 3, i );
+			final RandomAccessibleInterval< J > predFrame = Views.hyperSlice( prediction, 3, i );
+
+			double result = runSingle( gtFrame, predFrame );
+
+			// ignore NaNs
+			if ( Double.compare( result, Double.NaN ) != 0 )
+				scores.add( result );
+		}
+
+		return average( scores );
+	}
+
+	private < I extends IntegerType< I >, J extends IntegerType< J > > double runSingle(
+			RandomAccessibleInterval< I > groundTruth,
+			RandomAccessibleInterval< J > prediction )
+	{
 		// compute confusion matrix
-		confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
+		final ConfusionMatrix confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
 
 		// compute cost matrix
 		double[][] costMatrix = computeCostMatrix( confusionMatrix );
@@ -128,7 +208,7 @@ public class Accuracy implements SegmentationMetrics
 	 *
 	 * @return Cost matrix
 	 */
-	protected double[][] computeCostMatrix( final ConfusionMatrix cM )
+	protected double[][] computeCostMatrix( ConfusionMatrix cM )
 	{
 		int M = cM.getNumberGroundTruthLabels();
 		int N = cM.getNumberPredictionLabels();
@@ -167,7 +247,7 @@ public class Accuracy implements SegmentationMetrics
 	 * @return IoU between label {@code iGT} and {@code jPred}, or 0 if the IoU
 	 * is smaller than the {@code threshold}
 	 */
-	protected double getLocalIoUScore( final ConfusionMatrix cM, int iGT, int jPred, double threshold )
+	protected double getLocalIoUScore( ConfusionMatrix cM, int iGT, int jPred, double threshold )
 	{
 		// number of true positive pixels
 		double tp = cM.getIntersection( iGT, jPred );
@@ -210,7 +290,7 @@ public class Accuracy implements SegmentationMetrics
 	 *
 	 * @return Metrics score
 	 */
-	protected double computeMetrics( final ConfusionMatrix confusionMatrix, double[][] costMatrix )
+	protected double computeMetrics( ConfusionMatrix confusionMatrix, double[][] costMatrix )
 	{
 		// Note: MunkresKuhnAlgorithm, as implemented, does not change the cost matrix
 		int[][] assignment = new MunkresKuhnAlgorithm().computeAssignments( costMatrix );
@@ -242,14 +322,9 @@ public class Accuracy implements SegmentationMetrics
 		return 0.;
 	}
 
-	/**
-	 * Return the last known confusion matrix. If {@link #computeMetrics(RandomAccessibleInterval, RandomAccessibleInterval) computeMetrics} has not
-	 * been called yet, then the method returns null.
-	 *
-	 * @return Confusion matrix
-	 */
-	public ConfusionMatrix getConfusionMatrix()
+	private double average( final ArrayList< Double > results )
 	{
-		return confusionMatrix;
+		double n = results.size();
+		return results.stream().reduce( 0., Double::sum ) / n;
 	}
 }

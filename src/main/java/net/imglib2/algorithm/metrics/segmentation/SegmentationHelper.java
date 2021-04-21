@@ -17,58 +17,8 @@ import java.util.Set;
  *
  * @author Joran Deschamps
  */
-public interface SegmentationMetrics
+public class SegmentationHelper
 {
-	/**
-	 * Compute a global metrics score between labels from a ground-truth and a predicted image.
-	 * <p>
-	 * The methods throws an {@link UnsupportedOperationException} if either of the images has intersecting labels.
-	 *
-	 * @param groundTruth
-	 * 		Ground-truth image
-	 * @param prediction
-	 * 		Predicted image
-	 * @param <T>
-	 * 		Label type associated to the ground-truth
-	 * @param <I>
-	 * 		Ground-truth pixel type
-	 * @param <U>
-	 * 		Label type associated to the prediction
-	 * @param <J>
-	 * 		Prediction pixel type
-	 *
-	 * @return Metrics score
-	 */
-	default < T, I extends IntegerType< I >, U, J extends IntegerType< J > > double computeMetrics(
-			final ImgLabeling< T, I > groundTruth,
-			final ImgLabeling< U, J > prediction
-	)
-	{
-		if ( hasIntersectingLabels( groundTruth ) || hasIntersectingLabels( prediction ) )
-			throw new UnsupportedOperationException( "ImgLabeling with intersecting labels are not supported." );
-
-		return computeMetrics( groundTruth.getIndexImg(), prediction.getIndexImg() );
-	}
-
-	/**
-	 * Compute a global metrics score between labels from a ground-truth and a predicted image, where the labels
-	 * are the unique integer pixel values.
-	 *
-	 * @param groundTruth
-	 * 		Ground-truth image
-	 * @param prediction
-	 * 		Predicted image
-	 * @param <I>
-	 * 		Ground-truth pixel type
-	 * @param <J>
-	 * 		Prediction pixel type
-	 *
-	 * @return Metrics score
-	 */
-	< I extends IntegerType< I >, J extends IntegerType< J > > double computeMetrics(
-			final RandomAccessibleInterval< I > groundTruth,
-			final RandomAccessibleInterval< J > prediction
-	);
 
 	/**
 	 * Return a {@link Set} of occurring pixel values in the {@link ImgLabeling} index image.
