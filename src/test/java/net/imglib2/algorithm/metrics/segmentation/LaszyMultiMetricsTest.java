@@ -17,6 +17,7 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationMetricsTest
 import static net.imglib2.algorithm.metrics.segmentation.SegmentationMetricsTest.exampleNonIntersectingLabels;
 import static net.imglib2.algorithm.metrics.segmentation.SegmentationMetricsTest.getLabelingSet;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class LaszyMultiMetricsTest
 {
@@ -275,6 +276,104 @@ public class LaszyMultiMetricsTest
 			assertEquals( metrics, lazyResults );
 		}
 	}
+
+	@Test
+	public void testMultithreding() throws InterruptedException
+	{
+		int M = 10;
+		int N = 4 * 1000;
+
+		long[] dims = { 32, 32 };
+		final Img< IntType > groundtruth = ArrayImgs.ints( dims );
+		final Img< IntType > prediction = ArrayImgs.ints( dims );
+
+		int[] gtRect1 = { 2, 2, 11, 11 };
+		int[] predRect1 = { 6, 6, 15, 15 };
+
+		int[] gtRect2 = { 15, 15, 20, 20 };
+		int[] predRect2 = { 15, 16, 21, 21 };
+
+		// Paint overlapping labels
+		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect1, 9 );
+		SegmentationMetricsHelper.paintRectangle( prediction, predRect1, 5 );
+
+		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 2 );
+		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 8 );
+
+		double start, end;
+		double timeLazy = 0;
+		HashMap< Metrics, Double > lazyResults = new HashMap<>();
+		for(int k=0;k<M;k++)
+		{
+			start = System.currentTimeMillis();
+
+			LazyMultiMetrics lazyMetrics = new LazyMultiMetrics( 0.5 );
+			for ( int i = 0; i < N; i++ )
+			{
+				lazyMetrics.addTimePoint( groundtruth, prediction );
+			}
+			final HashMap< Metrics, Double > results = lazyMetrics.computeScore();
+
+			end = System.currentTimeMillis();
+
+			if(k > 0)
+				timeLazy += ( end - start )/ 100.;
+			else
+				lazyResults = results;
+
+		}
+
+		double timeMultiLazy = 0;
+		HashMap< Metrics, Double > multiLazyResults = new HashMap<>();
+
+		for(int k=0;k<M;k++)
+		{
+			start = System.currentTimeMillis();
+
+			final LazyMultiMetrics lazyMetrics = new LazyMultiMetrics( 0.5 );
+			Runnable r = () -> {
+					for ( int i = 0; i < N/4; i++ )
+					{
+						lazyMetrics.addTimePoint( groundtruth, prediction );
+					}
+			};
+
+			Thread t1 = new Thread(r);
+			Thread t2 = new Thread(r);
+			Thread t3 = new Thread(r);
+			Thread t4 = new Thread(r);
+
+			t1.start();
+			t2.start();
+			t3.start();
+			t4.start();
+
+			while(t1.isAlive() && t2.isAlive() && t3.isAlive() && t4.isAlive())
+			{
+				Thread.sleep(1);
+			}
+
+			final HashMap< Metrics, Double > results = lazyMetrics.computeScore();
+
+			end = System.currentTimeMillis();
+
+			if(k > 0)
+				timeMultiLazy += ( end - start )/ 100.;
+			else
+				multiLazyResults = results;
+		}
+
+		System.out.println(timeLazy+" vs "+timeMultiLazy);
+
+		assertTrue(  timeMultiLazy < timeLazy);
+		assertTrue( !lazyResults.isEmpty() );
+		assertTrue( !multiLazyResults.isEmpty() );
+
+		final HashMap< Metrics, Double > finalLazyResults = lazyResults;
+		final HashMap< Metrics, Double > finalMultiLazyResults = multiLazyResults;
+		Metrics.stream().forEach( m -> assertEquals( finalLazyResults.get( m ), finalMultiLazyResults.get( m ), 0.01));
+	}
+
 
 	private static HashMap< Metrics, Double > getMetrics( final double[] ious, double t )
 	{

@@ -1,5 +1,6 @@
 package net.imglib2.algorithm.metrics.segmentation;
 
+import java.util.concurrent.atomic.AtomicLong;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.metrics.segmentation.assignment.MunkresKuhnAlgorithm;
 import net.imglib2.roi.labeling.ImgLabeling;
@@ -97,29 +98,38 @@ public class MultiMetrics
 
 	public static class MetricsSummary
 	{
+		private AtomicLong aTP = new AtomicLong(0);
 
-		private double tp = 0.;
+		private AtomicLong aFP = new AtomicLong(0);
 
-		private double fp = 0.;
+		private AtomicLong aFN = new AtomicLong(0);
 
-		private double fn = 0.;
-
-		private double sumIoU = 0.;
+		private AtomicLong aSumIoU = new AtomicLong(0);
 
 		public void addPoint( MetricsSummary metrics )
 		{
-			this.tp += metrics.tp;
-			this.fp += metrics.fp;
-			this.fn += metrics.fn;
-			this.sumIoU += metrics.sumIoU;
+			this.aTP.addAndGet( metrics.aTP.get() );
+			this.aFP.addAndGet( metrics.aFP.get() );
+			this.aFN.addAndGet( metrics.aFN.get() );
+
+			addToAtomicLong(aSumIoU, atomicLongToDouble(metrics.aSumIoU));
 		}
 
 		public void addPoint( int tp, int fp, int fn, double sumIoU )
 		{
-			this.tp += tp;
-			this.fp += fp;
-			this.fn += fn;
-			this.sumIoU += sumIoU;
+			this.aTP.addAndGet( tp );
+			this.aFP.addAndGet( fp );
+			this.aFN.addAndGet( fn );
+
+			addToAtomicLong(aSumIoU, sumIoU);
+		}
+
+		private void addToAtomicLong(AtomicLong a, double b){
+			a.set( Double.doubleToRawLongBits( Double.longBitsToDouble( a.get()) + b ) );
+		}
+
+		private double atomicLongToDouble(AtomicLong a){
+			return Double.longBitsToDouble(a.get());
 		}
 
 		private double meanMatchedIoU( double tp, double sumIoU )
@@ -155,6 +165,12 @@ public class MultiMetrics
 		public HashMap< Metrics, Double > getScores()
 		{
 			HashMap< Metrics, Double > metrics = new HashMap<>();
+
+			// convert atomic elements
+			double tp = aTP.get();
+			double fp = aFP.get();
+			double fn = aFN.get();
+			double sumIoU = atomicLongToDouble(aSumIoU);
 
 			// compute metrics given tp, fp, fn and sumIoU
 			double meanMatched = meanMatchedIoU( tp, sumIoU );
