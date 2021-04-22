@@ -8,12 +8,14 @@ import net.imglib2.util.Pair;
 
 import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasIntersectingLabels;
 
-public class LazySEG {
+public class LazySEGMetrics
+{
 
 	private int nGT = 0;
+
 	private double sumScores = 0.;
 
-	public < T, I extends IntegerType< I >, U, J extends IntegerType< J > > void addPoint(
+	public < T, I extends IntegerType< I >, U, J extends IntegerType< J > > void addTimePoint(
 			final ImgLabeling< T, I > groundTruth,
 			final ImgLabeling< U, J > prediction
 	)
@@ -21,18 +23,19 @@ public class LazySEG {
 		if ( hasIntersectingLabels( groundTruth ) || hasIntersectingLabels( prediction ) )
 			throw new UnsupportedOperationException( "ImgLabeling with intersecting labels are not supported." );
 
-		addPoint( groundTruth.getIndexImg(), prediction.getIndexImg() );
+		addTimePoint( groundTruth.getIndexImg(), prediction.getIndexImg() );
 	}
 
-	public < I extends IntegerType< I >, J extends IntegerType< J > > void addPoint(
+	public < I extends IntegerType< I >, J extends IntegerType< J > > void addTimePoint(
 			RandomAccessibleInterval< I > groundTruth,
-			RandomAccessibleInterval< J > prediction){
+			RandomAccessibleInterval< J > prediction )
+	{
 
 		if ( !Arrays.equals( groundTruth.dimensionsAsLongArray(), prediction.dimensionsAsLongArray() ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// compute SEG between the two images
-		final Pair< Integer, Double > result = new SEG().runSingle( groundTruth, prediction );
+		final Pair< Integer, Double > result = new SEGMetrics().runSingle( groundTruth, prediction );
 
 		// ignore NaNs
 		if ( Double.compare( result.getB(), Double.NaN ) != 0 )
@@ -42,7 +45,8 @@ public class LazySEG {
 		}
 	}
 
-	public double computeScore(){
-		return nGT > 0 ? sumScores / (double) nGT : Double.NaN;
+	public double computeScore()
+	{
+		return nGT > 0 ? sumScores / ( double ) nGT : Double.NaN;
 	}
 }

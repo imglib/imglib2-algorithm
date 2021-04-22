@@ -53,6 +53,9 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  */
 public class MultiMetrics
 {
+
+	private static int T_AXIS = 3;
+
 	/**
 	 * Metrics computed by the {@link MultiMetrics}.
 	 */
@@ -119,27 +122,33 @@ public class MultiMetrics
 			this.sumIoU += sumIoU;
 		}
 
-		private double meanMatched(double tp, double sumIoU){
+		private double meanMatchedIoU( double tp, double sumIoU )
+		{
 			return tp > 0 ? sumIoU / tp : Double.NaN;
 		}
 
-		private double meanTrue(double tp, double fp, double sumIoU){
-			return sumIoU > 0 ? sumIoU / ( tp + fp ) : Double.NaN;
+		private double meanTrueIoU( double tp, double fn, double sumIoU )
+		{
+			return ( tp + fn ) > 0 ? sumIoU / ( tp + fn ) : Double.NaN;
 		}
 
-		private double precision(double tp, double fp){
+		private double precision( double tp, double fp )
+		{
 			return ( tp + fp ) > 0 ? tp / ( tp + fp ) : Double.NaN;
 		}
 
-		private double recall(double tp, double fn){
+		private double recall( double tp, double fn )
+		{
 			return ( tp + fn ) > 0 ? tp / ( tp + fn ) : Double.NaN;
 		}
 
-		private double f1(double precision, double recall){
+		private double f1( double precision, double recall )
+		{
 			return ( precision + recall ) > 0 ? 2 * precision * recall / ( precision + recall ) : Double.NaN;
 		}
 
-		private double accuracy(double tp, double fp, double fn){
+		private double accuracy( double tp, double fp, double fn )
+		{
 			return ( tp + fn + fp ) > 0 ? tp / ( tp + fn + fp ) : Double.NaN;
 		}
 
@@ -148,11 +157,11 @@ public class MultiMetrics
 			HashMap< Metrics, Double > metrics = new HashMap<>();
 
 			// compute metrics given tp, fp, fn and sumIoU
-			double meanMatched = meanMatched( tp, sumIoU );
-			double meanTrue = meanTrue( tp, fp, sumIoU );
+			double meanMatched = meanMatchedIoU( tp, sumIoU );
+			double meanTrue = meanTrueIoU( tp, fn, sumIoU );
 			double precision = precision( tp, fp );
 			double recall = recall( tp, fn );
-			double f1 = f1(precision, recall);
+			double f1 = f1( precision, recall );
 			double accuracy = accuracy( tp, fp, fn );
 
 			// add to the map
@@ -226,7 +235,7 @@ public class MultiMetrics
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// check if it is a time-lapse
-		boolean timeLapse = groundTruth.dimension( 3 ) > 1;
+		boolean timeLapse = groundTruth.dimension( T_AXIS ) > 1;
 
 		if ( timeLapse )
 		{
@@ -243,15 +252,15 @@ public class MultiMetrics
 			RandomAccessibleInterval< J > prediction,
 			double threshold )
 	{
-		int nFrames = Intervals.dimensionsAsIntArray( groundTruth )[ 3 ];
+		int nFrames = Intervals.dimensionsAsIntArray( groundTruth )[ T_AXIS ];
 
 		final MetricsSummary metrics = new MetricsSummary();
 
 		// run over all time indices, and compute metrics on each XY or XYZ hyperslice
 		for ( int i = 0; i < nFrames; i++ )
 		{
-			final RandomAccessibleInterval< I > gtFrame = Views.hyperSlice( groundTruth, 3, i );
-			final RandomAccessibleInterval< J > predFrame = Views.hyperSlice( prediction, 3, i );
+			final RandomAccessibleInterval< I > gtFrame = Views.hyperSlice( groundTruth, T_AXIS, i );
+			final RandomAccessibleInterval< J > predFrame = Views.hyperSlice( prediction, T_AXIS, i );
 
 			final MetricsSummary result = runSingle( gtFrame, predFrame, threshold );
 
@@ -272,7 +281,7 @@ public class MultiMetrics
 		// compute cost matrix
 		double[][] costMatrix = computeCostMatrix( confusionMatrix, threshold );
 
-		return computeMetrics( confusionMatrix, costMatrix, threshold );
+		return computeFinalScores( confusionMatrix, costMatrix, threshold );
 	}
 
 	/**
@@ -361,7 +370,7 @@ public class MultiMetrics
 	 *
 	 * @return Default metrics score
 	 */
-	protected MetricsSummary computeMetrics( ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold )
+	protected MetricsSummary computeFinalScores( ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold )
 	{
 		MetricsSummary summary = new MetricsSummary();
 

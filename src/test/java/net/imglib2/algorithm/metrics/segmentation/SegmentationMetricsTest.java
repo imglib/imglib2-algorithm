@@ -1,13 +1,9 @@
 package net.imglib2.algorithm.metrics.segmentation;
 
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.labeling.ImgLabeling;
-import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.util.Pair;
-import net.imglib2.util.ValuePair;
 import org.junit.Test;
 
 import java.util.*;
@@ -68,86 +64,5 @@ public class SegmentationMetricsTest
 
 		assertTrue( SegmentationHelper.hasIntersectingLabels( labelingIntersect ) );
 		assertFalse( SegmentationHelper.hasIntersectingLabels( labelingNonIntersect ) );
-	}
-
-	@Test( expected = UnsupportedOperationException.class )
-	public void testException()
-	{
-		final Img< IntType > img = ArrayImgs.ints( exampleIndexArray, exampleIndexArrayDims );
-		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleIntersectingLabels ) );
-		final ImgLabeling< String, IntType > labeling2 = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
-
-		new DummyMetrics().computeMetrics( labeling, labeling2 );
-	}
-
-	@Test( expected = UnsupportedOperationException.class )
-	public void testException2()
-	{
-		final Img< IntType > img = ArrayImgs.ints( exampleIndexArray, exampleIndexArrayDims );
-		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
-		final ImgLabeling< String, IntType > labeling2 = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleIntersectingLabels ) );
-
-		new DummyMetrics().computeMetrics( labeling, labeling2 );
-	}
-
-	@Test
-	public void testNoException()
-	{
-		final Img< IntType > img = ArrayImgs.ints( exampleIndexArray, exampleIndexArrayDims );
-		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
-
-		new DummyMetrics().computeMetrics( labeling, labeling );
-	}
-
-	@Test
-	public void testFunctionalInterface()
-	{
-		long[] dims = { 32, 32 };
-		final Img< IntType > groundtruth = ArrayImgs.ints( dims );
-		final Img< IntType > prediction = ArrayImgs.ints( dims );
-
-		int min_gt = 2;
-		int max_gt = 11;
-		int min_pred = min_gt + 1;
-		int max_pred = max_gt + 1;
-
-		// paint
-		SegmentationMetricsTestHelper.paintRectangle( groundtruth, min_gt, min_gt, max_gt, max_gt, 9 );
-		SegmentationMetricsTestHelper.paintRectangle( prediction, min_pred, min_pred, max_pred, max_pred, 5 );
-
-		// metrics
-		double seg = SEGTest.getSEGBetweenRectangles( min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred );
-		double iou = AccuracyTest.getIoUBetweenRectangles( min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred );
-		double avprec = 1.;
-
-		List< Pair< Img< IntType >, Img< IntType > > > images = new ArrayList<>();
-		for ( int i = 0; i < 10; i++ )
-			images.add( new ValuePair<>( groundtruth.copy(), prediction.copy() ) );
-
-		final SegmentationHelper segMetrics = new SEG();
-		images.stream().mapToDouble( p -> Consumer.computeMetrics( p, segMetrics ) ).forEach( d -> assertEquals( seg, d, 0.0001 ) );
-
-		final SegmentationHelper avPrecMetrics = new Accuracy( 0.5 );
-		images.stream().mapToDouble( p -> Consumer.computeMetrics( p, avPrecMetrics ) ).forEach( d -> assertEquals( avprec, d, 0.0001 ) );
-
-		final SegmentationHelper meanTrueMetrics = new MultiMetrics( MultiMetrics.Metrics.MEAN_TRUE_IOU, 0.5 );
-		images.stream().mapToDouble( p -> Consumer.computeMetrics( p, meanTrueMetrics ) ).forEach( d -> assertEquals( iou, d, 0.0001 ) );
-	}
-
-	public static class DummyMetrics implements SegmentationHelper
-	{
-		@Override
-		public < I extends IntegerType< I >, J extends IntegerType< J > > double computeMetrics( RandomAccessibleInterval< I > groundTruth, RandomAccessibleInterval< J > prediction )
-		{
-			return 0;
-		}
-	}
-
-	public static class Consumer
-	{
-		public static double computeMetrics( Pair< Img< IntType >, Img< IntType > > pair, SegmentationHelper metrics )
-		{
-			return metrics.computeMetrics( pair.getA(), pair.getB() );
-		}
 	}
 }

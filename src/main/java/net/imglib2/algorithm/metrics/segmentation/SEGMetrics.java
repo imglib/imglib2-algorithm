@@ -33,11 +33,9 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  * @author Joran Deschamps
  * @see <a href="https://github.com/CellTrackingChallenge/CTC-FijiPlugins">Original implementation by Martin Maška and Vladimír Ulman</a>
  */
-public class SEG
+public class SEGMetrics
 {
-	// TODO Tests for T and 3D, and NaN
-	// TODO finish java doc
-	// TODO how to make it practical for many files for users that want weighted average?
+	private static int T_AXIS = 3;
 
 	/**
 	 * Compute a global metrics score between labels from a ground-truth and a predicted image. //TODO
@@ -70,7 +68,6 @@ public class SEG
 		return computeMetrics( groundTruth.getIndexImg(), prediction.getIndexImg() );
 	}
 
-
 	/**
 	 * Compute the accuracy score between labels of a predicted and of a ground-truth image. If none
 	 * of the images have labels, then the metrics returns NaN.
@@ -94,7 +91,7 @@ public class SEG
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// check if it is a time-lapse
-		boolean timeLapse = groundTruth.dimension( 3 ) > 1;
+		boolean timeLapse = groundTruth.dimension( T_AXIS ) > 1;
 
 		if ( timeLapse )
 		{
@@ -111,7 +108,7 @@ public class SEG
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction )
 	{
-		int nFrames = Intervals.dimensionsAsIntArray( groundTruth )[ 3 ];
+		int nFrames = Intervals.dimensionsAsIntArray( groundTruth )[ T_AXIS ];
 
 		double sumScores = 0.;
 		double nGT = 0.;
@@ -119,8 +116,8 @@ public class SEG
 		// run over all time indices, and compute metrics on each XY or XYZ hyperslice
 		for ( int i = 0; i < nFrames; i++ )
 		{
-			final RandomAccessibleInterval< I > gtFrame = Views.hyperSlice( groundTruth, 3, i );
-			final RandomAccessibleInterval< J > predFrame = Views.hyperSlice( prediction, 3, i );
+			final RandomAccessibleInterval< I > gtFrame = Views.hyperSlice( groundTruth, T_AXIS, i );
+			final RandomAccessibleInterval< J > predFrame = Views.hyperSlice( prediction, T_AXIS, i );
 
 			final Pair< Integer, Double > result = runSingle( gtFrame, predFrame );
 
@@ -146,7 +143,7 @@ public class SEG
 		// compute cost matrix
 		final double[][] costMatrix = computeCostMatrix( confusionMatrix );
 
-		return new ValuePair<>( n, computeMetrics( confusionMatrix, costMatrix ) );
+		return new ValuePair<>( n, computeFinalScore( costMatrix ) );
 	}
 
 	private double[][] computeCostMatrix( ConfusionMatrix cM )
@@ -189,7 +186,7 @@ public class SEG
 		}
 	}
 
-	private double computeMetrics( ConfusionMatrix confusionMatrix, double[][] costMatrix )
+	private double computeFinalScore( double[][] costMatrix )
 	{
 		if ( costMatrix.length != 0 && costMatrix[ 0 ].length != 0 )
 		{

@@ -10,41 +10,45 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
 
 public class LazyMultiMetrics
 {
-	final MultiMetrics.MetricsSummary summary;
+	private final MultiMetrics.MetricsSummary summary;
 
-	public LazyMultiMetrics(){
+	private final double threshold;
+
+	public LazyMultiMetrics(double threshold)
+	{
+		this.threshold = threshold;
 		summary = new MultiMetrics.MetricsSummary();
 	}
 
-	public < T, I extends IntegerType< I >, U, J extends IntegerType< J > > void addPoint(
+	public < T, I extends IntegerType< I >, U, J extends IntegerType< J > > void addTimePoint(
 			final ImgLabeling< T, I > groundTruth,
-			final ImgLabeling< U, J > prediction,
-			double threshold
+			final ImgLabeling< U, J > prediction
 	)
 	{
 		if ( hasIntersectingLabels( groundTruth ) || hasIntersectingLabels( prediction ) )
 			throw new UnsupportedOperationException( "ImgLabeling with intersecting labels are not supported." );
 
-		addPoint( groundTruth.getIndexImg(), prediction.getIndexImg(), threshold );
+		addTimePoint( groundTruth.getIndexImg(), prediction.getIndexImg() );
 	}
 
-	public < I extends IntegerType< I >, J extends IntegerType< J > > void addPoint(
+	public < I extends IntegerType< I >, J extends IntegerType< J > > void addTimePoint(
 			RandomAccessibleInterval< I > groundTruth,
-			RandomAccessibleInterval< J > prediction,
-			double threshold
-	){
+			RandomAccessibleInterval< J > prediction
+	)
+	{
 
 		if ( !Arrays.equals( groundTruth.dimensionsAsLongArray(), prediction.dimensionsAsLongArray() ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
-		// compute SEG between the two images
+		// compute multi metrics between the two images
 		final MultiMetrics.MetricsSummary result = new MultiMetrics().runSingle( groundTruth, prediction, threshold );
 
 		// add results
 		summary.addPoint( result );
 	}
 
-	public HashMap< MultiMetrics.Metrics, Double> computeScore(){
+	public HashMap< MultiMetrics.Metrics, Double > computeScore()
+	{
 		return summary.getScores();
 	}
 }
