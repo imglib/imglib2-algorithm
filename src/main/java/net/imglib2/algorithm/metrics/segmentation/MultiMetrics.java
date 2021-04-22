@@ -235,7 +235,10 @@ public class MultiMetrics
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// check if it is a time-lapse
-		boolean timeLapse = groundTruth.dimension( T_AXIS ) > 1;
+		boolean timeLapse = false;
+		if(groundTruth.dimensionsAsLongArray().length >= 4){
+			timeLapse = groundTruth.dimension( T_AXIS ) > 1;
+		}
 
 		if ( timeLapse )
 		{
