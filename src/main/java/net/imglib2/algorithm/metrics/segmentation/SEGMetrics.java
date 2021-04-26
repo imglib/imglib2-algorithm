@@ -14,18 +14,19 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
 
 /**
  * The SEG metrics computes the IoU (a.k.a. Jaccard index) metrics between ground-truth labels
- * and the prediction labels that have an overlap percentage greater than 0.5. The final score
- * is averaged over all ground-truth labels. In the context of instance segmentation, the labels
- * are the pixel values.
+ * and the prediction labels that overlap percentage greater than 0.5. In the context of instance
+ * segmentation, the labels are the integer pixel values. Pixels with value 0 are considered
+ * background and are ignored during the metrics calculation. If the ground-truth image is only
+ * background (no labels), then the metrics returns NaN.
  * <p>
- * // TODO write about time dimension (if needed use Views to change axis number)
- * // TODO expects XYZT, if T and Z then it runs on XYZ, if T runs on XY
- * The metrics is computed over all dimensions, meaning that the score over a 3D stack will be
- * calculated by considering that all pixels in the 3D stack with equal pixel value belong to the
- * same label. For slice-wise scoring, run the metrics on each slice individually.
+ * The metrics expect images of dimensions XYZT, where Z and T can be of depth 1. The metrics score
+ * is calculated for each ground-truth label in each XYZ volume (XY if dimension Z is of depth 1),
+ * and averaged over the total number of ground-truth labels in the XYZT volume. If the Z dimension
+ * has depth greater than 1, then the labels are considered 3D and pixels of equal values at different
+ * depths are considered to be part of the same labeling.
  * <p>
- * Finally, pixels with value 0 are considered background and are ignored during the metrics
- * calculation. If both images are only background, then the metrics returns NaN.
+ * Finally, if the image stack does not fit in memory, you can use {@link LazySEGMetrics} to compute
+ * a running SEG score for which images can be added one at time.
  * <p>
  * Reference: Ulman, V., Maška, M., Magnusson, K. et al. An objective comparison of cell-tracking
  * algorithms. Nat Methods 14, 1141–1152 (2017).
@@ -38,9 +39,12 @@ public class SEGMetrics
 	private static int T_AXIS = 3;
 
 	/**
-	 * Compute a global metrics score between labels from a ground-truth and a predicted image. //TODO
+	 * Compute a global metrics score between labels from a ground-truth and a predicted image. The
+	 * method expects images of dimension XYZT. The score is computed for each ground-truth label over
+	 * each XYZ volume (or XY if Z is of depth 1) and averaged over all ground-truth labels in XYZT. If
+	 * both images are empty (only pixels with value 0), then the metrics score is NaN.
 	 * <p>
-	 * The methods throws an {@link UnsupportedOperationException} if either of the images has intersecting labels.
+	 * This method is not compatible with {@link ImgLabeling} with intersecting labels.
 	 *
 	 * @param groundTruth
 	 * 		Ground-truth image
@@ -69,8 +73,10 @@ public class SEGMetrics
 	}
 
 	/**
-	 * Compute the accuracy score between labels of a predicted and of a ground-truth image. If none
-	 * of the images have labels, then the metrics returns NaN.
+	 * Compute a global metrics score between labels from a ground-truth and a predicted image. The
+	 * method expects images of dimension XYZT. The score is computed over the XYZ volume (or XY if
+	 * Z is of depth 1) and averaged over all ground-truth labels. If both images are empty (only
+	 * pixels with value 0), then the metrics score is NaN.
 	 *
 	 * @param groundTruth
 	 * 		Ground-truth image
@@ -92,7 +98,8 @@ public class SEGMetrics
 
 		// check if it is a time-lapse
 		boolean timeLapse = false;
-		if(groundTruth.dimensionsAsLongArray().length >= 4){
+		if ( groundTruth.dimensionsAsLongArray().length > T_AXIS )
+		{
 			timeLapse = groundTruth.dimension( T_AXIS ) > 1;
 		}
 

@@ -1,9 +1,11 @@
 package net.imglib2.algorithm.metrics.segmentation;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.loops.LoopBuilder;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.view.Views;
@@ -16,6 +18,7 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationMetricsTest
 import static net.imglib2.algorithm.metrics.segmentation.SegmentationMetricsTest.exampleNonIntersectingLabels;
 import static net.imglib2.algorithm.metrics.segmentation.SegmentationMetricsTest.getLabelingSet;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class LazySEGMetricsTest
 {
@@ -56,6 +59,57 @@ public class LazySEGMetricsTest
 		final ImgLabeling< String, IntType > labeling2 = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 
 		new LazySEGMetrics().addTimePoint( labeling, labeling2 );
+	}
+
+	/**
+	 * Test score without adding any image.
+	 */
+	@Test
+	public void testNoImage()
+	{
+		LazySEGMetrics metrics = new LazySEGMetrics( );
+		assertEquals( Double.NaN, metrics.computeScore(), 0.001 );
+	}
+
+	/**
+	 * Test metrics values when either or both ground-truth and prediction image are empty.
+	 */
+	@Test
+	public void testEmpty()
+	{
+		long[] dims = { 64, 64 };
+		final Img< IntType > nonEmpty = ArrayImgs.ints( dims );
+		final Img< IntType > empty = ArrayImgs.ints( dims );
+
+		// paint
+		SegmentationMetricsHelper.paintRectangle( nonEmpty, 12, 28, 42, 56, 9 );
+
+		//////////////////////////////////
+		// Empty gt, non-empty prediction
+		LazySEGMetrics metrics = new LazySEGMetrics();
+		metrics.addTimePoint( empty, nonEmpty );
+		metrics.addTimePoint( empty, nonEmpty );
+
+		double score = metrics.computeScore();
+		assertEquals( Double.NaN, score, 0.0001 );
+
+		//////////////////////////////////
+		// Non-empty gt, empty prediction
+		metrics = new LazySEGMetrics();
+		metrics.addTimePoint( nonEmpty, empty );
+		metrics.addTimePoint( nonEmpty, empty );
+
+		score = metrics.computeScore();
+		assertEquals( 0., score, 0.0001 );
+
+		//////////////////////////////////
+		// Empty gt, empty prediction
+		metrics = new LazySEGMetrics();
+		metrics.addTimePoint( empty, empty );
+		metrics.addTimePoint( empty, empty );
+
+		score = metrics.computeScore();
+		assertEquals( Double.NaN, score, 0.0001 );
 	}
 
 	/**
@@ -261,6 +315,134 @@ public class LazySEGMetricsTest
 		final double lazyScore = lazyMetrics.computeScore();
 
 		assertEquals( score, lazyScore, 0.0001 );
+	}
+
+	/**
+	 * Showcase a multithreading use of the LazySEGMetrics
+	 *
+	 * @throws InterruptedException
+	 */
+	public void testMultithreding() throws InterruptedException
+	{
+		int M = 10;
+		int N = 4 * 100;
+
+		long[] dims = { 512, 512 };
+		final Img< IntType > groundtruth = ArrayImgs.ints( dims );
+		final Img< IntType > prediction = ArrayImgs.ints( dims );
+
+		int[] gtRect1 = { 2, 2, 11, 11 };
+		int[] predRect1 = { 6, 6, 15, 15 };
+
+		int[] gtRect2 = { 15, 15, 20, 20 };
+		int[] predRect2 = { 15, 16, 21, 21 };
+
+		// Paint overlapping labels
+		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect1, 9 );
+		SegmentationMetricsHelper.paintRectangle( prediction, predRect1, 5 );
+
+		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 2 );
+		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 8 );
+
+		double start, end, lazyResults = 0.;
+		double timeLazy = 0;
+		for ( int k = 0; k < M; k++ )
+		{
+			start = System.currentTimeMillis();
+
+			LazySEGMetrics lazyMetrics = new LazySEGMetrics();
+			for ( int i = 0; i < N; i++ )
+			{
+				lazyMetrics.addTimePoint( groundtruth, prediction );
+			}
+			lazyResults = lazyMetrics.computeScore();
+
+			end = System.currentTimeMillis();
+
+			if ( k > 0 )
+				timeLazy += ( end - start ) / 100.;
+
+		}
+
+		double timeMultiLazy = 0., multiLazyResults = 0.;
+		for ( int k = 0; k < M; k++ )
+		{
+			start = System.currentTimeMillis();
+
+			final LazySEGMetrics lazyMetrics = new LazySEGMetrics();
+			Loader l1 = new Loader( lazyMetrics, groundtruth, prediction, N / 4 );
+			Loader l2 = new Loader( lazyMetrics, groundtruth, prediction, N / 4 );
+			Loader l3 = new Loader( lazyMetrics, groundtruth, prediction, N / 4 );
+			Loader l4 = new Loader( lazyMetrics, groundtruth, prediction, N / 4 );
+
+			Thread t1 = new Thread( l1 );
+			Thread t2 = new Thread( l2 );
+			Thread t3 = new Thread( l3 );
+			Thread t4 = new Thread( l4 );
+
+			t1.start();
+			t2.start();
+			t3.start();
+			t4.start();
+
+			while ( !l1.isDone() || !l2.isDone() || !l3.isDone() || !l4.isDone() )
+			{
+				Thread.sleep( 1 );
+			}
+
+			multiLazyResults = lazyMetrics.computeScore();
+
+			end = System.currentTimeMillis();
+
+			if ( k > 0 )
+				timeMultiLazy += ( end - start ) / 100.;
+		}
+
+		System.out.println( timeLazy + " vs " + timeMultiLazy );
+
+		assertTrue( 2 * timeMultiLazy < timeLazy );
+
+		assertEquals( lazyResults, multiLazyResults, 0.00001 );
+	}
+
+	private class Loader implements Runnable
+	{
+
+		private AtomicInteger counter;
+
+		private final int max;
+
+		private final LazySEGMetrics metrics;
+
+		private final RandomAccessibleInterval< IntType > gtRai, pRai;
+
+		public Loader( final LazySEGMetrics metrics, RandomAccessibleInterval< IntType > gt, RandomAccessibleInterval< IntType > pred, int max )
+		{
+			this.counter = new AtomicInteger( 0 );
+			this.metrics = metrics;
+			this.max = max;
+
+			this.gtRai = ArrayImgs.ints( gt.dimensionsAsLongArray() );
+			LoopBuilder.setImages( gtRai, gt ).forEachPixel( ( o, i ) -> o.set( i ) );
+
+			this.pRai = ArrayImgs.ints( gt.dimensionsAsLongArray() );
+			LoopBuilder.setImages( pRai, pred ).forEachPixel( ( o, i ) -> o.set( i ) );
+		}
+
+		@Override
+		public void run()
+		{
+			while ( counter.get() < max )
+			{
+				metrics.addTimePoint( gtRai, pRai );
+				counter.incrementAndGet();
+			}
+		}
+
+		public boolean isDone()
+		{
+			return counter.get() == max;
+		}
 	}
 
 	private static double getScore( final double[] ious )

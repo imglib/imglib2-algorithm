@@ -1,5 +1,6 @@
 package net.imglib2.algorithm.metrics.segmentation;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.metrics.segmentation.assignment.MunkresKuhnAlgorithm;
@@ -32,20 +33,20 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  * Mean matched IoU = sum of the matched labels IoU / TP
  * Mean true IoU = sum of the matched labels IoU / number of ground-truth labels
  * <p>
- * The metrics are computed over all dimensions, meaning that the score over a 3D stack will be calculated
- * by considering that all pixels in the 3D stack with equal pixel value belong to the same label. For
- * slice-wise scoring, run the metrics on each slice individually.
- * <p> //TODO
- * Pixels with value 0 are considered background and are ignored during the metrics calculation. If
- * both images are only background, then the metrics returns NaN and TP=FP=FN=0.
+ * Pixels with value 0 are considered background and are ignored during the metrics calculation. If the
+ * ground-truth image is only background (no labels), then the metrics returns TP=FP=FN=0 and NaN for
+ * the others.
  * <p>
- * All metrics are computed simultaneously. The default metrics, which can be set at instantiation or using
- * the {@link #(Metrics)} method, defines which metrics score is returned by {@link #(RandomAccessibleInterval, RandomAccessibleInterval) computeMetrics}.
- * After computation, all metrics score are available through {@link #(Metrics)}. All metrics score can be
- * returned by a single call to {@link #(RandomAccessibleInterval, RandomAccessibleInterval) computeAllMetrics}.
+ * The metrics expect images of dimensions XYZT, where Z and T can be of depth 1. The metrics scores
+ * are calculated for each ground-truth label in each XYZ volume (XY if dimension Z is of depth 1),
+ * and averaged over the total number of ground-truth labels in the XYZT volume. If the Z dimension
+ * has depth greater than 1, then the labels are considered 3D and pixels of equal values at different
+ * depths are considered to be part of the same labeling.
  * <p>
- * Finally, the {@code threshold} can be set during instantiation, as well as in between calls to
- * {@link #(RandomAccessibleInterval, RandomAccessibleInterval) computMetrics} by using the {@link #(double) setThreshold} method.
+ * Finally, if the image stack does not fit in memory, you can use {@link LazyMultiMetrics} to compute
+ * running metrics scores for which images can be added one at time.
+ * <p>
+ * Note: the accuracy is in some cases also called the average precision (see DSB challenge).
  * <p>
  * This class was inspired from the <a href="https://github.com/stardist/stardist">StarDist repository</a>.
  *
@@ -58,7 +59,7 @@ public class MultiMetrics
 	private static int T_AXIS = 3;
 
 	/**
-	 * Metrics computed by the {@link MultiMetrics}.
+	 * Metrics computed by {@link MultiMetrics} objects.
 	 */
 	public enum Metrics
 	{
@@ -96,40 +97,82 @@ public class MultiMetrics
 		}
 	}
 
-	public static class MetricsSummary
+	/**
+	 * An object holding the sum of TP, FP, FN and IoU values, accumulated over the T dimension. These
+	 * quantities are then used to compute all other metrics by calling {@link #getScores()}. Since the
+	 * aggregates are held by atomic objects, this class is compatible with multithreaded calls.
+	 */
+	protected static class MetricsSummary
 	{
-		private AtomicLong aTP = new AtomicLong(0);
+		private AtomicInteger aTP = new AtomicInteger( 0 );
 
-		private AtomicLong aFP = new AtomicLong(0);
+		private AtomicInteger aFP = new AtomicInteger( 0 );
 
-		private AtomicLong aFN = new AtomicLong(0);
+		private AtomicInteger aFN = new AtomicInteger( 0 );
 
-		private AtomicLong aSumIoU = new AtomicLong(0);
+		private AtomicLong aIoU = new AtomicLong( 0 );
 
-		public void addPoint( MetricsSummary metrics )
+		/**
+		 * Add the {@code otherMetrics} values to the aggregate of the current object.
+		 *
+		 * @param otherMetrics
+		 * 		MetricsSummary containing values to add to the aggregates
+		 */
+		public void addPoint( MetricsSummary otherMetrics )
 		{
-			this.aTP.addAndGet( metrics.aTP.get() );
-			this.aFP.addAndGet( metrics.aFP.get() );
-			this.aFN.addAndGet( metrics.aFN.get() );
+			this.aTP.addAndGet( otherMetrics.aTP.get() );
+			this.aFP.addAndGet( otherMetrics.aFP.get() );
+			this.aFN.addAndGet( otherMetrics.aFN.get() );
 
-			addToAtomicLong(aSumIoU, atomicLongToDouble(metrics.aSumIoU));
+			addToAtomicLong( aIoU, atomicLongToDouble( otherMetrics.aIoU ) );
 		}
 
+		/**
+		 * Add the values to the aggregates.
+		 *
+		 * @param tp
+		 * 		Number of TP to add to the TP aggregate
+		 * @param fp
+		 * 		Number of FP to add to the FP aggregate
+		 * @param fn
+		 * 		Number of FN to add to the FN aggregate
+		 * @param sumIoU
+		 * 		IoU sum to add to the IoU aggregate
+		 */
 		public void addPoint( int tp, int fp, int fn, double sumIoU )
 		{
 			this.aTP.addAndGet( tp );
 			this.aFP.addAndGet( fp );
 			this.aFN.addAndGet( fn );
 
-			addToAtomicLong(aSumIoU, sumIoU);
+			addToAtomicLong( aIoU, sumIoU );
 		}
 
-		private void addToAtomicLong(AtomicLong a, double b){
-			a.set( Double.doubleToRawLongBits( Double.longBitsToDouble( a.get()) + b ) );
+		/**
+		 * Add the value of {@code b} to an atomic long {@code a} representing
+		 * a double value.
+		 *
+		 * @param a
+		 * 		Atomic long to update
+		 * @param b
+		 * 		Value to add to the atomic long
+		 */
+		private void addToAtomicLong( AtomicLong a, double b )
+		{
+			a.set( Double.doubleToRawLongBits( Double.longBitsToDouble( a.get() ) + b ) );
 		}
 
-		private double atomicLongToDouble(AtomicLong a){
-			return Double.longBitsToDouble(a.get());
+		/**
+		 * Return the double value represented by the atomic long {@code a}.
+		 *
+		 * @param a
+		 * 		Atomic long representing a double value
+		 *
+		 * @return Double value represented by {@code a}
+		 */
+		private double atomicLongToDouble( AtomicLong a )
+		{
+			return Double.longBitsToDouble( a.get() );
 		}
 
 		private double meanMatchedIoU( double tp, double sumIoU )
@@ -162,6 +205,11 @@ public class MultiMetrics
 			return ( tp + fn + fp ) > 0 ? tp / ( tp + fn + fp ) : Double.NaN;
 		}
 
+		/**
+		 * Compute all metrics scores from the aggregates.
+		 *
+		 * @return Map of the metrics scores
+		 */
 		public HashMap< Metrics, Double > getScores()
 		{
 			HashMap< Metrics, Double > metrics = new HashMap<>();
@@ -170,7 +218,7 @@ public class MultiMetrics
 			double tp = aTP.get();
 			double fp = aFP.get();
 			double fn = aFN.get();
-			double sumIoU = atomicLongToDouble(aSumIoU);
+			double sumIoU = atomicLongToDouble( aIoU );
 
 			// compute metrics given tp, fp, fn and sumIoU
 			double meanMatched = meanMatchedIoU( tp, sumIoU );
@@ -196,14 +244,23 @@ public class MultiMetrics
 	}
 
 	/**
-	 * Compute a global metrics score between labels from a ground-truth and a predicted image. //TODO
+	 * Compute the global metrics scores between labels from a ground-truth and a predicted image. The
+	 * method expects images of dimension XYZT. The scores are computed over each XYZ volume (or XY if
+	 * Z is of depth 1) and accumulated. The mean matched IoU and mean true IoU scores are then averaged
+	 * over all true positives or all ground-truth labels, respectively. If both images are empty (only
+	 * pixels with value 0), then the metrics score is NaN.
 	 * <p>
-	 * The methods throws an {@link UnsupportedOperationException} if either of the images has intersecting labels.
+	 * The {@code threshold} is the minimum IoU between a ground-truth and a prediction label at which
+	 * two labels are considered a potential match.
+	 * <p>
+	 * This method is not compatible with {@link ImgLabeling} with intersecting labels.
 	 *
 	 * @param groundTruth
 	 * 		Ground-truth image
 	 * @param prediction
 	 * 		Predicted image
+	 * @param threshold
+	 * 		Threshold
 	 * @param <T>
 	 * 		Label type associated to the ground-truth
 	 * @param <I>
@@ -228,18 +285,27 @@ public class MultiMetrics
 	}
 
 	/**
-	 * Compute the accuracy score between labels of a predicted and of a ground-truth image.
+	 * Compute the global metrics scores between labels from a ground-truth and a predicted image. The
+	 * method expects images of dimension XYZT. The scores are computed over each XYZ volume (or XY if
+	 * Z is of depth 1) and accumulated. The mean matched IoU and mean true IoU scores are then averaged
+	 * over all true positives or all ground-truth labels, respectively. If both images are empty (only
+	 * pixels with value 0), then the metrics score is NaN.
+	 * <p>
+	 * The {@code threshold} is the minimum IoU between a ground-truth and a prediction label at which
+	 * two labels are considered a potential match.
 	 *
 	 * @param groundTruth
 	 * 		Ground-truth image
 	 * @param prediction
 	 * 		Predicted image
+	 * @param threshold
+	 * 		Threshold
 	 * @param <I>
 	 * 		Ground-truth pixel type
 	 * @param <J>
 	 * 		Prediction pixel type
 	 *
-	 * @return Metrics score
+	 * @return Metrics scores
 	 */
 	public < I extends IntegerType< I >, J extends IntegerType< J > > HashMap< Metrics, Double > computeMetrics(
 			RandomAccessibleInterval< I > groundTruth,
@@ -252,7 +318,8 @@ public class MultiMetrics
 
 		// check if it is a time-lapse
 		boolean timeLapse = false;
-		if(groundTruth.dimensionsAsLongArray().length >= 4){
+		if ( groundTruth.dimensionsAsLongArray().length > T_AXIS )
+		{
 			timeLapse = groundTruth.dimension( T_AXIS ) > 1;
 		}
 

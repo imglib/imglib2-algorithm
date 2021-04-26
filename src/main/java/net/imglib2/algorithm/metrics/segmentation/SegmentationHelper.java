@@ -1,6 +1,5 @@
 package net.imglib2.algorithm.metrics.segmentation;
 
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.view.Views;
@@ -10,10 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Interface for segmentation metrics computed by comparing a predicted image to a ground-truth
- * one. Images are expected to be {@link ImgLabeling} or {@link RandomAccessibleInterval} of type {@link IntegerType}.
- * <p>
- * Currently, there is no support for {@link ImgLabeling} with intersecting labels.
+ * Helper class used to check if an {@link ImgLabeling} has intersecting labels.
  *
  * @author Joran Deschamps
  */
