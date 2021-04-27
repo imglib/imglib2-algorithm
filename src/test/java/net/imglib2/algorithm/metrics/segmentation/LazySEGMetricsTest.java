@@ -22,6 +22,9 @@ import static org.junit.Assert.assertTrue;
 
 public class LazySEGMetricsTest
 {
+
+	private final static double delta = 0.00001;
+
 	/**
 	 * Test that passing a ground-truth image with intersecting labels throws an exception.
 	 */
@@ -68,7 +71,7 @@ public class LazySEGMetricsTest
 	public void testNoImage()
 	{
 		LazySEGMetrics metrics = new LazySEGMetrics( );
-		assertEquals( Double.NaN, metrics.computeScore(), 0.001 );
+		assertEquals( Double.NaN, metrics.computeScore(), delta );
 	}
 
 	/**
@@ -91,7 +94,7 @@ public class LazySEGMetricsTest
 		metrics.addTimePoint( empty, nonEmpty );
 
 		double score = metrics.computeScore();
-		assertEquals( Double.NaN, score, 0.0001 );
+		assertEquals( Double.NaN, score, delta );
 
 		//////////////////////////////////
 		// Non-empty gt, empty prediction
@@ -100,7 +103,7 @@ public class LazySEGMetricsTest
 		metrics.addTimePoint( nonEmpty, empty );
 
 		score = metrics.computeScore();
-		assertEquals( 0., score, 0.0001 );
+		assertEquals( 0., score, delta );
 
 		//////////////////////////////////
 		// Empty gt, empty prediction
@@ -109,7 +112,7 @@ public class LazySEGMetricsTest
 		metrics.addTimePoint( empty, empty );
 
 		score = metrics.computeScore();
-		assertEquals( Double.NaN, score, 0.0001 );
+		assertEquals( Double.NaN, score, delta );
 	}
 
 	/**
@@ -148,7 +151,7 @@ public class LazySEGMetricsTest
 		final double score = getScore( ious );
 		final double lazyScore = lazyMetrics.computeScore();
 
-		assertEquals( score, lazyScore, 0.0001 );
+		assertEquals( score, lazyScore, delta );
 	}
 
 	/**
@@ -192,7 +195,7 @@ public class LazySEGMetricsTest
 		final double score = getScore( ious );
 		final double lazyScore = lazyMetrics.computeScore();
 
-		assertEquals( score, lazyScore, 0.0001 );
+		assertEquals( score, lazyScore, delta );
 	}
 
 	/**
@@ -249,7 +252,7 @@ public class LazySEGMetricsTest
 		final double score = getScore( ious );
 		final double lazyScore = lazyMetrics.computeScore();
 
-		assertEquals( score, lazyScore, 0.0001 );
+		assertEquals( score, lazyScore, delta );
 	}
 
 	/**
@@ -314,7 +317,7 @@ public class LazySEGMetricsTest
 		final double score = getScore( ious );
 		final double lazyScore = lazyMetrics.computeScore();
 
-		assertEquals( score, lazyScore, 0.0001 );
+		assertEquals( score, lazyScore, delta );
 	}
 
 	/**
@@ -402,7 +405,7 @@ public class LazySEGMetricsTest
 
 		assertTrue( 2 * timeMultiLazy < timeLazy );
 
-		assertEquals( lazyResults, multiLazyResults, 0.00001 );
+		assertEquals( lazyResults, multiLazyResults, delta );
 	}
 
 	private class Loader implements Runnable

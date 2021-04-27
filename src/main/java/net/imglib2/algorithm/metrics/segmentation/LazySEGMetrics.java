@@ -89,7 +89,7 @@ public class LazySEGMetrics
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// compute SEG between the two images
-		final Pair< Integer, Double > result = new SEGMetrics().runSingle( groundTruth, prediction );
+		final Pair< Integer, Double > result = SEGMetrics.runSingle( groundTruth, prediction );
 
 		// ignore NaNs
 		if ( Double.compare( result.getB(), Double.NaN ) != 0 )

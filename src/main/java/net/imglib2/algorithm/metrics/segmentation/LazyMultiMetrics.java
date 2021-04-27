@@ -106,7 +106,7 @@ public class LazyMultiMetrics
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// compute multi metrics between the two images
-		final MultiMetrics.MetricsSummary result = new MultiMetrics().runSingle( groundTruth, prediction, threshold );
+		final MultiMetrics.MetricsSummary result = MultiMetrics.runSingle( groundTruth, prediction, threshold );
 
 		// add results
 		summary.addPoint( result );

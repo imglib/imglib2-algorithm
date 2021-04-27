@@ -1,8 +1,6 @@
 package net.imglib2.algorithm.metrics.segmentation;
 
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.labeling.ImgLabeling;
@@ -21,6 +19,8 @@ import static org.junit.Assert.assertEquals;
 
 public class MultiMetricsTest
 {
+	private final static double delta = 0.00001;
+
 	/**
 	 * Test that passing a ground-truth image with intersecting labels throws an exception.
 	 */
@@ -31,7 +31,7 @@ public class MultiMetricsTest
 		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleIntersectingLabels ) );
 		final ImgLabeling< String, IntType > labeling2 = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 
-		new MultiMetrics().computeMetrics( labeling, labeling2, 0.5 );
+		MultiMetrics.computeMetrics( labeling, labeling2, 0.5 );
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class MultiMetricsTest
 		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 		final ImgLabeling< String, IntType > labeling2 = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleIntersectingLabels ) );
 
-		new MultiMetrics().computeMetrics( labeling, labeling2, 0.5 );
+		MultiMetrics.computeMetrics( labeling, labeling2, 0.5 );
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class MultiMetricsTest
 		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 		final ImgLabeling< String, IntType > labeling2 = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 
-		new MultiMetrics().computeMetrics( labeling, labeling2, 0.5 );
+		MultiMetrics.computeMetrics( labeling, labeling2, 0.5 );
 	}
 
 	/**
@@ -74,18 +74,18 @@ public class MultiMetricsTest
 		SegmentationMetricsHelper.paintRectangle( img, 43, 9, 52, 18, 12 );
 
 		// default is the average precision
-		final HashMap< Metrics, Double > metrics = new MultiMetrics().computeMetrics( img, img, 0.5 );
+		final HashMap< Metrics, Double > metrics = MultiMetrics.computeMetrics( img, img, 0.5 );
 
 		// check results
-		assertEquals( 2., metrics.get( Metrics.TP ), 0.0001 );
-		assertEquals( 0., metrics.get( Metrics.FP ), 0.0001 );
-		assertEquals( 0., metrics.get( Metrics.FN ), 0.0001 );
-		assertEquals( 1., metrics.get( Metrics.ACCURACY ), 0.0001 );
-		assertEquals( 1., metrics.get( Metrics.MEAN_MATCHED_IOU ), 0.0001 );
-		assertEquals( 1., metrics.get( Metrics.MEAN_TRUE_IOU ), 0.0001 );
-		assertEquals( 1., metrics.get( Metrics.PRECISION ), 0.0001 );
-		assertEquals( 1., metrics.get( Metrics.RECALL ), 0.0001 );
-		assertEquals( 1., metrics.get( Metrics.F1 ), 0.0001 );
+		assertEquals( 2., metrics.get( Metrics.TP ), delta );
+		assertEquals( 0., metrics.get( Metrics.FP ), delta );
+		assertEquals( 0., metrics.get( Metrics.FN ), delta );
+		assertEquals( 1., metrics.get( Metrics.ACCURACY ), delta );
+		assertEquals( 1., metrics.get( Metrics.MEAN_MATCHED_IOU ), delta );
+		assertEquals( 1., metrics.get( Metrics.MEAN_TRUE_IOU ), delta );
+		assertEquals( 1., metrics.get( Metrics.PRECISION ), delta );
+		assertEquals( 1., metrics.get( Metrics.RECALL ), delta );
+		assertEquals( 1., metrics.get( Metrics.F1 ), delta );
 	}
 
 	/**
@@ -103,81 +103,81 @@ public class MultiMetricsTest
 
 		//////////////////////////////////
 		// Empty gt, non-empty prediction
-		Map< Metrics, Double > metrics = new MultiMetrics().computeMetrics( empty, nonEmpty, 0.5 );
+		Map< Metrics, Double > metrics = MultiMetrics.computeMetrics( empty, nonEmpty, 0.5 );
 
-		assertEquals( 0., metrics.get( Metrics.TP ), 0.0001 );
-		assertEquals( 1., metrics.get( Metrics.FP ), 0.0001 );
-		assertEquals( 0., metrics.get( Metrics.FN ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.TP ), delta );
+		assertEquals( 1., metrics.get( Metrics.FP ), delta );
+		assertEquals( 0., metrics.get( Metrics.FN ), delta );
 
 		// tp / (tp + fp + fn)
-		assertEquals( 0., metrics.get( Metrics.ACCURACY ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.ACCURACY ), delta );
 
 		// sumIoU / tp
-		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_MATCHED_IOU ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_MATCHED_IOU ), delta );
 
 		// sumIoU / (nGT) = sumIoU / (tp + fn)
-		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_TRUE_IOU ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_TRUE_IOU ), delta );
 
 		// tp / (tp + fp)
-		assertEquals( 0., metrics.get( Metrics.PRECISION ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.PRECISION ), delta );
 
 		// tp / (tp + fn)
-		assertEquals( Double.NaN, metrics.get( Metrics.RECALL ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.RECALL ), delta );
 
 		// 2*p*r / (p+r)
-		assertEquals( Double.NaN, metrics.get( Metrics.F1 ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.F1 ), delta );
 
 		//////////////////////////////////
 		// Non-empty gt, empty prediction
-		metrics = new MultiMetrics().computeMetrics( nonEmpty, empty, 0.5 );
+		metrics = MultiMetrics.computeMetrics( nonEmpty, empty, 0.5 );
 
-		assertEquals( 0., metrics.get( Metrics.TP ), 0.0001 );
-		assertEquals( 0., metrics.get( Metrics.FP ), 0.0001 );
-		assertEquals( 1., metrics.get( Metrics.FN ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.TP ), delta );
+		assertEquals( 0., metrics.get( Metrics.FP ), delta );
+		assertEquals( 1., metrics.get( Metrics.FN ), delta );
 
 		// tp / (tp + fp + fn)
-		assertEquals( 0., metrics.get( Metrics.ACCURACY ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.ACCURACY ), delta );
 
 		// sumIoU / tp
-		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_MATCHED_IOU ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_MATCHED_IOU ), delta );
 
 		// sumIoU / (nGT) = sumIoU / (tp + fn)
-		assertEquals( 0., metrics.get( Metrics.MEAN_TRUE_IOU ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.MEAN_TRUE_IOU ), delta );
 
 		// tp / (tp + fp)
-		assertEquals( Double.NaN, metrics.get( Metrics.PRECISION ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.PRECISION ), delta );
 
 		// tp / (tp + fn)
-		assertEquals( 0., metrics.get( Metrics.RECALL ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.RECALL ), delta );
 
 		// 2*p*r / (p+r)
-		assertEquals( Double.NaN, metrics.get( Metrics.F1 ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.F1 ), delta );
 
 		//////////////////////////////////
 		// Empty gt, empty prediction
-		metrics = new MultiMetrics().computeMetrics( empty, empty, 0.5 );
+		metrics = MultiMetrics.computeMetrics( empty, empty, 0.5 );
 
-		assertEquals( 0., metrics.get( Metrics.TP ), 0.0001 );
-		assertEquals( 0., metrics.get( Metrics.FP ), 0.0001 );
-		assertEquals( 0., metrics.get( Metrics.FN ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.TP ), delta );
+		assertEquals( 0., metrics.get( Metrics.FP ), delta );
+		assertEquals( 0., metrics.get( Metrics.FN ), delta );
 
 		// tp / (tp + fp + fn)
-		assertEquals( Double.NaN, metrics.get( Metrics.ACCURACY ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.ACCURACY ), delta );
 
 		// sumIoU / tp
-		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_MATCHED_IOU ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_MATCHED_IOU ), delta );
 
 		// sumIoU / (nGT) = sumIoU / (tp + fn)
-		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_TRUE_IOU ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_TRUE_IOU ), delta );
 
 		// tp / (tp + fp)
-		assertEquals( Double.NaN, metrics.get( Metrics.PRECISION ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.PRECISION ), delta );
 
 		// tp / (tp + fn)
-		assertEquals( Double.NaN, metrics.get( Metrics.RECALL ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.RECALL ), delta );
 
 		// 2*p*r / (p+r)
-		assertEquals( Double.NaN, metrics.get( Metrics.F1 ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.F1 ), delta );
 	}
 
 	/**
@@ -194,29 +194,29 @@ public class MultiMetricsTest
 		SegmentationMetricsHelper.paintRectangle( groundtruth, 12, 5, 25, 13, 9 );
 		SegmentationMetricsHelper.paintRectangle( prediction, 28, 15, 42, 32, 12 );
 
-		Map< Metrics, Double > metrics = new MultiMetrics().computeMetrics( groundtruth, prediction, 0.5 );
+		Map< Metrics, Double > metrics = MultiMetrics.computeMetrics( groundtruth, prediction, 0.5 );
 
-		assertEquals( 0., metrics.get( Metrics.TP ), 0.0001 );
-		assertEquals( 1., metrics.get( Metrics.FP ), 0.0001 );
-		assertEquals( 1., metrics.get( Metrics.FN ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.TP ), delta );
+		assertEquals( 1., metrics.get( Metrics.FP ), delta );
+		assertEquals( 1., metrics.get( Metrics.FN ), delta );
 
 		// tp / (tp + fp + fn)
-		assertEquals( 0., metrics.get( Metrics.ACCURACY ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.ACCURACY ), delta );
 
 		// sumIoU / tp
-		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_MATCHED_IOU ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.MEAN_MATCHED_IOU ), delta );
 
 		// sumIoU / (nGT) = sumIoU / (tp + fn)
-		assertEquals( 0., metrics.get( Metrics.MEAN_TRUE_IOU ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.MEAN_TRUE_IOU ), delta );
 
 		// tp / (tp + fp)
-		assertEquals( 0., metrics.get( Metrics.PRECISION ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.PRECISION ), delta );
 
 		// tp / (tp + fn)
-		assertEquals( 0., metrics.get( Metrics.RECALL ), 0.0001 );
+		assertEquals( 0., metrics.get( Metrics.RECALL ), delta );
 
 		// 2*p*r / (p+r)
-		assertEquals( Double.NaN, metrics.get( Metrics.F1 ), 0.0001 );
+		assertEquals( Double.NaN, metrics.get( Metrics.F1 ), delta );
 	}
 
 	/**
@@ -405,9 +405,6 @@ public class MultiMetricsTest
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
 
-		// Metrics
-		MultiMetrics metrics = new MultiMetrics();
-
 		// values
 		double localIoU = getIoUBetweenRectangles( gtRect, predRect );
 
@@ -415,7 +412,7 @@ public class MultiMetricsTest
 		for ( double t = 0.; t < 1.; t += 0.05 )
 		{
 			double iou = localIoU >= t ? localIoU : 0;
-			assertEquals( iou, metrics.getLocalIoUScore( cm, 0, 0, t ), 0.00001 );
+			assertEquals( iou, MultiMetrics.getLocalIoUScore( cm, 0, 0, t ), delta );
 		}
 	}
 
@@ -437,9 +434,7 @@ public class MultiMetricsTest
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
 
 		// Metrics
-		MultiMetrics metrics = new MultiMetrics();
-
-		assertEquals( 0., metrics.getLocalIoUScore( cm, 0, 0, 0. ), 0.00001 );
+		assertEquals( 0., MultiMetrics.getLocalIoUScore( cm, 0, 0, 0. ), delta );
 	}
 
 	@Test
@@ -458,9 +453,7 @@ public class MultiMetricsTest
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
 
 		// Metrics
-		MultiMetrics metrics = new MultiMetrics();
-
-		assertEquals( 0, metrics.getLocalIoUScore( cm, 0, 0, 0. ), 0.00001 );
+		assertEquals( 0, MultiMetrics.getLocalIoUScore( cm, 0, 0, 0. ), delta );
 	}
 
 	@Test
@@ -479,9 +472,7 @@ public class MultiMetricsTest
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
 
 		// Metrics
-		MultiMetrics metrics = new MultiMetrics();
-
-		assertEquals( 0, metrics.getLocalIoUScore( cm, 0, 0, 0. ), 0.00001 );
+		assertEquals( 0, MultiMetrics.getLocalIoUScore( cm, 0, 0, 0. ), delta );
 	}
 
 	@Test
@@ -508,16 +499,13 @@ public class MultiMetricsTest
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
 
-		// Metrics
-		MultiMetrics metrics = new MultiMetrics();
-
 		// values
 		double localIoU1 = getIoUBetweenRectangles( gtRect1, predRect );
 		double localIoU2 = getIoUBetweenRectangles( gtRect2, predRect );
 
 		// gtLabel2 encountered first, gtLabel1 second
-		assertEquals( localIoU1, metrics.getLocalIoUScore( cm, 1, 0, 0. ), 0.00001 );
-		assertEquals( localIoU2, metrics.getLocalIoUScore( cm, 0, 0, 0. ), 0.00001 );
+		assertEquals( localIoU1, MultiMetrics.getLocalIoUScore( cm, 1, 0, 0. ), delta );
+		assertEquals( localIoU2, MultiMetrics.getLocalIoUScore( cm, 0, 0, 0. ), delta );
 	}
 
 	@Test
@@ -544,16 +532,13 @@ public class MultiMetricsTest
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
 
-		// Metrics
-		MultiMetrics metrics = new MultiMetrics();
-
 		// values
 		double localIoU1 = getIoUBetweenRectangles( gtRect, predRect1 );
 		double localIoU2 = getIoUBetweenRectangles( gtRect, predRect2 );
 
 		// predLabel2 encountered first, predLabel1 second
-		assertEquals( localIoU1, metrics.getLocalIoUScore( cm, 0, 1, 0. ), 0.00001 );
-		assertEquals( localIoU2, metrics.getLocalIoUScore( cm, 0, 0, 0. ), 0.00001 );
+		assertEquals( localIoU1, MultiMetrics.getLocalIoUScore( cm, 0, 1, 0. ), delta );
+		assertEquals( localIoU2, MultiMetrics.getLocalIoUScore( cm, 0, 0, 0. ), delta );
 	}
 
 	/**
@@ -567,7 +552,6 @@ public class MultiMetricsTest
 	 */
 	private static void checkMetrics( final Img< IntType > groundtruth, final Img< IntType > prediction, final double[] ious )
 	{
-		MultiMetrics multiMetrics = new MultiMetrics();
 		// For each threshold value
 		for ( double t = 0.1; t < 1.; t += 0.05 )
 		{
@@ -593,18 +577,18 @@ public class MultiMetricsTest
 			f1 = ( prec + recall ) > 0 ? 2 * prec * recall / ( prec + recall ) : Double.NaN;
 
 			// Compute metrics
-			Map< Metrics, Double > metrics = multiMetrics.computeMetrics( groundtruth, prediction, t );
+			Map< Metrics, Double > metrics = MultiMetrics.computeMetrics( groundtruth, prediction, t );
 
 			// Check values
-			assertEquals( tp, metrics.get( Metrics.TP ), 0.0001 );
-			assertEquals( fp, metrics.get( Metrics.FP ), 0.0001 );
-			assertEquals( fn, metrics.get( Metrics.FN ), 0.0001 );
-			assertEquals( accur, metrics.get( Metrics.ACCURACY ), 0.0001 );
-			assertEquals( meanMatched, metrics.get( Metrics.MEAN_MATCHED_IOU ), 0.0001 );
-			assertEquals( meanTrue, metrics.get( Metrics.MEAN_TRUE_IOU ), 0.0001 );
-			assertEquals( prec, metrics.get( Metrics.PRECISION ), 0.0001 );
-			assertEquals( recall, metrics.get( Metrics.RECALL ), 0.0001 );
-			assertEquals( f1, metrics.get( Metrics.F1 ), 0.0001 );
+			assertEquals( tp, metrics.get( Metrics.TP ), delta );
+			assertEquals( fp, metrics.get( Metrics.FP ), delta );
+			assertEquals( fn, metrics.get( Metrics.FN ), delta );
+			assertEquals( accur, metrics.get( Metrics.ACCURACY ), delta );
+			assertEquals( meanMatched, metrics.get( Metrics.MEAN_MATCHED_IOU ), delta );
+			assertEquals( meanTrue, metrics.get( Metrics.MEAN_TRUE_IOU ), delta );
+			assertEquals( prec, metrics.get( Metrics.PRECISION ), delta );
+			assertEquals( recall, metrics.get( Metrics.RECALL ), delta );
+			assertEquals( f1, metrics.get( Metrics.F1 ), delta );
 		}
 	}
 

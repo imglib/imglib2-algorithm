@@ -272,7 +272,7 @@ public class MultiMetrics
 	 *
 	 * @return Metrics score
 	 */
-	public < T, I extends IntegerType< I >, U, J extends IntegerType< J > > HashMap< Metrics, Double > computeMetrics(
+	public static < T, I extends IntegerType< I >, U, J extends IntegerType< J > > HashMap< Metrics, Double > computeMetrics(
 			final ImgLabeling< T, I > groundTruth,
 			final ImgLabeling< U, J > prediction,
 			double threshold
@@ -307,7 +307,7 @@ public class MultiMetrics
 	 *
 	 * @return Metrics scores
 	 */
-	public < I extends IntegerType< I >, J extends IntegerType< J > > HashMap< Metrics, Double > computeMetrics(
+	public static < I extends IntegerType< I >, J extends IntegerType< J > > HashMap< Metrics, Double > computeMetrics(
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction,
 			double threshold )
@@ -333,7 +333,7 @@ public class MultiMetrics
 		}
 	}
 
-	protected < I extends IntegerType< I >, J extends IntegerType< J > > MetricsSummary runAverageOverTime(
+	protected static < I extends IntegerType< I >, J extends IntegerType< J > > MetricsSummary runAverageOverTime(
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction,
 			double threshold )
@@ -356,7 +356,7 @@ public class MultiMetrics
 		return metrics;
 	}
 
-	protected < I extends IntegerType< I >, J extends IntegerType< J > > MetricsSummary runSingle(
+	protected static < I extends IntegerType< I >, J extends IntegerType< J > > MetricsSummary runSingle(
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction,
 			double threshold )
@@ -381,7 +381,7 @@ public class MultiMetrics
 	 *
 	 * @return Cost matrix
 	 */
-	protected double[][] computeCostMatrix( ConfusionMatrix cM, double threshold )
+	protected static double[][] computeCostMatrix( ConfusionMatrix cM, double threshold )
 	{
 		int M = cM.getNumberGroundTruthLabels();
 		int N = cM.getNumberPredictionLabels();
@@ -420,7 +420,7 @@ public class MultiMetrics
 	 * @return IoU between label {@code iGT} and {@code jPred}, or 0 if the IoU
 	 * is smaller than the {@code threshold}
 	 */
-	protected double getLocalIoUScore( ConfusionMatrix cM, int iGT, int jPred, double threshold )
+	protected static double getLocalIoUScore( ConfusionMatrix cM, int iGT, int jPred, double threshold )
 	{
 		// number of true positive pixels
 		double tp = cM.getIntersection( iGT, jPred );
@@ -456,7 +456,7 @@ public class MultiMetrics
 	 *
 	 * @return Default metrics score
 	 */
-	protected MetricsSummary computeFinalScores( ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold )
+	protected static MetricsSummary computeFinalScores( ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold )
 	{
 		MetricsSummary summary = new MetricsSummary();
 

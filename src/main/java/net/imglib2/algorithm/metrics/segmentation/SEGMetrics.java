@@ -61,7 +61,7 @@ public class SEGMetrics
 	 *
 	 * @return Metrics score
 	 */
-	public < T, I extends IntegerType< I >, U, J extends IntegerType< J > > double computeMetrics(
+	public static < T, I extends IntegerType< I >, U, J extends IntegerType< J > > double computeMetrics(
 			final ImgLabeling< T, I > groundTruth,
 			final ImgLabeling< U, J > prediction
 	)
@@ -89,7 +89,7 @@ public class SEGMetrics
 	 *
 	 * @return Metrics score
 	 */
-	public < I extends IntegerType< I >, J extends IntegerType< J > > double computeMetrics(
+	public static < I extends IntegerType< I >, J extends IntegerType< J > > double computeMetrics(
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction )
 	{
@@ -114,7 +114,7 @@ public class SEGMetrics
 		}
 	}
 
-	private < I extends IntegerType< I >, J extends IntegerType< J > > double runAverageOverTime(
+	private static < I extends IntegerType< I >, J extends IntegerType< J > > double runAverageOverTime(
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction )
 	{
@@ -142,7 +142,7 @@ public class SEGMetrics
 		return nGT > 0 ? sumScores / nGT : Double.NaN;
 	}
 
-	protected < I extends IntegerType< I >, J extends IntegerType< J > > Pair< Integer, Double > runSingle(
+	protected static < I extends IntegerType< I >, J extends IntegerType< J > > Pair< Integer, Double > runSingle(
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction )
 	{
@@ -156,7 +156,7 @@ public class SEGMetrics
 		return new ValuePair<>( n, computeFinalScore( costMatrix ) );
 	}
 
-	private double[][] computeCostMatrix( ConfusionMatrix cM )
+	private static double[][] computeCostMatrix( ConfusionMatrix cM )
 	{
 		int M = cM.getNumberGroundTruthLabels();
 		int N = cM.getNumberPredictionLabels();
@@ -178,7 +178,7 @@ public class SEGMetrics
 		return costMatrix;
 	}
 
-	private double getLocalIoUScore( ConfusionMatrix cM, int i, int j )
+	private static double getLocalIoUScore( ConfusionMatrix cM, int i, int j )
 	{
 		double intersection = cM.getIntersection( i, j );
 		double gtSize = cM.getGroundTruthLabelSize( i );
@@ -196,7 +196,7 @@ public class SEGMetrics
 		}
 	}
 
-	private double computeFinalScore( double[][] costMatrix )
+	private static double computeFinalScore( double[][] costMatrix )
 	{
 		if ( costMatrix.length != 0 && costMatrix[ 0 ].length != 0 )
 		{

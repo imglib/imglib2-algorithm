@@ -16,6 +16,8 @@ import static org.junit.Assert.assertEquals;
 
 public class SEGMetricsTest
 {
+	private final static double delta = 0.00001;
+
 	/**
 	 * Test that passing a ground-truth image with intersecting labels throws an exception.
 	 */
@@ -39,7 +41,7 @@ public class SEGMetricsTest
 		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 		final ImgLabeling< String, IntType > labeling2 = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleIntersectingLabels ) );
 
-		new SEGMetrics().computeMetrics( labeling, labeling2 );
+		SEGMetrics.computeMetrics( labeling, labeling2 );
 	}
 
 	/**
@@ -52,7 +54,7 @@ public class SEGMetricsTest
 		final ImgLabeling< String, IntType > labeling = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 		final ImgLabeling< String, IntType > labeling2 = ImgLabeling.fromImageAndLabelSets( img, getLabelingSet( exampleNonIntersectingLabels ) );
 
-		new SEGMetrics().computeMetrics( labeling, labeling2 );
+		SEGMetrics.computeMetrics( labeling, labeling2 );
 	}
 
 	/**
@@ -69,10 +71,10 @@ public class SEGMetricsTest
 		SegmentationMetricsHelper.paintRectangle( img, 43, 9, 52, 18, 12 );
 
 		// default is the average precision
-		final double score = new SEGMetrics().computeMetrics( img, img );
+		final double score = SEGMetrics.computeMetrics( img, img );
 
 		// check results
-		assertEquals( 1., score, 0.0001 );
+		assertEquals( 1., score, delta );
 	}
 
 	/**
@@ -90,18 +92,18 @@ public class SEGMetricsTest
 
 		//////////////////////////////////
 		// Empty gt, non-empty prediction
-		double score = new SEGMetrics().computeMetrics( empty, nonEmpty );
-		assertEquals( Double.NaN, score, 0.0001 );
+		double score = SEGMetrics.computeMetrics( empty, nonEmpty );
+		assertEquals( Double.NaN, score, delta );
 
 		//////////////////////////////////
 		// Non-empty gt, empty prediction
-		score = new SEGMetrics().computeMetrics( nonEmpty, empty );
-		assertEquals( 0., score, 0.0001 );
+		score = SEGMetrics.computeMetrics( nonEmpty, empty );
+		assertEquals( 0., score, delta );
 
 		//////////////////////////////////
 		// Empty gt, empty prediction
-		score = new SEGMetrics().computeMetrics( empty, empty );
-		assertEquals( Double.NaN, score, 0.0001 );
+		score = SEGMetrics.computeMetrics( empty, empty );
+		assertEquals( Double.NaN, score, delta );
 	}
 
 	/**
@@ -118,8 +120,8 @@ public class SEGMetricsTest
 		SegmentationMetricsHelper.paintRectangle( groundtruth, 12, 5, 25, 13, 9 );
 		SegmentationMetricsHelper.paintRectangle( prediction, 28, 15, 42, 32, 12 );
 
-		double score = new SEGMetrics().computeMetrics( groundtruth, prediction );
-		assertEquals( 0., score, 0.0001 );
+		double score = SEGMetrics.computeMetrics( groundtruth, prediction );
+		assertEquals( 0., score, delta );
 	}
 
 	/**
@@ -298,9 +300,9 @@ public class SEGMetricsTest
 		double sumIoU = Arrays.stream( ious ).sum();
 
 		// Compute metrics
-		double score = new SEGMetrics().computeMetrics( groundtruth, prediction );
+		double score = SEGMetrics.computeMetrics( groundtruth, prediction );
 
-		assertEquals( sumIoU / nGT, score, 0.0001 );
+		assertEquals( sumIoU / nGT, score, delta );
 	}
 
 	protected static double getSEGBetweenRectangles( int[] a, int[] b )
