@@ -2,7 +2,7 @@ package net.imglib2.algorithm.metrics.imagequality;
 
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -13,12 +13,12 @@ public class PSNRTest
 
 	public static final long[] arrayDims = new long[] { 2, 2 };
 
-	private final int[] ref = new int[] {
+	private final byte[] ref = new byte[] {
 			1, 0,
 			5, 1,
 	};
 
-	private final int[] proc = new int[] {
+	private final byte[] proc = new byte[] {
 			1, 1,
 			4, 2,
 	};
@@ -28,8 +28,8 @@ public class PSNRTest
 	{
 		long[] dims1 = { 64, 64, 1 };
 		long[] dims2 = { 64, 63 };
-		final Img< IntType > im1 = ArrayImgs.ints( dims1 );
-		final Img< IntType > im2 = ArrayImgs.ints( dims2 );
+		final Img< UnsignedByteType > im1 = ArrayImgs.unsignedBytes( dims1 );
+		final Img< UnsignedByteType > im2 = ArrayImgs.unsignedBytes( dims2 );
 
 		PSNR.computeMetrics( im1, im2 );
 	}
@@ -39,8 +39,8 @@ public class PSNRTest
 	{
 		long[] dims1 = { 64, 64 };
 		long[] dims2 = { 64, 64 };
-		final Img< IntType > im1 = ArrayImgs.ints( dims1 );
-		final Img< IntType > im2 = ArrayImgs.ints( dims2 );
+		final Img< UnsignedByteType > im1 = ArrayImgs.unsignedBytes( dims1 );
+		final Img< UnsignedByteType > im2 = ArrayImgs.unsignedBytes( dims2 );
 
 		assertEquals( Double.NaN, PSNR.computeMetrics( im1, im2 ), delta );
 	}
@@ -48,8 +48,8 @@ public class PSNRTest
 	@Test
 	public void testPSNR()
 	{
-		final Img< IntType > reference = ArrayImgs.ints( ref, arrayDims );
-		final Img< IntType > processed = ArrayImgs.ints( proc, arrayDims );
+		final Img< UnsignedByteType > reference = ArrayImgs.unsignedBytes( ref, arrayDims );
+		final Img< UnsignedByteType > processed = ArrayImgs.unsignedBytes( proc, arrayDims );
 
 		double mse = 0;
 		for(int i=0; i<4; i++){
@@ -57,7 +57,7 @@ public class PSNRTest
 		}
 		mse /= 4;
 
-		double psnr = 10*Math.log10(25 / mse);
+		double psnr = 10*Math.log10(255*255 / mse);
 
 		assertEquals( psnr, PSNR.computeMetrics( reference, processed ), delta );
 	}
