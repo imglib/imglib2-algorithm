@@ -110,7 +110,7 @@ public class SEGMetrics
 		else
 		{
 			final Pair< Integer, Double > result = runSingle( groundTruth, prediction );
-			return result.getA() > 0 ? result.getB() / ( double ) result.getA() : Double.NaN;
+			return result.getA() > 0 ? result.getB() / result.getA() : Double.NaN;
 		}
 	}
 

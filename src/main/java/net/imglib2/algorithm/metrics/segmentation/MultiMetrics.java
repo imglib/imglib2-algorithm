@@ -426,8 +426,8 @@ public class MultiMetrics
 		double tp = cM.getIntersection( iGT, jPred );
 
 		// size of each label (number of pixels in each label)
-		double sumI = cM.getGroundTruthLabelSize( iGT );
-		double sumJ = cM.getPredictionLabelSize( jPred );
+		int sumI = cM.getGroundTruthLabelSize( iGT );
+		int sumJ = cM.getPredictionLabelSize( jPred );
 
 		// false positives and false negatives
 		double fn = sumI - tp;

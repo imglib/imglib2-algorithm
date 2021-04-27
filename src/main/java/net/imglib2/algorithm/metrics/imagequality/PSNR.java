@@ -44,7 +44,7 @@ public class PSNR
 			ra.setPosition( cu );
 			double dProc = ra.get().getRealDouble();
 
-			mse += ( dRef - dProc ) * ( dRef - dProc ) / ( double ) nPixels;
+			mse += ( dRef - dProc ) * ( dRef - dProc ) / nPixels;
 		}
 
 		return mse > 0 ? 20 * Math.log10( max / Math.sqrt( mse ) ) : Double.NaN;
