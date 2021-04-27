@@ -56,7 +56,7 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
 public class MultiMetrics
 {
 
-	private static int T_AXIS = 3;
+	private final static int T_AXIS = 3;
 
 	/**
 	 * Metrics computed by {@link MultiMetrics} objects.

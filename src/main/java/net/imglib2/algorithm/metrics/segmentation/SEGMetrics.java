@@ -36,7 +36,7 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  */
 public class SEGMetrics
 {
-	private static int T_AXIS = 3;
+	private final static int T_AXIS = 3;
 
 	/**
 	 * Compute a global metrics score between labels from a ground-truth and a predicted image. The
