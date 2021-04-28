@@ -1,5 +1,6 @@
 package net.imglib2.algorithm.metrics.imagequality;
 
+import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -52,13 +53,44 @@ public class PSNRTest
 		final Img< UnsignedByteType > processed = ArrayImgs.unsignedBytes( proc, arrayDims );
 
 		double mse = 0;
-		for(int i=0; i<4; i++){
-			mse += (ref[i]-proc[i])*(ref[i]-proc[i]);
+		for ( int i = 0; i < 4; i++ )
+		{
+			mse += ( ref[ i ] - proc[ i ] ) * ( ref[ i ] - proc[ i ] );
 		}
 		mse /= 4;
 
-		double psnr = 10*Math.log10(255*255 / mse);
+		double psnr = 10 * Math.log10( 255 * 255 / mse );
 
 		assertEquals( psnr, PSNR.computeMetrics( reference, processed ), delta );
+	}
+
+	/**
+	 * Compare the metrics score of a toy sample with result from scikit-image (python library).
+	 */
+	@Test
+	public void testToySample()
+	{
+		long[] dims = { 32, 32 };
+
+		final Img< UnsignedByteType > r = ArrayImgs.unsignedBytes( dims );
+		final Img< UnsignedByteType > p = ArrayImgs.unsignedBytes( dims );
+
+		final RandomAccess< UnsignedByteType > raR = r.randomAccess();
+		final RandomAccess< UnsignedByteType > raP = p.randomAccess();
+
+		for ( int i = 0; i < dims[ 0 ]; i++ )
+		{
+			for ( int j = 0; j < dims[ 1 ]; j++ )
+			{
+				raR.setPositionAndGet( new int[] { i, j } ).set( ( short ) i );
+				raP.setPositionAndGet( new int[] { i, j } ).set( ( short ) ( i + j ) );
+			}
+		}
+
+		// Same toy sample run with scikit-image (python):
+		// peak_signal_noise_ratio(im1, im2, data_range=255)
+		double skimagePSNR = 23.005293679636996;
+
+		assertEquals( skimagePSNR, PSNR.computeMetrics( r, p ), delta );
 	}
 }
