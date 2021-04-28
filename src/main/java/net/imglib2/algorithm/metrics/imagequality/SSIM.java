@@ -27,10 +27,10 @@ public class SSIM
 		FASTGAUSS
 	}
 
-	// TODO unit test for methods
+	// TODO unit test for private methods?
 	// TODO javadoc
-	// TODO 2D case vs 3D?
-	// TODO how to enforce positive images
+	// TODO does ssim makes sense in 3D?
+	// TODO should one enforced unsigned types?
 	public static < T extends RealType< T > > double computeMetrics(
 			final RandomAccessibleInterval< T > reference,
 			final RandomAccessibleInterval< T > processed,
@@ -46,7 +46,7 @@ public class SSIM
 		// calculate filter half-size
 		int edge;
 		if ( Filter.FASTGAUSS.equals( filter ) )
-			edge = Math.max( 2, ( int ) ( 3 * sigma + 1 ) );
+			edge = Math.max( 2, ( int ) ( 3 * sigma + 1 ) ); //todo justify this
 		else
 			edge = Math.max( 2, ( int ) ( 3 * sigma + 0.5 ) );
 
@@ -54,7 +54,7 @@ public class SSIM
 		final RandomAccessibleInterval< DoubleType > refIm = Converters.convert( reference, ( i, o ) -> o.set( i.getRealDouble() ), new DoubleType() );
 		final RandomAccessibleInterval< DoubleType > procIm = Converters.convert( processed, ( i, o ) -> o.set( i.getRealDouble() ), new DoubleType() );
 
-		// create (weighted) means, variances and covariance
+		// create (weighted) means, variances and covariance of the sliding windows
 		final RandomAccessibleInterval< DoubleType > ux = computeWeightedMean( filter, sigma, refIm );
 		final RandomAccessibleInterval< DoubleType > uy = computeWeightedMean( filter, sigma, procIm );
 		final RandomAccessibleInterval< DoubleType > vx = computeWeightedVariance( filter, sigma, refIm, ux );
@@ -67,7 +67,7 @@ public class SSIM
 		return computeMeanSSIM( S, edge );
 	}
 
-	// TODO there should be a more elegant way to create the empty images
+	// TODO there must be a more elegant way to create the empty images
 	private static RandomAccessibleInterval< DoubleType > createRAI(
 			RandomAccessibleInterval< DoubleType > input )
 	{
@@ -91,9 +91,8 @@ public class SSIM
 			double sigma,
 			RandomAccessibleInterval< DoubleType > input )
 	{
-		ExtendedRandomAccessibleInterval< DoubleType, RandomAccessibleInterval< DoubleType > > extInput = Views.extendMirrorDouble( input );
 		RandomAccessibleInterval< DoubleType > output = createRAI( input );
-		filter( filter, sigma, extInput, output );
+		filter( filter, sigma, Views.extendMirrorDouble( input ), output );
 		return output;
 	}
 
@@ -107,10 +106,9 @@ public class SSIM
 		RandomAccessibleInterval< DoubleType > square = createRAI( img );
 		LoopBuilder.setImages( img, square ).forEachPixel( ( i, o ) -> o.set( i.get() * i.get() ) );
 
-		// calculate weighted mean
-		ExtendedRandomAccessibleInterval< DoubleType, RandomAccessibleInterval< DoubleType > > extendedImg = Views.extendMirrorDouble( square );
+		// calculate (weighted) mean of the sliding window in the squared image
 		RandomAccessibleInterval< DoubleType > meanSquare = createRAI( img );
-		filter( filter, sigma, extendedImg, meanSquare );
+		filter( filter, sigma, Views.extendMirrorDouble( square ), meanSquare );
 
 		// compute variance
 		LoopBuilder.setImages( meanSquare, weightedMean ).forEachPixel( ( v, u ) -> v.set( ( v.get() - u.get() * u.get() ) ) );
@@ -130,10 +128,9 @@ public class SSIM
 		RandomAccessibleInterval< DoubleType > product = createRAI( im1 );
 		LoopBuilder.setImages( im1, im2, product ).forEachPixel( ( i1, i2, o ) -> o.set( i1.get() * i2.get() ) );
 
-		// calculate weighted mean
-		ExtendedRandomAccessibleInterval< DoubleType, RandomAccessibleInterval< DoubleType > > extendedImg = Views.extendMirrorDouble( product );
+		// calculate (weighted) mean of the sliding window in the product image
 		RandomAccessibleInterval< DoubleType > meanProduct = createRAI( im1 );
-		filter( filter, sigma, extendedImg, meanProduct );
+		filter( filter, sigma, Views.extendMirrorDouble( product ), meanProduct );
 
 		// compute covariance
 		LoopBuilder.setImages( meanProduct, weightedMean1, weightedMean2 ).forEachPixel( ( v, u1, u2 ) -> v.set( ( v.get() - u1.get() * u2.get() ) ) );

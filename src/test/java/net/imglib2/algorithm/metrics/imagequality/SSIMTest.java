@@ -42,14 +42,13 @@ public class SSIMTest
 		assertEquals( skimageSSIM, SSIM.computeMetrics( r, p, SSIM.Filter.GAUSS, 1.5 ), delta );
 	}
 
-	// TODO proper speed comparison, without the JNI optimizing the loop
-	@Test
+	// TODO JIT pretty good after first iteration for the "slow" filtering
 	public void testCompareSpeed()
 	{
 		double start, end;
-		int M = 10;
+		int M = 5;
 
-		long[] dims = { 2048, 2048 };
+		long[] dims = { 512, 512 };
 
 		final Img< UnsignedByteType > r = ArrayImgs.unsignedBytes( dims );
 		final Img< UnsignedByteType > p = ArrayImgs.unsignedBytes( dims );

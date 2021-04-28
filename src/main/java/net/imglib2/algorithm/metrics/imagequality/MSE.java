@@ -19,13 +19,9 @@ public class MSE
 		// get image range
 		final long nPixels = Arrays.stream( reference.dimensionsAsLongArray() ).reduce( 1, ( a, b ) -> a * b );
 
-		// convert to float
-		final RandomAccessibleInterval< DoubleType > refAsDouble = Converters.convert( reference, ( i, o ) -> o.set( i.getRealDouble() ), new DoubleType() );
-		final RandomAccessibleInterval< DoubleType > procAsDouble = Converters.convert( processed, ( i, o ) -> o.set( i.getRealDouble() ), new DoubleType() );
-
 		double mse = 0.;
-		final Cursor< DoubleType > cu = Views.iterable( refAsDouble ).localizingCursor();
-		final RandomAccess< DoubleType > ra = procAsDouble.randomAccess();
+		final Cursor< T > cu = Views.iterable( reference ).localizingCursor();
+		final RandomAccess< T > ra = processed.randomAccess();
 		while ( cu.hasNext() )
 		{
 			double dRef = cu.next().getRealDouble();
