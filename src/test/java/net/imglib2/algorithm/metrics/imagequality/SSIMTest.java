@@ -12,6 +12,42 @@ public class SSIMTest
 {
 	private final static double delta = 0.00001;
 
+	@Test( expected = IllegalArgumentException.class )
+	public void testNot3D()
+	{
+		long[] dims = { 32, 32, 12, 21 };
+
+		final Img< UnsignedByteType > r = ArrayImgs.unsignedBytes( dims );
+		final Img< UnsignedByteType > p = ArrayImgs.unsignedBytes( dims );
+
+		SSIM.computeMetrics( r, p, 1.5 );
+	}
+
+	@Test( expected = IllegalArgumentException.class )
+	public void testSingularDimension()
+	{
+		long[] dims = { 32, 32, 1 };
+
+		final Img< UnsignedByteType > r = ArrayImgs.unsignedBytes( dims );
+		final Img< UnsignedByteType > p = ArrayImgs.unsignedBytes( dims );
+
+		SSIM.computeMetrics( r, p, 1.5 );
+	}
+
+	@Test( expected = IllegalArgumentException.class )
+	public void testDimensionTooSmall()
+	{
+		double sigma = 1.5;
+		int minsize = 2 * ( int ) ( 3 * sigma + 0.5 ) + 1;
+
+		long[] dims = { 32, minsize - 1 };
+
+		final Img< UnsignedByteType > r = ArrayImgs.unsignedBytes( dims );
+		final Img< UnsignedByteType > p = ArrayImgs.unsignedBytes( dims );
+
+		SSIM.computeMetrics( r, p, 1.5 );
+	}
+
 	/**
 	 * Compare the metrics score of a toy sample with result from scikit-image (python library).
 	 */
@@ -39,49 +75,7 @@ public class SSIMTest
 		// structural_similarity(r, p, gaussian_weights=True, use_sample_covariance=False, sigma=1.5, data_range=255)
 		double skimageSSIM = 0.7433402662472663;
 
-		assertEquals( skimageSSIM, SSIM.computeMetrics( r, p, SSIM.Filter.GAUSS, 1.5 ), delta );
-	}
-
-	// TODO JIT pretty good after first iteration for the "slow" filtering
-	public void testCompareSpeed()
-	{
-		double start, end;
-		int M = 5;
-
-		long[] dims = { 512, 512 };
-
-		final Img< UnsignedByteType > r = ArrayImgs.unsignedBytes( dims );
-		final Img< UnsignedByteType > p = ArrayImgs.unsignedBytes( dims );
-
-		final RandomAccess< UnsignedByteType > raR = r.randomAccess();
-		final RandomAccess< UnsignedByteType > raP = p.randomAccess();
-
-		for ( int i = 0; i < dims[ 0 ]; i++ )
-		{
-			for ( int j = 0; j < dims[ 1 ]; j++ )
-			{
-				raR.setPositionAndGet( new int[] { i, j } ).set( ( short ) i );
-				raP.setPositionAndGet( new int[] { i, j } ).set( ( short ) ( i + j ) );
-			}
-		}
-
-		for ( int k = 0; k < M; k++ )
-		{
-			// Gauss
-			start = System.currentTimeMillis();
-			double gauss = SSIM.computeMetrics( r, p, SSIM.Filter.GAUSS, 1.5 );
-			end = System.currentTimeMillis();
-			double timeGauss = end - start;
-
-			// FastGauss
-			start = System.currentTimeMillis();
-			double fastGauss = SSIM.computeMetrics( r, p, SSIM.Filter.FASTGAUSS, 1.5 );
-			end = System.currentTimeMillis();
-			double timeFastGauss = end - start;
-
-			System.out.println( "Time: " + timeGauss + " vs " + timeFastGauss );
-
-			assertEquals( gauss, fastGauss, 0.001 );
-		}
+		double result = SSIM.computeMetrics( r, p, 1.5 );
+		assertEquals( skimageSSIM, result, delta );
 	}
 }
