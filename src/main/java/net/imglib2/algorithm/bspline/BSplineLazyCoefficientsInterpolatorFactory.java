@@ -234,9 +234,6 @@ public class BSplineLazyCoefficientsInterpolatorFactory<T extends RealType<T>, S
 
 	/**
 	 * Returns an image of coefficients that is lazily evaluated and cached.
-	 *
-	 * @param <R>
-	 *            the type
 	 */
 	public static class LazyCellImgFactory< T extends RealType< T >, S extends RealType< S > & NativeType< S > > extends ImgFactory< S >
 	{

@@ -136,8 +136,6 @@ public interface UnionFind
 	 *            labeled zero, foreground pixels are greater than zero: 1, 2,
 	 *            ..., N. Note that this is expected to be zero as background
 	 *            values will not be written.
-	 * @param unionFind
-	 *            {@link UnionFind}
 	 * @param idForPixel
 	 *            Create id from pixel location and value. Multiple calls with
 	 *            the same argument should always return the same result.
@@ -168,14 +166,6 @@ public interface UnionFind
 	 *            labeled zero, foreground pixels are greater than zero: 1, 2,
 	 *            ..., N. Note that this is expected to be zero as background
 	 *            values will not be written.
-	 * @param unionFind
-	 *            {@link UnionFind}
-	 * @param idForPixel
-	 *            Create id from pixel location and value. Multiple calls with
-	 *            the same argument should always return the same result.
-	 * @param idForSet
-	 *            Create id for a set from the root id of a set. Multiple calls
-	 *            with the same argument should always return the same result.
 	 */
 	public default < L extends IntegerType< L > > void relabel(
 			final RandomAccessibleInterval< L > labeling )

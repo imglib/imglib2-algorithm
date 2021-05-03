@@ -49,7 +49,7 @@ import java.util.HashMap;
  *
  * Example:
  *
- * <pre>
+ * <pre>{@code
  * final String url = "https://janelia-cosem.s3.amazonaws.com/jrc_hela-2/jrc_hela-2.n5";
  * final String dataset = "/em/fibsem-uint16/s4";
  *
@@ -60,7 +60,7 @@ import java.util.HashMap;
  * final RandomAccessibleInterval< T > img = Singleton.get(
  * 		url + ":" + dataset,
  * 		() -> N5Utils.open( n5, dataset ) );
- * </pre>
+ * }</pre>
  *
  * @author Stephan Saalfeld
  *

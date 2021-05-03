@@ -80,7 +80,6 @@ implements RandomAccessibleInterval< O >, IterableInterval< O >, View
 	 * @param computeType
 	 * @param outputType
 	 * @param outConverter Can be null.
-	 * @param interval Necessary only when there aren't any intervals already as inputs to the operations, or to crop
 	 */
 	public IterableRandomAccessibleFunction(
 			final IFunction operation,

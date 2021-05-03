@@ -116,7 +116,7 @@ public interface Caches
 	 * {@link NativeType} implementations in a memory cell image with volatile
 	 * cells. The result can be used with non-volatile types for processing but
 	 * it can also be wrapped into volatile types for visualization, see
-	 * {@link VolatileViews#wrapAsVolatile(RandomAccessible)}.
+	 * {@code VolatileViews.wrapAsVolatile(RandomAccessible)}.
 	 *
 	 * This is a very naive method to implement this kind of cache, but it
 	 * serves the purpose for this tutorial. The imglib2-cache library offers

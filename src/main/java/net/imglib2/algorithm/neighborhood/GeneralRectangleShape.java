@@ -54,10 +54,6 @@ public class GeneralRectangleShape extends RectangleShape
 
 	final int size;
 
-	/**
-	 * @param span
-	 * @param skipCenter
-	 */
 	public GeneralRectangleShape( final int size, final int offset, boolean skipCenter )
 	{
 		super( -1, skipCenter );

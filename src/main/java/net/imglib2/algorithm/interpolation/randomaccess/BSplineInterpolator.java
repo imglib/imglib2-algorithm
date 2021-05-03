@@ -46,7 +46,7 @@ import net.imglib2.type.numeric.RealType;
 /**
  * Performs cubic b-spline interpolation by pre-computing coefficients on the fly.
  * This will be less time efficient, in general, than pre-computing coefficients
- * using a {@link BSplineDecomposition}. This will be more memory-efficient
+ * using a {@code BSplineDecomposition}. This will be more memory-efficient
  * though.
  *
  * See Unser, Aldroubi, and Eden "Fast B-Spline Transforms for Continuous Image
