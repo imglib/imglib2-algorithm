@@ -1,7 +1,5 @@
 package net.imglib2.algorithm.metrics.segmentation;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.metrics.segmentation.assignment.MunkresKuhnAlgorithm;
 import net.imglib2.roi.labeling.ImgLabeling;
@@ -97,6 +95,8 @@ public class MultiMetrics
 		}
 	}
 
+	// TODO does not make sense to have the atomic values here since they are only really useful for the LazyMultiMetrics
+
 	/**
 	 * An object holding the sum of TP, FP, FN and IoU values, accumulated over the T dimension. These
 	 * quantities are then used to compute all other metrics by calling {@link #getScores()}. Since the
@@ -104,13 +104,13 @@ public class MultiMetrics
 	 */
 	protected static class MetricsSummary
 	{
-		private AtomicInteger aTP = new AtomicInteger( 0 );
+		private int tp = 0;
 
-		private AtomicInteger aFP = new AtomicInteger( 0 );
+		private int fp = 0;
 
-		private AtomicInteger aFN = new AtomicInteger( 0 );
+		private int fn = 0;
 
-		private AtomicLong aIoU = new AtomicLong( 0 );
+		private double sumIoU = 0.;
 
 		/**
 		 * Add the {@code otherMetrics} values to the aggregate of the current object.
@@ -120,11 +120,10 @@ public class MultiMetrics
 		 */
 		public void addPoint( MetricsSummary otherMetrics )
 		{
-			this.aTP.addAndGet( otherMetrics.aTP.get() );
-			this.aFP.addAndGet( otherMetrics.aFP.get() );
-			this.aFN.addAndGet( otherMetrics.aFN.get() );
-
-			addToAtomicLong( aIoU, atomicLongToDouble( otherMetrics.aIoU ) );
+			this.tp += otherMetrics.tp;
+			this.fp += otherMetrics.fp;
+			this.fn += otherMetrics.fn;
+			this.sumIoU += otherMetrics.sumIoU;
 		}
 
 		/**
@@ -141,66 +140,58 @@ public class MultiMetrics
 		 */
 		public void addPoint( int tp, int fp, int fn, double sumIoU )
 		{
-			this.aTP.addAndGet( tp );
-			this.aFP.addAndGet( fp );
-			this.aFN.addAndGet( fn );
-
-			addToAtomicLong( aIoU, sumIoU );
+			this.tp += tp;
+			this.fp += fp;
+			this.fn += fn;
+			this.sumIoU += sumIoU;
 		}
 
-		/**
-		 * Add the value of {@code b} to an atomic long {@code a} representing
-		 * a double value.
-		 *
-		 * @param a
-		 * 		Atomic long to update
-		 * @param b
-		 * 		Value to add to the atomic long
-		 */
-		private void addToAtomicLong( AtomicLong a, double b )
+		public int getTP()
 		{
-			a.set( Double.doubleToRawLongBits( Double.longBitsToDouble( a.get() ) + b ) );
+			return tp;
 		}
 
-		/**
-		 * Return the double value represented by the atomic long {@code a}.
-		 *
-		 * @param a
-		 * 		Atomic long representing a double value
-		 *
-		 * @return Double value represented by {@code a}
-		 */
-		private double atomicLongToDouble( AtomicLong a )
+		public int getFN()
 		{
-			return Double.longBitsToDouble( a.get() );
+			return fn;
 		}
 
-		private double meanMatchedIoU( double tp, double sumIoU )
+		public int getFP()
+		{
+			return fp;
+		}
+
+		public double getIoU()
+		{
+			return sumIoU;
+		}
+
+		protected double meanMatchedIoU( double tp, double sumIoU )
 		{
 			return tp > 0 ? sumIoU / tp : Double.NaN;
 		}
 
-		private double meanTrueIoU( double tp, double fn, double sumIoU )
+		protected double meanTrueIoU( double tp, double fn, double sumIoU )
 		{
 			return ( tp + fn ) > 0 ? sumIoU / ( tp + fn ) : Double.NaN;
 		}
 
-		private double precision( double tp, double fp )
+		protected double precision( double tp, double fp )
 		{
 			return ( tp + fp ) > 0 ? tp / ( tp + fp ) : Double.NaN;
 		}
 
-		private double recall( double tp, double fn )
+		protected double recall( double tp, double fn )
 		{
 			return ( tp + fn ) > 0 ? tp / ( tp + fn ) : Double.NaN;
 		}
 
-		private double f1( double precision, double recall )
+		protected double f1( double precision, double recall )
 		{
 			return ( precision + recall ) > 0 ? 2 * precision * recall / ( precision + recall ) : Double.NaN;
 		}
 
-		private double accuracy( double tp, double fp, double fn )
+		protected double accuracy( double tp, double fp, double fn )
 		{
 			return ( tp + fn + fp ) > 0 ? tp / ( tp + fn + fp ) : Double.NaN;
 		}
@@ -214,12 +205,6 @@ public class MultiMetrics
 		{
 			HashMap< Metrics, Double > metrics = new HashMap<>();
 
-			// convert atomic elements
-			double tp = aTP.get();
-			double fp = aFP.get();
-			double fn = aFN.get();
-			double sumIoU = atomicLongToDouble( aIoU );
-
 			// compute metrics given tp, fp, fn and sumIoU
 			double meanMatched = meanMatchedIoU( tp, sumIoU );
 			double meanTrue = meanTrueIoU( tp, fn, sumIoU );
@@ -229,9 +214,9 @@ public class MultiMetrics
 			double accuracy = accuracy( tp, fp, fn );
 
 			// add to the map
-			metrics.put( Metrics.TP, tp );
-			metrics.put( Metrics.FP, fp );
-			metrics.put( Metrics.FN, fn );
+			metrics.put( Metrics.TP, ( double ) tp );
+			metrics.put( Metrics.FP, ( double ) fp );
+			metrics.put( Metrics.FN, ( double ) fn );
 			metrics.put( Metrics.MEAN_MATCHED_IOU, meanMatched );
 			metrics.put( Metrics.MEAN_TRUE_IOU, meanTrue );
 			metrics.put( Metrics.PRECISION, precision );

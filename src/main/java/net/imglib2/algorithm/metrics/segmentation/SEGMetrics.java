@@ -156,7 +156,7 @@ public class SEGMetrics
 		return new ValuePair<>( n, computeFinalScore( costMatrix ) );
 	}
 
-	private static double[][] computeCostMatrix( ConfusionMatrix cM )
+	protected static double[][] computeCostMatrix( ConfusionMatrix cM )
 	{
 		int M = cM.getNumberGroundTruthLabels();
 		int N = cM.getNumberPredictionLabels();
@@ -178,7 +178,7 @@ public class SEGMetrics
 		return costMatrix;
 	}
 
-	private static double getLocalIoUScore( ConfusionMatrix cM, int i, int j )
+	protected static double getLocalIoUScore( ConfusionMatrix cM, int i, int j )
 	{
 		double intersection = cM.getIntersection( i, j );
 		double gtSize = cM.getGroundTruthLabelSize( i );
@@ -190,10 +190,8 @@ public class SEGMetrics
 
 			return intersection / ( gtSize + predSize - intersection );
 		}
-		else
-		{
-			return 0.;
-		}
+
+		return 0.;
 	}
 
 	private static double computeFinalScore( double[][] costMatrix )

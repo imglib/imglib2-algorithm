@@ -2,6 +2,8 @@ package net.imglib2.algorithm.metrics.segmentation;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.IntegerType;
@@ -20,8 +22,8 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  * Each image's contributions are calculated independently. Therefore, the same LazyMultiMetrics object
  * can be called from multiple threads in order to speed up the computation. For instance, if the
  * total stack does not fit in memory, lazy loading and multithreading can be used to compute the
- * SEG score by splitting the XYZ images between threads and adding them one by one. The final score
- * can then be calculated once all threads have finished.
+ * metrics scores by splitting the XYZ images between threads and adding them one by one. The final scores
+ * can be calculated once all threads have finished.
  * <p>
  * The {@link MultiMetrics} scores are calculated at a certain {@code threshold}. This threshold is
  * the minimum IoU between a ground-truth and a prediction label at which two labels are considered
@@ -31,27 +33,35 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  */
 public class LazyMultiMetrics
 {
-	private final MultiMetrics.MetricsSummary summary;
+	private AtomicInteger aTP = new AtomicInteger( 0 );
+
+	private AtomicInteger aFP = new AtomicInteger( 0 );
+
+	private AtomicInteger aFN = new AtomicInteger( 0 );
+
+	private AtomicLong aIoU = new AtomicLong( 0 );
 
 	private final double threshold;
 
 	/**
 	 * Constructor with a default threshold of 0.5.
 	 */
-	public LazyMultiMetrics(){
+	public LazyMultiMetrics()
+	{
 		this.threshold = 0.5;
-		summary = new MultiMetrics.MetricsSummary();
-	};
+	}
+
+	;
 
 	/**
 	 * Constructor that sets the threshold value.
 	 *
-	 * @param threshold Threshold
+	 * @param threshold
+	 * 		Threshold
 	 */
 	public LazyMultiMetrics( double threshold )
 	{
 		this.threshold = threshold;
-		summary = new MultiMetrics.MetricsSummary();
 	}
 
 	/**
@@ -109,7 +119,7 @@ public class LazyMultiMetrics
 		final MultiMetrics.MetricsSummary result = MultiMetrics.runSingle( groundTruth, prediction, threshold );
 
 		// add results
-		summary.addPoint( result );
+		addPoint( result );
 	}
 
 	/**
@@ -120,6 +130,56 @@ public class LazyMultiMetrics
 	 */
 	public HashMap< MultiMetrics.Metrics, Double > computeScore()
 	{
+		MultiMetrics.MetricsSummary summary = new MultiMetrics.MetricsSummary();
+
+		int tp = aTP.get();
+		int fp = aFP.get();
+		int fn = aFN.get();
+		double sumIoU = atomicLongToDouble( aIoU );
+
+		summary.addPoint( tp, fp, fn, sumIoU );
+
 		return summary.getScores();
 	}
+
+	/**
+	 * Update the atomic aggregates with the values held by the {@link net.imglib2.algorithm.metrics.segmentation.MultiMetrics.MetricsSummary}.
+	 * @param otherMetrics
+	 */
+	protected void addPoint( MultiMetrics.MetricsSummary otherMetrics )
+	{
+		this.aTP.addAndGet( otherMetrics.getTP() );
+		this.aFP.addAndGet( otherMetrics.getFP() );
+		this.aFN.addAndGet( otherMetrics.getFN() );
+
+		addToAtomicLong( aIoU, otherMetrics.getIoU() );
+	}
+
+	/**
+	 * Add the value of {@code b} to an atomic long {@code a} representing
+	 * a double value.
+	 *
+	 * @param a
+	 * 		Atomic long to update
+	 * @param b
+	 * 		Value to add to the atomic long
+	 */
+	private void addToAtomicLong( AtomicLong a, double b )
+	{
+		a.set( Double.doubleToRawLongBits( Double.longBitsToDouble( a.get() ) + b ) );
+	}
+
+	/**
+	 * Return the double value represented by the atomic long {@code a}.
+	 *
+	 * @param a
+	 * 		Atomic long representing a double value
+	 *
+	 * @return Double value represented by {@code a}
+	 */
+	private double atomicLongToDouble( AtomicLong a )
+	{
+		return Double.longBitsToDouble( a.get() );
+	}
+
 }
