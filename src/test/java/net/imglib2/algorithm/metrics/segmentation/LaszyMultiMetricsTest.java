@@ -305,7 +305,6 @@ public class LaszyMultiMetricsTest
 	 *
 	 * @throws InterruptedException
 	 */
-	@Test
 	public void testMultithreding() throws InterruptedException
 	{
 		int M = 10;

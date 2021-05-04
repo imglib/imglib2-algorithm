@@ -162,9 +162,7 @@ public class SEGMetrics
 		int N = cM.getNumberPredictionLabels();
 
 		// empty cost matrix
-		// make sure to obtain a rectangular matrix, with Npred > Ngt, in order
-		// to avoid empty assignments if using Munkres-Kuhn
-		double[][] costMatrix = new double[ M ][ Math.max( M + 1, N ) ];
+		double[][] costMatrix = new double[ M ][ N ];
 
 		// fill in cost matrix
 		for ( int i = 0; i < M; i++ )
