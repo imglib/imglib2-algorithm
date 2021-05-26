@@ -30,7 +30,7 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  * a potential match. The {@code threshold} can only be set at instantiation.
  *
  * @author Joran Deschamps
- * @see {@link MultiMetrics}
+ * @see MultiMetrics
  */
 public class LazyMultiMetrics
 {

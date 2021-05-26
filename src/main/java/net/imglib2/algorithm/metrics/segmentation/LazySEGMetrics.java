@@ -29,7 +29,7 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  * algorithms. Nat Methods 14, 1141–1152 (2017).
  *
  * @author Joran Deschamps
- * @see {@link SEGMetrics}
+ * @see SEGMetrics
  * @see <a href="https://github.com/CellTrackingChallenge/CTC-FijiPlugins">Original implementation by Martin Maška and Vladimír Ulman</a>
  */
 public class LazySEGMetrics

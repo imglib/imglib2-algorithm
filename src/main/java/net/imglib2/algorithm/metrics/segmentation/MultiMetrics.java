@@ -22,13 +22,21 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  * equal to the {@code threshold} and 0 otherwise. The metrics are the following:
  * <p>
  * TP = number of matched ground-truth labels
+ * <p>
  * FP = number of unmatched predicted labels
+ * <p>
  * FN = number of unmatched ground-truth labels
+ * <p>
  * Precision = TP / (TP + FP)
+ * <p>
  * Recall = TP / (TP + FN)
+ * <p>
  * F1 = 2 * Precision * Recall / (Precision + Recall)
+ * <p>
  * Accuracy = TP / ( TP + FP + FN)
+ * <p>
  * Mean matched IoU = sum of the matched labels IoU / TP
+ * <p>
  * Mean true IoU = sum of the matched labels IoU / number of ground-truth labels
  * <p>
  * Pixels with value 0 are considered background and are ignored during the metrics calculation. If the
@@ -378,7 +386,7 @@ public class MultiMetrics
 			double threshold )
 	{
 		// compute confusion matrix
-		final ConfusionMatrix<I, J> confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
+		final ConfusionMatrix< I, J > confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
 
 		// compute cost matrix
 		double[][] costMatrix = computeCostMatrix( confusionMatrix, threshold );
@@ -391,7 +399,7 @@ public class MultiMetrics
 	 * matrix is the negation of the IoU between ground-truth label i and prediction label j. If
 	 * the IoU is smaller than the {@code threshold}, then cij is set to 0. The negation allows
 	 * formulating the problem of matching labels as a minimum cost assignment.
-	 * <pre>
+	 * <p>
 	 * The cost matrix is always rectangular, with empty rows added to ensure that the number of
 	 * prediction label is strictly superior to the number of ground-truth labels. This is necessary
 	 * to ensure that the Munkres-Kuhn algorithm returns coherent results at low ground-truth label
@@ -399,6 +407,8 @@ public class MultiMetrics
 	 *
 	 * @param cM
 	 * 		Confusion matrix
+	 * @param threshold
+	 * 		Threshold
 	 *
 	 * @return Cost matrix
 	 */
@@ -473,6 +483,8 @@ public class MultiMetrics
 	 * 		Confusion matrix
 	 * @param costMatrix
 	 * 		Cost matrix
+	 * @param threshold
+	 * 		Threshold
 	 *
 	 * @return Metrics summary
 	 */

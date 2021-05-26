@@ -27,9 +27,11 @@ import net.imglib2.view.Views;
  * Depending on sigma, different algorithms are called to perform the Gaussian convolutions
  * (Gauss3 or FastGauss). Which yields the following constraints:
  * <p>
- * sigma > 2:  d > 2 * floor( 3.7210 * sigma + 0.20157 + 0.5 )
- * 0.5 <= sigma <= 2: d > 2 * floor( 3 * sigma + 0.5)
- * sigma < 0.5: d > 4
+ * sigma &gt; 2:  d &gt; 2 * floor( 3.7210 * sigma + 0.20157 + 0.5 )
+ * <p>
+ * 0.5 &lt;= sigma &lt;= 2: d &gt; 2 * floor( 3 * sigma + 0.5)
+ * <p>
+ * sigma &lt; 0.5: d &gt; 4
  * <p>
  * For sigma = 1.5, the minimum dimension depth is then 11.
  * <p>
