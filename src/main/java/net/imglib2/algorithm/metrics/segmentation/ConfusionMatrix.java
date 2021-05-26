@@ -26,7 +26,7 @@ import java.util.*;
  * @param <J>
  * 		Predicted pixel type
  */
-public class ConfusionMatrix< I extends IntegerType< I >, J extends IntegerType< J > >
+public class ConfusionMatrix < I extends IntegerType< I >, J extends IntegerType< J > >
 {
 
 	// key = index in the matrix, element = corresponding number of pixels

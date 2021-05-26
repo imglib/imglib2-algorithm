@@ -126,7 +126,7 @@ public class SEGMetricsTest
 
 	/**
 	 * Test metrics values when two labels are overlapping, in particular depending on
-	 * the threshold. This test uses XY images only (single frame, slice).
+	 * the threshold. This test uses XY images only (single frame).
 	 */
 	@Test
 	public void testOverlapping()
@@ -196,9 +196,9 @@ public class SEGMetricsTest
 	}
 
 	/**
-	 * Test metrics values for a movie (XYT, where T is nonetheless the 4th dimension), where labels
-	 * are considered 2D, with respect to the threshold. In this case, the 2D labels are split between
-	 * two time frames with an empty frame in between. The labels on each time frames have the same
+	 * Test metrics values for a movie (XYZT, where Z is of depth 1 and T is nonetheless the 4th dimension),
+	 * where labels are considered 2D, with respect to the threshold. In this case, the 2D labels are split
+	 * between two time frames with an empty frame in between. The labels on each time frames have the same
 	 * value in order to check that they are not aggregated.
 	 */
 	@Test
@@ -241,8 +241,8 @@ public class SEGMetricsTest
 	}
 
 	/**
-	 * Test metrics values for a 4D movie (XYZT), where labels are considered 2D, with respect to the
-	 * threshold. Here, we paint 3D boxes in the firs time frame with an empty slice in the middle of
+	 * Test metrics values for a 4D movie (XYZT), where labels are considered 3D, at different
+	 * thresholds. Here, we paint 3D boxes in the firs time frame with an empty slice in the middle of
 	 * the boxes. On the last frame, we do the same with different 3D boxes. The boxes in the first
 	 * time frame have the same label as in the last time frame, to make sure that they are not
 	 * aggregated. We put an empty time frame in between.

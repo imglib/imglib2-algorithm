@@ -95,12 +95,9 @@ public class MultiMetrics
 		}
 	}
 
-	// TODO does not make sense to have the atomic values here since they are only really useful for the LazyMultiMetrics
-
 	/**
 	 * An object holding the sum of TP, FP, FN and IoU values, accumulated over the T dimension. These
-	 * quantities are then used to compute all other metrics by calling {@link #getScores()}. Since the
-	 * aggregates are held by atomic objects, this class is compatible with multithreaded calls.
+	 * quantities are then used to compute all other metrics by calling {@link #getScores()}.
 	 */
 	protected static class MetricsSummary
 	{
@@ -130,13 +127,13 @@ public class MultiMetrics
 		 * Add the values to the aggregates.
 		 *
 		 * @param tp
-		 * 		Number of TP to add to the TP aggregate
+		 * 		Value to add to the TP aggregate
 		 * @param fp
-		 * 		Number of FP to add to the FP aggregate
+		 * 		Value to add to the FP aggregate
 		 * @param fn
-		 * 		Number of FN to add to the FN aggregate
+		 * 		Value to add to the FN aggregate
 		 * @param sumIoU
-		 * 		IoU sum to add to the IoU aggregate
+		 * 		Value to add to the IoU aggregate
 		 */
 		public void addPoint( int tp, int fp, int fn, double sumIoU )
 		{
@@ -318,6 +315,24 @@ public class MultiMetrics
 		}
 	}
 
+	/**
+	 * Compute the metrics score per time-point and return the aggregated scores. The method
+	 * expect XYZT images, where Z can be of dimension 1, and run the metrics computation
+	 * on each XYZ volume.
+	 *
+	 * @param groundTruth
+	 * 		Ground-truth image
+	 * @param prediction
+	 * 		Predicted image
+	 * @param threshold
+	 * 		Threshold
+	 * @param <I>
+	 * 		Ground-truth pixel type
+	 * @param <J>
+	 * 		Prediction pixel type
+	 *
+	 * @return Metrics summary
+	 */
 	protected static < I extends IntegerType< I >, J extends IntegerType< J > > MetricsSummary runAverageOverTime(
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction,
@@ -341,13 +356,29 @@ public class MultiMetrics
 		return metrics;
 	}
 
+	/**
+	 * Compute the metrics scores between ground-truth and prediction images.
+	 *
+	 * @param groundTruth
+	 * 		Ground-truth image
+	 * @param prediction
+	 * 		Predicted image
+	 * @param threshold
+	 * 		Threshold
+	 * @param <I>
+	 * 		Ground-truth pixel type
+	 * @param <J>
+	 * 		Prediction pixel type
+	 *
+	 * @return Metrics summary
+	 */
 	protected static < I extends IntegerType< I >, J extends IntegerType< J > > MetricsSummary runSingle(
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction,
 			double threshold )
 	{
 		// compute confusion matrix
-		final ConfusionMatrix confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
+		final ConfusionMatrix<I, J> confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
 
 		// compute cost matrix
 		double[][] costMatrix = computeCostMatrix( confusionMatrix, threshold );
@@ -360,6 +391,11 @@ public class MultiMetrics
 	 * matrix is the negation of the IoU between ground-truth label i and prediction label j. If
 	 * the IoU is smaller than the {@code threshold}, then cij is set to 0. The negation allows
 	 * formulating the problem of matching labels as a minimum cost assignment.
+	 * <pre>
+	 * The cost matrix is always rectangular, with empty rows added to ensure that the number of
+	 * prediction label is strictly superior to the number of ground-truth labels. This is necessary
+	 * to ensure that the Munkres-Kuhn algorithm returns coherent results at low ground-truth label
+	 * numbers.
 	 *
 	 * @param cM
 	 * 		Confusion matrix
@@ -431,15 +467,14 @@ public class MultiMetrics
 	/**
 	 * Compute all metrics scores by matching ground-truth labels (row indices) with predicted labels
 	 * (column indices). The assignment is performed by the Munkres-Kuhn algorithm using the {@code costMatrix}.
-	 * This method returns the default metrics score. All metrics scores can be accessed by calling
-	 * {@link } after this method.
+	 * All metrics scores can be accessed by calling {@link MetricsSummary} getScores() after this method.
 	 *
 	 * @param confusionMatrix
 	 * 		Confusion matrix
 	 * @param costMatrix
 	 * 		Cost matrix
 	 *
-	 * @return Default metrics score
+	 * @return Metrics summary
 	 */
 	protected static MetricsSummary computeFinalScores( ConfusionMatrix confusionMatrix, double[][] costMatrix, double threshold )
 	{

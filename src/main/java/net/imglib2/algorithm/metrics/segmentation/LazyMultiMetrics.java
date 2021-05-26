@@ -20,16 +20,17 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  * {@link #computeScore()}.
  * <p>
  * Each image's contributions are calculated independently. Therefore, the same LazyMultiMetrics object
- * can be called from multiple threads in order to speed up the computation. For instance, if the
+ * can be called from multiple threads in order to speed up computation. For instance, if the
  * total stack does not fit in memory, lazy loading and multithreading can be used to compute the
  * metrics scores by splitting the XYZ images between threads and adding them one by one. The final scores
  * can be calculated once all threads have finished.
  * <p>
  * The {@link MultiMetrics} scores are calculated at a certain {@code threshold}. This threshold is
  * the minimum IoU between a ground-truth and a prediction label at which two labels are considered
- * a potential match. The {@code threshold} can only be set during instantiation.
+ * a potential match. The {@code threshold} can only be set at instantiation.
  *
  * @author Joran Deschamps
+ * @see {@link MultiMetrics}
  */
 public class LazyMultiMetrics
 {
@@ -51,8 +52,6 @@ public class LazyMultiMetrics
 		this.threshold = 0.5;
 	}
 
-	;
-
 	/**
 	 * Constructor that sets the threshold value.
 	 *
@@ -65,7 +64,7 @@ public class LazyMultiMetrics
 	}
 
 	/**
-	 * Add a new images pair and compute its contribution to the metrics scores. The current
+	 * Add a new image pair and compute its contribution to the metrics scores. The current
 	 * scores can be computed by calling {@link #computeScore()}. This method is not compatible with
 	 * {@link ImgLabeling} with intersecting labels.
 	 *
@@ -94,7 +93,7 @@ public class LazyMultiMetrics
 	}
 
 	/**
-	 * Add a new images pair and compute its contribution to the metrics scores. The current
+	 * Add a new image pair and compute its contribution to the metrics scores. The current
 	 * scores can be computed by calling {@link #computeScore()}.
 	 *
 	 * @param groundTruth
@@ -118,12 +117,12 @@ public class LazyMultiMetrics
 		// compute multi metrics between the two images
 		final MultiMetrics.MetricsSummary result = MultiMetrics.runSingle( groundTruth, prediction, threshold );
 
-		// add results
+		// add results to the aggregates
 		addPoint( result );
 	}
 
 	/**
-	 * Compute the total SEG score. If no image was added, or all images were empty, then the metrics
+	 * Compute the total {@link MultiMetrics} scores. If no image was added, or all images were empty, then the metrics
 	 * scores are TP=FP=FN=0 and NaN for the others.
 	 *
 	 * @return Metrics scores
@@ -144,15 +143,16 @@ public class LazyMultiMetrics
 
 	/**
 	 * Update the atomic aggregates with the values held by the {@link net.imglib2.algorithm.metrics.segmentation.MultiMetrics.MetricsSummary}.
-	 * @param otherMetrics
+	 *
+	 * @param newResult Result to add to the aggregates
 	 */
-	protected void addPoint( MultiMetrics.MetricsSummary otherMetrics )
+	protected void addPoint( MultiMetrics.MetricsSummary newResult )
 	{
-		this.aTP.addAndGet( otherMetrics.getTP() );
-		this.aFP.addAndGet( otherMetrics.getFP() );
-		this.aFN.addAndGet( otherMetrics.getFN() );
+		this.aTP.addAndGet( newResult.getTP() );
+		this.aFP.addAndGet( newResult.getFP() );
+		this.aFN.addAndGet( newResult.getFN() );
 
-		addToAtomicLong( aIoU, otherMetrics.getIoU() );
+		addToAtomicLong( aIoU, newResult.getIoU() );
 	}
 
 	/**

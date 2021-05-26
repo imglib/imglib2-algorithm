@@ -1,8 +1,6 @@
 package net.imglib2.algorithm.metrics.segmentation;
 
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.labeling.ImgLabeling;
@@ -221,8 +219,8 @@ public class MultiMetricsTest
 	}
 
 	/**
-	 * Test metrics values when two labels are overlapping, in particular depending on
-	 * the threshold. This test uses XY images only (single frame, slice).
+	 * Test metrics values when two labels are overlapping, in particular with respect
+	 * to the threshold. This test uses XY images only (single frame).
 	 */
 	@Test
 	public void testOverlapping()
@@ -254,7 +252,7 @@ public class MultiMetricsTest
 	}
 
 	/**
-	 * Test metrics values for a Z stack (XYZ), where labels are considered 3D, with respect to the threshold.
+	 * Test metrics values for a Z stack (XYZ), where labels are considered 3D, depending on the threshold.
 	 * In this case, the 3D labels are split between two slices with an empty slice in between.
 	 */
 	@Test
@@ -337,7 +335,7 @@ public class MultiMetricsTest
 	}
 
 	/**
-	 * Test metrics values for a 4D movie (XYZT), where labels are considered 2D, with respect to the
+	 * Test metrics values for a 4D movie (XYZT), where labels are considered 3D, with respect to the
 	 * threshold. Here, we paint 3D boxes in the firs time frame with an empty slice in the middle of
 	 * the boxes. On the last frame, we do the same with different 3D boxes. The boxes in the first
 	 * time frame have the same label as in the last time frame, to make sure that they are not
@@ -389,6 +387,9 @@ public class MultiMetricsTest
 		checkMetrics( groundtruth, prediction, ious );
 	}
 
+	/**
+	 * Check the local IoU score between overlapping labels.
+	 */
 	@Test
 	public void testLocalIoUOverlapping()
 	{
@@ -417,6 +418,9 @@ public class MultiMetricsTest
 		}
 	}
 
+	/**
+	 * Check the local IoU score between disjoints labels.
+	 */
 	@Test
 	public void testLocalIoUDisjoint()
 	{
@@ -438,6 +442,9 @@ public class MultiMetricsTest
 		assertEquals( 0., MultiMetrics.getLocalIoUScore( cm, 0, 0, 0. ), delta );
 	}
 
+	/**
+	 * Check local IoU score for an empty GT label.
+	 */
 	@Test
 	public void testLocalIoUEmptyGT()
 	{
@@ -457,6 +464,9 @@ public class MultiMetricsTest
 		assertEquals( 0, MultiMetrics.getLocalIoUScore( cm, 0, 0, 0. ), delta );
 	}
 
+	/**
+	 * Check local IoU score for an empty prediction label.
+	 */
 	@Test
 	public void testLocalIoUEmptyPrediction()
 	{
@@ -476,6 +486,10 @@ public class MultiMetricsTest
 		assertEquals( 0, MultiMetrics.getLocalIoUScore( cm, 0, 0, 0. ), delta );
 	}
 
+	/**
+	 * Check the local IoU score between several GT labels and a prediction label. In particular show
+	 * that the score is independent of the labels having equal value.
+	 */
 	@Test
 	public void testLocalIoUWithMoreGTLabels()
 	{
@@ -490,7 +504,7 @@ public class MultiMetricsTest
 
 		int gtLabel1 = 9;
 		int gtLabel2 = 5;
-		int predLabel = 5;
+		int predLabel = gtLabel1;
 
 		// paint
 		SegmentationMetricsHelper.paintRectangle( gt, gtRect1, gtLabel1 );
@@ -509,6 +523,10 @@ public class MultiMetricsTest
 		assertEquals( localIoU2, MultiMetrics.getLocalIoUScore( cm, 0, 0, 0. ), delta );
 	}
 
+	/**
+	 * Check the local IoU score between a GT label and several prediction labels. In particular show
+	 * that the score is independent of the labels having equal value.
+	 */
 	@Test
 	public void testLocalIoUWithMorePredLabels()
 	{
@@ -522,8 +540,8 @@ public class MultiMetricsTest
 		int[] predRect2 = { 3, 4, 11, 5 };
 
 		int gtLabel = 5;
-		int predLabel1 = 9;
-		int predLabel2 = 5;
+		int predLabel1 = gtLabel;
+		int predLabel2 = 9;
 
 		// paint
 		SegmentationMetricsHelper.paintRectangle( gt, gtRect, gtLabel );
@@ -547,7 +565,9 @@ public class MultiMetricsTest
 	 * result of the metrics computation.
 	 *
 	 * @param groundtruth
+	 * 		Ground truth image
 	 * @param prediction
+	 * 		Prediction image
 	 * @param ious
 	 * 		Array of IoUs between corresponding pairs of GT-prediction labels
 	 */

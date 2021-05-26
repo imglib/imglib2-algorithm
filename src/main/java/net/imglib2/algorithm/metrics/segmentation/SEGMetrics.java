@@ -14,8 +14,8 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
 
 /**
  * The SEG metrics computes the IoU (a.k.a. Jaccard index) metrics between ground-truth labels
- * and the prediction labels that overlap percentage greater than 0.5. In the context of instance
- * segmentation, the labels are the integer pixel values. Pixels with value 0 are considered
+ * and the prediction labels that overlap with a percentage greater than 0.5. In the context of
+ * instance segmentation, the labels are the integer pixel values. Pixels with value 0 are considered
  * background and are ignored during the metrics calculation. If the ground-truth image is only
  * background (no labels), then the metrics returns NaN.
  * <p>
@@ -39,7 +39,7 @@ public class SEGMetrics
 	private final static int T_AXIS = 3;
 
 	/**
-	 * Compute a global metrics score between labels from a ground-truth and a predicted image. The
+	 * Compute a global SEG score between labels from a ground-truth and a predicted image. The
 	 * method expects images of dimension XYZT. The score is computed for each ground-truth label over
 	 * each XYZ volume (or XY if Z is of depth 1) and averaged over all ground-truth labels in XYZT. If
 	 * both images are empty (only pixels with value 0), then the metrics score is NaN.
@@ -73,7 +73,7 @@ public class SEGMetrics
 	}
 
 	/**
-	 * Compute a global metrics score between labels from a ground-truth and a predicted image. The
+	 * Compute a global SEG score between labels from a ground-truth and a predicted image. The
 	 * method expects images of dimension XYZT. The score is computed over the XYZ volume (or XY if
 	 * Z is of depth 1) and averaged over all ground-truth labels. If both images are empty (only
 	 * pixels with value 0), then the metrics score is NaN.
@@ -147,7 +147,7 @@ public class SEGMetrics
 			RandomAccessibleInterval< J > prediction )
 	{
 		// compute confusion matrix
-		final ConfusionMatrix confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
+		final ConfusionMatrix<I, J> confusionMatrix = new ConfusionMatrix( groundTruth, prediction );
 		int n = confusionMatrix.getNumberGroundTruthLabels();
 
 		// compute cost matrix

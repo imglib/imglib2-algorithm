@@ -14,17 +14,33 @@ import net.imglib2.type.numeric.RealType;
  */
 public class PSNR
 {
+	/**
+	 * Compute the peak signal-to-noise ratio (PSNR) score between reference and processed images. The metrics
+	 * run on the whole image (regardless of the dimensions).
+	 *
+	 * @param reference
+	 * 		Reference image
+	 * @param processed
+	 * 		Processed image
+	 * @param <T>
+	 * 		Type of the image pixels
+	 *
+	 * @return Metrics score
+	 */
 	public static < T extends RealType< T > > double computeMetrics( final RandomAccessibleInterval< T > reference, final RandomAccessibleInterval< T > processed )
 	{
 		if ( !Arrays.equals( reference.dimensionsAsLongArray(), processed.dimensionsAsLongArray() ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// get image range
-		final double range = reference.randomAccess().get().getMaxValue();
+		// Note: scikit-image (python) expects float types to be between -1 and 1
+		// here this will be dramatically different
+		final double range = reference.randomAccess().get().getMaxValue()
+				- reference.randomAccess().get().getMinValue();
 
 		// compute mse
 		double mse = MSE.computeMetrics( reference, processed );
 
-		return mse > 0 ? 10 * Math.log10( range*range / mse ) : Double.NaN;
+		return mse > 0 ? 10 * Math.log10( range * range / mse ) : Double.NaN;
 	}
 }
