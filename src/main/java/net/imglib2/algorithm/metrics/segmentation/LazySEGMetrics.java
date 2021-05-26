@@ -20,7 +20,7 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  * using {@link #addTimePoint(ImgLabeling, ImgLabeling) addTimePoint}. The final score can be queried by {@link #computeScore()}.
  * <p>
  * Each image's contribution is calculated independently. Therefore, the same LazYSEGMetrics object
- * can be called from multiple threads in order to speed up the computation. For instance, if the
+ * can be called from multiple threads in order to speed up computation. For instance, if the
  * total stack does not fit in memory, lazy loading and multithreading can be used to compute the
  * SEG score by splitting the XYZ images between threads and adding them one by one. The final score
  * can then be calculated once all threads have finished.
@@ -29,6 +29,7 @@ import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasI
  * algorithms. Nat Methods 14, 1141–1152 (2017).
  *
  * @author Joran Deschamps
+ * @see {@link SEGMetrics}
  * @see <a href="https://github.com/CellTrackingChallenge/CTC-FijiPlugins">Original implementation by Martin Maška and Vladimír Ulman</a>
  */
 public class LazySEGMetrics
@@ -39,7 +40,7 @@ public class LazySEGMetrics
 	private AtomicLong sumScores = new AtomicLong( 0 );
 
 	/**
-	 * Add a new images pair and compute its contribution to the SEG metrics. The current SEG score
+	 * Add a new image pair and compute its contribution to the SEG metrics. The current SEG score
 	 * can be computed by calling {@link #computeScore()}. This method is not compatible with
 	 * {@link ImgLabeling} with intersecting labels.
 	 *
@@ -68,7 +69,7 @@ public class LazySEGMetrics
 	}
 
 	/**
-	 * Add a new images pair and compute its contribution to the SEG metrics. The current SEG score
+	 * Add a new image pair and compute its contribution to the SEG metrics. The current SEG score
 	 * can be computed by calling {@link #computeScore()}.
 	 *
 	 * @param groundTruth
@@ -110,11 +111,28 @@ public class LazySEGMetrics
 		return nGT.get() > 0 ? atomicLongToDouble( sumScores ) / ( double ) nGT.get() : Double.NaN;
 	}
 
+	/**
+	 * Add the value of {@code b} to an atomic long {@code a} representing
+	 * a double value.
+	 *
+	 * @param a
+	 * 		Atomic long to update
+	 * @param b
+	 * 		Value to add to the atomic long
+	 */
 	private void addToAtomicLong( AtomicLong a, double b )
 	{
 		a.set( Double.doubleToRawLongBits( Double.longBitsToDouble( a.get() ) + b ) );
 	}
 
+	/**
+	 * Return the double value represented by the atomic long {@code a}.
+	 *
+	 * @param a
+	 * 		Atomic long representing a double value
+	 *
+	 * @return Double value represented by {@code a}
+	 */
 	private double atomicLongToDouble( AtomicLong a )
 	{
 		return Double.longBitsToDouble( a.get() );

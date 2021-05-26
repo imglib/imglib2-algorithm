@@ -7,6 +7,10 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
+/**
+ * Helper class used in the segmentation metrics tests.
+ *
+ */
 public class SegmentationMetricsHelper
 {
 

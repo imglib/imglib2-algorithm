@@ -40,7 +40,6 @@ import net.imglib2.view.Views;
  * @see <a href="https://ieeexplore.ieee.org/document/1284395">Original publication</a>
  * @see <a href="https://en.wikipedia.org/wiki/Structural_similarity">Wikipedia page</a>
  */
-// TODO javadoc, expects at max 3 dimensions, no singular dimensions
 public class SSIM
 {
 	public final static double K1 = 0.01;
@@ -70,7 +69,7 @@ public class SSIM
 				// FastGauss provides a faster implementation for large sigmas
 				algorithm = FilteringAlgorithm.FASTGAUSS;
 
-				// From FastGaussConvolverRealType
+				// From the FastGaussConvolverRealType class
 				padding = Math.max( 2, ( int ) ( 3.7210 * sigma + 0.20157 + 0.5 ) );
 			}
 			else
@@ -128,16 +127,17 @@ public class SSIM
 		final RandomAccessibleInterval< DoubleType > refIm = Converters.convert( reference, ( i, o ) -> o.set( i.getRealDouble() ), new DoubleType() );
 		final RandomAccessibleInterval< DoubleType > procIm = Converters.convert( processed, ( i, o ) -> o.set( i.getRealDouble() ), new DoubleType() );
 
-		// create (weighted) means, variances and covariance of the sliding windows
+		// create (weighted) means, variances and covariance images
 		final RandomAccessibleInterval< DoubleType > ux = computeWeightedMean( filter, refIm );
 		final RandomAccessibleInterval< DoubleType > uy = computeWeightedMean( filter, procIm );
 		final RandomAccessibleInterval< DoubleType > vx = computeWeightedVariance( filter, refIm, ux );
 		final RandomAccessibleInterval< DoubleType > vy = computeWeightedVariance( filter, procIm, uy );
 		final RandomAccessibleInterval< DoubleType > vxy = computeWeightedCovariance( filter, refIm, procIm, ux, uy );
 
-		// compute SSIM image
+		// compute final SSIM image
 		final RandomAccessibleInterval< DoubleType > S = computeSSIM( ux, uy, vx, vy, vxy, range );
 
+		// return SSIM image mean
 		return computeMean( S );
 	}
 
@@ -161,7 +161,7 @@ public class SSIM
 	}
 
 	/*
-	 * Filter the input with a Gaussian filter, based on the {@code filter} parameter.
+	 * Filter the input with a Gaussian filter.
 	 */
 	private static void filter(
 			Filter filter,
@@ -184,6 +184,7 @@ public class SSIM
 	{
 		// The weighted mean is padded to exclude the edges
 		RandomAccessibleInterval< DoubleType > output = createRAI( input, filter.padding );
+
 		filter( filter, Views.extendMirrorDouble( input ), output );
 		return output;
 	}
@@ -226,7 +227,7 @@ public class SSIM
 		RandomAccessibleInterval< DoubleType > product = createRAI( im1, 0 );
 		LoopBuilder.setImages( im1, im2, product ).forEachPixel( ( i1, i2, o ) -> o.set( i1.get() * i2.get() ) );
 
-		// calculate (weighted) mean of the sliding window in the product image, pad the output
+		// calculate (weighted) mean of the sliding window in the (padded) product image
 		RandomAccessibleInterval< DoubleType > meanProduct = createRAI( im1, filter.padding );
 		filter( filter, Views.extendMirrorDouble( product ), meanProduct );
 

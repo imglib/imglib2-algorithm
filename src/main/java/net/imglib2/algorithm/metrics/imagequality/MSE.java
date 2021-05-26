@@ -7,8 +7,28 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
+/**
+ * Compute the mean squared error (MSE) between a reference and a processed image. The
+ * metrics runs on the whole image, whether 2D or 3D. In order to get individual slice MSE, run
+ * the metrics on each slice independently.
+ *
+ * @author Joran Deschamps
+ */
 public class MSE
 {
+	/**
+	 * Compute the mean squared error (MSE) score between reference and processed images. The metrics
+	 * run on the whole image (regardless of the dimensions).
+	 *
+	 * @param reference
+	 * 		Reference image
+	 * @param processed
+	 * 		Processed image
+	 * @param <T>
+	 * 		Type of the image pixels
+	 *
+	 * @return Metrics score
+	 */
 	public static < T extends RealType< T > > double computeMetrics( final RandomAccessibleInterval< T > reference, final RandomAccessibleInterval< T > processed )
 	{
 		if ( !Arrays.equals( reference.dimensionsAsLongArray(), processed.dimensionsAsLongArray() ) )
@@ -30,6 +50,6 @@ public class MSE
 			mse += ( dRef - dProc ) * ( dRef - dProc );
 		}
 
-		return mse / nPixels;
+		return nPixels > 0 ? mse / nPixels : Double.NaN;
 	}
 }
