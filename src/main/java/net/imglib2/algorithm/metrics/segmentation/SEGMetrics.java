@@ -13,7 +13,7 @@ import net.imglib2.view.Views;
 import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasIntersectingLabels;
 
 /**
- * The SEG metrics computes the IoU (a.k.a. Jaccard index) metrics between ground-truth labels
+ * The SEG metrics computes the IoU metrics between ground-truth labels
  * and the prediction labels that overlap with a percentage greater than 0.5. In the context of
  * instance segmentation, the labels are the integer pixel values. Pixels with value 0 are considered
  * background and are ignored during the metrics calculation. If the ground-truth image is only

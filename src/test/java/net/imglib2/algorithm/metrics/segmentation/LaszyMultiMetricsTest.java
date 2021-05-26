@@ -300,10 +300,8 @@ public class LaszyMultiMetricsTest
 		}
 	}
 
-	/**
+	/*
 	 * Showcase a multithreading use of the LazyMultiMetrics
-	 *
-	 * @throws InterruptedException
 	 */
 	public void testMultithreding() throws InterruptedException
 	{

@@ -320,10 +320,8 @@ public class LazySEGMetricsTest
 		assertEquals( score, lazyScore, delta );
 	}
 
-	/**
+	/*
 	 * Showcase a multithreading use of the LazySEGMetrics
-	 *
-	 * @throws InterruptedException
 	 */
 	public void testMultithreding() throws InterruptedException
 	{
