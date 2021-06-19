@@ -3,7 +3,7 @@ package net.imglib2.algorithm.astar;
 public class Utils
 {
 
-	public static void check( final boolean b )
+	static void check( final boolean b )
 	{
 		if ( !b )
 			throw new RuntimeException();

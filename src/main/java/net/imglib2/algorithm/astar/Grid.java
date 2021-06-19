@@ -81,6 +81,14 @@ public class Grid
 		return info == NODE_NULL;
 	}
 
+	/**
+	 * Returns <code>true</code> if the node with the specified info index has
+	 * been closed.
+	 * 
+	 * @param info
+	 *            the node info.
+	 * @return <code>true</code> if the node has been closed.
+	 */
 	static boolean isClosedNode( final int info )
 	{
 		return info == NODE_CLOSED;
@@ -92,6 +100,14 @@ public class Grid
 		return info - 1;
 	}
 
+	/**
+	 * Closes a node.
+	 * 
+	 * @param x
+	 *            X position of the node.
+	 * @param y
+	 *            Y position of the node.
+	 */
 	void nodeClosed( final int x, final int y )
 	{
 		grid[ x ][ y ] |= NODE_CLOSED;

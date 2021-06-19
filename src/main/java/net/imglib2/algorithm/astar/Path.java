@@ -1,10 +1,12 @@
 package net.imglib2.algorithm.astar;
 
-import static net.imglib2.algorithm.astar.Point.toPoint;
-
 import java.util.Arrays;
+import java.util.Iterator;
 
-public class Path
+import net.imglib2.Localizable;
+import net.imglib2.Point;
+
+public class Path implements Iterable< Localizable >
 {
 
 	private long[] ps;
@@ -31,7 +33,7 @@ public class Path
 		size--;
 	}
 
-	public long get( final int i )
+	private long get( final int i )
 	{
 		assert i >= 0 && i < size;
 		return ps[ size - 1 - i ];
@@ -63,5 +65,47 @@ public class Path
 		if ( newCapacity < 0 )
 			throw new RuntimeException( "Overflow" );
 		ps = Arrays.copyOf( ps, newCapacity );
+	}
+
+	private static long toPoint( final int x, final int y )
+	{
+		return ( ( ( long ) x ) << 32 ) | ( y & 0xFFFFFFFFL );
+	}
+
+	private static int getX( final long p )
+	{
+		return ( int ) ( p >>> 32 );
+	}
+
+	private static int getY( final long p )
+	{
+		return ( int ) p;
+	}
+
+	@Override
+	public Iterator< Localizable > iterator()
+	{
+		final Point point = new Point( 2 );
+		return new Iterator< Localizable >()
+		{
+
+			int index = -1;
+
+			@Override
+			public boolean hasNext()
+			{
+				return index + 1 < size;
+			}
+
+			@Override
+			public Localizable next()
+			{
+				index++;
+				final long p = get( index );
+				point.setPosition( getX( p ), 0 );
+				point.setPosition( getY( p ), 1 );
+				return point;
+			}
+		};
 	}
 }
