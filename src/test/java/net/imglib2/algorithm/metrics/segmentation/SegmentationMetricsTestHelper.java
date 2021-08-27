@@ -42,9 +42,8 @@ import net.imglib2.view.Views;
 
 /**
  * Helper class used in the segmentation metrics tests.
- *
  */
-public class SegmentationMetricsHelper
+public class SegmentationMetricsTestHelper
 {
 
 	public static int getIntersectionBetweenRectangles( int a_x_min, int a_y_min, int a_x_max, int a_y_max,

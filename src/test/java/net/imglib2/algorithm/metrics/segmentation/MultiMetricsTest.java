@@ -102,8 +102,8 @@ public class MultiMetricsTest
 		final Img< IntType > img = ArrayImgs.ints( dims );
 
 		// paint
-		SegmentationMetricsHelper.paintRectangle( img, 12, 28, 42, 56, 9 );
-		SegmentationMetricsHelper.paintRectangle( img, 43, 9, 52, 18, 12 );
+		SegmentationMetricsTestHelper.paintRectangle( img, 12, 28, 42, 56, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( img, 43, 9, 52, 18, 12 );
 
 		// default is the average precision
 		final HashMap< Metrics, Double > metrics = MultiMetrics.computeMetrics( img, img, 0.5 );
@@ -131,7 +131,7 @@ public class MultiMetricsTest
 		final Img< IntType > empty = ArrayImgs.ints( dims );
 
 		// paint
-		SegmentationMetricsHelper.paintRectangle( nonEmpty, 12, 28, 42, 56, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( nonEmpty, 12, 28, 42, 56, 9 );
 
 		//////////////////////////////////
 		// Empty gt, non-empty prediction
@@ -223,8 +223,8 @@ public class MultiMetricsTest
 		final Img< IntType > prediction = ArrayImgs.ints( dims );
 
 		// paint
-		SegmentationMetricsHelper.paintRectangle( groundtruth, 12, 5, 25, 13, 9 );
-		SegmentationMetricsHelper.paintRectangle( prediction, 28, 15, 42, 32, 12 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, 12, 5, 25, 13, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, 28, 15, 42, 32, 12 );
 
 		Map< Metrics, Double > metrics = MultiMetrics.computeMetrics( groundtruth, prediction, 0.5 );
 
@@ -269,11 +269,11 @@ public class MultiMetricsTest
 		int[] predRect2 = { 15, 16, 21, 21 };
 
 		// Paint overlapping labels
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect1, 9 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect1, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect1, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect1, 5 );
 
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 2 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 8 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect2, 2 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect2, 8 );
 
 		// Calculate IoUs
 		double iou1 = getIoUBetweenRectangles( gtRect1, predRect1 );
@@ -302,16 +302,16 @@ public class MultiMetricsTest
 		int[] predRect2 = { 15, 16, 21, 20 };
 
 		// Paint rectangles on the first slice
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect1, 0, 9 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect1, 0, 5 );
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 0, 2 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 0, 8 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect1, 0, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect1, 0, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect2, 0, 2 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect2, 0, 8 );
 
 		// Paint rectangle with the same label on the last slice
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect1, 2, 9 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect1, 2, 5 );
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 2, 2 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 2, 8 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect1, 2, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect1, 2, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect2, 2, 2 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect2, 2, 8 );
 
 		// Rectangles with same label on all slices belong to the same 3D label
 		double iou1 = getIoUBetweenRectangles( gtRect1, predRect1, 2 ); // calculates IoU for a rectangular volume
@@ -345,17 +345,17 @@ public class MultiMetricsTest
 		int[] predRect3 = { 4, 5, 11, 15 };
 
 		// paint rectangles in the first frame
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect1, 0, 0, 9 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect1, 0, 0, 5 );
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 0, 0, 2 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 0, 0, 6 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect1, 0, 0, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect1, 0, 0, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect2, 0, 0, 2 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect2, 0, 0, 6 );
 
 		// paint other rectangles in the last frame
 		// We use same labels to test if they are not considered 3D
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 0, 2, 9 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 0, 2, 5 );
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect3, 0, 2, 2 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect3, 0, 2, 6 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect2, 0, 2, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect2, 0, 2, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect3, 0, 2, 2 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect3, 0, 2, 6 );
 
 		// Calculate the IoUs
 		double iou1 = getIoUBetweenRectangles( gtRect1, predRect1 );
@@ -391,24 +391,24 @@ public class MultiMetricsTest
 		int[] predRect3 = { 4, 5, 11, 15 };
 
 		// paint 3D boxes on first frame
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect1, 0, 0, 9 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect1, 0, 0, 5 );
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 0, 0, 2 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 0, 0, 6 );
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect1, 2, 0, 9 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect1, 2, 0, 5 );
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 2, 0, 2 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 2, 0, 6 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect1, 0, 0, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect1, 0, 0, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect2, 0, 0, 2 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect2, 0, 0, 6 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect1, 2, 0, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect1, 2, 0, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect2, 2, 0, 2 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect2, 2, 0, 6 );
 
 		// paint last frame (we use same labels to test if they get confused)
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 0, 2, 9 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 0, 2, 5 );
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect3, 0, 2, 2 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect3, 0, 2, 6 );
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect2, 2, 2, 9 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect2, 2, 2, 5 );
-		SegmentationMetricsHelper.paintRectangle( groundtruth, gtRect3, 2, 2, 2 );
-		SegmentationMetricsHelper.paintRectangle( prediction, predRect3, 2, 2, 6 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect2, 0, 2, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect2, 0, 2, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect3, 0, 2, 2 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect3, 0, 2, 6 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect2, 2, 2, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect2, 2, 2, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( groundtruth, gtRect3, 2, 2, 2 );
+		SegmentationMetricsTestHelper.paintRectangle( prediction, predRect3, 2, 2, 6 );
 
 		// Calculate IoUs
 		double iou1 = getIoUBetweenRectangles( gtRect1, predRect1, 2 );
@@ -434,8 +434,8 @@ public class MultiMetricsTest
 		int[] predRect = { 3, 4, 11, 5 };
 
 		// paint
-		SegmentationMetricsHelper.paintRectangle( gt, gtRect, 9 );
-		SegmentationMetricsHelper.paintRectangle( pred, predRect, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( gt, gtRect, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( pred, predRect, 5 );
 
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
@@ -465,8 +465,8 @@ public class MultiMetricsTest
 		int[] predRect = { 9, 7, 14, 9 };
 
 		// paint
-		SegmentationMetricsHelper.paintRectangle( gt, gtRect, 9 );
-		SegmentationMetricsHelper.paintRectangle( pred, predRect, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( gt, gtRect, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( pred, predRect, 5 );
 
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
@@ -488,7 +488,7 @@ public class MultiMetricsTest
 		int[] predRect = { 9, 7, 14, 9 };
 
 		// paint
-		SegmentationMetricsHelper.paintRectangle( pred, predRect, 5 );
+		SegmentationMetricsTestHelper.paintRectangle( pred, predRect, 5 );
 
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
@@ -510,7 +510,7 @@ public class MultiMetricsTest
 		int[] gtRect = { 2, 4, 8, 6 };
 
 		// paint
-		SegmentationMetricsHelper.paintRectangle( gt, gtRect, 9 );
+		SegmentationMetricsTestHelper.paintRectangle( gt, gtRect, 9 );
 
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
@@ -540,9 +540,9 @@ public class MultiMetricsTest
 		int predLabel = gtLabel1;
 
 		// paint
-		SegmentationMetricsHelper.paintRectangle( gt, gtRect1, gtLabel1 );
-		SegmentationMetricsHelper.paintRectangle( gt, gtRect2, gtLabel2 );
-		SegmentationMetricsHelper.paintRectangle( pred, predRect, predLabel );
+		SegmentationMetricsTestHelper.paintRectangle( gt, gtRect1, gtLabel1 );
+		SegmentationMetricsTestHelper.paintRectangle( gt, gtRect2, gtLabel2 );
+		SegmentationMetricsTestHelper.paintRectangle( pred, predRect, predLabel );
 
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
@@ -577,9 +577,9 @@ public class MultiMetricsTest
 		int predLabel2 = 9;
 
 		// paint
-		SegmentationMetricsHelper.paintRectangle( gt, gtRect, gtLabel );
-		SegmentationMetricsHelper.paintRectangle( pred, predRect1, predLabel1 );
-		SegmentationMetricsHelper.paintRectangle( pred, predRect2, predLabel2 );
+		SegmentationMetricsTestHelper.paintRectangle( gt, gtRect, gtLabel );
+		SegmentationMetricsTestHelper.paintRectangle( pred, predRect1, predLabel1 );
+		SegmentationMetricsTestHelper.paintRectangle( pred, predRect2, predLabel2 );
 
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
