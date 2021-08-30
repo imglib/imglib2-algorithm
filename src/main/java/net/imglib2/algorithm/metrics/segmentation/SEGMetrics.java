@@ -35,6 +35,7 @@ package net.imglib2.algorithm.metrics.segmentation;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.roi.labeling.ImgLabeling;
+import net.imglib2.roi.labeling.Labelings;
 import net.imglib2.type.numeric.IntegerType;
 
 import java.util.Arrays;
@@ -42,8 +43,6 @@ import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
-
-import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasIntersectingLabels;
 
 /**
  * The SEG metrics computes the IoU metrics between ground-truth labels
@@ -99,7 +98,7 @@ public class SEGMetrics
 			final ImgLabeling< U, J > prediction
 	)
 	{
-		if ( hasIntersectingLabels( groundTruth ) || hasIntersectingLabels( prediction ) )
+		if ( Labelings.hasIntersectingLabels( groundTruth ) || Labelings.hasIntersectingLabels( prediction ) )
 			throw new UnsupportedOperationException( "ImgLabeling with intersecting labels are not supported." );
 
 		return computeMetrics( groundTruth.getIndexImg(), prediction.getIndexImg() );

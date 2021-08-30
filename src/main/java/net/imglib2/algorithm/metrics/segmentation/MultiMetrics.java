@@ -36,6 +36,7 @@ package net.imglib2.algorithm.metrics.segmentation;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.metrics.segmentation.assignment.MunkresKuhnAlgorithm;
 import net.imglib2.roi.labeling.ImgLabeling;
+import net.imglib2.roi.labeling.Labelings;
 import net.imglib2.type.numeric.IntegerType;
 
 import java.util.Arrays;
@@ -301,7 +302,7 @@ public class MultiMetrics
 			double threshold
 	)
 	{
-		if ( hasIntersectingLabels( groundTruth ) || hasIntersectingLabels( prediction ) )
+		if ( Labelings.hasIntersectingLabels( groundTruth ) || Labelings.hasIntersectingLabels( prediction ) )
 			throw new UnsupportedOperationException( "ImgLabeling with intersecting labels are not supported." );
 
 		return computeMetrics( groundTruth.getIndexImg(), prediction.getIndexImg(), threshold );

@@ -38,10 +38,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.roi.labeling.ImgLabeling;
+import net.imglib2.roi.labeling.Labelings;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.util.Pair;
-
-import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasIntersectingLabels;
 
 /**
  * The LazySEGMetrics computes a running {@link SEGMetrics} over all images added by calling
@@ -95,7 +94,7 @@ public class LazySEGMetrics
 			final ImgLabeling< U, J > prediction
 	)
 	{
-		if ( hasIntersectingLabels( groundTruth ) || hasIntersectingLabels( prediction ) )
+		if ( Labelings.hasIntersectingLabels( groundTruth ) || Labelings.hasIntersectingLabels( prediction ) )
 			throw new UnsupportedOperationException( "ImgLabeling with intersecting labels are not supported." );
 
 		addTimePoint( groundTruth.getIndexImg(), prediction.getIndexImg() );

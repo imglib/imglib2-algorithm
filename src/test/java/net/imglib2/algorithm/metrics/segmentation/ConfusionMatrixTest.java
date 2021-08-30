@@ -56,15 +56,15 @@ public class ConfusionMatrixTest
 		int max_pred = 11;
 
 		// paint
-		SegmentationMetricsTestHelper.paintRectangle( gt, min_gt, min_gt, max_gt, max_gt, 9 );
-		SegmentationMetricsTestHelper.paintRectangle( pred, min_pred, min_pred, max_pred, max_pred, 5 );
+		MetricsTestHelper.paintRectangle( gt, min_gt, min_gt, max_gt, max_gt, 9 );
+		MetricsTestHelper.paintRectangle( pred, min_pred, min_pred, max_pred, max_pred, 5 );
 
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
 
 		// total sizes
-		int gt_size = SegmentationMetricsTestHelper.getRectangleSize( min_gt, min_gt, max_gt, max_gt );
-		int pred_size = SegmentationMetricsTestHelper.getRectangleSize( min_pred, min_pred, max_pred, max_pred );
+		int gt_size = MetricsTestHelper.getRectangleSize( min_gt, min_gt, max_gt, max_gt );
+		int pred_size = MetricsTestHelper.getRectangleSize( min_pred, min_pred, max_pred, max_pred );
 		assertEquals( gt_size, cm.getGroundTruthLabelSize( 0 ) );
 		assertEquals( pred_size, cm.getPredictionLabelSize( 0 ) );
 	}
@@ -82,8 +82,8 @@ public class ConfusionMatrixTest
 		int max_pred = 11;
 
 		// paint
-		SegmentationMetricsTestHelper.paintRectangle( gt, min_gt, min_gt, max_gt, max_gt, 9 );
-		SegmentationMetricsTestHelper.paintRectangle( pred, min_pred, min_pred, max_pred, max_pred, 5 );
+		MetricsTestHelper.paintRectangle( gt, min_gt, min_gt, max_gt, max_gt, 9 );
+		MetricsTestHelper.paintRectangle( pred, min_pred, min_pred, max_pred, max_pred, 5 );
 
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
@@ -105,14 +105,14 @@ public class ConfusionMatrixTest
 		int max_pred = 11;
 
 		// paint
-		SegmentationMetricsTestHelper.paintRectangle( gt, min_gt, min_gt, max_gt, max_gt, 9 );
-		SegmentationMetricsTestHelper.paintRectangle( pred, min_pred, min_pred, max_pred, max_pred, 5 );
+		MetricsTestHelper.paintRectangle( gt, min_gt, min_gt, max_gt, max_gt, 9 );
+		MetricsTestHelper.paintRectangle( pred, min_pred, min_pred, max_pred, max_pred, 5 );
 
 		// confusion metrics
 		ConfusionMatrix< IntType, IntType > cm = new ConfusionMatrix<>( gt, pred );
 
 		// intersection
-		int intersection = SegmentationMetricsTestHelper.getIntersectionBetweenRectangles( min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred );
+		int intersection = MetricsTestHelper.getIntersectionBetweenRectangles( min_gt, min_gt, max_gt, max_gt, min_pred, min_pred, max_pred, max_pred );
 		assertEquals( intersection, cm.getIntersection( 0, 0 ) );
 	}
 }

@@ -41,7 +41,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.IntegerType;
 
-import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasIntersectingLabels;
+import net.imglib2.roi.labeling.Labelings;
 
 /**
  * The LazyMultiMetrics computes a running {@link MultiMetrics} over all images added by calling
@@ -119,7 +119,7 @@ public class LazyMultiMetrics
 			final ImgLabeling< U, J > prediction
 	)
 	{
-		if ( hasIntersectingLabels( groundTruth ) || hasIntersectingLabels( prediction ) )
+		if ( Labelings.hasIntersectingLabels( groundTruth ) || Labelings.hasIntersectingLabels( prediction ) )
 			throw new UnsupportedOperationException( "ImgLabeling with intersecting labels are not supported." );
 
 		addTimePoint( groundTruth.getIndexImg(), prediction.getIndexImg() );

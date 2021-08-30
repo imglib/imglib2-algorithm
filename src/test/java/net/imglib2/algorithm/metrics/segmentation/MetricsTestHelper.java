@@ -33,6 +33,10 @@
  */
 package net.imglib2.algorithm.metrics.segmentation;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import net.imglib2.img.Img;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.integer.IntType;
@@ -43,8 +47,40 @@ import net.imglib2.view.Views;
 /**
  * Helper class used in the segmentation metrics tests.
  */
-public class SegmentationMetricsTestHelper
+public class MetricsTestHelper
 {
+	public static final long[] exampleIndexArrayDims = new long[] { 4, 5 };
+
+	public static String[] exampleIntersectingLabels = new String[] { "A", "A,B", "C", "D", "D,E" };
+
+	public static String[] exampleNonIntersectingLabels = new String[] { "A", "A,B", "C", "D", "E" };
+
+	public static int[] exampleIndexArray = new int[] {
+			1, 0, 0, 0, 0,
+			0, 1, 0, 5, 0,
+			0, 0, 0, 3, 3,
+			0, 0, 3, 3, 0
+	};
+
+	public static List< Set< String > > getLabelingSet( String[] labels )
+	{
+		List< Set< String > > labelings = new ArrayList<>();
+
+		labelings.add( new HashSet<>() );
+
+		// Add label Sets
+		for ( String entries : labels )
+		{
+			Set< String > subLabelSet = new HashSet<>();
+			for ( String entry : entries.split( "," ) )
+			{
+				subLabelSet.add( entry );
+			}
+			labelings.add( subLabelSet );
+		}
+
+		return labelings;
+	}
 
 	public static int getIntersectionBetweenRectangles( int a_x_min, int a_y_min, int a_x_max, int a_y_max,
 			int b_x_min, int b_y_min, int b_x_max, int b_y_max )
