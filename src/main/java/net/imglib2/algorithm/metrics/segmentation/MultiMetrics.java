@@ -45,8 +45,6 @@ import java.util.stream.Stream;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-import static net.imglib2.algorithm.metrics.segmentation.SegmentationHelper.hasIntersectingLabels;
-
 /**
  * Compute a set of metrics at a specific {@code threshold} between the labels of a predicted and of a
  * ground-truth image. In the context of instance segmentation, the labels are the pixel values. The
