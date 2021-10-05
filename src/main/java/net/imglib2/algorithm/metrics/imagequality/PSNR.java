@@ -67,7 +67,7 @@ public class PSNR
 
 		// get image range
 		// Note: scikit-image (python) expects float types to be between -1 and 1
-		// here this will be dramatically different
+		// here we consider the actual type range
 		final double range = reference.randomAccess().get().getMaxValue()
 				- reference.randomAccess().get().getMinValue();
 

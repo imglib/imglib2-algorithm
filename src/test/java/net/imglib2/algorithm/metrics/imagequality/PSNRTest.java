@@ -121,7 +121,7 @@ public class PSNRTest
 		}
 
 		// Same toy sample run with scikit-image (python):
-		// peak_signal_noise_ratio(im1, im2, data_range=255)
+		// peak_signal_noise_ratio(r, p, data_range=255)
 		double skimagePSNR = 23.005293679636996;
 
 		assertEquals( skimagePSNR, PSNR.computeMetrics( r, p ), delta );

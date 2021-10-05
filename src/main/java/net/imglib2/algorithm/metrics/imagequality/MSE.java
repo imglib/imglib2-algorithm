@@ -67,7 +67,7 @@ public class MSE
 		if ( !Arrays.equals( reference.dimensionsAsLongArray(), processed.dimensionsAsLongArray() ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
-		// get image range
+		// get image size
 		final long nPixels = Arrays.stream( reference.dimensionsAsLongArray() ).reduce( 1, ( a, b ) -> a * b );
 
 		double mse = 0.;
