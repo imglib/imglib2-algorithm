@@ -37,11 +37,8 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.convolution.kernel.SeparableKernelConvolution;
 import net.imglib2.img.Img;
-import net.imglib2.img.ImgFactory;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
@@ -51,6 +48,7 @@ import net.imglib2.util.ConstantUtils;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -88,6 +86,7 @@ public class ConcatenationTest
 		assertArrayEquals( new int[] { -3, 3 }, targetPixels );
 	}
 
+	@Ignore( "takes to long" )
 	@Test
 	public void testHugeImage()
 	{
@@ -96,7 +95,7 @@ public class ConcatenationTest
 		assertTrue( width * height > Integer.MAX_VALUE );
 		RandomAccessible< UnsignedByteType > source = ConstantUtils.constantRandomAccessible( new UnsignedByteType(), 2 );
 		RandomAccessibleInterval< UnsignedByteType > target = ConstantUtils.constantRandomAccessibleInterval(
-				new UnsignedByteType(), 2, new FinalInterval( width, height ) );
+				new UnsignedByteType(), new FinalInterval( width, height ) );
 		double[][] kernels = { { 2 }, { 3 } };
 		try
 		{

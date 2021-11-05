@@ -64,10 +64,12 @@ class Concatenation< T > implements Convolution< T >
 		this.steps = new ArrayList<>( steps );
 	}
 
+	@Deprecated
 	@Override
-	public void setExecutor( final ExecutorService executor )
+	public void setExecutor( ExecutorService executor )
 	{
-		steps.forEach( step -> step.setExecutor( executor ) );
+		for ( Convolution<T> step : steps )
+			step.setExecutor( executor );
 	}
 
 	@Override
