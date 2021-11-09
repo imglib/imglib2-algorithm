@@ -32,7 +32,7 @@
  * #L%
  */
 
-package tests.labeling;
+package net.imglib2.algorithm.labeling;
 
 import static net.imglib2.algorithm.labeling.ConnectedComponents.StructuringElement.EIGHT_CONNECTED;
 import static net.imglib2.algorithm.labeling.ConnectedComponents.StructuringElement.FOUR_CONNECTED;

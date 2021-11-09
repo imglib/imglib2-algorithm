@@ -32,7 +32,7 @@
  * #L%
  */
 
-package tests.labeling;
+package net.imglib2.algorithm.labeling;
 
 import static org.junit.Assert.assertEquals;
 
