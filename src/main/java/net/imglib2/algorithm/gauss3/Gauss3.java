@@ -34,8 +34,10 @@
 
 package net.imglib2.algorithm.gauss3;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
@@ -57,7 +59,7 @@ import net.imglib2.view.Views;
 public final class Gauss3
 {
 	/**
-	 * Apply Gaussian convolution to source and write the result to output.
+	 * Apply Gaussian convolution to source and write the result to target.
 	 * In-place operation (source==target) is supported.
 	 * 
 	 * <p>
@@ -67,6 +69,11 @@ public final class Gauss3
 	 * in their own precision. The source type S and target type T are either
 	 * both {@link RealType RealTypes} or both the same type.
 	 * 
+	 * <p>
+	 * Computation may be multi-threaded, according to the current
+	 * {@link Parallelization} context. (By default, it will use the
+	 * {@link ForkJoinPool#commonPool() common ForkJoinPool})
+	 *
 	 * @param sigma
 	 *            standard deviation of isotropic Gaussian.
 	 * @param source
@@ -94,7 +101,7 @@ public final class Gauss3
 	}
 
 	/**
-	 * Apply Gaussian convolution to source and write the result to output.
+	 * Apply Gaussian convolution to source and write the result to target.
 	 * In-place operation (source==target) is supported.
 	 * 
 	 * <p>
@@ -105,9 +112,10 @@ public final class Gauss3
 	 * both {@link RealType RealTypes} or both the same type.
 	 * 
 	 * <p>
-	 * Computation is multi-threaded with as many threads as processors
-	 * available.
-	 * 
+	 * Computation may be multi-threaded, according to the current
+	 * {@link Parallelization} context. (By default, it will use the
+	 * {@link ForkJoinPool#commonPool() common ForkJoinPool})
+	 *
 	 * @param sigma
 	 *            standard deviation in every dimension.
 	 * @param source
@@ -133,6 +141,21 @@ public final class Gauss3
 	}
 
 	/**
+	 * @deprecated
+	 * Deprecated. Please use
+	 * {@link Gauss3#gauss(double, RandomAccessible, RandomAccessibleInterval)
+	 * gauss(sigma, source, target)} instead. The number of threads used to
+	 * calculate the Gaussion convolution may by set with the
+	 * {@link Parallelization} context, as show in this example:
+	 * <pre>
+	 * {@code
+	 * Parallelization.runWithNumThreads( numThreads,
+	 *    () -> gauss( sigma, source, target )
+	 * );
+	 * }
+	 * </pre>
+	 *
+	 * <p>
 	 * Apply Gaussian convolution to source and write the result to output.
 	 * In-place operation (source==target) is supported.
 	 * 
@@ -162,14 +185,30 @@ public final class Gauss3
 	 *             if source and target type are not compatible (they must be
 	 *             either both {@link RealType RealTypes} or the same type).
 	 */
+	@Deprecated
 	public static < S extends NumericType< S >, T extends NumericType< T > > void gauss( final double[] sigma, final RandomAccessible< S > source, final RandomAccessibleInterval< T > target, final int numThreads ) throws IncompatibleTypeException
 	{
-		final ExecutorService service = Executors.newFixedThreadPool( numThreads );
-		gauss( sigma, source, target, service );
-		service.shutdown();
+		Parallelization.runWithNumThreads( numThreads,
+				() -> gauss( sigma, source, target )
+		);
 	}
 
 	/**
+	 * @deprecated
+	 * Deprecated. Please use
+	 * {@link Gauss3#gauss(double, RandomAccessible, RandomAccessibleInterval)
+	 * gauss(sigma, source, target)} instead. The ExecutorService used to
+	 * calculate the Gaussion convolution may by set with the
+	 * {@link Parallelization} context, as show in this example:
+	 * <pre>
+	 * {@code
+	 * Parallelization.runWithExecutor( executorService,
+	 *    () -> gauss( sigma, source, target )
+	 * );
+	 * }
+	 * </pre>
+	 *
+	 * <p>
 	 * Apply Gaussian convolution to source and write the result to output.
 	 * In-place operation (source==target) is supported.
 	 * 
@@ -199,6 +238,7 @@ public final class Gauss3
 	 *             if source and target type are not compatible (they must be
 	 *             either both {@link RealType RealTypes} or the same type).
 	 */
+	@Deprecated
 	public static < S extends NumericType< S >, T extends NumericType< T > > void gauss( final double[] sigma, final RandomAccessible< S > source, final RandomAccessibleInterval< T > target, final ExecutorService service ) throws IncompatibleTypeException
 	{
 		Parallelization.runWithExecutor( service,
