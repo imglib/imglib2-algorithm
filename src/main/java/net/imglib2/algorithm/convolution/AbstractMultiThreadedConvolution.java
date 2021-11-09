@@ -51,6 +51,7 @@ import net.imglib2.RandomAccessibleInterval;
  *
  * @author Matthias Arzt
  */
+@Deprecated
 public abstract class AbstractMultiThreadedConvolution< T > implements Convolution< T >
 {
 
@@ -61,6 +62,7 @@ public abstract class AbstractMultiThreadedConvolution< T > implements Convoluti
 			ExecutorService executorService,
 			int numThreads );
 
+	@Deprecated
 	@Override
 	public void setExecutor( final ExecutorService executor )
 	{

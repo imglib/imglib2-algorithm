@@ -53,6 +53,7 @@ public class MultiDimensionConvolution< T > implements Convolution< T >
 {
 	private ExecutorService executor;
 
+	@Deprecated
 	@Override
 	public void setExecutor( final ExecutorService executor )
 	{
