@@ -34,14 +34,9 @@
 
 package net.imglib2.algorithm.localextrema;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
+import Jama.LUDecomposition;
+import Jama.Matrix;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
@@ -49,17 +44,22 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealPoint;
 import net.imglib2.RealPositionable;
+import net.imglib2.loops.IntervalChunks;
+import net.imglib2.parallel.Parallelization;
+import net.imglib2.parallel.TaskExecutor;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
-import Jama.LUDecomposition;
-import Jama.Matrix;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Refine a set of peaks to subpixel coordinates. This class provides the static
  * {@link #refinePeaks(List, RandomAccessible, Interval, boolean, int, boolean, float, boolean[], int)}
  * method to do this, but this has a lot of parameters. Therefore, this class
  * can also be instantiated to encapsulate the parameter settings.
- * 
+ * <p>
  * <p>
  * A List {@link RefinedPeak} for the given list of {@link Localizable} is
  * computed by, for each peak, fitting a quadratic function to the image and
@@ -68,7 +68,7 @@ import Jama.Matrix;
  * repeated at the corresponding integer coordinates. This is repeated to
  * convergence, for a maximum number of iterations, or until the integer
  * coordinates move out of the valid image.
- * 
+ *
  * @author Stephan Preibisch
  * @author Tobias Pietzsch
  */
@@ -93,8 +93,6 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 		// principally one can move in any dimension
 		allowedToMoveInDim = new boolean[ numDimensions ];
 		Arrays.fill( allowedToMoveInDim, true );
-
-		numThreads = Runtime.getRuntime().availableProcessors();
 	}
 
 	public void setAllowMaximaTolerance( final boolean allowMaximaTolerance )
@@ -164,14 +162,14 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 
 	public int getNumThreads()
 	{
-		return numThreads;
+		return numThreads == 0 ? Parallelization.getTaskExecutor().getParallelism() : numThreads;
 	}
 
 	/**
 	 * Refine a set of peaks to subpixel coordinates. Calls
 	 * {@link #refinePeaks(List, RandomAccessible, Interval, boolean, int, boolean, float, boolean[], int)}
 	 * with the parameters set to this object.
-	 * 
+	 *
 	 * @param peaks
 	 *            List of integer peaks.
 	 * @param img
@@ -184,7 +182,13 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 	 */
 	public ArrayList< RefinedPeak< P > > process( final List< P > peaks, final RandomAccessible< T > img, final Interval validInterval )
 	{
-		return refinePeaks( peaks, img, validInterval, returnInvalidPeaks, maxNumMoves, allowMaximaTolerance, maximaTolerance, allowedToMoveInDim, numThreads );
+		if ( numThreads != 0 )
+			return Parallelization.runWithNumThreads( numThreads,
+					() -> refinePeaks( peaks, img, validInterval, returnInvalidPeaks, maxNumMoves,
+							allowMaximaTolerance, maximaTolerance, allowedToMoveInDim ) );
+		else
+			return refinePeaks( peaks, img, validInterval, returnInvalidPeaks, maxNumMoves,
+					allowMaximaTolerance, maximaTolerance, allowedToMoveInDim );
 	}
 
 	/**
@@ -197,7 +201,7 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 	 * fit is repeated at the corresponding integer coordinates. This is
 	 * repeated to convergence, for a maximum number of iterations, or until the
 	 * integer coordinates move out of the valid image.
-	 * 
+	 *
 	 * @param peaks
 	 *            List of integer peaks.
 	 * @param img
@@ -231,45 +235,9 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 			final int maxNumMoves, final boolean allowMaximaTolerance, final float maximaTolerance, final boolean[] allowedToMoveInDim,
 			final int numThreads )
 	{
-		final int numPeaks = peaks.size();
-		final ArrayList< RefinedPeak< P > > allRefinedPeaks = new ArrayList< RefinedPeak< P > >( numPeaks );
-
-		if ( numPeaks == 0 )
-			return allRefinedPeaks;
-
-		final int numTasks = numThreads <= 1 ? 1 : ( int ) Math.min( numPeaks, numThreads * 20 );
-		final int taskSize = numPeaks / numTasks;
-
-		final ExecutorService ex = Executors.newFixedThreadPool( numThreads );
-		final List< RefinedPeak< P > > synchronizedAllRefinedPeaks = Collections.synchronizedList( allRefinedPeaks );
-		for ( int taskNum = 0; taskNum < numTasks; ++taskNum )
-		{
-			final int fromIndex = taskNum * taskSize;
-			final int toIndex = ( taskNum == numTasks - 1 ) ? numPeaks : fromIndex + taskSize;
-			final Runnable r = new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					final ArrayList< RefinedPeak< P > > refinedPeaks = refinePeaks(
-							peaks.subList( fromIndex, toIndex ),
-							img, validInterval, returnInvalidPeaks, maxNumMoves, allowMaximaTolerance, maximaTolerance, allowedToMoveInDim );
-					synchronizedAllRefinedPeaks.addAll( refinedPeaks );
-				}
-			};
-			ex.execute( r );
-		}
-		ex.shutdown();
-		try
-		{
-			ex.awaitTermination( 1000, TimeUnit.DAYS );
-		}
-		catch ( final InterruptedException e )
-		{
-			e.printStackTrace();
-		}
-
-		return allRefinedPeaks;
+		return Parallelization.runWithNumThreads( numThreads,
+				() -> refinePeaks( peaks, img, validInterval, returnInvalidPeaks, maxNumMoves, allowMaximaTolerance, maximaTolerance,
+						allowedToMoveInDim ) );
 	}
 
 	/**
@@ -282,7 +250,7 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 	 * fit is repeated at the corresponding integer coordinates. This is
 	 * repeated to convergence, for a maximum number of iterations, or until the
 	 * integer coordinates move out of the valid image.
-	 * 
+	 *
 	 * @param peaks
 	 *            List of integer peaks.
 	 * @param img
@@ -313,7 +281,36 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 			final List< P > peaks, final RandomAccessible< T > img, final Interval validInterval, final boolean returnInvalidPeaks,
 			final int maxNumMoves, final boolean allowMaximaTolerance, final float maximaTolerance, final boolean[] allowedToMoveInDim )
 	{
-		final ArrayList< RefinedPeak< P >> refinedPeaks = new ArrayList< RefinedPeak< P > >();
+		final int numPeaks = peaks.size();
+
+		if ( numPeaks == 0 )
+			return new ArrayList<>();
+
+		TaskExecutor taskExecutor = Parallelization.getTaskExecutor();
+
+		List< Interval > chunks = IntervalChunks.chunkInterval( new FinalInterval( numPeaks ), taskExecutor.suggestNumberOfTasks() );
+
+		List< ArrayList< RefinedPeak< P > > > result = taskExecutor.forEachApply( chunks, chunk ->
+				refinePeaksChunk(
+						peaks.subList( ( int ) chunk.min( 0 ), ( int ) chunk.max( 0 ) + 1 ),
+						img, validInterval, returnInvalidPeaks, maxNumMoves, allowMaximaTolerance,
+						maximaTolerance, allowedToMoveInDim )
+		);
+
+		return concatenate( result );
+	}
+
+	private static < P > ArrayList< P > concatenate( List< ? extends List< ? extends P > > lists )
+	{
+		int size = lists.stream().mapToInt( List::size ).sum();
+		ArrayList< P > result = new ArrayList<>( size );
+		lists.forEach( result::addAll );
+		return result;
+	}
+
+	private static < T extends RealType< T >, P extends Localizable > ArrayList< RefinedPeak< P > > refinePeaksChunk( List< P > peaks, RandomAccessible< T > img, Interval validInterval, boolean returnInvalidPeaks, int maxNumMoves, boolean allowMaximaTolerance, float maximaTolerance, boolean[] allowedToMoveInDim )
+	{
+		final ArrayList< RefinedPeak< P > > refinedPeaks = new ArrayList< RefinedPeak< P > >();
 
 		final int n = img.numDimensions();
 
@@ -420,7 +417,7 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 	/**
 	 * Estimate subpixel {@code offset} of extremum of quadratic function
 	 * fitted at {@code p}.
-	 * 
+	 *
 	 * @param p
 	 *            integer position at which to fit quadratic.
 	 * @param access
