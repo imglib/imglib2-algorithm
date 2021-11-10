@@ -35,7 +35,6 @@ package net.imglib2.algorithm.gauss3;
 
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.parallel.Parallelization;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.Views;
 import org.openjdk.jmh.annotations.*;
