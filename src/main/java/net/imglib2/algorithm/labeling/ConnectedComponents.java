@@ -39,12 +39,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
@@ -52,6 +48,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.iterator.IntervalIterator;
+import net.imglib2.parallel.Parallelization;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.view.Views;
@@ -99,17 +96,19 @@ public final class ConnectedComponents
 	 * @param se
 	 *            structuring element to use. 8-connected or 4-connected
 	 *            (respectively n-dimensional analog)
+	 * @param service
+	 *            service providing threads for multi-threading
 	 */
 	public static < T extends IntegerType< T >, L, I extends IntegerType< I > > void labelAllConnectedComponents(
 			final RandomAccessible< T > input,
 			final ImgLabeling< L, I > labeling,
 			final Iterator< L > labelGenerator,
-			final StructuringElement se )
+			final StructuringElement se,
+			final ExecutorService service )
 	{
-		final int numThreads = Runtime.getRuntime().availableProcessors();
-		final ExecutorService service = Executors.newFixedThreadPool( numThreads );
-		labelAllConnectedComponents( input, labeling, labelGenerator, se, service );
-		service.shutdown();
+		Parallelization.runWithExecutor( service,
+				() -> labelAllConnectedComponents( input, labeling, labelGenerator, se )
+		);
 	}
 
 	/**
@@ -130,21 +129,18 @@ public final class ConnectedComponents
 	 * @param se
 	 *            structuring element to use. 8-connected or 4-connected
 	 *            (respectively n-dimensional analog)
-	 * @param service
-	 *            service providing threads for multi-threading
 	 */
 	public static < T extends IntegerType< T >, L, I extends IntegerType< I > > void labelAllConnectedComponents(
 			final RandomAccessible< T > input,
 			final ImgLabeling< L, I > labeling,
 			final Iterator< L > labelGenerator,
-			final StructuringElement se,
-			final ExecutorService service )
+			final StructuringElement se )
 	{
 		final RandomAccessibleInterval< I > output = labeling.getIndexImg();
 		for  ( final I i : Views.iterable( output ) )
 			i.setZero();
 
-		final int numLabels = labelAllConnectedComponents( input, output, se, service ) + 1;
+		final int numLabels = labelAllConnectedComponents( input, output, se ) + 1;
 
 		final ArrayList< Set< L > > labelSets = new ArrayList<>();
 		labelSets.add( Collections.emptySet() );
@@ -152,6 +148,37 @@ public final class ConnectedComponents
 			labelSets.add( Collections.singleton( labelGenerator.next() ) );
 
 		labeling.getMapping().setLabelSets( labelSets );
+	}
+
+	/**
+	 * "Label" all connected components in the given input image. In the output
+	 * image, all background pixels will be set to 0 and foreground components
+	 * set to 1, 2, 3, etc.
+	 *
+	 * <p>
+	 * <em>Note, that the {@code output} image must be cleared to 0!</em>
+	 *
+	 * @param input
+	 *            input image with pixels &gt; 0 belonging to foreground.
+	 * @param output
+	 *            output image, must be filled with 0.
+	 * @param se
+	 *            structuring element to use. 8-connected or 4-connected
+	 *            (respectively n-dimensional analog)
+	 * @param service
+	 *            service providing threads for multi-threading
+	 * @return the number of connected components (that is, the highest value
+	 *         occurring in the output image.
+	 */
+	public static < T extends IntegerType< T >, L extends IntegerType< L > > int labelAllConnectedComponents(
+			final RandomAccessible< T > input,
+			final RandomAccessibleInterval< L > output,
+			final StructuringElement se,
+			final ExecutorService service )
+	{
+		return Parallelization.runWithExecutor( service,
+				() -> labelAllConnectedComponents( input, output, se )
+		);
 	}
 
 	/**
@@ -178,39 +205,6 @@ public final class ConnectedComponents
 			final RandomAccessibleInterval< L > output,
 			final StructuringElement se )
 	{
-		final int numThreads = Runtime.getRuntime().availableProcessors();
-		final ExecutorService service = Executors.newFixedThreadPool( numThreads );
-		final int result = labelAllConnectedComponents( input, output, se, service );
-		service.shutdown();
-		return result;
-	}
-
-	/**
-	 * "Label" all connected components in the given input image. In the output
-	 * image, all background pixels will be set to 0 and foreground components
-	 * set to 1, 2, 3, etc.
-	 *
-	 * <p>
-	 * <em>Note, that the {@code output} image must be cleared to 0!</em>
-	 *
-	 * @param input
-	 *            input image with pixels &gt; 0 belonging to foreground.
-	 * @param output
-	 *            output image, must be filled with 0.
-	 * @param se
-	 *            structuring element to use. 8-connected or 4-connected
-	 *            (respectively n-dimensional analog)
-	 * @param service
-	 *            service providing threads for multi-threading
-	 * @return the number of connected components (that is, the highest value
-	 *         occurring in the output image.
-	 */
-	public static < T extends IntegerType< T >, L extends IntegerType< L > > int labelAllConnectedComponents(
-			final RandomAccessible< T > input,
-			final RandomAccessibleInterval< L > output,
-			final StructuringElement se,
-			final ExecutorService service )
-	{
 		final int n = output.numDimensions();
 		final int splitDim = n - 1;
 		final long[] min = new long[ n ];
@@ -234,37 +228,14 @@ public final class ConnectedComponents
 			min[ splitDim ] += taskSize;
 		}
 
-		final ArrayList< Future< ? > > futures = new ArrayList< Future< ? > >();
-		for ( final Fragment< T, L > fragment : fragments )
-		{
-			futures.add( service.submit( new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					fragment.mark();
-				}
-			} ) );
-		}
-		getAllFutures( futures );
+		Parallelization.getTaskExecutor().forEach( Arrays.asList( fragments ), Fragment::mark );
 
 		final TIntArrayList merged = mergeCanonicalLists( fragments );
 		for ( int i = 1; i < numTasks; ++i )
 			fragments[ i ].linkToPreviousFragment( fragments[ i - 1 ], merged );
 		final int numComponents = splitCanonicalLists( fragments, merged );
 
-		for ( final Fragment< T, L > fragment : fragments )
-		{
-			futures.add( service.submit( new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					fragment.relabel();
-				}
-			} ) );
-		}
-		getAllFutures( futures );
+		Parallelization.getTaskExecutor().forEach( Arrays.asList( fragments ), Fragment::relabel );
 
 		return numComponents;
 	}
@@ -479,26 +450,6 @@ public final class ConnectedComponents
 		}
 
 		return nextLabel - 1;
-	}
-
-	private static void getAllFutures( final List< Future< ? > > futures )
-	{
-		for ( final Future< ? > future : futures )
-		{
-			try
-			{
-				future.get();
-			}
-			catch ( final InterruptedException e )
-			{
-				e.printStackTrace();
-			}
-			catch ( final ExecutionException e )
-			{
-				e.printStackTrace();
-			}
-		}
-		futures.clear();
 	}
 
 	private static interface CollectNeighborLabels< L extends IntegerType< L > >
