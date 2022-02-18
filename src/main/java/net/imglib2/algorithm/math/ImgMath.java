@@ -114,21 +114,33 @@ import net.imglib2.type.numeric.real.FloatType;
  */
 public class ImgMath
 {
+	/**
+	 * @implNote op name='math.compute', type=Function
+	 */
 	static public final Compute compute( final IFunction operation )
 	{
 		return new Compute( operation );
 	}
-	
+
+	/**
+	 * @implNote op name='math.compute', type=Function
+	 */
 	static public final < I extends RealType< I > > Compute compute( final RandomAccessibleInterval< I > src )
 	{
 		return compute( img( src ) );
 	}
-	
+
+	/**
+	 * @implNote op name='math.computeIntoFloats', type=Function
+	 */
 	static public final RandomAccessibleInterval< FloatType > computeIntoFloats( final IFunction operation )
 	{
 		return new Compute( operation ).into( new ArrayImgFactory< FloatType >( new FloatType() ).create( Util.findImg( operation ).iterator().next() ) );
 	}
-	
+
+	/**
+	 * @implNote op name='math.computeInto', type=Function
+	 */
 	static public final < O extends RealType< O > > RandomAccessibleInterval< O > computeInto(
 			final IFunction operation,
 			final RandomAccessibleInterval< O > target )
@@ -136,6 +148,9 @@ public class ImgMath
 		return new Compute( operation ).into( target );
 	}
 
+	/**
+	 * @implNote op name='math.computeInto', type=Function
+	 */
 	static public final < O extends RealType< O > > RandomAccessibleInterval< O > computeInto(
 			final IFunction operation,
 			final RandomAccessibleInterval< O > target,
@@ -143,12 +158,18 @@ public class ImgMath
 	{
 		return new Compute( operation ).into( target, converter );
 	}
-	
+
+	/**
+	 * @implNote op name='math.computeIntoImg', type=Function
+	 */
 	static public final < O extends NativeType< O > & RealType< O > > RandomAccessibleInterval< O > computeIntoImg( final IFunction operation )
 	{
 		return compute( operation ).intoImg();
 	}
-	
+
+	/**
+	 * @implNote op name='math.computeIntoArrayImg', type=Function
+	 */
 	static public final < O extends NativeType< O > & RealType< O > > RandomAccessibleInterval< O > computeIntoArrayImg( final IFunction operation )
 	{
 		return compute( operation ).intoArrayImg();
@@ -156,7 +177,8 @@ public class ImgMath
 	
 	/**
 	 * Almost all {@code IFunction} are also {@code ViewableFunction}. 
-	 * 
+	 *
+	 * @implNote op name='math.view', type=Function
 	 * @param operation
 	 * @return
 	 */
@@ -167,7 +189,8 @@ public class ImgMath
 	
 	/**
 	 * Almost all {@code IFunction} are also {@code ViewableFunction}. 
-	 * 
+	 *
+	 * @implNote op name='math.viewFloats', type=Function
 	 * @param operation
 	 * @return
 	 */
@@ -175,268 +198,427 @@ public class ImgMath
 	{
 		return operation.view( new FloatType() );
 	}
-	
+
+	/**
+	 * @implNote op name='math.add', type=Function
+	 */
 	static public final Add add( final Object o1, final Object o2 )
 	{
 		return new Add( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.add', type=Function
+	 */
 	static public final Add add( final Object... obs )
 	{
 		return new Add( obs );
 	}
-	
+
+	/**
+	 * @implNote op name='math.sub', type=Function
+	 */
 	static public final Sub sub( final Object o1, final Object o2 )
 	{
 		return new Sub( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.sub', type=Function
+	 */
 	static public final Sub sub( final Object... obs )
 	{
 		return new Sub( obs );
 	}
-	
+
+	/**
+	 * @implNote op name='math.minus', type=Function
+	 */
 	static public final Minus minus( final Object o1 )
 	{
 		return new Minus( o1 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.mul', type=Function
+	 */
 	static public final Mul mul( final Object o1, final Object o2 )
 	{
 		return new Mul( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.mul', type=Function
+	 */
 	static public final Mul mul( final Object... obs )
 	{
 		return new Mul( obs );
 	}
-	
+
+	/**
+	 * @implNote op name='math.div', type=Function
+	 */
 	static public final Div div( final Object o1, final Object o2 )
 	{
 		return new Div( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.div', type=Function
+	 */
 	static public final Div div( final Object... obs )
 	{
 		return new Div( obs );
 	}
-	
+
+	/**
+	 * @implNote op name='math.pow', type=Function
+	 */
 	static public final Pow pow( final Object o1, final Object o2 )
 	{
 		return new Pow( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.power', type=Function
+	 */
 	static public final Pow power( final Object o1, final Object o2 )
 	{
 		return new Pow( o1, o2 );
 	}
 
+	/**
+	 * @implNote op name='math.max', type=Function
+	 */
 	static public final Max max( final Object o1, final Object o2 )
 	{
 		return new Max( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.max', type=Function
+	 */
 	static public final Max max( final Object... obs )
 	{
 		return new Max( obs );
 	}
-	
+
+	/**
+	 * @implNote op name='math.maximum', type=Function
+	 */
 	static public final Max maximum( final Object o1, final Object o2 )
 	{
 		return new Max( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.maximum', type=Function
+	 */
 	static public final Max maximum( final Object... obs )
 	{
 		return new Max( obs );
 	}
-	
+
+	/**
+	 * @implNote op name='math.min', type=Function
+	 */
 	static public final Min min( final Object o1, final Object o2 )
 	{
 		return new Min( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.min', type=Function
+	 */
 	static public final Min min( final Object... obs )
 	{
 		return new Min( obs );
 	}
-	
+
+	/**
+	 * @implNote op name='math.minimum', type=Function
+	 */
 	static public final Min minimum( final Object o1, final Object o2 )
 	{
 		return new Min( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.minimum', type=Function
+	 */
 	static public final Min minimum( final Object... obs )
 	{
 		return new Min( obs );
 	}
-	
+
+	/**
+	 * @implNote op name='math.log', type=Function
+	 */
 	static public final Log log( final Object o1 )
 	{
 		return new Log( o1 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.logarithm', type=Function
+	 */
 	static public final Log logarithm( final Object o1 )
 	{
 		return new Log( o1 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.exp', type=Function
+	 */
 	static public final Exp exp( final Object o1 )
 	{
 		return new Exp( o1 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.let', type=Function
+	 */
 	static public final Let let( final String varName, final Object varValue, final Object body )
 	{
 		return new Let( varName, varValue, body );
 	}
-	
+
+	/**
+	 * @implNote op name='math.let', type=Function
+	 */
 	static public final Let let( final Object[] pairs, final Object body )
 	{
 		return new Let( pairs, body );
 	}
-	
+
+	/**
+	 * @implNote op name='math.let', type=Function
+	 */
 	static public final Let let( final Object... obs )
 	{
 		return new Let( obs );
 	}
-	
+
+	/**
+	 * @implNote op name='math.var', type=Function
+	 */
 	static public final Var var( final String name )
 	{
 		return new Var( name );
 	}
-	
+
+	/**
+	 * @implNote op name='math.eq', type=Function
+	 */
 	static public final Equal EQ( final Object o1, final Object o2 )
 	{
 		return new Equal( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.equal', type=Function
+	 */
 	static public final Equal equal( final Object o1, final Object o2 )
 	{
 		return new Equal( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.neq', type=Function
+	 */
 	static public final NotEqual NEQ( final Object o1, final Object o2 )
 	{
 		return new NotEqual( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.notEqual', type=Function
+	 */
 	static public final NotEqual notEqual( final Object o1, final Object o2 )
 	{
 		return new NotEqual( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.lt', type=Function
+	 */
 	static public final LessThan LT( final Object o1, final Object o2 )
 	{
 		return new LessThan( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.lessThan', type=Function
+	 */
 	static public final LessThan lessThan( final Object o1, final Object o2 )
 	{
 		return new LessThan( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.gt', type=Function
+	 */
 	static public final GreaterThan GT( final Object o1, final Object o2 )
 	{
 		return new GreaterThan( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.greaterThan', type=Function
+	 */
 	static public final GreaterThan greaterThan( final Object o1, final Object o2 )
 	{
 		return new GreaterThan( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.if', type=Function
+	 */
 	static public final If IF( final Object o1, final Object o2, final Object o3 )
 	{
 		return new If( o1, o2, o3 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.then', type=Function
+	 */
 	static public final Then THEN( final Object o )
 	{
 		return new Then( o );
 	}
-	
+
+	/**
+	 * @implNote op name='math.else', type=Function
+	 */
 	static public final Else ELSE( final Object o )
 	{
 		return new Else( o );
 	}
-	
+
+	/**
+	 * @implNote op name='math.and', type=Function
+	 */
 	static public final AndLogical AND( final Object o1, final Object o2 )
 	{
 		return new AndLogical( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.and', type=Function
+	 */
 	static public final AndLogical AND( final Object... o )
 	{
 		return new AndLogical( o );
 	}
-	
+
+	/**
+	 * @implNote op name='math.or', type=Function
+	 */
 	static public final OrLogical OR( final Object o1, final Object o2 )
 	{
 		return new OrLogical( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.or', type=Function
+	 */
 	static public final OrLogical OR( final Object... o )
 	{
 		return new OrLogical( o );
 	}
-	
+
+	/**
+	 * @implNote op name='math.xor', type=Function
+	 */
 	static public final XorLogical XOR( final Object o1, final Object o2 )
 	{
 		return new XorLogical( o1, o2 );
 	}
-	
+
+	/**
+	 * @implNote op name='math.xor', type=Function
+	 */
 	static public final XorLogical XOR( final Object... o )
 	{
 		return new XorLogical( o );
 	}
-	
+
+	/**
+	 * @implNote op name='math.not', type=Function
+	 */
 	static public final NotLogical NOT( final Object o )
 	{
 		return new NotLogical( o );
 	}
-	
+
+	/**
+	 * @implNote op name='math.img', type=Function
+	 */
 	static public final < T extends RealType< T > > ImgSource< T > img( final RandomAccessibleInterval< T > rai )
 	{
 		return new ImgSource< T >( rai );
 	}
 	
-	/** Synonym of {@code img(RandomAccessibleInterval)}, given that {@code img} is a widely used variable name. */
+	/**
+	 * Synonym of {@code img(RandomAccessibleInterval)}, given that {@code img} is a widely used variable name.
+	 * @implNote op name='math.intervalSource', type=Function
+	 */
 	static public final < T extends RealType< T > > ImgSource< T > intervalSource( final RandomAccessibleInterval< T > rai )
 	{
 		return new ImgSource< T >( rai );
 	}
-	
+
+	/**
+	 * @implNote op name='math.number', type=Function
+	 */
 	static public final NumberSource number( final Number number )
 	{
 		return new NumberSource( number );
 	}
-	
+
+	/**
+	 * @implNote op name='math.block', type=Function
+	 */
 	static public final < T extends RealType< T > > BlockReadSource< T > block( final RandomAccessible< T > src, final long[] radius )
 	{
 		return new BlockReadSource< T >( src, radius );
 	}
-	
+
+	/**
+	 * @implNote op name='math.block', type=Function
+	 */
 	static public final < T extends RealType< T > > BlockReadSource< T > block( final RandomAccessible< T > src, final long radius )
 	{
 		return new BlockReadSource< T >( src, radius );
 	}
-	
+
+	/**
+	 * @implNote op name='math.block', type=Function
+	 */
 	static public final < T extends RealType< T > > BlockReadSource< T > block( final RandomAccessible< T > src, final long[][] corners )
 	{
 		return new BlockReadSource< T >( src, corners );
 	}
-	
+
+	/**
+	 * @implNote op name='math.offset', type=Function
+	 */
 	static public final < T extends RealType< T > > RandomAccessibleSource< T > offset( final RandomAccessible< T > src, final long[] offset )
 	{
 		return new RandomAccessibleSource< T >( src, offset );
 	}
-	
+
+	/**
+	 * @implNote op name='math.offset', type=Function
+	 */
 	static public final < T extends RealType< T > > OffsetSource< T > offset( final IFunction f, final long[] offset )
 	{
 		return new OffsetSource< T >( f, offset );
 	}
-	
+
+	/**
+	 * @implNote op name='math.source', type=Function
+	 */
 	static public final < T extends RealType< T > > IFunction source( final RandomAccessible< T > src )
 	{
 		if ( src instanceof RandomAccessibleInterval< ? > )
@@ -444,46 +626,73 @@ public class ImgMath
 		return new RandomAccessibleSource< T >( src );
 	}
 
+	/**
+	 * @implNote op name='math.gen', type=Function
+	 */
 	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final T value, final double radius )
 	{
 		return new KDTreeSource< T >( positions, value, radius );
 	}
-	
+
+	/**
+	 * @implNote op name='math.gen', type=Function
+	 */
 	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final T value, final double radius, final Object outside )
 	{
 		return new KDTreeSource< T >( positions, value, radius, outside );
 	}
-	
+
+	/**
+	 * @implNote op name='math.gen', type=Function
+	 */
 	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final T value, final double radius, final Object outside, final Interval interval )
 	{
 		return new KDTreeSource< T >( positions, value, radius, outside, interval );
 	}
-	
+
+	/**
+	 * @implNote op name='math.gen', type=Function
+	 */
 	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final List< T > values, final double radius )
 	{
 		return new KDTreeSource< T >( positions, values, radius );
 	}
-	
+
+	/**
+	 * @implNote op name='math.gen', type=Function
+	 */
 	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final List< T > values, final double radius, final Object outside )
 	{
 		return new KDTreeSource< T >( positions, values, radius, outside );
 	}
-	
+
+	/**
+	 * @implNote op name='math.gen', type=Function
+	 */
 	static public final < T extends RealType< T > > KDTreeSource< T > gen( final List< Point > positions, final List< T > values, final double radius, final Object outside, final Interval interval )
 	{
 		return new KDTreeSource< T >( positions, values, radius, outside, interval );
 	}
-	
+
+	/**
+	 * @implNote op name='math.gen', type=Function
+	 */
 	static public final < T extends RealType< T > > KDTreeSource< T > gen( final KDTree< T > kdtree, final double radius )
 	{
 		return new KDTreeSource< T >( kdtree, radius );
 	}
-	
+
+	/**
+	 * @implNote op name='math.gen', type=Function
+	 */
 	static public final < T extends RealType< T > > KDTreeSource< T > gen( final KDTree< T > kdtree, final double radius, final Object outside )
 	{
 		return new KDTreeSource< T >( kdtree, radius, outside );
 	}
-	
+
+	/**
+	 * @implNote op name='math.gen', type=Function
+	 */
 	static public final < T extends RealType< T > > KDTreeSource< T > gen( final KDTree< T > kdtree, final double radius, final Object outside, final Interval interval )
 	{
 		return new KDTreeSource< T >( kdtree, radius, outside, interval );

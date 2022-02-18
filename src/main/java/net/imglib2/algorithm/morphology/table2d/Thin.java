@@ -71,11 +71,17 @@ import net.imglib2.util.Util;
  */
 public class Thin
 {
+	/**
+	 * @implNote op name='morphology.thin', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > thin( final Img< T > source )
 	{
 		return new Thin2().calculate( new Thin1().calculate( source ) );
 	}
 
+	/**
+	 * @implNote op name='morphology.thin', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void thin( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		final T extendedVal = target.firstElement().createVariable();

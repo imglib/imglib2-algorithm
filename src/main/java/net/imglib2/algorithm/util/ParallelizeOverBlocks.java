@@ -61,6 +61,7 @@ public class ParallelizeOverBlocks
 	 *
 	 * Submit blocked tasks and wait for execution.
 	 *
+	 * @implNote op name='grid.parallelize', type=Function
 	 * @param func
 	 *            {@link Function} to be applied to each block as specified by
 	 *            first parameter {@link Interval}.
@@ -88,6 +89,7 @@ public class ParallelizeOverBlocks
 	 *
 	 * Submit blocked tasks and wait for execution.
 	 *
+	 * @implNote op name='grid.parallelizeAsync', type=Function
 	 * @param func
 	 *            {@link Function} to be applied to each block as specified by
 	 *            first parameter {@link Interval}.
@@ -112,6 +114,7 @@ public class ParallelizeOverBlocks
 	 *
 	 * Submit blocked tasks and wait for execution.
 	 *
+	 * @implNote op name='grid.parallelize', type=Function
 	 * @param func
 	 *            {@link Function} to be applied to each block as specified by
 	 *            first parameter {@link Interval}.
@@ -145,6 +148,7 @@ public class ParallelizeOverBlocks
 	 *
 	 * Submit blocked tasks and wait for execution.
 	 *
+	 * @implNote op name='grid.parallelizeAsync', type=Function
 	 * @param func
 	 *            {@link Function} to be applied to each block as specified by
 	 *            first parameter {@link Interval}.
@@ -177,6 +181,7 @@ public class ParallelizeOverBlocks
 	 *
 	 * Submit blocked tasks and wait for execution.
 	 *
+	 * @implNote op name='grid.parallelize', type=Function
 	 * @param func
 	 *            {@link Function} to be applied to each block as specified by
 	 *            first parameter {@link Interval}.
@@ -206,6 +211,7 @@ public class ParallelizeOverBlocks
 	 *
 	 * Submit blocked tasks and wait for execution.
 	 *
+	 * @implNote op name='grid.parallelizeAsync', type=Function
 	 * @param func
 	 *            {@link Function} to be applied to each block as specified by
 	 *            first parameter {@link Interval}.

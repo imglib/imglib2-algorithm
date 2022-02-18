@@ -65,11 +65,17 @@ public class Fill extends Abstract3x3TableOperation
 		return true;
 	}
 
+	/**
+	 * @implNote op name='morphology.fill', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > fill( final Img< T > source )
 	{
 		return new Fill().calculate( source );
 	}
 
+	/**
+	 * @implNote op name='morphology.fill', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void fill( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Fill().calculate( source, target );

@@ -105,6 +105,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * Returns the size of the vote space output image given an input
 	 * {@link RandomAccessibleInterval}.
 	 *
+	 * @implNote op names='filter.hough.getVotespaceSize', type=Function
 	 * @param dimensions
 	 *            - the {@link Dimensions} over which the Hough Line Transform
 	 *            will be run
@@ -119,6 +120,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * Returns the size of the vote space output image given an input
 	 * {@link RandomAccessibleInterval}.
 	 *
+	 * @implNote op names='filter.hough.getVotespaceSize', type=Function
 	 * @param dimensions
 	 *            - the {@link Dimensions} over which the Hough Line Transform
 	 *            will be run
@@ -135,6 +137,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * Returns the size of the voteSpace output image given desired {@code nRho}
 	 * and {@code nTheta} values.
 	 *
+	 * @implNote op names='filter.hough.getVotespaceSize', type=Function
 	 * @param nRho
 	 *            - the number of bins for rho resolution
 	 * @param nTheta
@@ -149,6 +152,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Pick vote space peaks with a {@link LocalExtrema}.
 	 *
+	 * @implNote op names='filter.hough.pickLinePeaks', type=Function
 	 * @param voteSpace
 	 *            - the {@link RandomAccessibleInterval} containing the output
 	 *            of a Hough Transform vote
@@ -170,6 +174,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Pick vote space peaks with a {@link LocalExtrema}.
 	 *
+	 * @implNote op names='filter.hough.pickLinePeaks', type=Function
 	 * @param voteSpace
 	 *            - the {@link RandomAccessibleInterval} containing the output
 	 *            of a Hough Transform vote
@@ -201,6 +206,8 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * Runs a Hough Line Tranform on an image and populates the vote space
 	 * parameter with the results.
 	 *
+	 * @implNote op names='filter.hough.voteLines',
+	 *           type=Computer
 	 * @param input
 	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
 	 *            Transform over
@@ -239,6 +246,34 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Runs a Hough Line Tranform on an image and populates the vote space
 	 * parameter with the results.
+	 * <p>
+	 * This method differs from
+	 * {@link #voteLines(RandomAccessibleInterval, RandomAccessibleInterval, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='filter.hough.voteLines', type=Computer
+	 * @param input
+	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
+	 *            Transform over
+	 * @param nTheta
+	 *            - the number of bins for theta resolution
+	 * @param votespace
+	 *            - the {@link RandomAccessibleInterval} in which the results
+	 *            are stored
+	 */
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines(
+			final RandomAccessibleInterval< T > input,
+			final int nTheta,
+			final RandomAccessibleInterval< U > votespace)
+	{
+		voteLines( input, votespace, nTheta);
+	}
+
+	/**
+	 * Runs a Hough Line Tranform on an image and populates the vote space
+	 * parameter with the results.
 	 *
 	 * @param input
 	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
@@ -258,6 +293,37 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 			final int nRho )
 	{
 		voteLines( input, votespace, nTheta, nRho, Util.getTypeFromInterval( input ) );
+	}
+
+	/**
+	 * Runs a Hough Line Tranform on an image and populates the vote space
+	 * parameter with the results.
+	 * <p>
+	 * This method differs from
+	 * {@link #voteLines(RandomAccessibleInterval, RandomAccessibleInterval, int, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op names='filter.hough.voteLines', type=Computer
+	 * @param input
+	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
+	 *            Transform over
+	 * @param votespace
+	 *            - the {@link RandomAccessibleInterval} in which the results
+	 *            are stored
+	 * @param nTheta
+	 *            - the number of bins for theta resolution
+	 * @param nRho
+	 *            - the number of bins for rho resolution
+	 */
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines(
+			final RandomAccessibleInterval< T > input,
+			final int nTheta,
+			final int nRho,
+			final RandomAccessibleInterval< U > votespace)
+	{
+		voteLines(input, votespace, nTheta, nRho);
 	}
 
 	/**
@@ -288,6 +354,42 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	{
 		final Predicate< T > p = o -> threshold.compareTo( o ) <= 0;
 		voteLines( input, votespace, nTheta, nRho, p );
+	}
+
+	/**
+	 * Runs a Hough Line Tranform on an image and populates the vote space
+	 * parameter with the results.
+	 * <p>
+	 * This method differs from
+	 * {@link #voteLines(RandomAccessibleInterval, RandomAccessibleInterval, int, int, Comparable)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='filter.hough.voteLines', type=Computer
+	 * @param input
+	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
+	 *            Transform over
+	 * @param nTheta
+	 *            - the number of bins for theta resolution
+	 * @param nRho
+	 *            - the number of bins for rho resolution
+	 * @param threshold
+	 *            - the minimum value allowed by the populator. Any input less
+	 *            than this value will be disregarded by the populator.
+	 * @param votespace
+	 *            - the {@link RandomAccessibleInterval} in which the results
+	 *            are stored
+	 */
+	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines(
+			final RandomAccessibleInterval< T > input,
+			final int nTheta,
+			final int nRho,
+			final T threshold,
+			final RandomAccessibleInterval< U > votespace)
+
+	{
+		voteLines(input, votespace, nTheta, nRho, threshold);
 	}
 
 	/**
@@ -404,11 +506,84 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	}
 
 	/**
+	 *
+	 * Runs a Hough Line Tranform on an image and populates the vote space
+	 * parameter with the results.
+	 * <p>
+	 * Vote space here has two dimensions: {@code rho} and {@code theta}.
+	 * {@code theta} is measured in radians {@code [-pi/2 pi/2)}, {@code rho} is
+	 * measured in {@code [-rhoMax, rhoMax)}.
+	 * </p>
+	 * <p>
+	 * Lines are modeled as
+	 * </p>
+	 *
+	 * <pre>
+	 * l(t) = | x | = rho * |  cos(theta) | + t * | sin(theta) |
+	 *        | y |         | -sin(theta) |       | cos(theta) |
+	 * </pre>
+	 * <p>
+	 * In other words, {@code rho} represents the signed minimum distance from
+	 * the image origin to the line, and {@code theta} indicates the angle
+	 * between the row-axis and the minimum offset vector.
+	 * </p>
+	 * <p>
+	 * For a given point, then, votes are placed along the curve
+	 * </p>
+	 *
+	 * <pre>
+	 * rho = y * sin( theta ) + x * cos( theta )
+	 * </pre>
+	 * <p>
+	 * It is important to note that the interval of the first dimension of the
+	 * vote space image is NOT {@code [-maxRho, maxRho)} but instead
+	 * {@code [0, maxRho * 2)}; the same applies to the second dimension of the
+	 * vote space as well. Thus if {@link HoughTransforms#pickLinePeaks} is not
+	 * used to retrieve the maxima from the vote space, the vote space will have
+	 * to be translated by {@code -maxRho} in dimension 0 to get the correct
+	 * {@code rho} and {@code theta} values from the vote space.
+	 * </p>
+	 * <p>
+	 * This method differs from
+	 * {@link #voteLines(RandomAccessibleInterval, RandomAccessibleInterval, int, int, Predicate)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='filter.hough.voteLines', type=Computer
+	 * @param input
+	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
+	 *            Transform over
+	 * @param nTheta
+	 *            - the number of bins for theta resolution
+	 * @param nRho
+	 *            - the number of bins for rho resolution
+	 * @param filter
+	 *            - a {@link Predicate} judging whether or not the a value is
+	 *            above the minimum value allowed by the populator. Any input
+	 *            less than or equal to this value will be disregarded by the
+	 *            populator.
+	 * @param votespace
+	 *            - the {@link RandomAccessibleInterval} in which the results
+	 *            are stored
+	 */
+	public static < T, U extends IntegerType< U > > void voteLines(
+			final RandomAccessibleInterval< T > input,
+			final int nTheta,
+			final int nRho,
+			final Predicate< T > filter,
+			final RandomAccessibleInterval< U > votespace)
+	{
+		voteLines(input, votespace, nTheta, nRho, filter);
+	}
+
+	/**
 	 * Method used to convert the {rho, theta} output of the
 	 * {@link HoughTransforms#voteLines} algorithm into a more useful
 	 * y-intercept value. Used with {@link HoughTransforms#getSlope} to create
 	 * line equations.
 	 *
+	 * @implNote op name='filter.hough.getIntercept', type=Function
 	 * @param rho
 	 *            - the {@code rho} of the line
 	 * @param theta
@@ -427,6 +602,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * value. Used with {@link HoughTransforms#getIntercept} to create line
 	 * equations.
 	 *
+	 * @implNote op name='filter.hough.getSlope', type=Function
 	 * @param theta
 	 *            - the {@code theta} of the line
 	 * @return {@code double} - the y-intercept of the line

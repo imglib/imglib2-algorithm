@@ -53,9 +53,11 @@ public class Kernel1D
 	/**
 	 * Creates a one-dimensional symmetric convolution kernel.
 	 *
+	 * @implNote op name='create.kernel1DSymmetric',type=Function
 	 * @param halfKernel
 	 *            the upper half (starting at the center pixel) of the symmetric
 	 *            convolution kernel.
+	 * @return a {@link Kernel1D} used for one dimensional convolutions
 	 */
 	public static Kernel1D symmetric( final double... halfKernel )
 	{
@@ -68,6 +70,7 @@ public class Kernel1D
 	/**
 	 * Similar to {@link #symmetric(double[])} but creates an array of
 	 * one-dimensional convolution kernels.
+	 * @implNote op name='create.kernel1DSymmetric',type=Function
 	 */
 	public static Kernel1D[] symmetric( final double[][] halfKernels )
 	{
@@ -77,11 +80,13 @@ public class Kernel1D
 	/**
 	 * Creates a one-dimensional asymmetric convolution kernel.
 	 *
+	 * @implNote op name='create.kernel1DAsymmetric',type=Function
 	 * @param fullKernel
 	 *            an array containing the values of the kernel
 	 * @param originIndex
 	 *            the index of the array element which is the origin of the
 	 *            kernel
+	 * @return an asymmetric {@link Kernel1D} used for one dimensional convolutions
 	 */
 	public static Kernel1D asymmetric( final double[] fullKernel, final int originIndex )
 	{
@@ -94,6 +99,7 @@ public class Kernel1D
 	/**
 	 * Creates a one-dimensional asymmetric convolution kernel, where the origin
 	 * of the kernel is in the middle.
+	 * @implNote op name='create.kernel1DCentralAsymmetric',type=Function
 	 */
 	public static Kernel1D centralAsymmetric( final double... kernel )
 	{
@@ -103,6 +109,7 @@ public class Kernel1D
 	/**
 	 * Similar to {@link #asymmetric(double[], int)} but creates an array of
 	 * one-dimensional convolution kernels.
+	 * @implNote op name='create.kernel1DAsymmetric',type=Function
 	 */
 	public static Kernel1D[] asymmetric( final double[][] fullKernels, final int[] originIndices )
 	{
@@ -113,6 +120,7 @@ public class Kernel1D
 	/**
 	 * Similar to {@link #centralAsymmetric(double...)} but creates an array of
 	 * one-dimensional convolution kernels.
+	 * @implNote op name='create.kernel1DCentralAsymmetric',type=Function
 	 */
 	public static Kernel1D[] centralAsymmetric( final double[][] kernels )
 	{

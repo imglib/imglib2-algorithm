@@ -57,11 +57,17 @@ class Spur2 extends Abstract3x3TableOperation
 		return true;
 	}
 
+	/**
+	 * @implNote op name='morphology.spur2', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > spur2( final Img< T > source )
 	{
 		return new Spur2().calculate( source );
 	}
 
+	/**
+	 * @implNote op name='morphology.spur2', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void spur2( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Spur2().calculate( source, target );

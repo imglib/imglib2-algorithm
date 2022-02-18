@@ -57,11 +57,17 @@ import net.imglib2.util.Util;
  */
 public class Spur
 {
+	/**
+	 * @implNote op name='morphology.spur', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > spur( final Img< T > source )
 	{
 		return new Spur2().calculate( new Spur1().calculate( source ) );
 	}
 
+	/**
+	 * @implNote op name='morphology.spur', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void spur( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		final T extendedVal = target.firstElement().createVariable();

@@ -68,6 +68,9 @@ public class SeparableKernelConvolution
 	 * }
 	 * </pre>
 	 *
+	 * @param kernels the kernel(s) to use in the convolution
+	 * @return a {@link Convolution} object that can convolve an image
+	 * @implNote op name='filter.convolveSeparable',type=Function
 	 * @see Convolution
 	 */
 	public static Convolution< NumericType< ? > > convolution( final Kernel1D... kernels )
@@ -89,6 +92,10 @@ public class SeparableKernelConvolution
 	 * }
 	 * </pre>
 	 *
+	 * @param kernel the kernel to use in the convolution
+	 * @param direction the direction to use in the convolution
+	 * @return a {@link Convolution} object that can convolve an image
+	 * @implNote op name='filter.convolveSeparable',type=Function
 	 * @see Convolution
 	 */
 	public static Convolution< NumericType< ? > > convolution1d( final Kernel1D kernel, final int direction )
@@ -106,6 +113,7 @@ public class SeparableKernelConvolution
 	 * in their own precision. The source type S and target type T are either
 	 * both {@link RealType RealTypes} or both the same type.
 	 *
+	 * @implNote op name='filter.convolveSeparable',type=Computer
 	 * @param kernels
 	 *            an array containing kernels for every dimension.
 	 * @param source

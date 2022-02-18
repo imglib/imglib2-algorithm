@@ -78,21 +78,33 @@ public class FastGauss
 		return Convolution.concat( steps );
 	}
 
+	/**
+	 * @implNote op name='convolve.fastGauss',type=Function
+	 */
 	public static Convolution< RealType< ? > > convolution( final double sigma )
 	{
 		return new MultiDimensionConvolution<>( k -> convolution( nCopies( k, sigma ) ) );
 	}
 
+	/**
+	 * @implNote op name='convolve.fastGauss',type=Function
+	 */
 	public static Convolution< RealType< ? > > convolution1d( final double sigma, final int direction )
 	{
 		return new LineConvolution<>( new FastGaussConvolverRealType( sigma ), direction );
 	}
 
+	/**
+	 * @implNote op name='convolve.fastGauss',type=Computer
+	 */
 	public static void convolve( final double[] sigmas, final RandomAccessible< ? extends RealType< ? > > input, final RandomAccessibleInterval< ? extends RealType< ? > > output )
 	{
 		convolution( sigmas ).process( input, output );
 	}
 
+	/**
+	 * @implNote op name='convolve.fastGauss',type=Computer
+	 */
 	public static void convolve( final double sigma, final RandomAccessible< ? extends RealType< ? > > input, final RandomAccessibleInterval< ? extends RealType< ? > > output )
 	{
 		convolution( sigma ).process( input, output );

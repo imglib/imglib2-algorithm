@@ -41,7 +41,8 @@ public class TreeUtils
 {
 	/**
 	 * Find all leaf nodes of a forest.
-	 * 
+	 *
+	 * @implNote op name='tree.getLeafs', type=Function
 	 * @param forest
 	 *            the forest
 	 * @return set of leaf nodes.
@@ -69,7 +70,8 @@ public class TreeUtils
 
 	/**
 	 * Call {@link Consumer#accept(Object)} on op for every node in the forest.
-	 * 
+	 *
+	 * @implNote op name='tree.forEach', type=Inplace1
 	 * @param forest
 	 *            the forest
 	 * @param op

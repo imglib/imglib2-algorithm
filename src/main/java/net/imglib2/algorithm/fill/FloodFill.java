@@ -113,6 +113,53 @@ public class FloodFill
 	 * written into that location yet.
 	 *
 	 * Convenience call to
+	 * {@link #fill(RandomAccessible, RandomAccessible, Localizable, Type, Shape, BiPredicate)}.
+	 * seedLabel is extracted from source at seed location.
+	 * <p>
+	 * This method differs from
+	 * {@link #fill(RandomAccessible, RandomAccessible, Localizable, Type, Shape)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='image.floodFill', type=Computer
+	 * @param source
+	 *            input
+	 * @param seed
+	 *            Start flood fill at this location.
+	 * @param fillLabel
+	 *            Immutable. Value to be written into valid flood fill
+	 *            locations.
+	 * @param shape
+	 *            Defines neighborhood that is considered for connected
+	 *            components, e.g.
+	 *            {@link net.imglib2.algorithm.neighborhood.DiamondShape}
+	 * @param target
+	 *            {@link RandomAccessible} to be written into. May be the same
+	 *            as input.
+	 * @param <T>
+	 *            input pixel type
+	 * @param <U>
+	 *            fill label type
+	 */
+	public static < T extends Type< T >, U extends Type< U > > void fill(
+			final RandomAccessible< T > source,
+			final Localizable seed,
+			final U fillLabel,
+			final Shape shape,
+			final RandomAccessible< U > target)
+	{
+		fill(source, target, seed, fillLabel, shape);
+	}
+
+	/**
+	 * Iterative n-dimensional flood fill for arbitrary neighborhoods: Starting
+	 * at seed location, write fillLabel into target at current location and
+	 * continue for each pixel in neighborhood defined by shape if neighborhood
+	 * pixel is in the same connected component and fillLabel has not been
+	 * written into that location yet.
+	 *
+	 * Convenience call to
 	 * {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Shape, BiPredicate, Consumer)}
 	 * with {@link Type#set} as writer.
 	 *
@@ -146,6 +193,58 @@ public class FloodFill
 			final U fillLabel,
 			final Shape shape,
 			final BiPredicate< T, U > filter )
+	{
+		fill( source, target, seed, shape, filter, targetPixel -> targetPixel.set( fillLabel ) );
+	}
+
+	/**
+	 * Iterative n-dimensional flood fill for arbitrary neighborhoods: Starting
+	 * at seed location, write fillLabel into target at current location and
+	 * continue for each pixel in neighborhood defined by shape if neighborhood
+	 * pixel is in the same connected component and fillLabel has not been
+	 * written into that location yet.
+	 *
+	 * Convenience call to
+	 * {@link FloodFill#fill(RandomAccessible, RandomAccessible, Localizable, Shape, BiPredicate, Consumer)}
+	 * with {@link Type#set} as writer.
+	 * <p>
+	 * This method differs from
+	 * {@link #fill(RandomAccessible, RandomAccessible, Localizable, Type, Shape, BiPredicate)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='image.floodFill', type=Computer
+	 * @param source
+	 *            input
+	 * @param seed
+	 *            Start flood fill at this location.
+	 * @param fillLabel
+	 *            Immutable. Value to be written into valid flood fill
+	 *            locations.
+	 * @param shape
+	 *            Defines neighborhood that is considered for connected
+	 *            components, e.g.
+	 *            {@link net.imglib2.algorithm.neighborhood.DiamondShape}
+	 * @param filter
+	 *            Returns true if pixel has not been visited yet and should be
+	 *            written into. Returns false if target pixel has been visited
+	 *            or source pixel is not part of the same connected component.
+	 * @param target
+	 *            {@link RandomAccessible} to be written into. May be the same
+	 *            as input.
+	 * @param <T>
+	 *            input pixel type
+	 * @param <U>
+	 *            fill label type
+	 */
+	public static < T, U extends Type< U > > void fill(
+			final RandomAccessible< T > source,
+			final Localizable seed,
+			final U fillLabel,
+			final Shape shape,
+			final BiPredicate< T, U > filter,
+			final RandomAccessible< U > target)
 	{
 		fill( source, target, seed, shape, filter, targetPixel -> targetPixel.set( fillLabel ) );
 	}
@@ -235,6 +334,54 @@ public class FloodFill
 
 		}
 
+	}
+	/**
+	 *
+	 * Iterative n-dimensional flood fill for arbitrary neighborhoods: Starting
+	 * at seed location, write fillLabel into target at current location and
+	 * continue for each pixel in neighborhood defined by shape if neighborhood
+	 * pixel is in the same connected component and fillLabel has not been
+	 * written into that location yet.
+	 * <p>
+	 * This method differs from
+	 * {@link #fill(RandomAccessible, RandomAccessible, Localizable, Shape, BiPredicate, Consumer)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='image.floodFill', type=Computer
+	 * @param source
+	 *            input
+	 * @param seed
+	 *            Start flood fill at this location.
+	 * @param shape
+	 *            Defines neighborhood that is considered for connected
+	 *            components, e.g.
+	 *            {@link net.imglib2.algorithm.neighborhood.DiamondShape}
+	 * @param filter
+	 *            Returns true if pixel has not been visited yet and should be
+	 *            written into. Returns false if target pixel has been visited
+	 *            or source pixel is not part of the same connected component.
+	 * @param writer
+	 *            Defines how fill label is written into target at current
+	 *            location.
+	 * @param target
+	 *            {@link RandomAccessible} to be written into. May be the same
+	 *            as input.
+	 * @param <T>
+	 *            input pixel type
+	 * @param <U>
+	 *            fill label type
+	 */
+	public static < T, U > void fill(
+			final RandomAccessible< T > source,
+			final Localizable seed,
+			final Shape shape,
+			final BiPredicate< T, U > filter,
+			final Consumer< U > writer,
+			final RandomAccessible< U > target )
+	{
+		fill(source, target, seed, shape, filter, writer);
 	}
 
 	/**

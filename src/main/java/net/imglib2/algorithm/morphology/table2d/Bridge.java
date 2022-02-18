@@ -66,11 +66,17 @@ public class Bridge extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @implNote op name='morphology.bridge', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > bridge( final Img< T > source )
 	{
 		return new Bridge().calculate( source );
 	}
 
+	/**
+	 * @implNote op name='morphology.bridge', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void bridge( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Bridge().calculate( source, target );
