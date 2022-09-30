@@ -222,7 +222,7 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 
 	protected final double[] pixelSize;
 
-	protected final TypedDogDetection< ? > typedDogDetection;
+	public final TypedDogDetection< ? > typedDogDetection;
 
 	protected double imageSigma;
 
@@ -325,11 +325,11 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 		}
 	}
 
-	protected class TypedDogDetection< F extends RealType< F > & NativeType< F > >
+	public class TypedDogDetection< F extends RealType< F > & NativeType< F > >
 	{
 		protected final F type;
 
-		protected RandomAccessibleInterval< F > dogImg;
+		public RandomAccessibleInterval< F > dogImg;
 
 		public TypedDogDetection( final F type )
 		{
