@@ -232,15 +232,72 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 			final int numThreads )
 	{
 		final int numPeaks = peaks.size();
+		final int numTasks = numThreads <= 1 ? 1 : ( int ) Math.min( numPeaks, numThreads * 20 );
+		final ExecutorService ex = Executors.newFixedThreadPool( numThreads );
+
+		// run
+		final ArrayList< RefinedPeak< P > > allRefinedPeaks = refinePeaks(peaks, img, validInterval, returnInvalidPeaks, maxNumMoves, allowMaximaTolerance, maximaTolerance, allowedToMoveInDim, numTasks, ex);
+
+		// shutdown
+		ex.shutdown();
+
+		return allRefinedPeaks;
+	}
+
+	/**
+	 * Refine a set of peaks to subpixel coordinates. Multi-threaded version.
+	 * <p>
+	 * A List {@link RefinedPeak} for the given list of {@link Localizable} is
+	 * computed by, for each peak, fitting a quadratic function to the image and
+	 * computing the subpixel coordinates of the extremum. This is an iterative
+	 * procedure. If the extremum is shifted more than 0.5 in one or more the
+	 * fit is repeated at the corresponding integer coordinates. This is
+	 * repeated to convergence, for a maximum number of iterations, or until the
+	 * integer coordinates move out of the valid image.
+	 * 
+	 * @param peaks
+	 *            List of integer peaks.
+	 * @param img
+	 *            Pixel values.
+	 * @param validInterval
+	 *            In which interval the {@code img} contains valid pixels.
+	 *            If null, an infinite {@code img} is assumed. Integer
+	 *            peaks must lie within a 1-pixel border of this interval.
+	 * @param returnInvalidPeaks
+	 *            Whether (invalid) {@link RefinedPeak} should be created for
+	 *            peaks where the fitting procedure did not converge.
+	 * @param maxNumMoves
+	 *            maximum number of iterations for each peak.
+	 * @param allowMaximaTolerance
+	 *            If we allow an increasing maxima tolerance we will not change
+	 *            the base position that easily. Sometimes it simply jumps from
+	 *            left to right and back, because it is 4.51 (i.e. goto 5), then
+	 *            4.49 (i.e. goto 4) Then we say, ok, lets keep the base
+	 *            position even if the subpixel location is 0.6...
+	 * @param maximaTolerance
+	 *            By how much to increase the tolerance per iteration.
+	 * @param allowedToMoveInDim
+	 *            specifies, per dimension, whether the base location is allowed
+	 *            to be moved in the iterative procedure.
+	 * @param numTasks
+	 *            How many tasks to use for the computation.
+	 * @param ex
+	 *            The executor for the computation.
+	 * @return refined list of peaks.
+	 */
+	public static < T extends RealType< T >, P extends Localizable > ArrayList< RefinedPeak< P > > refinePeaks(
+			final List< P > peaks, final RandomAccessible< T > img, final Interval validInterval, final boolean returnInvalidPeaks,
+			final int maxNumMoves, final boolean allowMaximaTolerance, final float maximaTolerance, final boolean[] allowedToMoveInDim,
+			final int numTasks, final ExecutorService ex )
+	{
+		final int numPeaks = peaks.size();
 		final ArrayList< RefinedPeak< P > > allRefinedPeaks = new ArrayList< RefinedPeak< P > >( numPeaks );
 
 		if ( numPeaks == 0 )
 			return allRefinedPeaks;
 
-		final int numTasks = numThreads <= 1 ? 1 : ( int ) Math.min( numPeaks, numThreads * 20 );
 		final int taskSize = numPeaks / numTasks;
 
-		final ExecutorService ex = Executors.newFixedThreadPool( numThreads );
 		final List< RefinedPeak< P > > synchronizedAllRefinedPeaks = Collections.synchronizedList( allRefinedPeaks );
 		for ( int taskNum = 0; taskNum < numTasks; ++taskNum )
 		{
@@ -259,7 +316,7 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 			};
 			ex.execute( r );
 		}
-		ex.shutdown();
+
 		try
 		{
 			ex.awaitTermination( 1000, TimeUnit.DAYS );
