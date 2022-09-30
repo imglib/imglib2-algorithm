@@ -36,12 +36,15 @@ package net.imglib2.algorithm.localextrema;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Future;
 
+import Jama.LUDecomposition;
+import Jama.Matrix;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
@@ -51,8 +54,6 @@ import net.imglib2.RealPoint;
 import net.imglib2.RealPositionable;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
-import Jama.LUDecomposition;
-import Jama.Matrix;
 
 /**
  * Refine a set of peaks to subpixel coordinates. This class provides the static
@@ -291,37 +292,43 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 			final int numTasks, final ExecutorService ex )
 	{
 		final int numPeaks = peaks.size();
-		final ArrayList< RefinedPeak< P > > allRefinedPeaks = new ArrayList< RefinedPeak< P > >( numPeaks );
+		final ArrayList< RefinedPeak< P > > allRefinedPeaks = new ArrayList<>( numPeaks );
 
 		if ( numPeaks == 0 )
 			return allRefinedPeaks;
 
 		final int taskSize = numPeaks / numTasks;
 
-		final List< RefinedPeak< P > > synchronizedAllRefinedPeaks = Collections.synchronizedList( allRefinedPeaks );
+		System.out.println( "tasks: " + numTasks );
+		System.out.println( "taskSize: " + taskSize );
+		
+		final ArrayList< Callable< ArrayList< RefinedPeak< P > > > > tasks = new ArrayList<>();
+
 		for ( int taskNum = 0; taskNum < numTasks; ++taskNum )
 		{
 			final int fromIndex = taskNum * taskSize;
 			final int toIndex = ( taskNum == numTasks - 1 ) ? numPeaks : fromIndex + taskSize;
-			final Runnable r = new Runnable()
+
+			tasks.add( new Callable< ArrayList< RefinedPeak< P > > >() 
 			{
 				@Override
-				public void run()
+				public ArrayList< RefinedPeak< P > > call()
 				{
-					final ArrayList< RefinedPeak< P > > refinedPeaks = refinePeaks(
+					return refinePeaks(
 							peaks.subList( fromIndex, toIndex ),
 							img, validInterval, returnInvalidPeaks, maxNumMoves, allowMaximaTolerance, maximaTolerance, allowedToMoveInDim );
-					synchronizedAllRefinedPeaks.addAll( refinedPeaks );
 				}
-			};
-			ex.execute( r );
+			});
 		}
 
 		try
 		{
-			ex.awaitTermination( 1000, TimeUnit.DAYS );
+			final List<Future<ArrayList<RefinedPeak<P>>>> futures = ex.invokeAll(tasks);
+
+			for ( final Future<ArrayList<RefinedPeak<P>>> future : futures )
+				allRefinedPeaks.addAll( future.get() );
 		}
-		catch ( final InterruptedException e )
+		catch ( final InterruptedException | ExecutionException e )
 		{
 			e.printStackTrace();
 		}
