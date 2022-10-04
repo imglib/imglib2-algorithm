@@ -49,9 +49,9 @@ import net.imglib2.util.Intervals;
  * A neighborhood that iterates over what is termed "Periodic lines", and best
  * explained in Ronald Jones and Pierre Soilles publication:
  * <p>
- * <tt>Jones and Soilles. Periodic lines: Definition, cascades, and application
- * to granulometries. Pattern Recognition Letters (1996) vol. 17 (10) pp. 1057-1063</tt>
- * 
+ * <em>Jones and Soilles. Periodic lines: Definition, cascades, and application
+ * to granulometries. Pattern Recognition Letters (1996) vol. 17 (10) pp. 1057-1063</em>
+ *
  * @author Jean-Yves Tinevez Sep 3, 2013
  * 
  * @param <T>
