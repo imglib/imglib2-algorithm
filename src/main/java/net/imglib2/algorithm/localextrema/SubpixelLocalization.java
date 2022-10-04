@@ -298,31 +298,21 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 			return allRefinedPeaks;
 
 		final int taskSize = numPeaks / numTasks;
-
-		final ArrayList< Callable< ArrayList< RefinedPeak< P > > > > tasks = new ArrayList<>();
-
+		final List< Callable< ArrayList< RefinedPeak< P > > > > tasks = new ArrayList<>( taskSize );
 		for ( int taskNum = 0; taskNum < numTasks; ++taskNum )
 		{
 			final int fromIndex = taskNum * taskSize;
 			final int toIndex = ( taskNum == numTasks - 1 ) ? numPeaks : fromIndex + taskSize;
 
-			tasks.add( new Callable< ArrayList< RefinedPeak< P > > >() 
-			{
-				@Override
-				public ArrayList< RefinedPeak< P > > call()
-				{
-					return refinePeaks(
-							peaks.subList( fromIndex, toIndex ),
-							img, validInterval, returnInvalidPeaks, maxNumMoves, allowMaximaTolerance, maximaTolerance, allowedToMoveInDim );
-				}
-			});
+			tasks.add( () -> refinePeaks(
+					peaks.subList( fromIndex, toIndex ),
+					img, validInterval, returnInvalidPeaks, maxNumMoves, allowMaximaTolerance, maximaTolerance, allowedToMoveInDim ) );
 		}
 
 		try
 		{
-			final List<Future<ArrayList<RefinedPeak<P>>>> futures = ex.invokeAll(tasks);
-
-			for ( final Future<ArrayList<RefinedPeak<P>>> future : futures )
+			final List< Future< ArrayList< RefinedPeak< P > > > > futures = ex.invokeAll( tasks );
+			for ( final Future< ArrayList< RefinedPeak< P > > > future : futures )
 				allRefinedPeaks.addAll( future.get() );
 		}
 		catch ( final InterruptedException | ExecutionException e )
