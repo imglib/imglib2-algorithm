@@ -38,6 +38,7 @@ import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
 /**
@@ -64,7 +65,7 @@ public class MSE
 	 */
 	public static < T extends RealType< T > > double computeMetrics( final RandomAccessibleInterval< T > reference, final RandomAccessibleInterval< T > processed )
 	{
-		if ( !Arrays.equals( reference.dimensionsAsLongArray(), processed.dimensionsAsLongArray() ) )
+		if ( !Intervals.equalDimensions( reference, processed ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// get image size

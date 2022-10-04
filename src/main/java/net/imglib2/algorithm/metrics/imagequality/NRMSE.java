@@ -7,6 +7,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.stats.ComputeMinMax;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
 /**
@@ -56,7 +57,7 @@ public class NRMSE
 			final RandomAccessibleInterval< T > processed,
 			final Normalization norm )
 	{
-		if ( !Arrays.equals( reference.dimensionsAsLongArray(), processed.dimensionsAsLongArray() ) )
+		if ( !Intervals.equalDimensions( reference, processed ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// get mse

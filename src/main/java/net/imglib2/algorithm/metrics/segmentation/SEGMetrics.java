@@ -125,7 +125,7 @@ public class SEGMetrics
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction )
 	{
-		if ( !Arrays.equals( groundTruth.dimensionsAsLongArray(), prediction.dimensionsAsLongArray() ) )
+		if ( !Intervals.equalDimensions( groundTruth, prediction ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// check if it is a time-lapse

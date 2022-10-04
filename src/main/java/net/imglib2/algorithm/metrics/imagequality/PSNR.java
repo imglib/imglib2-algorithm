@@ -36,6 +36,7 @@ package net.imglib2.algorithm.metrics.imagequality;
 import java.util.Arrays;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Intervals;
 
 /**
  * Compute the peak signal-to-noise ratio (PSNR) between a reference and a processed image. The
@@ -62,7 +63,7 @@ public class PSNR
 	 */
 	public static < T extends RealType< T > > double computeMetrics( final RandomAccessibleInterval< T > reference, final RandomAccessibleInterval< T > processed )
 	{
-		if ( !Arrays.equals( reference.dimensionsAsLongArray(), processed.dimensionsAsLongArray() ) )
+		if ( !Intervals.equalDimensions( reference, processed ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// get image range

@@ -40,6 +40,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.Labelings;
 import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 
 /**
@@ -118,7 +119,7 @@ public class LazySEGMetrics
 			RandomAccessibleInterval< J > prediction )
 	{
 
-		if ( !Arrays.equals( groundTruth.dimensionsAsLongArray(), prediction.dimensionsAsLongArray() ) )
+		if ( !Intervals.equalDimensions( groundTruth, prediction ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// compute SEG between the two images

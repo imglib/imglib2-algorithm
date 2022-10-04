@@ -136,7 +136,7 @@ public class SSIM
 			final RandomAccessibleInterval< T > processed,
 			final double sigma )
 	{
-		if ( !Arrays.equals( reference.dimensionsAsLongArray(), processed.dimensionsAsLongArray() ) )
+		if ( !Intervals.equalDimensions( reference, processed ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		if ( reference.numDimensions() > 3 )

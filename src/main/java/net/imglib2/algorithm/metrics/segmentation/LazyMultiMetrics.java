@@ -42,6 +42,7 @@ import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.IntegerType;
 
 import net.imglib2.roi.labeling.Labelings;
+import net.imglib2.util.Intervals;
 
 /**
  * The LazyMultiMetrics computes a running {@link MultiMetrics} over all images added by calling
@@ -144,7 +145,7 @@ public class LazyMultiMetrics
 	)
 	{
 
-		if ( !Arrays.equals( groundTruth.dimensionsAsLongArray(), prediction.dimensionsAsLongArray() ) )
+		if ( !Intervals.equalDimensions( groundTruth, prediction ) )
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// compute multi metrics between the two images
