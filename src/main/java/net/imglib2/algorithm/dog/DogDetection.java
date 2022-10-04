@@ -58,7 +58,7 @@ import net.imglib2.view.Views;
  */
 public class DogDetection< T extends RealType< T > & NativeType< T > >
 {
-	public static enum ExtremaType
+	public enum ExtremaType
 	{
 		/**
 		 * Bright blobs on dark background.
@@ -222,7 +222,7 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 
 	protected final double[] pixelSize;
 
-	public final TypedDogDetection< ? > typedDogDetection;
+	protected final TypedDogDetection< ? > typedDogDetection;
 
 	protected double imageSigma;
 
@@ -301,6 +301,11 @@ public class DogDetection< T extends RealType< T > & NativeType< T > >
 	public void setExecutorService( final ExecutorService service )
 	{
 		this.executorService = service;
+	}
+
+	public TypedDogDetection< ? > getTypedDogDetection()
+	{
+		return typedDogDetection;
 	}
 
 	private static class DogComputationType< F extends RealType< F > & NativeType< F > >
