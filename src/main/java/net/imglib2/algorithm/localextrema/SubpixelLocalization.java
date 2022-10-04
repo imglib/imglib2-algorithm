@@ -299,9 +299,6 @@ public class SubpixelLocalization< P extends Localizable, T extends RealType< T 
 
 		final int taskSize = numPeaks / numTasks;
 
-		System.out.println( "tasks: " + numTasks );
-		System.out.println( "taskSize: " + taskSize );
-		
 		final ArrayList< Callable< ArrayList< RefinedPeak< P > > > > tasks = new ArrayList<>();
 
 		for ( int taskNum = 0; taskNum < numTasks; ++taskNum )
