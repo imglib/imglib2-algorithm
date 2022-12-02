@@ -33,11 +33,6 @@
  */
 package net.imglib2.algorithm.morphology;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-import java.util.Random;
-
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
@@ -45,16 +40,24 @@ import net.imglib2.RandomAccess;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.Shape;
+import net.imglib2.converter.RealTypeConverters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.test.ImgLib2Assert;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
 
 public class DilationTest
 {
@@ -233,5 +236,40 @@ public class DilationTest
 			assertEquals( "Mismatch between single shape dilation and un-optimized strel dilation at " + Util.printCoordinates( cursor1 ) + ".",
 					randomAccess3.get().get(), cursor1.get().get() );
 		}
+	}
+
+	private final Img<IntType> input = ArrayImgs.ints( new int[] { //
+			0, 0, 0, 0, 0, //
+			0, 0, 0, 0, 0, //
+			0, 0, 1, 0, 0, //
+			0, 0, 0, 0, 0, //
+			0, 0, 0, 0, 0  //
+	}, 5, 5 );
+
+	private final Img<IntType> expected =ArrayImgs.ints( new int[] { //
+			0, 0, 0, 0, 0, //
+			0, 0, 1, 0, 0, //
+			0, 1, 1, 1, 0, //
+			0, 0, 1, 0, 0, //
+			0, 0, 0, 0, 0  //
+	}, 5, 5 );
+
+	private final Shape structuringElement = new DiamondShape( 1 );
+
+	@Test
+	public void testDilate() {
+		Img<IntType> output = Dilation.dilate( input, structuringElement, 1 );
+		ImgLib2Assert.assertImageEquals( expected, output );
+	}
+
+	@Test
+	public void testDilateBitType() {
+		// setup
+		Img<BitType> inputBits = ArrayImgs.bits( Intervals.dimensionsAsLongArray( input ) );
+		RealTypeConverters.copyFromTo( input, inputBits );
+		// process
+		Img<BitType> output = Dilation.dilate( inputBits, structuringElement, 1 );
+		// test
+		ImgLib2Assert.assertImageEqualsIntegerType( expected, output );
 	}
 }
