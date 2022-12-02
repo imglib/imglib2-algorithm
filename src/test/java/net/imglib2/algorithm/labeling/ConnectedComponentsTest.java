@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,88 +34,240 @@
 
 package net.imglib2.algorithm.labeling;
 
+import net.imglib2.Interval;
+import net.imglib2.algorithm.labeling.ConnectedComponents.StructuringElement;
+import net.imglib2.algorithm.util.TestImages;
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.loops.LoopBuilder;
+import net.imglib2.roi.labeling.ImgLabeling;
+import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.util.Intervals;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static net.imglib2.algorithm.labeling.ConnectedComponents.StructuringElement.EIGHT_CONNECTED;
 import static net.imglib2.algorithm.labeling.ConnectedComponents.StructuringElement.FOUR_CONNECTED;
 import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-
-import net.imglib2.Cursor;
-import net.imglib2.algorithm.labeling.ConnectedComponents;
-import net.imglib2.algorithm.labeling.ConnectedComponents.StructuringElement;
-import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.roi.labeling.ImgLabeling;
-import net.imglib2.roi.labeling.LabelingType;
-import net.imglib2.type.logic.BitType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
-
-import org.junit.Test;
+import static org.junit.Assert.assertNotEquals;
 
 /**
- * TODO
+ * Tests {@link ConnectedComponents}
  *
  * @author Lee Kamentsky
  * @author Tobias Pietzsch
  */
 public class ConnectedComponentsTest
 {
-	private void test2D( final boolean[][] input, final int[][] expected, final StructuringElement se, final int start, final int background )
+
+	private ExecutorService executorService;
+
+	@Before
+	public void before()
 	{
-		final long[] dimensions = new long[] { input.length, input[ 0 ].length };
-		final Img< BitType > image = ArrayImgs.bits( dimensions );
-		final Img< UnsignedShortType > indexImg = ArrayImgs.unsignedShorts( dimensions );
-		final ImgLabeling< Integer, UnsignedShortType > labeling = new ImgLabeling< Integer, UnsignedShortType >( indexImg );
+		executorService = Executors.newFixedThreadPool( 4 );
+	}
 
+	@After
+	public void after()
+	{
+		executorService.shutdown();
+	}
+
+	@Test
+	public void testEmpty()
+	{
+		final Img<BitType> input = ArrayImgs.bits( 3, 3 );
+		final Img<IntType> expected = ArrayImgs.ints( 3, 3 );
+		test( input, expected, FOUR_CONNECTED );
+		test( input, expected, EIGHT_CONNECTED );
+	}
+
+	@Test
+	public void testOne()
+	{
+		final Img<BitType> input = createBitTypeImage( new boolean[][] { //
+				{ false, false, false }, //
+				{ false, true, false }, //
+				{ false, false, false } } );
+		final Img<IntType> expected = ArrayImgs.ints( new int[] { //
+				0, 0, 0, //
+				0, 1, 0, //
+				0, 0, 0  //
+		}, 3, 3 );
+		test( input, expected, FOUR_CONNECTED );
+		test( input, expected, EIGHT_CONNECTED );
+	}
+
+	@Test
+	public void testOutOfBounds()
+	{
 		/*
-		 * Fill the image.
+		 * Make sure that the labeler can handle out of bounds conditions
 		 */
-		final Cursor< BitType > c = image.localizingCursor();
-		final int[] position = new int[ 2 ];
-		while ( c.hasNext() )
+		final long[][] offsets = new long[][] { { 0, 0 }, { 1, 0 }, { 2, 0 }, { 0, 1 }, { 2, 1 }, { 0, 2 }, { 1, 2 }, { 2, 2 } };
+		for ( final long[] offset : offsets )
 		{
-			final BitType t = c.next();
-			c.localize( position );
-			t.set( input[ position[ 0 ] ][ position[ 1 ] ] );
+			final Img<BitType> input = ArrayImgs.bits( 3, 3 );
+			final Img<IntType> expected = ArrayImgs.ints( 3, 3 );
+			input.getAt( offset[ 0 ], offset[ 1 ] ).set( true );
+			expected.getAt( offset[ 0 ], offset[ 1 ] ).set( 1 );
+			test( input, expected, FOUR_CONNECTED );
+			test( input, expected, EIGHT_CONNECTED );
 		}
-		/*
-		 * Run the algorithm.
-		 */
-		final Iterator< Integer > names = new Iterator< Integer >()
-		{
-			private int i = start;
+	}
 
-			@Override
-			public boolean hasNext()
-			{
-				return true;
-			}
+	@Test
+	public void testOneObject()
+	{
+		final Img<BitType> input2 = createBitTypeImage( new boolean[][] { //
+				{ false, false, false, false, false }, //
+				{ false, true, true, true, false }, //
+				{ false, true, true, true, false }, //
+				{ false, true, true, true, false }, //
+				{ false, false, false, false, false } } );
+		final Img<IntType> expected2 = ArrayImgs.ints( new int[] { //
+				0, 0, 0, 0, 0, //
+				0, 1, 1, 1, 0, //
+				0, 1, 1, 1, 0, //
+				0, 1, 1, 1, 0, //
+				0, 0, 0, 0, 0  //
+		}, 5, 5 );
+		test( input2, expected2, FOUR_CONNECTED );
+		test( input2, expected2, EIGHT_CONNECTED );
+	}
 
-			@Override
-			public Integer next()
-			{
-				return i++;
-			}
+	@Test
+	public void testTwoObjects()
+	{
+		final Img<BitType> input2 = createBitTypeImage( new boolean[][] { //
+				{ false, false, false, false, false }, //
+				{ false, true, true, true, false }, //
+				{ false, false, false, false, false }, //
+				{ false, true, true, true, false }, //
+				{ false, false, false, false, false } } );
+		final Img<IntType> expected2 = ArrayImgs.ints( new int[] { //
+				0, 0, 0, 0, 0, //
+				0, 1, 1, 1, 0, //
+				0, 0, 0, 0, 0, //
+				0, 2, 2, 2, 0, //
+				0, 0, 0, 0, 0  //
+		}, 5, 5 );
+		test( input2, expected2, FOUR_CONNECTED );
+		test( input2, expected2, EIGHT_CONNECTED );
+	}
 
-			@Override
-			public void remove()
-			{}
-		};
-		ConnectedComponents.labelAllConnectedComponents( image, labeling, names, se );
+	@Test
+	public void testBigObject()
+	{
+		final Img<BitType> input = TestImages.bits2d( 25, 25, ( x, y ) -> true );
+		final Img<IntType> expected = TestImages.ints2d( 25, 25, ( x, y ) -> 1 );
+		test( input, expected, FOUR_CONNECTED );
+		test( input, expected, EIGHT_CONNECTED );
+	}
 
-		/*
-		 * Check the result
-		 */
-		final Cursor< LabelingType< Integer > > lc = labeling.localizingCursor();
-		final HashMap< Integer, Integer > map = new HashMap< Integer, Integer >();
-		while ( lc.hasNext() )
-		{
-			final LabelingType< Integer > labels = lc.next();
-			lc.localize( position );
-			final int expectedValue = expected[ ( position[ 0 ] ) ][ ( position[ 1 ] ) ];
-			if ( expectedValue == background )
+	@Test
+	public void testBigBigObject()
+	{
+		final Img<BitType> input = TestImages.bits2d( 100, 100, ( x, y ) -> true );
+		final Img<IntType> expected = TestImages.ints2d( 100, 100, ( x, y ) -> 1 );
+		test( input, expected, FOUR_CONNECTED );
+		test( input, expected, EIGHT_CONNECTED );
+	}
+
+	final Img<IntType> input = ArrayImgs.ints( new int[] { //
+			0, 0, 0, 0, 0, //
+			0, 1, 1, 1, 0, //
+			1, 0, 0, 0, 0, //
+			0, 1, 1, 1, 0, //
+			0, 0, 0, 0, 1  //
+	}, 5, 5 );
+
+	final Img<IntType> expectedFourConnected = ArrayImgs.ints( new int[] { //
+			0, 0, 0, 0, 0, //
+			0, 1, 1, 1, 0, //
+			3, 0, 0, 0, 0, //
+			0, 2, 2, 2, 0, //
+			0, 0, 0, 0, 4  //
+	}, 5, 5 );
+
+	final Img<IntType> expectedEightConnected = ArrayImgs.ints( new int[] { //
+			0, 0, 0, 0, 0, //
+			0, 1, 1, 1, 0, //
+			1, 0, 0, 0, 0, //
+			0, 1, 1, 1, 0, //
+			0, 0, 0, 0, 1  //
+	}, 5, 5 );
+
+	@Test
+	public void testFourConnected()
+	{
+		test( input, expectedFourConnected, FOUR_CONNECTED );
+	}
+
+	@Test
+	public void testEightConnected()
+	{
+		test( input, expectedEightConnected, EIGHT_CONNECTED );
+	}
+
+	private <T extends IntegerType<T>> void test( Img<T> input, Img<IntType> expected, StructuringElement se )
+	{
+		final ImgLabeling<Integer, ?> labeling = createLabeling( input );
+		ConnectedComponents.labelAllConnectedComponents( input, labeling, new IntegerIterator(), se );
+		checkResult( expected, labeling );
+	}
+
+	@Test
+	public void testExecutorService()
+	{
+		final ImgLabeling<Integer, ?> labeling = createLabeling( input );
+		ConnectedComponents.labelAllConnectedComponents( input, labeling, new IntegerIterator(), FOUR_CONNECTED, executorService );
+		checkResult( expectedFourConnected, labeling );
+	}
+
+	@Test
+	public void testOutputIntType()
+	{
+		Img<IntType> output = ArrayImgs.ints( Intervals.dimensionsAsLongArray( input ) );
+		ConnectedComponents.labelAllConnectedComponents( input, output, FOUR_CONNECTED );
+		checkResult( expectedFourConnected, output );
+	}
+
+	@Test
+	public void testOutputIntTypeAndExecutorService()
+	{
+		Img<IntType> output = ArrayImgs.ints( Intervals.dimensionsAsLongArray( input ) );
+		ConnectedComponents.labelAllConnectedComponents( input, output, FOUR_CONNECTED, executorService );
+		checkResult( expectedFourConnected, output );
+	}
+
+	private <T extends IntegerType<T>> ImgLabeling<Integer, ?> createLabeling( Interval interval )
+	{
+		return new ImgLabeling<>( ArrayImgs.unsignedShorts( Intervals.dimensionsAsLongArray( interval ) ) );
+	}
+
+	private Img<BitType> createBitTypeImage( boolean[][] input )
+	{
+		int width = input.length;
+		int height = input[ 0 ].length;
+		return TestImages.bits2d( width, height, ( x, y ) -> input[ y ][ x ] );
+	}
+
+	private void checkResult( Img<IntType> expected, ImgLabeling<Integer, ?> labeling )
+	{
+		final HashMap<Integer, Integer> map = new HashMap<>();
+		LoopBuilder.setImages( expected, labeling ).forEachPixel( ( expectedPixel, labels ) -> {
+			final int expectedValue = expectedPixel.get();
+			if ( expectedValue == 0 )
 				assertEquals( labels.size(), 0 );
 			else
 			{
@@ -126,106 +278,47 @@ public class ConnectedComponentsTest
 				else
 					map.put( value, expectedValue );
 			}
-		}
+		} );
 	}
 
-	@Test
-	public void testEmpty()
+	private void checkResult( Img<IntType> expected, Img<IntType> labeling )
 	{
-		final boolean[][] input = new boolean[ 3 ][ 3 ];
-		final int[][] expected = new int[ 3 ][ 3 ];
-		test2D( input, expected, FOUR_CONNECTED, 1, 0 );
-		test2D( input, expected, EIGHT_CONNECTED, 1, 0 );
+		final HashMap<Integer, Integer> map = new HashMap<>();
+		LoopBuilder.setImages( expected, labeling ).forEachPixel( ( expectedPixel, labels ) -> {
+			final int expectedValue = expectedPixel.get();
+			final int labelValue = labels.get();
+			if ( expectedValue == 0 )
+				assertEquals( 0, labelValue );
+			else
+			{
+				assertNotEquals( 0, labelValue );
+				if ( map.containsKey( labelValue ) )
+					assertEquals( expectedValue, map.get( labelValue ).intValue() );
+				else
+					map.put( labelValue, expectedValue );
+			}
+		} );
 	}
 
-	@Test
-	public void testOne()
+	private static class IntegerIterator implements Iterator<Integer>
 	{
-		final boolean[][] input = new boolean[][] { { false, false, false }, { false, true, false }, { false, false, false } };
-		final int[][] expected = new int[][] { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 0, 0 } };
-		test2D( input, expected, FOUR_CONNECTED, 1, 0 );
-		test2D( input, expected, EIGHT_CONNECTED, 1, 0 );
-	}
+		private int i = 1;
 
-	@Test
-	public void testOutOfBounds()
-	{
-		/*
-		 * Make sure that the labeler can handle out of bounds conditions
-		 */
-		final long[][] offsets = new long[][] { { -1, -1 }, { 0, -1 }, { 1, -1 }, { -1, 0 }, { 1, 0 }, { -1, 1 }, { 0, 1 }, { 1, 1 } };
-		for ( final long[] offset : offsets )
+		@Override
+		public boolean hasNext()
 		{
-			final boolean[][] input = new boolean[ 3 ][ 3 ];
-			final int[][] expected = new int[ 3 ][ 3 ];
-
-			input[ ( int ) ( offset[ 0 ] ) + 1 ][ ( int ) ( offset[ 1 ] ) + 1 ] = true;
-			expected[ ( int ) ( offset[ 0 ] ) + 1 ][ ( int ) ( offset[ 1 ] ) + 1 ] = 1;
-			test2D( input, expected, FOUR_CONNECTED, 1, 0 );
-			test2D( input, expected, EIGHT_CONNECTED, 1, 0 );
+			return true;
 		}
-	}
 
-	@Test
-	public void testOneObject()
-	{
-		final boolean[][] input = new boolean[][] { { false, false, false, false, false }, { false, true, true, true, false }, { false, true, true, true, false }, { false, true, true, true, false }, { false, false, false, false, false } };
-		final int[][] expected = new int[][] { { 0, 0, 0, 0, 0 }, { 0, 1, 1, 1, 0 }, { 0, 1, 1, 1, 0 }, { 0, 1, 1, 1, 0 }, { 0, 0, 0, 0, 0 } };
-		test2D( input, expected, FOUR_CONNECTED, 1, 0 );
-		test2D( input, expected, EIGHT_CONNECTED, 1, 0 );
-	}
-
-	@Test
-	public void testTwoObjects()
-	{
-		final boolean[][] input = new boolean[][] { { false, false, false, false, false }, { false, true, true, true, false }, { false, false, false, false, false }, { false, true, true, true, false }, { false, false, false, false, false } };
-		final int[][] expected = new int[][] { { 0, 0, 0, 0, 0 }, { 0, 1, 1, 1, 0 }, { 0, 0, 0, 0, 0 }, { 0, 2, 2, 2, 0 }, { 0, 0, 0, 0, 0 } };
-		test2D( input, expected, FOUR_CONNECTED, 1, 0 );
-		test2D( input, expected, EIGHT_CONNECTED, 1, 0 );
-	}
-
-	@Test
-	public void testBigObject()
-	{
-		final boolean[][] input = new boolean[ 25 ][ 25 ];
-		final int[][] expected = new int[ 25 ][ 25 ];
-		for ( int i = 0; i < input.length; i++ )
+		@Override
+		public Integer next()
 		{
-			Arrays.fill( input[ i ], true );
-			Arrays.fill( expected[ i ], 1 );
+			return i++;
 		}
-		test2D( input, expected, FOUR_CONNECTED, 1, 0 );
-		test2D( input, expected, EIGHT_CONNECTED, 1, 0 );
-	}
 
-	@Test
-	public void testBigBigObject()
-	{
-		final boolean[][] input = new boolean[ 100 ][ 100 ];
-		final int[][] expected = new int[ 100 ][ 100 ];
-		for ( int i = 0; i < input.length; i++ )
+		@Override
+		public void remove()
 		{
-			Arrays.fill( input[ i ], true );
-			Arrays.fill( expected[ i ], 1 );
 		}
-		test2D( input, expected, FOUR_CONNECTED, 1, 0 );
-		test2D( input, expected, EIGHT_CONNECTED, 1, 0 );
-	}
-
-	@Test
-	public void testFourConnected()
-	{
-		final boolean[][] input = new boolean[][] { { false, false, false, false, false }, { false, true, true, true, false }, { true, false, false, false, false }, { false, true, true, true, false }, { false, false, false, false, true } };
-		final int[][] expected4 = new int[][] { { 0, 0, 0, 0, 0 }, { 0, 1, 1, 1, 0 }, { 3, 0, 0, 0, 0 }, { 0, 2, 2, 2, 0 }, { 0, 0, 0, 0, 4 } };
-		test2D( input, expected4, FOUR_CONNECTED, 1, 0 );
-
-	}
-
-	@Test
-	public void testEightConnected()
-	{
-		final boolean[][] input = new boolean[][] { { false, false, false, false, false }, { false, true, true, true, false }, { true, false, false, false, false }, { false, true, true, true, false }, { false, false, false, false, true } };
-		final int[][] expected8 = new int[][] { { 0, 0, 0, 0, 0 }, { 0, 1, 1, 1, 0 }, { 1, 0, 0, 0, 0 }, { 0, 1, 1, 1, 0 }, { 0, 0, 0, 0, 1 } };
-		test2D( input, expected8, EIGHT_CONNECTED, 1, 0 );
 	}
 }
