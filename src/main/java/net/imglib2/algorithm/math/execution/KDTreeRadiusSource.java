@@ -43,7 +43,6 @@ import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
-import net.imglib2.Sampler;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.converter.Converter;
 import net.imglib2.neighborsearch.NearestNeighborSearchOnKDTree;
@@ -101,7 +100,7 @@ implements OFunction< O >, RandomAccess< O >, RandomAccessible< O >
 	}
 
 	@Override
-	public Sampler< O > copy()
+	public KDTreeRadiusSource< I, O > copy()
 	{
 		return new KDTreeRadiusSource< I, O >( this.scrap.createVariable(), this.converter, this.kdtree, this.radius, this.outside, this.interval );
 	}

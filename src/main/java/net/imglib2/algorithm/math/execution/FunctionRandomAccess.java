@@ -172,11 +172,11 @@ public class FunctionRandomAccess< C extends RealType< C >, O extends RealType< 
 			return this.f.eval( this.point );
 		}
 	}
-	
+
 	@Override
-	public Sampler< O > copy()
+	public RandomAccess< O > copy()
 	{
-		return this.sampler.copy();
+		return copyRandomAccess();
 	}
 
 	@Override
