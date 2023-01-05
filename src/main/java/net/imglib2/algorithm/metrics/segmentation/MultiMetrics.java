@@ -339,7 +339,7 @@ public class MultiMetrics
 
 		// check if it is a time-lapse
 		boolean timeLapse = false;
-		if ( groundTruth.dimensionsAsLongArray().length > T_AXIS )
+		if ( groundTruth.numDimensions() > T_AXIS )
 		{
 			timeLapse = groundTruth.dimension( T_AXIS ) > 1;
 		}
@@ -377,7 +377,7 @@ public class MultiMetrics
 			RandomAccessibleInterval< J > prediction,
 			double threshold )
 	{
-		int nFrames = Intervals.dimensionsAsIntArray( groundTruth )[ T_AXIS ];
+		int nFrames = ( int ) groundTruth.dimension( T_AXIS );
 
 		final MetricsSummary metrics = new MetricsSummary();
 

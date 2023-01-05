@@ -130,7 +130,7 @@ public class SEGMetrics
 
 		// check if it is a time-lapse
 		boolean timeLapse = false;
-		if ( groundTruth.dimensionsAsLongArray().length > T_AXIS )
+		if ( groundTruth.numDimensions() > T_AXIS )
 		{
 			timeLapse = groundTruth.dimension( T_AXIS ) > 1;
 		}
@@ -150,7 +150,7 @@ public class SEGMetrics
 			RandomAccessibleInterval< I > groundTruth,
 			RandomAccessibleInterval< J > prediction )
 	{
-		int nFrames = Intervals.dimensionsAsIntArray( groundTruth )[ T_AXIS ];
+		int nFrames = ( int ) groundTruth.dimension( T_AXIS );
 
 		double sumScores = 0.;
 		double nGT = 0.;
