@@ -10,6 +10,9 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
+import static net.imglib2.algorithm.metrics.imagequality.NRMSE.Normalization.EUCLIDEAN;
+import static net.imglib2.algorithm.metrics.imagequality.NRMSE.Normalization.MINMAX;
+
 /**
  * Compute the normalised root mean squared error (NRMSE) between a reference and a processed image.
  * The metrics runs on the whole image, whether 2D or 3D. In order to get individual slice NRMSE, run
@@ -63,16 +66,16 @@ public class NRMSE
 		// get mse
 		double mse = MSE.computeMetrics( reference, processed );
 
-		double nFactor = 0;
-		if ( Normalization.EUCLIDEAN.equals( norm ) )
+		double nFactor;
+		if ( norm == EUCLIDEAN )
 		{
 			nFactor = getEuclideanNorm( reference );
 		}
-		else if ( Normalization.MINMAX.equals( norm ) )
+		else if ( norm == MINMAX )
 		{
 			nFactor = getMinMaxNorm( reference );
 		}
-		else
+		else // if ( norm == MEAN )
 		{
 			nFactor = getMean( reference );
 		}
