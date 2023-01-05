@@ -84,7 +84,7 @@ public class NRMSE
 			final RandomAccessibleInterval< T > reference )
 	{
 		// get image size
-		final long nPixels = Arrays.stream( reference.dimensionsAsLongArray() ).reduce( 1, ( a, b ) -> a * b );
+		final long nPixels = Intervals.numElements( reference );
 
 		if ( nPixels > 0 )
 		{
@@ -116,7 +116,7 @@ public class NRMSE
 			final RandomAccessibleInterval< T > reference )
 	{
 		// get image size
-		final long nPixels = Arrays.stream( reference.dimensionsAsLongArray() ).reduce( 1, ( a, b ) -> a * b );
+		final long nPixels = Intervals.numElements( reference );
 
 		if ( nPixels > 0 )
 		{

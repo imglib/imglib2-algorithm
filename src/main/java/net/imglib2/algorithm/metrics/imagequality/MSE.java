@@ -69,7 +69,7 @@ public class MSE
 			throw new IllegalArgumentException( "Image dimensions must match." );
 
 		// get image size
-		final long nPixels = Arrays.stream( reference.dimensionsAsLongArray() ).reduce( 1, ( a, b ) -> a * b );
+		final long nPixels = Intervals.numElements( reference );
 
 		double mse = 0.;
 		final Cursor< T > cu = Views.iterable( reference ).localizingCursor();
