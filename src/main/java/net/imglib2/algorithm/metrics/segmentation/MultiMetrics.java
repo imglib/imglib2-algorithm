@@ -130,8 +130,7 @@ public class MultiMetrics
 		 */
 		public static Stream< Metrics > stream()
 		{
-			Metrics[] all = { ACCURACY, MEAN_MATCHED_IOU, MEAN_TRUE_IOU, TP, FP, FN, PRECISION, RECALL, F1 };
-			return Arrays.stream( all );
+			return Arrays.stream( Metrics.values() );
 		}
 	}
 
