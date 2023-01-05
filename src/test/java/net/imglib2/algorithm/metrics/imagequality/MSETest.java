@@ -30,8 +30,8 @@ public class MSETest
 		{
 			for ( int j = 0; j < dims[ 1 ]; j++ )
 			{
-				raR.setPositionAndGet( new int[] { i, j } ).set( ( short ) i );
-				raP.setPositionAndGet( new int[] { i, j } ).set( ( short ) ( i + j ) );
+				raR.setPositionAndGet( i, j ).set( i );
+				raP.setPositionAndGet( i, j ).set( i + j );
 			}
 		}
 
