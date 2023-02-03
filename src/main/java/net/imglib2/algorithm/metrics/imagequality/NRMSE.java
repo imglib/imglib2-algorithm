@@ -1,11 +1,8 @@
 package net.imglib2.algorithm.metrics.imagequality;
 
-import java.util.Arrays;
 import net.imglib2.Cursor;
-import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.stats.ComputeMinMax;
-import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;

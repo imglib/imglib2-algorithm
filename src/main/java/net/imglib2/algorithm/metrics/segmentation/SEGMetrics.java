@@ -38,7 +38,6 @@ import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.Labelings;
 import net.imglib2.type.numeric.IntegerType;
 
-import java.util.Arrays;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;

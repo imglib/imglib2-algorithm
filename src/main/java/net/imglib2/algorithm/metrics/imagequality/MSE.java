@@ -33,7 +33,6 @@
  */
 package net.imglib2.algorithm.metrics.imagequality;
 
-import java.util.Arrays;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;

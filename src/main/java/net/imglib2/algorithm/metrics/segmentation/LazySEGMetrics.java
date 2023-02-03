@@ -33,7 +33,6 @@
  */
 package net.imglib2.algorithm.metrics.segmentation;
 
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import net.imglib2.RandomAccessibleInterval;
