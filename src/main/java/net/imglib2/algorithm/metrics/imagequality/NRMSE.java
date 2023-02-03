@@ -93,7 +93,7 @@ public class NRMSE
 		if ( nPixels > 0 )
 		{
 			double ms = 0.;
-			final Cursor< T > cu = Views.iterable( reference ).localizingCursor();
+			final Cursor< T > cu = Views.iterable( reference ).cursor();
 			while ( cu.hasNext() )
 			{
 				double dRef = cu.next().getRealDouble();
@@ -125,7 +125,7 @@ public class NRMSE
 		if ( nPixels > 0 )
 		{
 			double mean = 0.;
-			final Cursor< T > cu = Views.iterable( reference ).localizingCursor();
+			final Cursor< T > cu = Views.iterable( reference ).cursor();
 			while ( cu.hasNext() )
 			{
 				double dRef = cu.next().getRealDouble();
