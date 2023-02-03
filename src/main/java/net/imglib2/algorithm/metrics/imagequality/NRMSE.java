@@ -16,9 +16,11 @@ import static net.imglib2.algorithm.metrics.imagequality.NRMSE.Normalization.MIN
  * the metrics on each slice independently.
  * <p>
  * Three normalization methods are available:
- * - euclidean: NRMSE = sqrt(MSE(reference, processed)) * sqrt(N) / || reference ||
- * - min-max: NRMSE = sqrt(MSE(reference, processed)) * sqrt(N) / |max(reference)-min(reference)|
- * - mean: NRMSE = sqrt(MSE(reference, processed)) * sqrt(N) / mean(reference)
+ * <ul>
+ * <li>euclidean: NRMSE = sqrt(MSE(reference, processed)) * sqrt(N) / || reference || </li>
+ * <li>min-max: NRMSE = sqrt(MSE(reference, processed)) / |max(reference)-min(reference)| </li>
+ * <li>mean: NRMSE = sqrt(MSE(reference, processed)) / mean(reference) </li>
+ * </ul>
  *
  * @author Joran Deschamps
  */
@@ -39,9 +41,11 @@ public class NRMSE
 	 * run on the whole image (regardless of the dimensions).
 	 * <p>
 	 * Three normalization methods are available:
-	 * - euclidean: NRMSE = sqrt(MSE(reference, processed)) * sqrt(N) / || reference ||
-	 * - min-max: NRMSE = sqrt(MSE(reference, processed)) / |max(reference)-min(reference)|
-	 * - mean: NRMSE = sqrt(MSE(reference, processed)) / mean(reference)
+	 * <ul>
+	 * <li>euclidean: NRMSE = sqrt(MSE(reference, processed)) * sqrt(N) / || reference || </li>
+	 * <li>min-max: NRMSE = sqrt(MSE(reference, processed)) / |max(reference)-min(reference)| </li>
+	 * <li>mean: NRMSE = sqrt(MSE(reference, processed)) / mean(reference) </li>
+	 * </ul>
 	 *
 	 * @param reference
 	 * 		Reference image
