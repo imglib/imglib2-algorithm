@@ -35,6 +35,8 @@ package net.imglib2.algorithm.metrics.segmentation.assignment;
 
 /**
  * Adapted from fiji.plugin.trackmate.tracking.oldlap.hungarian.
+ * Re-licensed as BSD with permission of the author (Johannes Schindelin).
+ *
  * <p>
  * This implements optimal matching between two sets given a weight matrix
  * (where the goal is to minimize the cumulative weight of the matches).
@@ -116,7 +118,6 @@ package net.imglib2.algorithm.metrics.segmentation.assignment;
  * values of ∆.
  * <p>
  * Copyright 2011 (C) Johannes Schindelin
- * License: GPLv3
  *
  * @author Johannes Schindelin
  */
