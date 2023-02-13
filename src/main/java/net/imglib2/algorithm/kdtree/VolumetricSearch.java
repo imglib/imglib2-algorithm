@@ -234,12 +234,6 @@ public class VolumetricSearch< I extends RealInterval > implements RandomAccessi
 			myCopy.setPosition( this );
 			return myCopy;
 		}
-
-		@Override
-		public VolumetricSearchRandomAccess copyRandomAccess()
-		{
-			return copy();
-		}
 	}
 
 	@Override

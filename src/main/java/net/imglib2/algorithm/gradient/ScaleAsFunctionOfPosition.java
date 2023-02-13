@@ -102,7 +102,7 @@ public class ScaleAsFunctionOfPosition< T extends Type< T > & MulFloatingPoint >
 		@Override
 		public ScaledRandomAccess< T > copy()
 		{
-			return new ScaledRandomAccess<>( source.copyRandomAccess(), scalingFunction );
+			return new ScaledRandomAccess<>( source.copy(), scalingFunction );
 		}
 
 	}

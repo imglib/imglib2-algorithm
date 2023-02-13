@@ -274,14 +274,8 @@ public class LocalNeighborhoodCursor< T > implements Cursor< T >
 	}
 
 	@Override
-	public LocalNeighborhoodCursor< T > copyCursor()
-	{
-		return new LocalNeighborhoodCursor< T >( this );
-	}
-
-	@Override
 	public LocalNeighborhoodCursor< T > copy()
 	{
-		return copyCursor();
+		return new LocalNeighborhoodCursor< T >( this );
 	}
 }

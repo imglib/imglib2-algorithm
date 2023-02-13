@@ -221,7 +221,7 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 	@Override
 	public LocalCursor cursor()
 	{
-		return new LocalCursor( sourceRandomAccess.copyRandomAccess() );
+		return new LocalCursor( sourceRandomAccess.copy() );
 	}
 
 	@Override
@@ -248,7 +248,7 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 		protected LocalCursor( final LocalCursor c )
 		{
 			super( c.numDimensions() );
-			source = c.source.copyRandomAccess();
+			source = c.source.copy();
 			index = c.index;
 		}
 
@@ -367,12 +367,6 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 		public LocalCursor copy()
 		{
 			return new LocalCursor( this );
-		}
-
-		@Override
-		public LocalCursor copyCursor()
-		{
-			return copy();
 		}
 	}
 }

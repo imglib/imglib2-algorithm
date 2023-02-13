@@ -67,7 +67,7 @@ public class PairOfPointsNeighborhood< T > extends AbstractLocalizable implement
 	PairOfPointsNeighborhood( final long[] position, final long[] offset, final RandomAccess< T > sourceRandomAccess )
 	{
 		super( position );
-		ra = sourceRandomAccess.copyRandomAccess();
+		ra = sourceRandomAccess.copy();
 		this.offset = offset;
 		this.ndims = sourceRandomAccess.numDimensions();
 
@@ -88,7 +88,7 @@ public class PairOfPointsNeighborhood< T > extends AbstractLocalizable implement
 
 		private LocalCursor( final LocalCursor c )
 		{
-			this( c.source.copyRandomAccess() );
+			this( c.source.copy() );
 			this.index = c.index;
 		}
 
@@ -211,12 +211,6 @@ public class PairOfPointsNeighborhood< T > extends AbstractLocalizable implement
 		public LocalCursor copy()
 		{
 			return new LocalCursor( this );
-		}
-
-		@Override
-		public LocalCursor copyCursor()
-		{
-			return copy();
 		}
 	}
 
@@ -374,7 +368,7 @@ public class PairOfPointsNeighborhood< T > extends AbstractLocalizable implement
 	@Override
 	public LocalCursor cursor()
 	{
-		return new LocalCursor( ra.copyRandomAccess() );
+		return new LocalCursor( ra.copy() );
 	}
 
 	@Override

@@ -88,7 +88,7 @@ public class LocalNeighborhoodCursor2< T > extends AbstractCursor< T >
 	protected LocalNeighborhoodCursor2( final LocalNeighborhoodCursor2< T > c )
 	{
 		super( c.numDimensions() );
-		this.source = c.source.copyRandomAccess();
+		this.source = c.source.copy();
 		this.center = c.center;
 		max = c.max.clone();
 		min = c.min.clone();
@@ -194,11 +194,5 @@ public class LocalNeighborhoodCursor2< T > extends AbstractCursor< T >
 	public LocalNeighborhoodCursor2< T > copy()
 	{
 		return new LocalNeighborhoodCursor2< T >( this );
-	}
-
-	@Override
-	public LocalNeighborhoodCursor2< T > copyCursor()
-	{
-		return copy();
 	}
 }

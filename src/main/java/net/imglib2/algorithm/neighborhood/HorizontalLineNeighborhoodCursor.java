@@ -152,11 +152,4 @@ public class HorizontalLineNeighborhoodCursor< T > extends HorizontalLineNeighbo
 	{
 		return new HorizontalLineNeighborhoodCursor< T >( this );
 	}
-
-	@Override
-	public HorizontalLineNeighborhoodCursor< T > copyCursor()
-	{
-		return copy();
-	}
-
 }

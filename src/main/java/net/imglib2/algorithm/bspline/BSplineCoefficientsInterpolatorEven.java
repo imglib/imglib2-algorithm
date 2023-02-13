@@ -62,7 +62,7 @@ public class BSplineCoefficientsInterpolatorEven<T extends RealType<T>> extends 
 	private BSplineCoefficientsInterpolatorEven( final BSplineCoefficientsInterpolatorEven< T > interpolator, final int order, final T type, 
 			final boolean optimized )
 	{
-		super( interpolator.target.copyRandomAccess() );
+		super( interpolator.target.copy() );
 		assert( order % 2 == 0 );
 		
 		this.bsplineOrder = interpolator.bsplineOrder;

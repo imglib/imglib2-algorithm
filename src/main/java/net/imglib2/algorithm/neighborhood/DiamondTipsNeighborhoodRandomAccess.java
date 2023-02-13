@@ -153,10 +153,4 @@ public class DiamondTipsNeighborhoodRandomAccess< T > extends DiamondTipsNeighbo
 	{
 		return new DiamondTipsNeighborhoodRandomAccess< T >( this );
 	}
-
-	@Override
-	public DiamondTipsNeighborhoodRandomAccess< T > copyRandomAccess()
-	{
-		return copy();
-	}
 }

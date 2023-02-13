@@ -166,10 +166,4 @@ public class FunctionCursor< C extends RealType< C >, O extends RealType< O > > 
 	{
 		return new FunctionCursor< C, O >( this.operation, this.inConverter, this.scrapC, this.scrapO, this.outConverter );
 	}
-
-	@Override
-	public AbstractCursor< O > copyCursor()
-	{
-		return this.copy();
-	}
 }

@@ -158,11 +158,4 @@ public class DiamondNeighborhoodCursor< T > extends DiamondNeighborhoodLocalizab
 		fwd();
 		return get();
 	}
-
-	@Override
-	public DiamondNeighborhoodCursor< T > copyCursor()
-	{
-		return copy();
-	}
-
 }

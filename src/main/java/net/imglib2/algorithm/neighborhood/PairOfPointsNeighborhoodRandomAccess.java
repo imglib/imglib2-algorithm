@@ -152,10 +152,4 @@ public class PairOfPointsNeighborhoodRandomAccess< T > extends PairOfPointsNeigh
 	{
 		return new PairOfPointsNeighborhoodRandomAccess< T >( this );
 	}
-
-	@Override
-	public PairOfPointsNeighborhoodRandomAccess< T > copyRandomAccess()
-	{
-		return copy();
-	}
 }

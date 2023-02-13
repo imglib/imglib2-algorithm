@@ -152,10 +152,4 @@ public class PeriodicLineNeighborhoodRandomAccess< T > extends PeriodicLineNeigh
 	{
 		return new PeriodicLineNeighborhoodRandomAccess< T >( this );
 	}
-
-	@Override
-	public PeriodicLineNeighborhoodRandomAccess< T > copyRandomAccess()
-	{
-		return copy();
-	}
 }

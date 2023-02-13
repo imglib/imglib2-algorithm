@@ -172,10 +172,4 @@ public final class RectangleNeighborhoodCursor< T > extends RectangleNeighborhoo
 	{
 		return new RectangleNeighborhoodCursor< T >( this );
 	}
-
-	@Override
-	public RectangleNeighborhoodCursor< T > copyCursor()
-	{
-		return copy();
-	}
 }

@@ -151,11 +151,4 @@ public class PairOfPointsNeighborhoodCursor< T > extends PairOfPointsNeighborhoo
 	{
 		return new PairOfPointsNeighborhoodCursor< T >( this );
 	}
-
-	@Override
-	public PairOfPointsNeighborhoodCursor< T > copyCursor()
-	{
-		return copy();
-	}
-
 }

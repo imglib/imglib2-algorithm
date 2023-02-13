@@ -100,13 +100,7 @@ implements OFunction< O >, RandomAccess< O >, RandomAccessible< O >
 	}
 
 	@Override
-	public KDTreeRadiusSource< I, O > copy()
-	{
-		return new KDTreeRadiusSource< I, O >( this.scrap.createVariable(), this.converter, this.kdtree, this.radius, this.outside, this.interval );
-	}
-
-	@Override
-	public RandomAccess< O > copyRandomAccess()
+	public RandomAccess< O > copy()
 	{
 		return new KDTreeRadiusSource< I, O >( this.scrap.createVariable(), this.converter, this.kdtree, this.radius, this.outside, this.interval );
 	}

@@ -56,10 +56,10 @@ public class Min
 	{
 		final Cursor< T > cursor = iterable.cursor();
 		cursor.fwd();
-		Cursor< T > min = cursor.copyCursor();
+		Cursor< T > min = cursor.copy();
 		while ( cursor.hasNext() )
 			if ( cursor.next().compareTo( min.get() ) < 0 )
-				min = cursor.copyCursor();
+				min = cursor.copy();
 		return min;
 	}
 

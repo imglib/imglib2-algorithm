@@ -140,7 +140,7 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 		protected LocalCursor( final LocalCursor c )
 		{
 			super( c.numDimensions() );
-			source = c.source.copyRandomAccess();
+			source = c.source.copy();
 			r = c.r.clone();
 			ri = c.ri.clone();
 			s = c.s.clone();
@@ -281,12 +281,6 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 		public LocalCursor copy()
 		{
 			return new LocalCursor( this );
-		}
-
-		@Override
-		public LocalCursor copyCursor()
-		{
-			return copy();
 		}
 	}
 
@@ -434,7 +428,7 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 	@Override
 	public LocalCursor cursor()
 	{
-		return new LocalCursor( sourceRandomAccess.copyRandomAccess() );
+		return new LocalCursor( sourceRandomAccess.copy() );
 	}
 
 	@Override

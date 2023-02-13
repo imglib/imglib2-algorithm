@@ -264,7 +264,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	@Override
 	public LocalCursor cursor()
 	{
-		return new LocalCursor( sourceRandomAccess.copyRandomAccess() );
+		return new LocalCursor( sourceRandomAccess.copy() );
 	}
 
 	@Override
@@ -289,7 +289,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 		private LocalCursor( final LocalCursor c )
 		{
 			super( c.numDimensions() );
-			source = c.source.copyRandomAccess();
+			source = c.source.copy();
 			index = c.index;
 		}
 
@@ -403,12 +403,6 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 		public LocalCursor copy()
 		{
 			return new LocalCursor( this );
-		}
-
-		@Override
-		public LocalCursor copyCursor()
-		{
-			return copy();
 		}
 	}
 

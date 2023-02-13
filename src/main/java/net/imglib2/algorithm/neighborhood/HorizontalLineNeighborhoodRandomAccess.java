@@ -152,10 +152,4 @@ public class HorizontalLineNeighborhoodRandomAccess< T > extends HorizontalLineN
 	{
 		return new HorizontalLineNeighborhoodRandomAccess< T >( this );
 	}
-
-	@Override
-	public HorizontalLineNeighborhoodRandomAccess< T > copyRandomAccess()
-	{
-		return copy();
-	}
 }

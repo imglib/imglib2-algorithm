@@ -109,7 +109,7 @@ public class DiamondNeighborhood< T > extends AbstractLocalizable implements Nei
 		protected LocalCursor( final LocalCursor c )
 		{
 			super( c.numDimensions() );
-			source = c.source.copyRandomAccess();
+			source = c.source.copy();
 			ri = c.ri.clone();
 			s = c.s.clone();
 		}
@@ -245,12 +245,6 @@ public class DiamondNeighborhood< T > extends AbstractLocalizable implements Nei
 		public LocalCursor copy()
 		{
 			return new LocalCursor( this );
-		}
-
-		@Override
-		public LocalCursor copyCursor()
-		{
-			return copy();
 		}
 	}
 
@@ -432,7 +426,7 @@ public class DiamondNeighborhood< T > extends AbstractLocalizable implements Nei
 	@Override
 	public LocalCursor cursor()
 	{
-		return new LocalCursor( sourceRandomAccess.copyRandomAccess() );
+		return new LocalCursor( sourceRandomAccess.copy() );
 	}
 
 	@Override

@@ -96,7 +96,7 @@ public class DiamondTipsNeighborhood< T > extends AbstractLocalizable implements
 	@Override
 	public LocalCursor cursor()
 	{
-		return new LocalCursor( sourceRandomAccess.copyRandomAccess() );
+		return new LocalCursor( sourceRandomAccess.copy() );
 	}
 
 	@Override
@@ -264,7 +264,7 @@ public class DiamondTipsNeighborhood< T > extends AbstractLocalizable implements
 		protected LocalCursor( final LocalCursor c )
 		{
 			super( c.numDimensions() );
-			this.source = c.source.copyRandomAccess();
+			this.source = c.source.copy();
 			this.currentDim = c.currentDim;
 			this.parity = c.parity;
 		}
@@ -384,12 +384,6 @@ public class DiamondTipsNeighborhood< T > extends AbstractLocalizable implements
 		public LocalCursor copy()
 		{
 			return new LocalCursor( this );
-		}
-
-		@Override
-		public LocalCursor copyCursor()
-		{
-			return copy();
 		}
 	}
 
