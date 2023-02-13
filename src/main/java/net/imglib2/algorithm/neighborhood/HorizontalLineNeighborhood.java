@@ -230,7 +230,7 @@ public class HorizontalLineNeighborhood< T > extends AbstractLocalizable impleme
 	@Override
 	public LocalCursor cursor()
 	{
-		return new LocalCursor( sourceRandomAccess.copyRandomAccess() );
+		return new LocalCursor( sourceRandomAccess.copy() );
 	}
 
 	@Override
@@ -255,7 +255,7 @@ public class HorizontalLineNeighborhood< T > extends AbstractLocalizable impleme
 		protected LocalCursor( final LocalCursor c )
 		{
 			super( c.numDimensions() );
-			source = c.source.copyRandomAccess();
+			source = c.source.copy();
 			index = c.index;
 		}
 
@@ -364,12 +364,6 @@ public class HorizontalLineNeighborhood< T > extends AbstractLocalizable impleme
 		public LocalCursor copy()
 		{
 			return new LocalCursor( this );
-		}
-
-		@Override
-		public LocalCursor copyCursor()
-		{
-			return copy();
 		}
 	}
 

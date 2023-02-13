@@ -56,10 +56,10 @@ public class Max
 	{
 		final Cursor< T > cursor = iterable.cursor();
 		cursor.fwd();
-		Cursor< T > max = cursor.copyCursor();
+		Cursor< T > max = cursor.copy();
 		while ( cursor.hasNext() )
 			if ( cursor.next().compareTo( max.get() ) > 0 )
-				max = cursor.copyCursor();
+				max = cursor.copy();
 		return max;
 	}
 }

@@ -252,14 +252,8 @@ public class HyperSphereCursor< T > implements Cursor< T >
 	}
 
 	@Override
-	public HyperSphereCursor< T > copyCursor()
-	{
-		return new HyperSphereCursor< T >( this );
-	}
-
-	@Override
 	public HyperSphereCursor< T > copy()
 	{
-		return copyCursor();
+		return new HyperSphereCursor< T >( this );
 	}
 }

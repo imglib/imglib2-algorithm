@@ -88,7 +88,7 @@ public class BSplineInterpolator< T extends RealType< T > > extends Floor< Rando
 
 	public BSplineInterpolator( final BSplineInterpolator< T > interpolator )
 	{
-		super( interpolator.target.copyRandomAccess() );
+		super( interpolator.target.copy() );
 
 		this.shape = interpolator.shape;
 

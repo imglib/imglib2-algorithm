@@ -56,7 +56,7 @@ public class BSplineCoefficientsInterpolatorOdd<T extends RealType<T>> extends F
 	
 	private BSplineCoefficientsInterpolatorOdd( final BSplineCoefficientsInterpolatorOdd< T > interpolator, final int order, final T type )
 	{
-		super( interpolator.target.copyRandomAccess() );
+		super( interpolator.target.copy() );
 		assert( order % 2 == 1 );
 		
 		this.bsplineOrder = interpolator.bsplineOrder;

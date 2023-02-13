@@ -90,19 +90,13 @@ public class FunctionRandomAccessDouble< O extends RealType< O > > extends Point
 	}
 	
 	@Override
-	public RandomAccess< O > copy()
-	{
-		return copyRandomAccess();
-	}
-
-	@Override
 	public O get()
 	{
 		return this.sampler.get();
 	}
 
 	@Override
-	public RandomAccess< O > copyRandomAccess()
+	public RandomAccess< O > copy()
 	{
 		return new FunctionRandomAccessDouble< O >( this.sampler.operation, this.sampler.scrap, this.sampler.converter );
 	}

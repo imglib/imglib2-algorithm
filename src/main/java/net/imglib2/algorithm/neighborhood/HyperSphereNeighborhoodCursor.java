@@ -153,11 +153,4 @@ public final class HyperSphereNeighborhoodCursor< T > extends HypersphereNeighbo
 	{
 		return new HyperSphereNeighborhoodCursor< T >( this );
 	}
-
-	@Override
-	public HyperSphereNeighborhoodCursor< T > copyCursor()
-	{
-		return copy();
-	}
-
 }

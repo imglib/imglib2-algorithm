@@ -221,7 +221,7 @@ public class RectangleNeighborhoodSkipCenter< T > extends AbstractLocalizable im
 	@Override
 	public LocalCursor cursor()
 	{
-		return new LocalCursor( sourceRandomAccess.copyRandomAccess() );
+		return new LocalCursor( sourceRandomAccess.copy() );
 	}
 
 	@Override
@@ -248,7 +248,7 @@ public class RectangleNeighborhoodSkipCenter< T > extends AbstractLocalizable im
 		protected LocalCursor( final LocalCursor c )
 		{
 			super( c.numDimensions() );
-			source = c.source.copyRandomAccess();
+			source = c.source.copy();
 			index = c.index;
 		}
 
@@ -369,12 +369,6 @@ public class RectangleNeighborhoodSkipCenter< T > extends AbstractLocalizable im
 		public LocalCursor copy()
 		{
 			return new LocalCursor( this );
-		}
-
-		@Override
-		public LocalCursor copyCursor()
-		{
-			return copy();
 		}
 	}
 }

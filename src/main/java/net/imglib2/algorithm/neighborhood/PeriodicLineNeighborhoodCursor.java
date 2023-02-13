@@ -151,11 +151,4 @@ public class PeriodicLineNeighborhoodCursor< T > extends PeriodicLineNeighborhoo
 	{
 		return new PeriodicLineNeighborhoodCursor< T >( this );
 	}
-
-	@Override
-	public PeriodicLineNeighborhoodCursor< T > copyCursor()
-	{
-		return copy();
-	}
-
 }

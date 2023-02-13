@@ -174,19 +174,13 @@ public class FunctionRandomAccess< C extends RealType< C >, O extends RealType< 
 	}
 
 	@Override
-	public RandomAccess< O > copy()
-	{
-		return copyRandomAccess();
-	}
-
-	@Override
 	public O get()
 	{
 		return this.sampler.get();
 	}
 
 	@Override
-	public RandomAccess< O > copyRandomAccess()
+	public RandomAccess< O > copy()
 	{
 		return new FunctionRandomAccess< C, O >(
 				this.operation,

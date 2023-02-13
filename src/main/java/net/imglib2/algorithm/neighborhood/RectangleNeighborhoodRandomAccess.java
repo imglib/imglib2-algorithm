@@ -177,10 +177,4 @@ public final class RectangleNeighborhoodRandomAccess< T > extends RectangleNeigh
 	{
 		return new RectangleNeighborhoodRandomAccess< T >( this );
 	}
-
-	@Override
-	public RectangleNeighborhoodRandomAccess< T > copyRandomAccess()
-	{
-		return copy();
-	}
 }

@@ -158,10 +158,4 @@ public class DiamondTipsNeighborhoodCursor< T > extends DiamondTipsNeighborhoodL
 	{
 		return new DiamondTipsNeighborhoodCursor< T >( this );
 	}
-
-	@Override
-	public DiamondTipsNeighborhoodCursor< T > copyCursor()
-	{
-		return copy();
-	}
 }

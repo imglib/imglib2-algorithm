@@ -139,10 +139,4 @@ public class HyperSphereNeighborhoodRandomAccess< T > extends HypersphereNeighbo
 	{
 		return new HyperSphereNeighborhoodRandomAccess< T >( this );
 	}
-
-	@Override
-	public HyperSphereNeighborhoodRandomAccess< T > copyRandomAccess()
-	{
-		return copy();
-	}
 }

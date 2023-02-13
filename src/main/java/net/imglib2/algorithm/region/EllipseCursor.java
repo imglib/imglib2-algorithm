@@ -37,6 +37,7 @@ import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
+import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.Sampler;
@@ -91,7 +92,7 @@ public class EllipseCursor< T > implements Cursor< T >
 
 	private boolean hasNext;
 
-	private static enum Octant
+	private enum Octant
 	{
 		INIT,
 		EAST, NORTH, WEST, SOUTH,
@@ -188,6 +189,25 @@ public class EllipseCursor< T > implements Cursor< T >
 		final Interval interval = FinalInterval.createMinMax( minmax );
 		this.ra = rai.randomAccess( interval );
 		reset();
+	}
+
+	// copy constructor
+	private EllipseCursor( final EllipseCursor< T > c )
+	{
+		rai = c.rai;
+		ra = c.ra.copy();
+		center = new Point( c.center );
+		radiusX = c.radiusX;
+		radiusY = c.radiusY;
+		dimX = c.dimX;
+		dimY = c.dimY;
+		x = c.x;
+		y = c.y;
+		px  = c.px;
+		py = c.py;
+		p = c.p;
+		octant = c.octant;
+		hasNext = c.hasNext;
 	}
 
 	@Override
@@ -399,9 +419,9 @@ public class EllipseCursor< T > implements Cursor< T >
 	}
 
 	@Override
-	public Sampler< T > copy()
+	public Cursor< T > copy()
 	{
-		return ra.copy();
+		return new EllipseCursor<>( this );
 	}
 
 	@Override
@@ -440,12 +460,6 @@ public class EllipseCursor< T > implements Cursor< T >
 	public long getLongPosition( final int d )
 	{
 		return ra.getLongPosition( d );
-	}
-
-	@Override
-	public Cursor< T > copyCursor()
-	{
-		return new EllipseCursor<>( rai, center, radiusX, radiusY, dimX, dimY );
 	}
 
 	@Override
