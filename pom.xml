@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>34.0.0</version>
+		<version>34.1.0</version>
 		<relativePath />
 	</parent>
 
@@ -202,6 +202,8 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<net.imglib2.imglib2.version>6.1.0</net.imglib2.imglib2.version>
+		<net.imglib2.imglib2-cache.version>1.0.0-beta-17</net.imglib2.imglib2-cache.version>
+		<net.imglib2.imglib2-realtransform.version>4.0.1</net.imglib2.imglib2-realtransform.version>
 	</properties>
 
 	<repositories>
