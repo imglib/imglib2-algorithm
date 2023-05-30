@@ -1,0 +1,79 @@
+## pixel types
+## (u64 is not included for now)
+#set( $types = ["i8", "u8", "i16", "u16", "i32", "u32", "i64", "f32", "f64"] )
+##
+## maps pixel type to Java primitive type used for storage
+#set( $storage_primitive = {
+    "i8" : "byte",
+    "u8" : "byte",
+    "i16" : "short",
+    "u16" : "short",
+    "i32" : "int",
+    "u32" : "int",
+    "i64" : "long",
+    "u64" : "long",
+    "f32" : "float",
+    "f64" : "double"
+} )
+##
+## maps pixel type to Java primitive type used for computation
+#set( $compute_primitive = {
+    "i8" : "int",
+    "u8" : "int",
+    "i16" : "int",
+    "u16" : "int",
+    "i32" : "int",
+    "u32" : "long",
+    "i64" : "long",
+    "f32" : "float",
+    "f64" : "double"
+} )
+##
+## unsigned integral types have masks to convert them to signed
+#set( $mask = {
+    "u8" : "0xff",
+    "u16" : "0xffff",
+    "u32" : "0xffffffffL"
+} )
+##
+#set( $max_value = {
+    "i8" : "0x7f",
+    "u8" : "0xff",
+    "i16" : "0x7fff",
+    "u16" : "0xffff",
+    "i32" : "0x7fff_ffff",
+    "u32" : "0xffff_ffffL"
+} )
+##
+#set( $min_value = {
+    "i8" : "-0x80",
+    "u8" : "0",
+    "i16" : "-0x8000",
+    "u16" : "0",
+    "i32" : "-0x8000_0000",
+    "u32" : "0L"
+} )
+##
+## whether a pixel type is integral
+#set( $is_integral = {
+    "i8" : true,
+    "u8" : true,
+    "i16" : true,
+    "u16" : true,
+    "i32" : true,
+    "u32" : true,
+    "i64" : true,
+    "u64" : true,
+    "f32" : false,
+    "f64" : false
+} )
+##
+## number of bits in Java primitive type
+#set( $nbits = {
+    "byte" : 8,
+    "short" : 16,
+    "int" : 32,
+    "long" : 64,
+    "float" : 32,
+    "double" : 64
+} )
