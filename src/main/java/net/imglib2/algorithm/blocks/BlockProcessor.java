@@ -41,7 +41,7 @@ public interface BlockProcessor< I, O >
 	 * {@code src} and {@code dest} are expected to be flattened arrays of the
 	 * dimensions specified in {@link #setTargetInterval} and computed in {@link
 	 * #getSourceSize}, respectively. The typical sequence is:
-	 * <nl>
+	 * <ol>
 	 * <li>A given target array {@code dest} with known flattened layout and min
 	 * position should be computed.</li>
 	 * <li>Call {@link #setTargetInterval}. This will compute the corresponding
@@ -52,7 +52,7 @@ public interface BlockProcessor< I, O >
 	 * #getSourceBuffer}, or otherwise allocated) with the input data (see
 	 * {@link PrimitiveBlocks#copy}).</li>
 	 * <li>Call {@code compute(src, dest)} to compute the target array.</li>
-	 * </nl>
+	 * </ol>
 	 * Note, that the {@code src} and {@code dest} arrays may be larger than
 	 * implied by {@code setTargetInterval} and {@code getSourceSize}. In that
 	 * case the trailing elements are ignored.
