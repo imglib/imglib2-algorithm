@@ -201,6 +201,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
+		<net.imglib2.imglib2.version>6.4.0</net.imglib2.imglib2.version>
 	</properties>
 
 	<repositories>
@@ -276,15 +277,4 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<additionalparam>--allow-script-in-comments -header '&lt;script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"&gt;&lt;/script&gt;'</additionalparam>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
