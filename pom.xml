@@ -202,6 +202,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<net.imglib2.imglib2.version>6.2.0</net.imglib2.imglib2.version>
+		<net.imglib2.imglib2-ij.version>2.0.2-SNAPSHOT</net.imglib2.imglib2-ij.version>
 	</properties>
 
 	<repositories>
@@ -259,7 +260,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-ij</artifactId>
-			<scope>test</scope>
+<!--			<scope>test</scope>-->
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -277,15 +278,4 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<additionalparam>--allow-script-in-comments -header '&lt;script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"&gt;&lt;/script&gt;'</additionalparam>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
