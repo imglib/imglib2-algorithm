@@ -185,10 +185,10 @@ public class VolumetricSearch< I extends RealInterval > implements RandomAccessi
 				// which still could be lower.
 				// Otherwise (coordinate is smaller/equal position, take the
 				// right branch as well
-				if ( node.left != null )
-					toDo.push( node.left );
-				if ( node.right != null && node.getSplitCoordinate() <= position[ k ] )
-					toDo.push( node.right );
+				if ( node.left() != null )
+					toDo.push( node.left() );
+				if ( node.right() != null && node.getSplitCoordinate() <= position[ k ] )
+					toDo.push( node.right() );
 			}
 			else
 			{
@@ -198,10 +198,10 @@ public class VolumetricSearch< I extends RealInterval > implements RandomAccessi
 				// which still could be higher.
 				// Otherwise (coordinate is larger/equal position, take the left
 				// branch as well
-				if ( node.right != null )
-					toDo.push( node.right );
-				if ( node.left != null && node.getSplitCoordinate() >= position[ k - numDimensions ] )
-					toDo.push( node.left );
+				if ( node.right() != null )
+					toDo.push( node.right() );
+				if ( node.left() != null && node.getSplitCoordinate() >= position[ k - numDimensions ] )
+					toDo.push( node.left() );
 			}
 		}
 
