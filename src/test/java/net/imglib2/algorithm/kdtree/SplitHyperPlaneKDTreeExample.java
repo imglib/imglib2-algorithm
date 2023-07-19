@@ -16,7 +16,7 @@ import net.imglib2.position.transform.Round;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.view.Views;
 
-import net.imglib2.kdtree.KDTree;
+import net.imglib2.KDTree;
 
 public class SplitHyperPlaneKDTreeExample
 {
@@ -39,7 +39,7 @@ public class SplitHyperPlaneKDTreeExample
 		// split on hyperplane
 		final HyperPlane plane = new HyperPlane( 1, 0.5, 600 );
 		final KDTree< RealPoint > kdtree = new KDTree<>( points, points );
-		final SplitHyperPlaneKDTreeNew< RealPoint > split = new SplitHyperPlaneKDTreeNew<>( kdtree );
+		final SplitHyperPlaneKDTree< RealPoint > split = new SplitHyperPlaneKDTree<>( kdtree );
 		split.split( plane );
 
 		// show all points

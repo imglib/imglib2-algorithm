@@ -34,12 +34,12 @@
 
 package net.imglib2.algorithm.kdtree;
 
-import java.util.ArrayList;
-
 import net.imglib2.KDTree;
 import net.imglib2.KDTreeNode;
 
 /**
+ * TODO: javadoc
+ *
  * Partition nodes in a {@link KDTree} into disjoint sets of nodes that are
  * above and below a given hyperplane, respectively.
  *
@@ -60,143 +60,40 @@ import net.imglib2.KDTreeNode;
  */
 public class SplitHyperPlaneKDTree< T >
 {
-	private final KDTree< T > tree;
-
-	private final int n;
-
-	private final double[] normal;
-
-	private double m;
-
-	private final double[] xmin;
-
-	private final double[] xmax;
-
-	private final ArrayList< KDTreeNode< T > > aboveNodes;
-
-	private final ArrayList< KDTreeNode< T > > aboveSubtrees;
-
-	private final ArrayList< KDTreeNode< T > > belowNodes;
-
-	private final ArrayList< KDTreeNode< T > > belowSubtrees;
+	private final SplitHyperPlaneKDTreeImpl impl;
+	private final KDTreeNodeIterableNew< T > aboveNodes;
+	private final KDTreeNodeIterableNew< T > belowNodes;
 
 	public SplitHyperPlaneKDTree( final KDTree< T > tree )
 	{
-		n = tree.numDimensions();
-		xmin = new double[ n ];
-		xmax = new double[ n ];
-		normal = new double[ n ];
-		this.tree = tree;
-		aboveNodes = new ArrayList< KDTreeNode< T > >();
-		aboveSubtrees = new ArrayList< KDTreeNode< T > >();
-		belowNodes = new ArrayList< KDTreeNode< T > >();
-		belowSubtrees = new ArrayList< KDTreeNode< T > >();
+		impl = new SplitHyperPlaneKDTreeImpl( tree.impl() );
+		aboveNodes = new KDTreeNodeIterableNew<>( impl.getAboveNodes(), tree );
+		belowNodes = new KDTreeNodeIterableNew<>( impl.getBelowNodes(), tree );
 	}
 
 	public int numDimensions()
 	{
-		return n;
+		return impl.numDimensions();
 	}
 
 	public void split( final HyperPlane plane )
 	{
-		initNewSearch();
-		System.arraycopy( plane.getNormal(), 0, normal, 0, n );
-		m = plane.getDistance();
-		split( tree.getRoot() );
+		impl.split( plane );
 	}
 
 	public void split( final double[] plane )
 	{
-		initNewSearch();
-		System.arraycopy( plane, 0, normal, 0, n );
-		m = plane[ n ];
-		split( tree.getRoot() );
-	}
-
-	private void initNewSearch()
-	{
-		aboveNodes.clear();
-		aboveSubtrees.clear();
-		belowNodes.clear();
-		belowSubtrees.clear();
-		tree.realMin( xmin );
-		tree.realMax( xmax );
+		impl.split( plane );
 	}
 
 	public Iterable< KDTreeNode< T > > getAboveNodes()
 	{
-		return new KDTreeNodeIterable< T >( aboveNodes, aboveSubtrees );
+		return aboveNodes;
 	}
 
 	public Iterable< KDTreeNode< T > > getBelowNodes()
 	{
-		return new KDTreeNodeIterable< T >( belowNodes, belowSubtrees );
+		return belowNodes;
 	}
 
-	private static < T > void addAll( final KDTreeNode< T > node, final ArrayList< KDTreeNode< T > > list )
-	{
-		list.add( node );
-	}
-
-	private boolean allAbove()
-	{
-		double dot = 0;
-		for ( int d = 0; d < n; ++d )
-			dot += normal[ d ] * ( normal[ d ] >= 0 ? xmin[ d ] : xmax[ d ] );
-		return dot >= m;
-	}
-
-	private boolean allBelow()
-	{
-		double dot = 0;
-		for ( int d = 0; d < n; ++d )
-			dot += normal[ d ] * ( normal[ d ] < 0 ? xmin[ d ] : xmax[ d ] );
-		return dot < m;
-	}
-
-	private void splitSubtree( final KDTreeNode< T > current, final boolean p, final boolean q )
-	{
-		if ( p && q && allAbove() )
-			addAll( current, aboveSubtrees );
-		else if ( !p && !q && allBelow() )
-			addAll( current, belowSubtrees );
-		else
-			split( current );
-	}
-
-	private void split( final KDTreeNode< T > current )
-	{
-		final int sd = current.getSplitDimension();
-		final double sc = current.getSplitCoordinate();
-
-		double dot = 0;
-		for ( int d = 0; d < n; ++d )
-			dot += current.getDoublePosition( d ) * normal[ d ];
-		final boolean p = dot >= m;
-
-		// current
-		if ( p )
-			aboveNodes.add( current );
-		else
-			belowNodes.add( current );
-
-		// left
-		if ( current.left != null )
-		{
-			final double max = xmax[ sd ];
-			xmax[ sd ] = sc;
-			splitSubtree( current.left, p, normal[ sd ] < 0 );
-			xmax[ sd ] = max;
-		}
-
-		// right
-		if ( current.right != null )
-		{
-			final double min = xmin[ sd ];
-			xmin[ sd ] = sc;
-			splitSubtree( current.right, p, normal[ sd ] >= 0 );
-			xmin[ sd ] = min;
-		}
-	}
 }

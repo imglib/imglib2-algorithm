@@ -201,8 +201,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
-		<net.imglib2.imglib2.version>6.2.0</net.imglib2.imglib2.version>
-		<net.imglib2.imglib2-ij.version>2.0.2-SNAPSHOT</net.imglib2.imglib2-ij.version>
+		<net.imglib2.imglib2.version>6.2.1-SNAPSHOT</net.imglib2.imglib2.version>
 	</properties>
 
 	<repositories>
