@@ -34,10 +34,6 @@
 
 package net.imglib2.algorithm.kdtree;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-
 import net.imglib2.KDTree;
 import net.imglib2.KDTreeNode;
 
@@ -62,231 +58,39 @@ import net.imglib2.KDTreeNode;
  */
 public class ClipConvexPolytopeKDTree< T >
 {
-	private final KDTree< T > tree;
-
-	private final int n;
-
-	private int nPlanes;
-
-	private double[][] normals;
-
-	private double[] ms;
-
-	private final double[] xmin;
-
-	private final double[] xmax;
-
-	private boolean[] qR;
-
-	private boolean[] qL;
-
-	private final ArrayList< boolean[] > activeStack;
-
-	private final ArrayList< boolean[] > psStack;
-
-	private final ArrayList< KDTreeNode< T > > inNodes;
-
-	private final ArrayList< KDTreeNode< T > > inSubtrees;
-
-	private final ArrayList< KDTreeNode< T > > outNodes;
-
-	private final ArrayList< KDTreeNode< T > > outSubtrees;
+	private final ClipConvexPolytopeKDTreeImpl< Object > impl;
+	private final KDTreeNodeIterableNew< T > insideNodes;
+	private final KDTreeNodeIterableNew< T > outsideNodes;
 
 	public ClipConvexPolytopeKDTree( final KDTree< T > tree )
 	{
-		this.tree = tree;
-		n = tree.numDimensions();
-		xmin = new double[ n ];
-		xmax = new double[ n ];
-		activeStack = new ArrayList< boolean[] >();
-		psStack = new ArrayList< boolean[] >();
-		inNodes = new ArrayList< KDTreeNode< T > >();
-		inSubtrees = new ArrayList< KDTreeNode< T > >();
-		outNodes = new ArrayList< KDTreeNode< T > >();
-		outSubtrees = new ArrayList< KDTreeNode< T > >();
+		impl = new ClipConvexPolytopeKDTreeImpl<>( tree.impl() );
+		insideNodes = new KDTreeNodeIterableNew<>( impl.getInsideNodes(), tree );
+		outsideNodes = new KDTreeNodeIterableNew<>( impl.getOutsideNodes(), tree );
 	}
 
 	public int numDimensions()
 	{
-		return n;
+		return impl.numDimensions();
 	}
 
 	public void clip( final ConvexPolytope polytope )
 	{
-		final Collection< ? extends HyperPlane > planes = polytope.getHyperplanes();
-		initNewSearch( planes.size() );
-		int i = 0;
-		for ( final HyperPlane plane : planes )
-		{
-			final double[] normal = normals[ i ];
-			System.arraycopy( plane.getNormal(), 0, normal, 0, n );
-			ms[ i ] = plane.getDistance();
-			for ( int d = 0; d < n; ++d )
-			{
-				qL[ d * nPlanes + i ] = normal[ d ] < 0;
-				qR[ d * nPlanes + i ] = normal[ d ] >= 0;
-			}
-			++i;
-		}
-		clip( tree.getRoot(), 0 );
+		impl.clip( polytope );
 	}
 
 	public void clip( final double[][] planes )
 	{
-		initNewSearch( planes.length );
-		for ( int i = 0; i < nPlanes; ++i )
-		{
-			final double[] normal = normals[ i ];
-			System.arraycopy( planes[ i ], 0, normal, 0, n );
-			ms[ i ] = planes[ i ][ n ];
-			for ( int d = 0; d < n; ++d )
-			{
-				qL[ d * nPlanes + i ] = normal[ d ] < 0;
-				qR[ d * nPlanes + i ] = normal[ d ] >= 0;
-			}
-		}
-		clip( tree.getRoot(), 0 );
+		impl.clip( planes );
 	}
 
 	public Iterable< KDTreeNode< T > > getInsideNodes()
 	{
-		return new KDTreeNodeIterable< T >( inNodes, inSubtrees );
+		return insideNodes;
 	}
 
 	public Iterable< KDTreeNode< T > > getOutsideNodes()
 	{
-		return new KDTreeNodeIterable< T >( outNodes, outSubtrees );
-	}
-
-	private void initNewSearch( final int nPlanes )
-	{
-		this.nPlanes = nPlanes;
-		normals = new double[ nPlanes ][];
-		for ( int i = 0; i < nPlanes; ++i )
-			normals[ i ] = new double[ n ];
-		ms = new double[ nPlanes ];
-		qR = new boolean[ n * nPlanes ];
-		qL = new boolean[ n * nPlanes ];
-		inNodes.clear();
-		inSubtrees.clear();
-		outNodes.clear();
-		outSubtrees.clear();
-		activeStack.clear();
-		psStack.clear();
-		tree.realMin( xmin );
-		tree.realMax( xmax );
-		Arrays.fill( getActiveArray( 0 ), true );
-	}
-
-	private boolean[] getActiveArray( final int i )
-	{
-		if ( i >= activeStack.size() )
-		{
-			activeStack.add( new boolean[ nPlanes ] );
-			psStack.add( new boolean[ nPlanes ] );
-		}
-		return activeStack.get( i );
-	}
-
-	private boolean[] getPsArray( final int i )
-	{
-		return psStack.get( i );
-	}
-
-	private void addAll( final KDTreeNode< T > node, final ArrayList< KDTreeNode< T > > list )
-	{
-		list.add( node );
-	}
-
-	private boolean allAbove( final int i )
-	{
-		final double[] normal = normals[ i ];
-		double dot = 0;
-		for ( int d = 0; d < n; ++d )
-			dot += normal[ d ] * ( normal[ d ] >= 0 ? xmin[ d ] : xmax[ d ] );
-		return dot >= ms[ i ];
-	}
-
-	private boolean allBelow( final int i )
-	{
-		final double[] normal = normals[ i ];
-		double dot = 0;
-		for ( int d = 0; d < n; ++d )
-			dot += normal[ d ] * ( normal[ d ] < 0 ? xmin[ d ] : xmax[ d ] );
-		return dot < ms[ i ];
-	}
-
-	private void clipSubtree( final KDTreeNode< T > current, final boolean[] ps, final boolean[] qs, final int qoff, final int recursionDepth )
-	{
-		final boolean[] active = getActiveArray( recursionDepth );
-		final boolean[] stillActive = getActiveArray( recursionDepth + 1 );
-		System.arraycopy( active, 0, stillActive, 0, nPlanes );
-		boolean noneActive = true;
-		for ( int i = 0; i < nPlanes; ++i )
-		{
-			if ( active[ i ] )
-			{
-				if ( ps[ i ] && qs[ qoff + i ] && allAbove( i ) )
-					stillActive[ i ] = false;
-				else
-				{
-					noneActive = false;
-					if ( !ps[ i ] && !qs[ qoff + i ] && allBelow( i ) )
-					{
-						addAll( current, outSubtrees );
-						return;
-					}
-				}
-			}
-		}
-		if ( noneActive )
-			addAll( current, inSubtrees );
-		else
-			clip( current, recursionDepth + 1 );
-	}
-
-	private void clip( final KDTreeNode< T > current, final int recursionDepth )
-	{
-		final int sd = current.getSplitDimension();
-		final double sc = current.getSplitCoordinate();
-
-		final boolean[] active = getActiveArray( recursionDepth );
-		final boolean[] ps = getPsArray( recursionDepth );
-
-		boolean p = true;
-		for ( int i = 0; i < nPlanes; ++i )
-		{
-			if ( active[ i ] )
-			{
-				final double[] normal = normals[ i ];
-				double dot = 0;
-				for ( int d = 0; d < n; ++d )
-					dot += current.getDoublePosition( d ) * normal[ d ];
-				ps[ i ] = dot >= ms[ i ];
-				p &= ps[ i ];
-			}
-		}
-
-		if ( p )
-			inNodes.add( current );
-		else
-			outNodes.add( current );
-
-		final int qoff = sd * nPlanes;
-		if ( current.left != null )
-		{
-			final double max = xmax[ sd ];
-			xmax[ sd ] = sc;
-			clipSubtree( current.left, ps, qL, qoff, recursionDepth );
-			xmax[ sd ] = max;
-		}
-
-		if ( current.right != null )
-		{
-			final double min = xmin[ sd ];
-			xmin[ sd ] = sc;
-			clipSubtree( current.right, ps, qR, qoff, recursionDepth );
-			xmin[ sd ] = min;
-		}
+		return outsideNodes;
 	}
 }

@@ -1,8 +1,8 @@
 package net.imglib2.algorithm.kdtree;
 
 import java.util.Iterator;
-import net.imglib2.kdtree.KDTree;
-import net.imglib2.kdtree.KDTreeNode;
+import net.imglib2.KDTree;
+import net.imglib2.KDTreeNode;
 
 class KDTreeNodeIterableNew< T > implements Iterable< KDTreeNode< T > >
 {
@@ -25,7 +25,7 @@ class KDTreeNodeIterableNew< T > implements Iterable< KDTreeNode< T > >
 	class KDTreeNodeIterator implements Iterator< KDTreeNode< T > >
 	{
 		private final NodeIndexIterable.NodeIndexIterator indices = nodes.iterator();
-		private final KDTreeNode< T > node = new KDTreeNode<>( tree );
+		private final KDTreeNode< T > node = tree.createNode();
 
 		@Override
 		public boolean hasNext()
