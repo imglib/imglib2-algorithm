@@ -36,7 +36,7 @@ package net.imglib2.algorithm.kdtree;
 
 import gnu.trove.list.array.TIntArrayList;
 import java.util.Arrays;
-import net.imglib2.kdtree.KDTree;
+import net.imglib2.KDTree;
 import net.imglib2.kdtree.KDTreeImpl;
 
 /**
@@ -120,11 +120,8 @@ public class SplitHyperPlaneKDTreeImpl
 		aboveSubtrees.clear();
 		belowNodes.clear();
 		belowSubtrees.clear();
-		// TODO
 		Arrays.fill( xmin, Double.NEGATIVE_INFINITY );
 		Arrays.fill( xmax, Double.POSITIVE_INFINITY );
-//		tree.realMin( xmin );
-//		tree.realMax( xmax );
 	}
 
 	public NodeIndexIterable getAboveNodes()

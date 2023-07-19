@@ -12,7 +12,7 @@ import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.kdtree.KDTree;
+import net.imglib2.KDTree;
 import net.imglib2.position.transform.Round;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.view.Views;
@@ -43,7 +43,7 @@ public class ClipConvexPolytopeKDTreeExample
 				new HyperPlane( -0.5,  -1, -580 ),
 				new HyperPlane(   -1, 0.1, -400 ) );
 		final KDTree< RealPoint > kdtree = new KDTree<>( points, points );
-		final ClipConvexPolytopeKDTreeNew< RealPoint > clip = new ClipConvexPolytopeKDTreeNew<>( kdtree );
+		final ClipConvexPolytopeKDTree< RealPoint > clip = new ClipConvexPolytopeKDTree<>( kdtree );
 		clip.clip( polytope );
 
 		// show all points

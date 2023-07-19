@@ -175,11 +175,8 @@ public class ClipConvexPolytopeKDTreeImpl< T >
 		outSubtrees.clear();
 		activeStack.clear();
 		psStack.clear();
-		// TODO
 		Arrays.fill( xmin, Double.NEGATIVE_INFINITY );
 		Arrays.fill( xmax, Double.POSITIVE_INFINITY );
-//		tree.realMin( xmin );
-//		tree.realMax( xmax );
 		Arrays.fill( getActiveArray( 0 ), true );
 	}
 
