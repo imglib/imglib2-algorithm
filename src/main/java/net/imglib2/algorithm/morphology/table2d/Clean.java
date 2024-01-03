@@ -65,11 +65,17 @@ public class Clean extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @implNote op name='morphology.clean', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > clean( final Img< T > source )
 	{
 		return new Clean().calculate( source );
 	}
 
+	/**
+	 * @implNote op name='morphology.clean', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void clean( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Clean().calculate( source, target );

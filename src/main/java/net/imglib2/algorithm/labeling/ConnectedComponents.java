@@ -119,6 +119,41 @@ public final class ConnectedComponents
 	 * returned by {@code labelGenerator.next()}. {@code labelGenerator.next()}
 	 * is called exactly <em>n</em> times if the input contains
 	 * <em>n</em> connected components.
+	 * <p>
+	 * This method differs from
+	 * {@link #labelAllConnectedComponents(RandomAccessible, ImgLabeling, Iterator, StructuringElement)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='labeling.connectedComponents', type=Computer
+	 * @param input
+	 *            input image with pixels != 0 belonging to foreground.
+	 * @param labelGenerator
+	 *            produces labels for the connected components.
+	 * @param se
+	 *            structuring element to use. 8-connected or 4-connected
+	 *            (respectively n-dimensional analog)
+	 * @param labeling
+	 *            output labeling in which the connected components will be
+	 *            labeled.
+	 */
+	public static < T extends IntegerType< T >, L, I extends IntegerType< I > > void labelAllConnectedComponents(
+			final RandomAccessible< T > input,
+			final Iterator< L > labelGenerator,
+			final StructuringElement se,
+			final ImgLabeling< L, I > labeling)
+	{
+		labelAllConnectedComponents( input, labeling, labelGenerator, se );
+	}
+
+	/**
+	 * Label all connected components in the given input image. In the output
+	 * image, all background pixels will be labeled to {} and foreground
+	 * components labeled as {1}, {2}, {3}, etc. where 1, 2, 3 are labels
+	 * returned by {@code labelGenerator.next()}. {@code labelGenerator.next()}
+	 * is called exactly <em>n</em> times if the input contains
+	 * <em>n</em> connected components.
 	 *
 	 * @param input
 	 *            input image with pixels != 0 belonging to foreground.
@@ -152,6 +187,44 @@ public final class ConnectedComponents
 			labelSets.add( Collections.singleton( labelGenerator.next() ) );
 
 		labeling.getMapping().setLabelSets( labelSets );
+	}
+
+	/**
+	 * Label all connected components in the given input image. In the output
+	 * image, all background pixels will be labeled to {} and foreground
+	 * components labeled as {1}, {2}, {3}, etc. where 1, 2, 3 are labels
+	 * returned by {@code labelGenerator.next()}. {@code labelGenerator.next()}
+	 * is called exactly <em>n</em> times if the input contains
+	 * <em>n</em> connected components.
+	 * <p>
+	 * This method differs from
+	 * {@link #labelAllConnectedComponents(RandomAccessible, ImgLabeling, Iterator, StructuringElement, ExecutorService)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='labeling.connectedComponents', type=Computer
+	 * @param input
+	 *            input image with pixels != 0 belonging to foreground.
+	 * @param labelGenerator
+	 *            produces labels for the connected components.
+	 * @param se
+	 *            structuring element to use. 8-connected or 4-connected
+	 *            (respectively n-dimensional analog)
+	 * @param service
+	 *            service providing threads for multi-threading
+	 * @param labeling
+	 *            output labeling in which the connected components will be
+	 *            labeled.
+	 */
+	public static < T extends IntegerType< T >, L, I extends IntegerType< I > > void labelAllConnectedComponents(
+			final RandomAccessible< T > input,
+			final Iterator< L > labelGenerator,
+			final StructuringElement se,
+			final ExecutorService service,
+			final ImgLabeling< L, I > labeling)
+	{
+		labelAllConnectedComponents( input, labeling, labelGenerator, se, service );
 	}
 
 	/**

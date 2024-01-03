@@ -69,6 +69,44 @@ public class DifferenceOfGaussian
 	 * {@link #DoG(double[], double[], RandomAccessible, RandomAccessible, RandomAccessibleInterval, ExecutorService)}
 	 * .
 	 * </p>
+	 * This method differs from
+	 * {@link #DoG(double[], double[], RandomAccessible, RandomAccessibleInterval, ExecutorService)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 *
+	 * @implNote op name="filter.DoG", type=Computer
+	 * @param input
+	 *            the input image extended to infinity (or at least covering the
+	 *            same interval as the dog result image, plus borders for
+	 *            convolution).
+	 * @param sigmaSmaller
+	 *            stddev (in every dimension) of smaller Gaussian.
+	 * @param sigmaLarger
+	 *            stddev (in every dimension) of larger Gaussian.
+	 * @param service
+	 *            service providing threads for multi-threading
+	 * @param dog
+	 *            the Difference-of-Gaussian result image.
+	 */
+	public static < I extends NumericType< I >, T extends NumericType< T > & NativeType< T > > void DoG(
+			final RandomAccessible< I > input,
+			final double[] sigmaSmaller,
+			final double[] sigmaLarger,
+			final ExecutorService service,
+			final RandomAccessibleInterval< T > dog)
+	{
+		DoG( sigmaSmaller, sigmaLarger, input, dog, service );
+	}
+
+	/**
+	 * Compute the difference of Gaussian for the input. Input convolved with
+	 * Gaussian of sigmaSmaller is subtracted from input convolved with Gaussian
+	 * of sigmaLarger (where {@code sigmaLarger > sigmaSmaller}).
+	 * <p>
+	 * Creates an appropriate temporary image and calls
+	 * {@link #DoG(double[], double[], RandomAccessible, RandomAccessible, RandomAccessibleInterval, ExecutorService)}
+	 * .
+	 * </p>
 	 *
 	 * @param sigmaSmaller
 	 *            stddev (in every dimension) of smaller Gaussian.
@@ -95,6 +133,44 @@ public class DifferenceOfGaussian
 		final long[] translation = new long[ dog.numDimensions() ];
 		dog.min( translation );
 		DoG( sigmaSmaller, sigmaLarger, input, Views.translate( g1, translation ), dog, service );
+	}
+
+	/**
+	 * Compute the difference of Gaussian for the input. Input convolved with
+	 * Gaussian of sigmaSmaller is subtracted from input convolved with Gaussian
+	 * of sigmaLarger (where sigmaLarger &gt; sigmaSmaller).
+	 * </p>
+	 * This method differs from
+	 * {@link #DoG(double[], double[], RandomAccessible, RandomAccessible, RandomAccessibleInterval, ExecutorService)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 *
+	 * @implNote op name="filter.DoG", type=Computer
+	 * @param input
+	 *            the input image extended to infinity (or at least covering the
+	 *            same interval as the dog result image, plus borders for
+	 *            convolution).
+	 * @param sigmaSmaller
+	 *            stddev (in every dimension) of smaller Gaussian.
+	 * @param sigmaLarger
+	 *            stddev (in every dimension) of larger Gaussian.
+	 * @param tmp
+	 *            temporary image, must at least cover the same interval as the
+	 *            dog result image.
+	 * @param service
+	 *            how many threads to use for the computation.
+	 * @param dog
+	 *            the Difference-of-Gaussian result image.
+	 */
+	public static < I extends NumericType< I >, T extends NumericType< T > & NativeType< T > > void DoG(
+			final RandomAccessible< I > input,
+			final double[] sigmaSmaller,
+			final double[] sigmaLarger,
+			final RandomAccessible< T > tmp,
+			final ExecutorService service,
+			final RandomAccessibleInterval< T > dog)
+	{
+		DoG(sigmaSmaller, sigmaLarger, input, tmp, dog, service);
 	}
 
 	/**

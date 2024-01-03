@@ -67,11 +67,17 @@ public class Endpoints extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @implNote op name='morphology.endpoints', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > endpoints( final Img< T > source )
 	{
 		return new Endpoints().calculate( source );
 	}
 
+	/**
+	 * @implNote op name='morphology.endpoints', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void endpoints( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Endpoints().calculate( source, target );

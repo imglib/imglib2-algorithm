@@ -88,6 +88,32 @@ public class PartialDerivative
 		}
 	}
 
+	/**
+	 * Compute the partial derivative (central difference approximation) of source
+	 * in a particular dimension:
+	 * {@code d_f( x ) = ( f( x + e ) - f( x - e ) ) / 2},
+	 * where {@code e} is the unit vector along that dimension.
+	 * <p>
+	 * This method differs from
+	 * {@link #gradientCentralDifference2(RandomAccessible, RandomAccessibleInterval, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='filter.gradientCentralDifference2', type=Computer
+	 * @param source
+	 *            source image, has to provide valid data in the interval of the
+	 *            gradient image plus a one pixel border in dimension.
+	 * @param dimension
+	 *            along which dimension the partial derivatives are computed
+	 * @param gradient
+	 *            output image
+	 */
+	public static < T extends NumericType< T > > void gradientCentralDifference2( final RandomAccessible< T > source, final int dimension, final RandomAccessibleInterval< T > gradient)
+	{
+		gradientCentralDifference2( source, gradient, dimension );
+	}
+
 	// parallel version...
 	/**
 	 * Compute the partial derivative (central difference approximation) of source
@@ -163,6 +189,42 @@ public class PartialDerivative
 			f.get();
 	}
 
+	/**
+	 * Compute the partial derivative (central difference approximation) of source
+	 * in a particular dimension:
+	 * {@code d_f( x ) = ( f( x + e ) - f( x - e ) ) / 2},
+	 * where {@code e} is the unit vector along that dimension.
+	 * <p>
+	 * This method differs from
+	 * {@link #gradientCentralDifferenceParallel(RandomAccessible, RandomAccessibleInterval, int, int, ExecutorService)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='filter.gradientCentralDifferenceParallel', type=Computer
+	 * @param source
+	 *            source image, has to provide valid data in the interval of the
+	 *            gradient image plus a one pixel border in dimension.
+	 * @param dimension
+	 *            along which dimension the partial derivatives are computed
+	 * @param nTasks
+	 *            Number of tasks for gradient computation.
+	 * @param es
+	 *            {@link ExecutorService} providing workers for gradient
+	 *            computation. Service is managed (created, shutdown) by caller.
+	 * @param gradient
+	 *            output image
+	 */
+	public static < T extends NumericType< T > > void gradientCentralDifferenceParallel(
+			final RandomAccessible< T > source,
+			final int dimension,
+			final int nTasks,
+			final ExecutorService es,
+			final RandomAccessibleInterval< T > gradient ) throws InterruptedException, ExecutionException
+	{
+		gradientCentralDifferenceParallel( source, gradient, dimension, nTasks, es );
+	}
+
 	// fast version
 	/**
 	 * Compute the partial derivative (central difference approximation) of source
@@ -192,6 +254,33 @@ public class PartialDerivative
 	}
 
 	/**
+	 * Compute the partial derivative (central difference approximation) of source
+	 * in a particular dimension:
+	 * {@code d_f( x ) = ( f( x + e ) - f( x - e ) ) / 2},
+	 * where {@code e} is the unit vector along that dimension.
+	 * <p>
+	 * This method differs from
+	 * {@link #gradientCentralDifference(RandomAccessible, RandomAccessibleInterval, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='filter.gradientCentralDifference', type=Computer
+	 * @param source
+	 *            source image, has to provide valid data in the interval of the
+	 *            gradient image plus a one pixel border in dimension.
+	 * @param dimension
+	 *            along which dimension the partial derivatives are computed
+	 * @param result
+	 *            output image
+	 */
+	public static < T extends NumericType< T > > void gradientCentralDifference( final RandomAccessible< T > source,
+			final int dimension, final RandomAccessibleInterval< T > result)
+	{
+		gradientCentralDifference( source, result, dimension );
+	}
+
+	/**
 	 * Compute the backward difference of source in a particular dimension:
 	 * {@code d_f( x ) = ( f( x ) - f( x - e ) )}
 	 * where {@code e} is the unit vector along that dimension
@@ -214,6 +303,29 @@ public class PartialDerivative
 	}
 
 	/**
+	 * Compute the backward difference of source in a particular dimension:
+	 * {@code d_f( x ) = ( f( x ) - f( x - e ) )}
+	 * where {@code e} is the unit vector along that dimension
+	 * <p>
+	 * This method differs from
+	 * {@link #gradientBackwardDifference(RandomAccessible, RandomAccessibleInterval, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='filter.gradientBackwardDifference', type=Computer
+	 * @param source source image, has to provide valid data in the interval of
+	 *            the gradient image plus a one pixel border in dimension.
+	 * @param dimension along which dimension the partial derivatives are computed
+	 * @param result output image
+	 */
+	public static < T extends NumericType< T > > void gradientBackwardDifference( final RandomAccessible< T > source,
+			final int dimension, final RandomAccessibleInterval< T > result)
+	{
+		gradientBackwardDifference( source, result, dimension );
+	}
+
+	/**
 	 * Compute the forward difference of source in a particular dimension:
 	 * {@code d_f( x ) = ( f( x + e ) - f( x ) )}
 	 * where {@code e} is the unit vector along that dimension
@@ -233,5 +345,28 @@ public class PartialDerivative
 			r.set( f );
 			r.sub( b );
 		} );
+	}
+
+	/**
+	 * Compute the forward difference of source in a particular dimension:
+	 * {@code d_f( x ) = ( f( x + e ) - f( x ) )}
+	 * where {@code e} is the unit vector along that dimension
+	 * <p>
+	 * This method differs from
+	 * {@link #gradientForwardDifference(RandomAccessible, RandomAccessibleInterval, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='filter.gradientForwardDifference', type=Computer
+	 * @param source source image, has to provide valid data in the interval of
+	 *            the gradient image plus a one pixel border in dimension.
+	 * @param dimension along which dimension the partial derivatives are computed
+	 * @param result output image
+	 */
+	public static < T extends NumericType< T > > void gradientForwardDifference( final RandomAccessible< T > source,
+			final int dimension, final RandomAccessibleInterval< T > result)
+	{
+		gradientForwardDifference( source, result, dimension );
 	}
 }

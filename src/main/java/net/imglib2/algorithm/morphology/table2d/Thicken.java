@@ -72,11 +72,17 @@ public class Thicken extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @implNote op name='morphology.thicken', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > thicken( final Img< T > source )
 	{
 		return new Thicken().calculate( source );
 	}
 
+	/**
+	 * @implNote op name='morphology.thicken', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void thicken( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Thicken().calculate( source, target );

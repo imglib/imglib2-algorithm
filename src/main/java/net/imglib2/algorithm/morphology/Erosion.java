@@ -76,6 +76,7 @@ public class Erosion
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
 	 *
+	 * @implNote op name='morphology.erode', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -121,6 +122,7 @@ public class Erosion
 	 * normally unseen parameter is required to operate on
 	 * {@code T extends Comparable & Type}.
 	 *
+	 * @implNote op name='morphology.erode', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -160,6 +162,7 @@ public class Erosion
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
 	 *
+	 * @implNote op name='morphology.erode', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -200,6 +203,7 @@ public class Erosion
 	 * normally unseen parameter is required to operate on
 	 * {@code T extends Comparable & Type}.
 	 *
+	 * @implNote op name='morphology.erode', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -265,6 +269,52 @@ public class Erosion
 		final T maxVal = MorphologyUtils.createVariable( source, target );
 		maxVal.setReal( maxVal.getMaxValue() );
 		erode( source, target, strels, maxVal, numThreads );
+	}
+
+	/**
+	 * Performs the erosion morphological operation, on a {@link RealType}
+	 * {@link RandomAccessible} as a source and writing results in an
+	 * {@link IterableInterval}.
+	 *
+	 * See <a href="http://en.wikipedia.org/wiki/Erosion_(morphology)">
+	 * Erosion_(morphology)</a>.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the target is left untouched.
+	 * <p>
+	 * This method differs from
+	 * {@link #erode(RandomAccessible, IterableInterval, Shape, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='morphology.erode', type=Computer
+	 * @param source
+	 *            the source {@link RandomAccessible}, must be sufficiently
+	 *            padded.
+	 * @param target
+	 *            the target image.
+	 * @param strels
+	 *            the structuring element, as a list of {@link Shape}s.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 */
+	public static < T extends RealType< T >> void erode( final RandomAccessible< T > source, final List< ? extends Shape > strels, final int numThreads, final IterableInterval< T > target ){
+		erode(source, target, strels, numThreads);
 	}
 
 	/**
@@ -366,6 +416,67 @@ public class Erosion
 	}
 
 	/**
+	 * Performs the erosion morphological operation, using a
+	 * {@link RandomAccessible} as a source and writing results in an
+	 * {@link IterableInterval}.
+	 *
+	 * See <a href="http://en.wikipedia.org/wiki/Erosion_(morphology)">
+	 * Erosion_(morphology)</a>.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the target is left untouched.
+	 * <p>
+	 * This method relies on a specified maximal value to start comparing to
+	 * other pixels in the neighborhood. For this code to properly perform
+	 * erosion, it is sufficient that the specified max value is larger (against
+	 * {@link Comparable}) than any of the value found in the source image. This
+	 * normally unseen parameter is required to operate on
+	 * {@code T extends Comparable & Type}.
+	 * <p>
+	 * This method differs from
+	 * {@link #erode(RandomAccessible, IterableInterval, List, Type, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='morphology.erode', type=Computer
+	 * @param source
+	 *            the source {@link RandomAccessible}, must be sufficiently
+	 *            padded.
+	 * @param strels
+	 *            the structuring element, as a list of {@link Shape}s.
+	 * @param maxVal
+	 *            a T containing set to a value larger than any of the values in
+	 *            the source (against {@link Comparable}. This is required to
+	 *            perform a proper mathematical erosion. Because we operate on a
+	 *            generic {@link Type}, it has to be provided manually.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param target
+	 *            the target image.
+	 * @param <T>
+	 *            the type of the source image and the erosion result. Must be a
+	 *            sub-type of {@code T extends Comparable & Type}.
+	 */
+	public static < T extends Type< T > & Comparable< T > > void erode( final RandomAccessible< T > source, final List< ? extends Shape > strels, final T maxVal, final int numThreads, final IterableInterval< T > target ){
+		erode(source, target, strels, maxVal, numThreads);
+	}
+
+	/**
 	 * Performs the erosion morphological operation, on a {@link RealType}
 	 * {@link RandomAccessible} as a source and writing results in an
 	 * {@link IterableInterval}.
@@ -400,6 +511,47 @@ public class Erosion
 		final T maxVal = MorphologyUtils.createVariable( source, target );
 		maxVal.setReal( maxVal.getMaxValue() );
 		erode( source, target, strel, maxVal, numThreads );
+	}
+
+	/**
+	 * Performs the erosion morphological operation, on a {@link RealType}
+	 * {@link RandomAccessible} as a source and writing results in an
+	 * {@link IterableInterval}.
+	 *
+	 * See <a href="http://en.wikipedia.org/wiki/Erosion_(morphology)">
+	 * Erosion_(morphology)</a>.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * This method differs from
+	 * {@link #erode(RandomAccessible, IterableInterval, Shape, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='morphology.erode', type=Computer
+	 * @param source
+	 *            the source {@link RandomAccessible}, must be sufficiently
+	 *            padded.
+	 * @param strel
+	 *            the structuring element, as a {@link Shape}.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param target
+	 *            the target image.
+	 */
+	public static < T extends RealType< T >> void erode( final RandomAccessible< T > source, final Shape strel, final int numThreads, final IterableInterval< T > target ){
+		erode(source, target, strel, numThreads);
 	}
 
 	/**
@@ -568,6 +720,62 @@ public class Erosion
 	}
 
 	/**
+	 * Performs the erosion morphological operation, using a
+	 * {@link RandomAccessible} as a source and writing results in an
+	 * {@link IterableInterval}.
+	 *
+	 * See <a href="http://en.wikipedia.org/wiki/Erosion_(morphology)">
+	 * Erosion_(morphology)</a>.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * This method relies on a specified maximal value to start comparing to
+	 * other pixels in the neighborhood. For this code to properly perform
+	 * erosion, it is sufficient that the specified max value is larger (against
+	 * {@link Comparable}) than any of the value found in the source image. This
+	 * normally unseen parameter is required to operate on
+	 * {@code T extends Comparable & Type}.
+	 * <p>
+	 * This method differs from
+	 * {@link #erode(RandomAccessible, IterableInterval, Shape, Type, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='morphology.erode', type=Computer
+	 * @param source
+	 *            the source {@link RandomAccessible}, must be sufficiently
+	 *            padded.
+	 * @param strel
+	 *            the structuring element, as a {@link Shape}.
+	 * @param maxVal
+	 *            a T containing set to a value larger than any of the values in
+	 *            the source (against {@link Comparable}. This is required to
+	 *            perform a proper mathematical erosion. Because we operate on a
+	 *            generic {@link Type}, it has to be provided manually.
+	 * @param numThreads
+	 *            the number of threads to use for the calculation.
+	 * @param target
+	 *            the target image.
+	 * @param <T>
+	 *            the type of the source image and the erosion result. Must be a
+	 *            sub-type of {@code T extends Comparable & Type}.
+	 */
+	public static < T extends Type< T > & Comparable< T > > void erode( final RandomAccessible< T > source, final Shape strel, final T maxVal, int numThreads, final IterableInterval< T > target ){
+		erode(source, target, strel, maxVal, numThreads);
+	}
+
+	/**
 	 * Performs the erosion morphological operation, on a {@link RealType}
 	 * {@link Img} using a list of {@link Shape}s as a flat structuring element.
 	 *
@@ -597,6 +805,7 @@ public class Erosion
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
 	 *
+	 * @implNote op name='morphology.erode', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -655,6 +864,7 @@ public class Erosion
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
 	 *
+	 * @implNote op name='morphology.erode', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -707,6 +917,7 @@ public class Erosion
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
 	 *
+	 * @implNote op name='morphology.erode', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -767,6 +978,7 @@ public class Erosion
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
 	 *
+	 * @implNote op name='morphology.erode', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -821,6 +1033,7 @@ public class Erosion
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
 	 *
+	 * @implNote op name='morphology.erode', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -870,6 +1083,7 @@ public class Erosion
 	 * normally unseen parameter is required to operate on
 	 * {@code T extends Comparable & Type}.
 	 *
+	 * @implNote op name='morphology.erode', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -913,6 +1127,7 @@ public class Erosion
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 *
+	 * @implNote op name='morphology.erode', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -962,6 +1177,7 @@ public class Erosion
 	 * normally unseen parameter is required to operate on
 	 * {@code T extends Comparable & Type}.
 	 *
+	 * @implNote op name='morphology.erode', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval

@@ -65,11 +65,17 @@ public class Life extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @implNote op name='morphology.life', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > life( final Img< T > source )
 	{
 		return new Life().calculate( source );
 	}
 
+	/**
+	 * @implNote op name='morphology.life', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void life( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Life().calculate( source, target );

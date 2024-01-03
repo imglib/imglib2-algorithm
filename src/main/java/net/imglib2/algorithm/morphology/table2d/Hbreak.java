@@ -65,11 +65,17 @@ public class Hbreak extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @implNote op name='morphology.hbreak', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > hbreak( final Img< T > source )
 	{
 		return new Hbreak().calculate( source );
 	}
 
+	/**
+	 * @implNote op name='morphology.hbreak', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void hbreak( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Hbreak().calculate( source, target );

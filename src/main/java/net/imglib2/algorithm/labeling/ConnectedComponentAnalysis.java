@@ -117,6 +117,7 @@ public class ConnectedComponentAnalysis
 	 * generalization for higher dimenions over a binary mask. {@code mask} and
 	 * {@code labeling} are expected to have equal min and max.
 	 *
+	 * @implNote op name='labeling.connectedComponents', type=Computer
 	 * @param mask
 	 *            Boolean mask to distinguish foreground ({@code true}) from
 	 *            background ({@code false}).
@@ -173,6 +174,44 @@ public class ConnectedComponentAnalysis
 	/**
 	 *
 	 * Implementation of connected component analysis that uses
+	 * {@link IntArrayRankedUnionFind} to find sets of pixels that are connected
+	 * with respect to a neighborhood ({@code shape}) over a binary mask.
+	 * {@code mask}
+	 * and {@code labeling} are expected to have equal min and max.
+	 * <p>
+	 * This method differs from
+	 * {@link #connectedComponents(RandomAccessibleInterval, RandomAccessibleInterval, Shape)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='labeling.connectedComponents', type=Computer
+	 * @param mask
+	 *            Boolean mask to distinguish foreground ({@code true}) from
+	 *            background ({@code false}).
+	 * @param shape
+	 *            Connectivity of connected components, e.g. 4-neighborhood
+	 *            ({@link DiamondShape}), 8-neighborhood
+	 *            ({@link RectangleNeighborhood}) and their generalisations for
+	 *            higher dimensions.
+	 * @param labeling
+	 *            Output parameter to store labeling: background pixels are
+	 *            labeled zero, foreground pixels are greater than zero: 1, 2,
+	 *            ..., N. Note that initially all pixels are expected to be zero
+	 *            as background values will not be written.
+	 */
+	public static < B extends BooleanType< B >, L extends IntegerType< L > > void connectedComponents(
+			final RandomAccessibleInterval< B > mask,
+			final Shape shape,
+			final RandomAccessibleInterval< L > labeling)
+	{
+		connectedComponents(mask, labeling, shape);
+	}
+
+
+	/**
+	 *
+	 * Implementation of connected component analysis that uses
 	 * {@link UnionFind} to find sets of pixels that are connected with respect
 	 * to a neighborhood ({@code shape}) over a binary mask. {@code mask} and
 	 * {@code labeling} are expected to have equal min and max.
@@ -214,6 +253,55 @@ public class ConnectedComponentAnalysis
 
 		final UnionFind uf = makeUnion( mask, labeling, shape, unionFindFactory, idForPixel );
 		UnionFind.relabel( mask, labeling, uf, idForPixel, idForSet );
+	}
+
+	/**
+	 *
+	 * Implementation of connected component analysis that uses
+	 * {@link UnionFind} to find sets of pixels that are connected with respect
+	 * to a neighborhood ({@code shape}) over a binary mask. {@code mask} and
+	 * {@code labeling} are expected to have equal min and max.
+	 * <p>
+	 * This method differs from
+	 * {@link #connectedComponents(RandomAccessibleInterval, RandomAccessibleInterval, Shape, LongFunction, ToLongBiFunction, LongUnaryOperator)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='labeling.connectedComponents', type=Computer
+	 * @param mask
+	 *            Boolean mask to distinguish foreground ({@code true}) from
+	 *            background ({@code false}).
+	 * @param shape
+	 *            Connectivity of connected components, e.g. 4-neighborhood
+	 *            ({@link DiamondShape}), 8-neighborhood
+	 *            ({@link RectangleNeighborhood}) and their generalisations for
+	 *            higher dimensions.
+	 * @param unionFindFactory
+	 *            Creates appropriate {@link UnionFind} data structure for size
+	 *            of {@code labeling}, e.g. {@link IntArrayRankedUnionFind} of
+	 *            appropriate size.
+	 * @param idForPixel
+	 *            Create id from pixel location and value. Multiple calls with
+	 *            the same argument should always return the same result.
+	 * @param idForSet
+	 *            Create id for a set from the root id of a set. Multiple calls
+	 *            with the same argument should always return the same result.
+	 * @param labeling
+	 *            Output parameter to store labeling: background pixels are
+	 *            labeled zero, foreground pixels are greater than zero: 1, 2,
+	 *            ..., N. Note that this is expected to be zero as background
+	 *            values will not be written.
+	 */
+	public static < B extends BooleanType< B >, L extends IntegerType< L > > void connectedComponents(
+			final RandomAccessibleInterval< B > mask,
+			final Shape shape,
+			final LongFunction< UnionFind > unionFindFactory,
+			final ToLongBiFunction< Localizable, L > idForPixel,
+			final LongUnaryOperator idForSet,
+			final RandomAccessibleInterval< L > labeling)
+	{
+		connectedComponents( mask, labeling, shape, unionFindFactory, idForPixel, idForSet );
 	}
 
 	private static < B extends BooleanType< B >, L extends IntegerType< L > > UnionFind makeUnion(

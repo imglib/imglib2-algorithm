@@ -77,7 +77,8 @@ public class BlackTopHat
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
-	 * 
+	 *
+	 * @implNote op name='morphology.blackTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -120,7 +121,8 @@ public class BlackTopHat
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.blackTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -159,7 +161,8 @@ public class BlackTopHat
 	 * limited to flat structuring elements, only having {@code on/off} pixels,
 	 * contrary to grayscale structuring elements. This allows to simply use a
 	 * {@link Shape} as a type for these structuring elements.
-	 * 
+	 *
+	 * @implNote op name='morphology.blackTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -196,7 +199,8 @@ public class BlackTopHat
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on {@code T extends Comparable & Sub}.
-	 * 
+	 *
+	 * @implNote op name='morphology.blackTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -266,6 +270,57 @@ public class BlackTopHat
 	{
 		Closing.close( source, target, strels, numThreads );
 		MorphologyUtils.subAAB2( target, source, numThreads );
+	}
+
+	/**
+	 * Performs the black top-hat (or bottom-hat) morphological operation on a
+	 * {@link RealType} source {@link RandomAccessible}, using a list of
+	 * {@link Shape}s as a structuring element, and writes the result on a
+	 * specified target which must be an {@link IterableInterval}.
+	 *
+	 * See <a href="http://en.wikipedia.org/wiki/Top-hat_transform"> Top-hat
+	 * transform</a>.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the target receives a copy of the source.
+	 * <p>
+	 * This method differs from
+	 * {@link #blackTopHat(RandomAccessible, IterableInterval, List, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='morphology.blackTopHat', type=Computer
+	 * @param source
+	 *            the {@link RandomAccessible} to operate on.
+	 * @param strels
+	 *            the list of {@link Shape}s that serves as a structuring
+	 *            element.
+	 * @param numThreads
+	 *            the number of threads to use for calculation.
+	 * @param target
+	 *            the {@link IterableInterval} to write the results on.
+	 * @param <T>
+	 *            the type of the source and the result. Must extends
+	 *            {@link RealType}.
+	 */
+	public static < T extends RealType< T > > void blackTopHat( final RandomAccessible< T > source, final List< ? extends Shape > strels, final int numThreads , final IterableInterval<T> target)
+	{
+		blackTopHat( source, target, strels, numThreads );
 	}
 
 	/**

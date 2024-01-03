@@ -88,6 +88,7 @@ public class StructuringElements
 	 * This methods relies on heuristics to determine automatically what
 	 * decomposition level to use.
 	 *
+	 * @implNote op name='create.disk', type=Function
 	 * @param radius
 	 *            the radius of the disk, so that it extends over
 	 *            {@code 2 × radius + 1} in all dimensions
@@ -145,6 +146,7 @@ public class StructuringElements
 	 * select the level of approximation. For other dimensionalities, no
 	 * optimization are available yet and the parameter is ignored.
 	 *
+	 * @implNote op name='create.disk', type=Function
 	 * @param radius
 	 *            the radius of the disk, so that it extends over
 	 *            {@code 2 × radius + 1} in all dimensions
@@ -291,6 +293,7 @@ public class StructuringElements
 	 * dimensionality and target dimensionality do not match. Non-decomposed
 	 * version are dimension-generic.
 	 *
+	 * @implNote op name='create.square', type=Function
 	 * @param radius
 	 *            the radius of the square.
 	 * @param dimensionality
@@ -340,6 +343,7 @@ public class StructuringElements
 	 * This method determines whether it is worth returning a decomposed strel
 	 * based on simple heuristics.
 	 *
+	 * @implNote op name='create.square', type=Function
 	 * @param radius
 	 *            the radius of the square.
 	 * @param dimensionality
@@ -370,6 +374,7 @@ public class StructuringElements
 	 * of orthogonal lines and yield the exact same results on any of the
 	 * morphological operations.
 	 *
+	 * @implNote op name='create.rectangle', type=Function
 	 * @param halfSpans
 	 *            an {@code int[]} array containing the half-span of the
 	 *            symmetric rectangle in each dimension. The total extent of the
@@ -423,6 +428,7 @@ public class StructuringElements
 	 * morphological operations. This method uses a simple heuristic to decide
 	 * whether to decompose the rectangle or not.
 	 *
+	 * @implNote op name='create.rectangle', type=Function
 	 * @param halfSpans
 	 *            an {@code int[]} array containing the half-span of the
 	 *            symmetric rectangle in each dimension. The total extent of the
@@ -478,6 +484,7 @@ public class StructuringElements
 	 * fall back on a linear decomposition, still very effective (see [1] as
 	 * well).
 	 *
+	 * @implNote op name='create.diamond', type=Function
 	 * @param radius
 	 *            the desired radius of the diamond structuring element. The
 	 *            strel will extend over {@code 2 × radius + 1} in all
@@ -527,6 +534,7 @@ public class StructuringElements
 	 * fall back on a linear decomposition, still very effective (see [1] as
 	 * well).
 	 *
+	 * @implNote op name='create.diamond', type=Function
 	 * @param radius
 	 *            the desired radius of the diamond structuring element. The
 	 *            strel will extend over {@code 2 × radius + 1} in all
@@ -622,12 +630,14 @@ public class StructuringElements
 	 *
 	 * The importance of periodic lines is explained in [1].
 	 *
+	 * @implNote op name='create.periodicLine', type=Function
 	 * @param span
 	 *            the span of the neighborhood, so that it will iterate over
 	 *            {@code 2 × span + 1} pixels.
 	 * @param increments
 	 *            the values by which each element of the position vector is to
 	 *            be incremented when iterating.
+	 * @return a {@link Shape} structuring element.
 	 * @see <a
 	 *      href="http://www.sciencedirect.com/science/article/pii/0167865596000669">[1]</a>
 	 *      Jones and Soilles.Periodic lines: Definition, cascades, and

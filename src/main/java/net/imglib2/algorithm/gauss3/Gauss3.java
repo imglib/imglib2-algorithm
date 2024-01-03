@@ -74,6 +74,7 @@ public final class Gauss3
 	 * {@link Parallelization} context. (By default, it will use the
 	 * {@link ForkJoinPool#commonPool() common ForkJoinPool})
 	 *
+	 * @implNote op name='filter.gauss', type=Computer
 	 * @param sigma
 	 *            standard deviation of isotropic Gaussian.
 	 * @param source
@@ -116,6 +117,7 @@ public final class Gauss3
 	 * {@link Parallelization} context. (By default, it will use the
 	 * {@link ForkJoinPool#commonPool() common ForkJoinPool})
 	 *
+	 * @implNote op name='filter.gauss', type=Computer
 	 * @param sigma
 	 *            standard deviation in every dimension.
 	 * @param source

@@ -86,7 +86,8 @@ public final class BuildComponentTree< T extends Type< T >, C extends PartialCom
 	 * {@link PartialComponent.Handler} which is responsible for building up the
 	 * tree structure. An implementations of {@link PartialComponent.Handler} is
 	 * provided for example by {@link PixelListComponentTree}.
-	 * 
+	 *
+	 * @implNote op name='componenttree.buildComponentTree',type=Function
 	 * @param input
 	 *            input image.
 	 * @param componentGenerator
@@ -110,7 +111,8 @@ public final class BuildComponentTree< T extends Type< T >, C extends PartialCom
 	 * {@link PartialComponent.Handler} which is responsible for building up the
 	 * tree structure. An implementations of {@link PartialComponent.Handler} is
 	 * provided for example by {@link PixelListComponentTree}.
-	 * 
+	 *
+	 * @implNote op name='componenttree.buildComponentTree',type=Function
 	 * @param input
 	 *            input image of a comparable value type.
 	 * @param componentGenerator

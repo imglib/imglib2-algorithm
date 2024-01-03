@@ -66,11 +66,17 @@ public class Remove extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @implNote op name='morphology.remove', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > remove( final Img< T > source )
 	{
 		return new Remove().calculate( source );
 	}
 
+	/**
+	 * @implNote op name='morphology.remove', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void remove( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Remove().calculate( source, target );

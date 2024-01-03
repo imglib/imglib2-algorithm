@@ -63,7 +63,8 @@ public class Closing
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strels
@@ -104,7 +105,8 @@ public class Closing
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strels
@@ -138,7 +140,8 @@ public class Closing
 	 * >Closing_(morphology)</a>.
 	 * <p>
 	 * The closing operation is simply a dilation followed by an erosion.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strel
@@ -174,7 +177,8 @@ public class Closing
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strel
@@ -249,6 +253,57 @@ public class Closing
 	}
 
 	/**
+	 * Performs the morphological closing operation on a {@link RealType} source
+	 * {@link RandomAccessible}, using a list of {@link Shape}s as a structuring
+	 * element, and writes the result on a specified target which must be an
+	 * {@link IterableInterval}. See <a
+	 * href="http://en.wikipedia.org/wiki/Closing_(morphology)"
+	 * >Closing_(morphology)</a>.
+	 * <p>
+	 * The closing operation is simply a dilation followed by an erosion.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the target is left untouched.
+	 * <p>
+	 * This method differs from
+	 * {@link #close(RandomAccessible, IterableInterval, List, int)
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='morphology.close', type=Computer
+	 * @param source
+	 *            the {@link RandomAccessible} to operate on.
+	 * @param strels
+	 *            the structuring element, as a list of {@link Shape}s.
+	 * @param numThreads
+	 *            the number of threads to use for calculation.
+	 * @param target
+	 *            the {@link IterableInterval} to write the results on.
+	 * @param <T>
+	 *            the type of the source and the result. Must extends
+	 *            {@link RealType}.
+	 */
+	public static < T extends RealType< T > > void close( final RandomAccessible< T > source, final List< ? extends Shape > strels, final int numThreads, final IterableInterval< T > target)
+	{
+		close(source, target, strels, numThreads);
+	}
+
+	/**
 	 * Performs the morphological closing operation on a source
 	 * {@link RandomAccessible}, using a list of {@link Shape}s as a structuring
 	 * element, and writes the result on a specified target which must be an
@@ -282,7 +337,7 @@ public class Closing
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
 	 * @param source
 	 *            the {@link RandomAccessible} to operate on.
 	 * @param target
@@ -314,6 +369,71 @@ public class Closing
 
 		final ExtendedRandomAccessibleInterval< T, IntervalView< T >> extended = Views.extendValue( translated, maxVal );
 		Erosion.erode( extended, target, strels, maxVal, numThreads );
+	}
+
+	/**
+	 * Performs the morphological closing operation on a source
+	 * {@link RandomAccessible}, using a list of {@link Shape}s as a structuring
+	 * element, and writes the result on a specified target which must be an
+	 * {@link IterableInterval}. See <a
+	 * href="http://en.wikipedia.org/wiki/Closing_(morphology)"
+	 * >Closing_(morphology)</a>.
+	 * <p>
+	 * The closing operation is simply a dilation followed by an erosion.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * The structuring element is specified through a list of {@link Shape}s, to
+	 * allow for performance optimization through structuring element
+	 * decomposition. Each shape is processed in order as given in the list. If
+	 * the list is empty, the target is left untouched.
+	 * <p>
+	 * This method relies on specified minimal and maximal values to start
+	 * comparing to other pixels in the neighborhood. For this code to properly
+	 * perform closing, it is sufficient that the specified max value is larger
+	 * (against {@link Comparable}) than any of the value found in the source
+	 * image, and conversely for the min value. These normally unseen parameters
+	 * are required to operate on
+	 * {@code T extends Comparable & Type}.
+	 * <p>
+	 * This method differs from
+	 * {@link #close(RandomAccessible, IterableInterval, Shape, Type, Type, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='morphology.close', type=Computer
+	 * @param source
+	 *            the {@link RandomAccessible} to operate on.
+	 * @param strels
+	 *            the structuring element, as a list of {@link Shape}s.
+	 * @param minVal
+	 *            a T containing set to a value smaller than any of the values
+	 *            in the source (against {@link Comparable}.
+	 * @param maxVal
+	 *            a T containing set to a value larger than any of the values in
+	 *            the source (against {@link Comparable}.
+	 * @param numThreads
+	 *            the number of threads to use for calculation.
+	 * @param target
+	 *            the {@link IterableInterval} to write the results on.
+	 * @param <T>
+	 *            the type of the source and the result. Must extends
+	 *            {@code Compparable}.
+	 */
+	public static < T extends Type< T > & Comparable< T > > void close( final RandomAccessible< T > source, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads, final IterableInterval< T > target )
+	{
+		close(source, target, strels, minVal, maxVal, numThreads);
 	}
 
 	/**
@@ -357,6 +477,52 @@ public class Closing
 		final T minVal = MorphologyUtils.createVariable( source, target );
 		minVal.setReal( minVal.getMinValue() );
 		close( source, target, strel, minVal, maxVal, numThreads );
+	}
+
+	/**
+	 * Performs the morphological closing operation on a {@link RealType} source
+	 * {@link RandomAccessible}, using a {@link Shape} as a structuring element,
+	 * and writes the result on a specified target which must be an
+	 * {@link IterableInterval}. See <a
+	 * href="http://en.wikipedia.org/wiki/Closing_(morphology)"
+	 * >Closing_(morphology)</a>.
+	 * <p>
+	 * The closing operation is simply a dilation followed by an erosion.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * This method differs from
+	 * {@link #close(RandomAccessible, IterableInterval, Shape, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='morphology.close', type=Computer
+	 * @param source
+	 *            the {@link RandomAccessible} to operate on.
+	 * @param strel
+	 *            the {@link Shape} that serves as a structuring element.
+	 * @param numThreads
+	 *            the number of threads to use for calculation.
+	 * @param target
+	 *            the {@link IterableInterval} to write the results on.
+	 * @param <T>
+	 *            the type of the source and the result. Must extends
+	 *            {@link RealType}.
+	 */
+	public static < T extends RealType< T > > void close( final RandomAccessible< T > source, final Shape strel, final int numThreads, final IterableInterval< T > target )
+	{
+		close(source, target, strel, numThreads);
 	}
 
 	/**
@@ -423,6 +589,66 @@ public class Closing
 	}
 
 	/**
+	 * Performs the morphological closing operation on a source
+	 * {@link RandomAccessible}, using a {@link Shape} as a structuring element,
+	 * and writes the result on a specified target which must be an
+	 * {@link IterableInterval}. See <a
+	 * href="http://en.wikipedia.org/wiki/Closing_(morphology)"
+	 * >Closing_(morphology)</a>.
+	 * <p>
+	 * The closing operation is simply a dilation followed by an erosion.
+	 * <p>
+	 * <b>Careful: Target must point to a different structure than source.</b>
+	 * In place operation will not work but will not generate an error.
+	 * <p>
+	 * It is the caller responsibility to ensure that the source is sufficiently
+	 * padded to properly cover the target range plus the shape size. See
+	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
+	 * <p>
+	 * It is limited to flat structuring elements, only having
+	 * {@code on/off} pixels, contrary to grayscale structuring elements.
+	 * This allows to simply use a {@link Shape} as a type for these structuring
+	 * elements.
+	 * <p>
+	 * This method relies on specified minimal and maximal values to start
+	 * comparing to other pixels in the neighborhood. For this code to properly
+	 * perform closing, it is sufficient that the specified max value is larger
+	 * (against {@link Comparable}) than any of the value found in the source
+	 * image, and conversely for the min value. These normally unseen parameters
+	 * are required to operate on
+	 * {@code T extends Comparable & Type}.
+	 * <p>
+	 * This method differs from
+	 * {@link #close(RandomAccessible, IterableInterval, Shape, Type, Type, int)}
+	 * only in that its parameter order is tailored to an Op. The output comes
+	 * last, and the primary input (the input image) comes first.
+	 * </p>
+	 *
+	 * @implNote op name='morphology.close', type=Computer
+	 * @param source
+	 *            the {@link RandomAccessible} to operate on.
+	 * @param strel
+	 *            the {@link Shape} that serves as a structuring element.
+	 * @param minVal
+	 *            a T containing set to a value smaller than any of the values
+	 *            in the source (against {@link Comparable}.
+	 * @param maxVal
+	 *            a T containing set to a value larger than any of the values in
+	 *            the source (against {@link Comparable}.
+	 * @param numThreads
+	 *            the number of threads to use for calculation.
+	 * @param target
+	 *            the {@link IterableInterval} to write the results on.
+	 * @param <T>
+	 *            the type of the source and the result. Must extends
+	 *            {@code Comparable}.
+	 */
+	public static < T extends Type< T > & Comparable< T > > void close( final RandomAccessible< T > source, final Shape strel, final T minVal, final T maxVal, final int numThreads, final IterableInterval< T > target )
+	{
+		close(source, target, strel, minVal, maxVal, numThreads);
+	}
+
+	/**
 	 * Performs the closing morphological operation, on a source
 	 * {@link RandomAccessibleInterval} using a list of {@link Shape}s as a flat
 	 * structuring element.
@@ -443,7 +669,8 @@ public class Closing
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -495,7 +722,8 @@ public class Closing
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -546,7 +774,8 @@ public class Closing
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -598,7 +827,8 @@ public class Closing
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval

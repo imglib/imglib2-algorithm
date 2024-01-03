@@ -57,11 +57,17 @@ public class Thin2 extends Abstract3x3TableOperation
 		return true;
 	}
 
+	/**
+	 * @implNote op name='morphology.thin2', type=Function
+	 */
 	public static < T extends BooleanType< T > > Img< T > thin2( final Img< T > source )
 	{
 		return new Thin2().calculate( source );
 	}
 
+	/**
+	 * @implNote op name='morphology.thin2', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void thin2( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Thin2().calculate( source, target );
