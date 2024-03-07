@@ -33,8 +33,11 @@
  */
 package net.imglib2.algorithm.blocks.convert;
 
+import java.util.function.Supplier;
+
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
+import net.imglib2.converter.Converter;
 import net.imglib2.type.NativeType;
 
 /**
@@ -76,5 +79,15 @@ public class Convert
 	UnaryBlockOperator< S, T > convert( final S sourceType, final T targetType, final ClampType clamp )
 	{
 		return new DefaultUnaryBlockOperator<>( sourceType, targetType, new ConvertBlockProcessor<>( sourceType, targetType, clamp ) );
+	}
+
+	/**
+	 * Create {@link UnaryBlockOperator} to convert blocks between {@code
+	 * sourceType} and {@code targetType} with the specified {@code Converter}.
+	 */
+	public static < S extends NativeType< S >, T extends NativeType< T > >
+	UnaryBlockOperator< S, T > convert( final S sourceType, final T targetType, Supplier< Converter< ? super S, T > > converterSupplier )
+	{
+		return new DefaultUnaryBlockOperator<>( sourceType, targetType, new ConverterBlockProcessor<>( sourceType, targetType, converterSupplier ) );
 	}
 }
