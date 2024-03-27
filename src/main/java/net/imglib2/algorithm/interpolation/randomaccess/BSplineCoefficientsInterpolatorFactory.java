@@ -193,11 +193,11 @@ public class BSplineCoefficientsInterpolatorFactory<T extends RealType<T>, S ext
 				coefficients,
 				((OutOfBoundsFactory<S,RandomAccessibleInterval<S>>)oobFactory));
 
-		S type = Util.getTypeFromInterval( coefficients );
+		S type = coefficients.getType();
 		if( order % 2 == 0 )
-			return new BSplineCoefficientsInterpolatorEven<S>( order, coefExt, type.copy() );
+			return new BSplineCoefficientsInterpolatorEven<S>( order, coefExt, type.createVariable() );
 		else
-			return new BSplineCoefficientsInterpolatorOdd<S>( order, coefExt, type.copy() );
+			return new BSplineCoefficientsInterpolatorOdd<S>( order, coefExt, type.createVariable() );
 	}
 
 	@Override
