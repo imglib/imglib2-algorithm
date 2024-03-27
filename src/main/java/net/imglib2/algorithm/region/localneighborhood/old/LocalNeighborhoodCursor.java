@@ -239,6 +239,12 @@ public class LocalNeighborhoodCursor< T > implements Cursor< T >
 	}
 
 	@Override
+	public T getType()
+	{
+		return source.getType();
+	}
+
+	@Override
 	public T next()
 	{
 		fwd();

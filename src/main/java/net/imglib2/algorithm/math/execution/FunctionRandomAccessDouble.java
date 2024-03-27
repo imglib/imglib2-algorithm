@@ -87,12 +87,24 @@ public class FunctionRandomAccessDouble< O extends RealType< O > > extends Point
 			this.scrap.setReal( this.f.evalDouble( this.point ) );
 			return this.scrap;
 		}
+
+		@Override
+		public O getType()
+		{
+			return scrap;
+		}
 	}
 	
 	@Override
 	public O get()
 	{
 		return this.sampler.get();
+	}
+
+	@Override
+	public O getType()
+	{
+		return this.sampler.getType();
 	}
 
 	@Override

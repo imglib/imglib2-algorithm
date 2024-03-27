@@ -99,6 +99,12 @@ public class PairOfPointsNeighborhood< T > extends AbstractLocalizable implement
 		}
 
 		@Override
+		public T getType()
+		{
+			return source.getType();
+		}
+
+		@Override
 		public void fwd()
 		{
 			index++;
@@ -240,6 +246,12 @@ public class PairOfPointsNeighborhood< T > extends AbstractLocalizable implement
 	public T firstElement()
 	{
 		return cursor().next();
+	}
+
+	@Override
+	public T getType()
+	{
+		return ra.getType();
 	}
 
 	@Override

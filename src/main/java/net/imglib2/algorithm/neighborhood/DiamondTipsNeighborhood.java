@@ -118,6 +118,12 @@ public class DiamondTipsNeighborhood< T > extends AbstractLocalizable implements
 	}
 
 	@Override
+	public T getType()
+	{
+		return sourceRandomAccess.getType();
+	}
+
+	@Override
 	public Object iterationOrder()
 	{
 		return this;
@@ -273,6 +279,12 @@ public class DiamondTipsNeighborhood< T > extends AbstractLocalizable implements
 		public T get()
 		{
 			return source.get();
+		}
+
+		@Override
+		public T getType()
+		{
+			return source.getType();
 		}
 
 		@Override

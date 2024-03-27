@@ -234,6 +234,12 @@ public class VolumetricSearch< I extends RealInterval > implements RandomAccessi
 		}
 
 		@Override
+		public List< I > getType()
+		{
+			return new LinkedList<>();
+		}
+
+		@Override
 		public VolumetricSearchRandomAccess copy()
 		{
 			final VolumetricSearchRandomAccess myCopy = new VolumetricSearchRandomAccess();

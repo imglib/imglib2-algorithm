@@ -419,6 +419,12 @@ public class EllipseCursor< T > implements Cursor< T >
 	}
 
 	@Override
+	public T getType()
+	{
+		return ra.getType();
+	}
+
+	@Override
 	public Cursor< T > copy()
 	{
 		return new EllipseCursor<>( this );

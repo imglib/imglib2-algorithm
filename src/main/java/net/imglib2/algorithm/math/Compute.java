@@ -372,6 +372,12 @@ public class Compute
 			{
 				return this.randomAccess();
 			}
+
+			@Override
+			public O getType()
+			{
+				return outputType;
+			}
 		}, interval );
 	}
 	
