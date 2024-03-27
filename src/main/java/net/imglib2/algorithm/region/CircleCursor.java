@@ -336,6 +336,12 @@ public class CircleCursor< T > implements Cursor< T >
 	}
 
 	@Override
+	public T getType()
+	{
+		return ra.getType();
+	}
+
+	@Override
 	public void jumpFwd( final long steps )
 	{
 		for ( int i = 0; i < steps; i++ )

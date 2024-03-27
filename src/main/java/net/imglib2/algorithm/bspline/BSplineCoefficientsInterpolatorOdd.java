@@ -85,7 +85,13 @@ public class BSplineCoefficientsInterpolatorOdd<T extends RealType<T>> extends F
 	{
 		return kernel.get();
 	}
-	
+
+	@Override
+	public T getType()
+	{
+		return kernel.type();
+	}
+
 	@Override
 	public BSplineCoefficientsInterpolatorOdd<T> copy()
 	{

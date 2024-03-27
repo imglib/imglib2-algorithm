@@ -189,6 +189,12 @@ public class PeriodicLineShape implements Shape
 		}
 
 		@Override
+		public Neighborhood< T > getType()
+		{
+			return cursor().getType();
+		}
+
+		@Override
 		public Object iterationOrder()
 		{
 			return new FlatIterationOrder( this );

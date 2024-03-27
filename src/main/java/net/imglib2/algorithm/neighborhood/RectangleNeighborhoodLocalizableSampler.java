@@ -114,6 +114,12 @@ public abstract class RectangleNeighborhoodLocalizableSampler< T > extends Abstr
 	}
 
 	@Override
+	public Neighborhood< T > getType()
+	{
+		return currentNeighborhood;
+	}
+
+	@Override
 	public void localize( final int[] position )
 	{
 		currentNeighborhood.localize( position );

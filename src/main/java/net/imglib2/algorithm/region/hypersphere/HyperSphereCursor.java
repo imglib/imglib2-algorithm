@@ -256,4 +256,10 @@ public class HyperSphereCursor< T > implements Cursor< T >
 	{
 		return new HyperSphereCursor< T >( this );
 	}
+
+	@Override
+	public T getType()
+	{
+		return source.getType();
+	}
 }

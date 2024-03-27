@@ -106,6 +106,12 @@ public class SamplingLineIterator< T > extends AbstractLineIterator implements S
 	}
 
 	@Override
+	public T getType()
+	{
+		return processLine.getType();
+	}
+
+	@Override
 	public SamplingLineIterator< T > copy()
 	{
 		// new instance with same properties
