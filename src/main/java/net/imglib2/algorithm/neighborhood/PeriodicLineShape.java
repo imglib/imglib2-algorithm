@@ -239,9 +239,9 @@ public class PeriodicLineShape implements Shape
 		}
 
 		@Override
-		public int numDimensions()
+		public Neighborhood< T > getType()
 		{
-			return source.numDimensions();
+			return randomAccess().getType();
 		}
 	}
 

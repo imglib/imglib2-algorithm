@@ -238,6 +238,8 @@ class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< 
 		@Override public Cursor< T > localizingCursor() {throw new UnsupportedOperationException();}
 		@Override public Object iterationOrder() {throw new UnsupportedOperationException();}
 		@Override public RandomAccess< T > randomAccess() {throw new UnsupportedOperationException();}
-		@Override public ImgFactory< T > factory() {throw new UnsupportedOperationException();}@Override public Img< T > copy() {throw new UnsupportedOperationException();}
+		@Override public ImgFactory< T > factory() {throw new UnsupportedOperationException();}
+		@Override public Img< T > copy() {throw new UnsupportedOperationException();}
+		@Override public T getType() {throw new UnsupportedOperationException();}
 	}
 }
