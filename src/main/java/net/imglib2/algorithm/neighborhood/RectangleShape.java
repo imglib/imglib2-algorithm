@@ -224,6 +224,12 @@ public class RectangleShape implements Shape
 		{
 			return new RectangleNeighborhoodRandomAccess< T >( source, span, factory, interval );
 		}
+
+		@Override
+		public Neighborhood< T > getType()
+		{
+			return randomAccess().getType();
+		}
 	}
 
 	@Override

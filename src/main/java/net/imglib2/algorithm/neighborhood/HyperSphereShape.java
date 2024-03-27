@@ -188,6 +188,12 @@ public class HyperSphereShape implements Shape
 		{
 			return new HyperSphereNeighborhoodRandomAccess< T >( source, radius, factory, interval );
 		}
+
+		@Override
+		public Neighborhood< T > getType()
+		{
+			return randomAccess().getType();
+		}
 	}
 
 	@Override

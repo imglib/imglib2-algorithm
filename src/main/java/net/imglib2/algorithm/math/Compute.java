@@ -277,8 +277,8 @@ public class Compute
 	{
 		if ( null == inConverter )
 			inConverter = Util.genericRealTypeConverter();
-		
-		final O outputType = target.randomAccess().get().createVariable();		
+
+		final O outputType = target.randomAccess().get().createVariable();
 		final boolean are_same_type = computingType.getClass() == outputType.getClass();
 		
 		if ( null == outConverter && !are_same_type )

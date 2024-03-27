@@ -81,7 +81,13 @@ public class VolumetricSearch< I extends RealInterval > implements RandomAccessi
 		final ArrayList< IntervalWrapper< I > > wrappers = new ArrayList< IntervalWrapper< I > >( intervals.size() );
 		for ( final I interval : intervals )
 			wrappers.add( new IntervalWrapper< I >( interval ) );
-		kdtree = new KDTree< IntervalWrapper< I > >( wrappers, wrappers );
+		kdtree = new KDTree<>( wrappers, wrappers );
+	}
+
+	@Override
+	public List< I > getType()
+	{
+		return new LinkedList<>();
 	}
 
 	private static class IntervalWrapper< I extends RealInterval > implements RealLocalizable
