@@ -173,4 +173,10 @@ implements RandomAccessibleInterval< O >, IterableInterval< O >, View
 	{
 		return this.cursor();
 	}
+
+	@Override
+	public O getType()
+	{
+		return outputType;
+	}
 }

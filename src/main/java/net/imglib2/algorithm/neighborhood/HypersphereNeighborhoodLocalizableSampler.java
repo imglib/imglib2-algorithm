@@ -106,6 +106,12 @@ public abstract class HypersphereNeighborhoodLocalizableSampler< T > extends Abs
 	}
 
 	@Override
+	public Neighborhood< T > getType()
+	{
+		return currentNeighborhood;
+	}
+
+	@Override
 	public void localize( final int[] position )
 	{
 		currentNeighborhood.localize( position );

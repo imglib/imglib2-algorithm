@@ -104,6 +104,12 @@ public class LocalNeighborhoodCursor2< T > extends AbstractCursor< T >
 	}
 
 	@Override
+	public T getType()
+	{
+		return source.getType();
+	}
+
+	@Override
 	public void fwd()
 	{
 		source.fwd( 0 );

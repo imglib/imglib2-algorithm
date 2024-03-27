@@ -153,6 +153,12 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 		}
 
 		@Override
+		public T getType()
+		{
+			return source.getType();
+		}
+
+		@Override
 		public void fwd()
 		{
 
@@ -300,6 +306,12 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 	public T firstElement()
 	{
 		return cursor().next();
+	}
+
+	@Override
+	public T getType()
+	{
+		return sourceRandomAccess.getType();
 	}
 
 	@Override

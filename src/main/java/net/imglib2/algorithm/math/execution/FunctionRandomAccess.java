@@ -132,6 +132,12 @@ public class FunctionRandomAccess< C extends RealType< C >, O extends RealType< 
 			this.outConverter.convert( this.f.eval( this.point ), outputType );
 			return this.outputType;
 		}
+
+		@Override
+		public O getType()
+		{
+			return outputType;
+		}
 	}
 	
 	private final class FunctionSamplerDirect implements Sampler< O >
@@ -171,12 +177,24 @@ public class FunctionRandomAccess< C extends RealType< C >, O extends RealType< 
 		{
 			return this.f.eval( this.point );
 		}
+
+		@Override
+		public O getType()
+		{
+			return outputType;
+		}
 	}
 
 	@Override
 	public O get()
 	{
 		return this.sampler.get();
+	}
+
+	@Override
+	public O getType()
+	{
+		return outputType;
 	}
 
 	@Override

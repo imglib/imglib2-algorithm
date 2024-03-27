@@ -114,6 +114,12 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 	}
 
 	@Override
+	public T getType()
+	{
+		return sourceRandomAccess.getType();
+	}
+
+	@Override
 	public Object iterationOrder()
 	{
 		return this; // iteration order is only compatible with ourselves
@@ -256,6 +262,12 @@ public class RectangleNeighborhood< T > extends AbstractLocalizable implements N
 		public T get()
 		{
 			return source.get();
+		}
+
+		@Override
+		public T getType()
+		{
+			return source.getType();
 		}
 
 		@Override

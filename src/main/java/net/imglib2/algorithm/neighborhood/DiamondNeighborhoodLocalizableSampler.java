@@ -128,6 +128,12 @@ public abstract class DiamondNeighborhoodLocalizableSampler< T > extends Abstrac
 	}
 
 	@Override
+	public Neighborhood< T > getType()
+	{
+		return currentNeighborhood;
+	}
+
+	@Override
 	public void localize( final int[] position )
 	{
 		currentNeighborhood.localize( position );

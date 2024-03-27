@@ -94,6 +94,12 @@ public class LocalNeighborhood2< T > implements IterableInterval< T >
 	}
 
 	@Override
+	public T getType()
+	{
+		return source.getType();
+	}
+
+	@Override
 	public Object iterationOrder()
 	{
 		return this; // iteration order is only compatible with ourselves

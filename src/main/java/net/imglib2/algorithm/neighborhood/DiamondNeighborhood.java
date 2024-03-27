@@ -121,6 +121,12 @@ public class DiamondNeighborhood< T > extends AbstractLocalizable implements Nei
 		}
 
 		@Override
+		public T getType()
+		{
+			return source.getType();
+		}
+
+		@Override
 		public void fwd()
 		{
 			if ( --s[ 0 ] >= 0 )
@@ -435,4 +441,9 @@ public class DiamondNeighborhood< T > extends AbstractLocalizable implements Nei
 		return cursor();
 	}
 
+	@Override
+	public T getType()
+	{
+		return sourceRandomAccess.getType();
+	}
 }

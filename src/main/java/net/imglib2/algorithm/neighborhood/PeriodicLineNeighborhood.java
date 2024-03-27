@@ -157,6 +157,12 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	}
 
 	@Override
+	public T getType()
+	{
+		return sourceRandomAccess.getType();
+	}
+
+	@Override
 	public Object iterationOrder()
 	{
 		return this; // iteration order is only compatible with ourselves
@@ -297,6 +303,12 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 		public T get()
 		{
 			return source.get();
+		}
+
+		@Override
+		public T getType()
+		{
+			return source.getType();
 		}
 
 		@Override

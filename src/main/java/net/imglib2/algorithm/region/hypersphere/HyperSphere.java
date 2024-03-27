@@ -253,4 +253,10 @@ public class HyperSphere< T > implements IterableInterval< T >
 	{
 		return new HyperSphereCursor< T >( source, center, radius );
 	}
+
+	@Override
+	public T getType()
+	{
+		return source.getType();
+	}
 }

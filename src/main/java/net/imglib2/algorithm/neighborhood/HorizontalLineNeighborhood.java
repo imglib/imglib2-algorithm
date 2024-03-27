@@ -116,6 +116,12 @@ public class HorizontalLineNeighborhood< T > extends AbstractLocalizable impleme
 	}
 
 	@Override
+	public T getType()
+	{
+		return sourceRandomAccess.getType();
+	}
+
+	@Override
 	public Object iterationOrder()
 	{
 		return this; // iteration order is only compatible with ourselves
@@ -263,6 +269,12 @@ public class HorizontalLineNeighborhood< T > extends AbstractLocalizable impleme
 		public T get()
 		{
 			return source.get();
+		}
+
+		@Override
+		public T getType()
+		{
+			return source.getType();
 		}
 
 		@Override
