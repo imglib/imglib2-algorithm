@@ -77,6 +77,12 @@ public class ScaleAsFunctionOfPosition< T extends Type< T > & MulFloatingPoint >
 		return randomAccess();
 	}
 
+	@Override
+	public T getType()
+	{
+		return source.getType();
+	}
+
 	public static class ScaledRandomAccess< T extends Type< T > & MulFloatingPoint > extends AbstractConvertedRandomAccess< T, T >
 	{
 
@@ -96,6 +102,12 @@ public class ScaleAsFunctionOfPosition< T extends Type< T > & MulFloatingPoint >
 		{
 			t.set( source.get() );
 			t.mul( scalingFunction.applyAsDouble( source ) );
+			return t;
+		}
+
+		@Override
+		public T getType()
+		{
 			return t;
 		}
 

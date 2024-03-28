@@ -162,6 +162,12 @@ public class BSplineInterpolator< T extends RealType< T > > extends Floor< Rando
 		return value;
 	}
 
+	@Override
+	public T getType()
+	{
+		return value;
+	}
+
 	protected void fillWeights()
 	{
 		final Neighborhood< T > rect = target.get();

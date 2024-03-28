@@ -98,7 +98,13 @@ public class FunctionCursor< C extends RealType< C >, O extends RealType< O > > 
 		this.scrapO = outputType.createVariable();
 		this.reset();
 	}
-	
+
+	@Override
+	public O getType()
+	{
+		return scrapO;
+	}
+
 	private final class FunctionSamplerConverter implements Sampler< O >
 	{	
 		@Override
@@ -110,6 +116,12 @@ public class FunctionCursor< C extends RealType< C >, O extends RealType< O > > 
 
 		@Override
 		public final Sampler< O > copy() { return null; }
+
+		@Override
+		public O getType()
+		{
+			return scrapO;
+		}
 	}
 	
 	private final class FunctionSamplerDirect implements Sampler< C >
@@ -122,6 +134,12 @@ public class FunctionCursor< C extends RealType< C >, O extends RealType< O > > 
 
 		@Override
 		public final Sampler< C > copy() { return null; }
+
+		@Override
+		public C getType()
+		{
+			return scrapC;
+		}
 	}
 
 	@Override

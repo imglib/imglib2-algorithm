@@ -99,6 +99,13 @@ implements OFunction< O >, RandomAccess< O >, RandomAccessible< O >
 		return this.outsideO;
 	}
 
+
+	@Override
+	public O getType()
+	{
+		return this.scrap;
+	}
+
 	@Override
 	public RandomAccess< O > copy()
 	{

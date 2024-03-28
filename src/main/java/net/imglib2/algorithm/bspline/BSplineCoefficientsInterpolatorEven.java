@@ -95,6 +95,12 @@ public class BSplineCoefficientsInterpolatorEven<T extends RealType<T>> extends 
 	}
 
 	@Override
+	public T getType()
+	{
+		return kernel.type();
+	}
+
+	@Override
 	public BSplineCoefficientsInterpolatorEven<T> copy()
 	{
 		return new BSplineCoefficientsInterpolatorEven<T>( this, this.bsplineOrder, kernel.type().copy() );

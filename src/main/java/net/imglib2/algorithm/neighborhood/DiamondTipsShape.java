@@ -154,6 +154,12 @@ public class DiamondTipsShape implements Shape
 		}
 
 		@Override
+		public Neighborhood< T > getType()
+		{
+			return cursor().getType();
+		}
+
+		@Override
 		public Object iterationOrder()
 		{
 			return new FlatIterationOrder( this );
@@ -201,11 +207,10 @@ public class DiamondTipsShape implements Shape
 		}
 
 		@Override
-		public int numDimensions()
+		public Neighborhood< T > getType()
 		{
-			return source.numDimensions();
+			return randomAccess().getType();
 		}
-
 	}
 
 	@Override

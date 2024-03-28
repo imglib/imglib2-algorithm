@@ -66,6 +66,11 @@ public interface BlockProcessor< I, O >
 	//       Have a modifiable SourceInterval class exposing getSourcePos()/getSourceSize() ?
 	Interval getSourceInterval();
 
+	/**
+	 * Get a {@code src} array of sufficient size.
+	 * <p>
+	 * Consecutive calls may return the same array, but don't have to.
+	 */
 	I getSourceBuffer();
 
 	/**

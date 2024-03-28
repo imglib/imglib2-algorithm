@@ -137,6 +137,12 @@ public class HyperSphereShape implements Shape
 		}
 
 		@Override
+		public Neighborhood< T > getType()
+		{
+			return cursor().getType();
+		}
+
+		@Override
 		public Object iterationOrder()
 		{
 			return new FlatIterationOrder( this );
@@ -187,6 +193,12 @@ public class HyperSphereShape implements Shape
 		public RandomAccess< Neighborhood< T >> randomAccess( final Interval interval )
 		{
 			return new HyperSphereNeighborhoodRandomAccess< T >( source, radius, factory, interval );
+		}
+
+		@Override
+		public Neighborhood< T > getType()
+		{
+			return randomAccess().getType();
 		}
 	}
 

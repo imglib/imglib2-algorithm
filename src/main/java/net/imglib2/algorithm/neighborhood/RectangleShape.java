@@ -195,6 +195,12 @@ public class RectangleShape implements Shape
 		{
 			return cursor();
 		}
+
+		@Override
+		public Neighborhood< T > getType()
+		{
+			return cursor().getType();
+		}
 	}
 
 	public static final class NeighborhoodsAccessible< T > extends AbstractEuclideanSpace implements RandomAccessible< Neighborhood< T > >
@@ -223,6 +229,12 @@ public class RectangleShape implements Shape
 		public RandomAccess< Neighborhood< T >> randomAccess( final Interval interval )
 		{
 			return new RectangleNeighborhoodRandomAccess< T >( source, span, factory, interval );
+		}
+
+		@Override
+		public Neighborhood< T > getType()
+		{
+			return randomAccess().getType();
 		}
 	}
 
