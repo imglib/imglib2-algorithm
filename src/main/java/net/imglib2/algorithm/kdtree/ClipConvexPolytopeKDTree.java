@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -49,7 +49,7 @@ import net.imglib2.KDTreeNode;
  *
  * <p>
  * The algorithm is described in <a
- * href="http://fly.mpi-cbg.de/~pietzsch/polytope.pdf">this note</a>.
+ * href="https://fly.mpi-cbg.de/~pietzsch/polytope.pdf">this note</a>.
  *
  * @param <T>
  *            type of values stored in the tree.
@@ -58,15 +58,15 @@ import net.imglib2.KDTreeNode;
  */
 public class ClipConvexPolytopeKDTree< T >
 {
-	private final ClipConvexPolytopeKDTreeImpl< Object > impl;
-	private final KDTreeNodeIterableNew< T > insideNodes;
-	private final KDTreeNodeIterableNew< T > outsideNodes;
+	private final ClipConvexPolytopeKDTreeImpl impl;
+	private final KDTreeNodeIterable< T > insideNodes;
+	private final KDTreeNodeIterable< T > outsideNodes;
 
 	public ClipConvexPolytopeKDTree( final KDTree< T > tree )
 	{
-		impl = new ClipConvexPolytopeKDTreeImpl<>( tree.impl() );
-		insideNodes = new KDTreeNodeIterableNew<>( impl.getInsideNodes(), tree );
-		outsideNodes = new KDTreeNodeIterableNew<>( impl.getOutsideNodes(), tree );
+		impl = new ClipConvexPolytopeKDTreeImpl( tree.impl() );
+		insideNodes = new KDTreeNodeIterable<>( impl.getInsideNodes(), tree );
+		outsideNodes = new KDTreeNodeIterable<>( impl.getOutsideNodes(), tree );
 	}
 
 	public int numDimensions()

@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -38,8 +38,6 @@ import net.imglib2.KDTree;
 import net.imglib2.KDTreeNode;
 
 /**
- * TODO: javadoc
- *
  * Partition nodes in a {@link KDTree} into disjoint sets of nodes that are
  * above and below a given hyperplane, respectively.
  *
@@ -51,7 +49,7 @@ import net.imglib2.KDTreeNode;
  *
  * <p>
  * The algorithm is described in <a
- * href="http://fly.mpi-cbg.de/~pietzsch/polytope.pdf">this note</a>.
+ * href="https://fly.mpi-cbg.de/~pietzsch/polytope.pdf">this note</a>.
  *
  * @param <T>
  *            type of values stored in the tree.
@@ -61,14 +59,14 @@ import net.imglib2.KDTreeNode;
 public class SplitHyperPlaneKDTree< T >
 {
 	private final SplitHyperPlaneKDTreeImpl impl;
-	private final KDTreeNodeIterableNew< T > aboveNodes;
-	private final KDTreeNodeIterableNew< T > belowNodes;
+	private final KDTreeNodeIterable< T > aboveNodes;
+	private final KDTreeNodeIterable< T > belowNodes;
 
 	public SplitHyperPlaneKDTree( final KDTree< T > tree )
 	{
 		impl = new SplitHyperPlaneKDTreeImpl( tree.impl() );
-		aboveNodes = new KDTreeNodeIterableNew<>( impl.getAboveNodes(), tree );
-		belowNodes = new KDTreeNodeIterableNew<>( impl.getBelowNodes(), tree );
+		aboveNodes = new KDTreeNodeIterable<>( impl.getAboveNodes(), tree );
+		belowNodes = new KDTreeNodeIterable<>( impl.getBelowNodes(), tree );
 	}
 
 	public int numDimensions()
