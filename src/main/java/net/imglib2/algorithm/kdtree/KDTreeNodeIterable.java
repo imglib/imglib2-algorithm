@@ -4,13 +4,13 @@ import java.util.Iterator;
 import net.imglib2.KDTree;
 import net.imglib2.KDTreeNode;
 
-class KDTreeNodeIterableNew< T > implements Iterable< KDTreeNode< T > >
+class KDTreeNodeIterable< T > implements Iterable< KDTreeNode< T > >
 {
 	private final NodeIndexIterable nodes;
 
 	private final KDTree< T > tree;
 
-	public KDTreeNodeIterableNew( final NodeIndexIterable nodes, final KDTree< T > tree )
+	public KDTreeNodeIterable( final NodeIndexIterable nodes, final KDTree< T > tree )
 	{
 		this.nodes = nodes;
 		this.tree = tree;
