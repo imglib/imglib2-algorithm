@@ -42,28 +42,58 @@ import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
 import net.imglib2.type.NativeType;
 
 /**
- * Utilities for applying block algorithms images.
+ * Utilities for applying block algorithms to images.
  * <p>
- * For example, {@link #cellImg(PrimitiveBlocks, UnaryBlockOperator, NativeType,
- * long[], int[]) cellImg(...)} creates a {@code CachedCellImg} which computes
- * cells using a given {@code UnaryBlockOperator}.
+ * For example, {@link #cellImg(BlockSupplier, long[], int[]) cellImg(...)}
+ * creates a {@code CachedCellImg} which computes cells using a given {@code
+ * BlockSupplier}.
  */
 public class BlockAlgoUtils
 {
-	public static < S extends NativeType< S >, T extends NativeType< T >, I, O >
+	public static < T extends NativeType< T > >
+	CellLoader< T > cellLoader( final BlockSupplier< T > blocks )
+	{
+		final BlockSupplier< T > ts = blocks.threadSafe();
+		return cell -> ts.copy( cell, cell.getStorageArray() );
+	}
+
+	/**
+	 * Creates a {@code CachedCellImg} which copies cells from the specified
+	 * {@code blocks}.
+	 *
+	 * @param blocks
+	 * 		copies blocks from source data
+	 * @param dimensions
+	 * 		dimensions of the {@code CachedCellImg} to create
+	 * @param cellDimensions
+	 * 		block size of the {@code CachedCellImg} to create
+	 * @param <T>
+	 * 		target type (type of the returned CachedCellImg)
+	 *
+	 * @return a {@code CachedCellImg} which copies cells from {@code blocks}.
+	 */
+	public static < T extends NativeType< T > >
+	CachedCellImg< T, ? > cellImg(
+			final BlockSupplier< T > blocks,
+			final long[] dimensions,
+			final int[] cellDimensions )
+	{
+		return new ReadOnlyCachedCellImgFactory().create(
+				dimensions,
+				blocks.getType(),
+				cellLoader( blocks ),
+				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions ) );
+	}
+
+
+	// ======== DEPRECATED ====================================================
+
+
+	@Deprecated
+	public static < S extends NativeType< S >, T extends NativeType< T > >
 	CellLoader< T > cellLoader( final PrimitiveBlocks< S > blocks, final UnaryBlockOperator< S, T > operator )
 	{
-		final PrimitiveBlocks< S > threadSafeBlocks = blocks.threadSafe();
-		final UnaryBlockOperator< S, T > threadSafeOperator = operator.threadSafe();
-		return cell -> {
-			final BlockProcessor< I, O > processor = threadSafeOperator.blockProcessor();
-			processor.setTargetInterval( cell );
-			final I src = processor.getSourceBuffer();
-			threadSafeBlocks.copy( processor.getSourcePos(), src, processor.getSourceSize() );
-			@SuppressWarnings( { "unchecked" } )
-			final O dest = ( O ) cell.getStorageArray();
-			processor.compute( src, dest );
-		};
+		return cellLoader( new PrimitiveBlocksSupplier<>( blocks ).andThen( operator ) );
 	}
 
 	/**
@@ -88,6 +118,7 @@ public class BlockAlgoUtils
 	 *
 	 * @return a {@code CachedCellImg} which computes cells by applying {@code operator} to input {@code blocks}.
 	 */
+	@Deprecated
 	public static < S extends NativeType< S >, T extends NativeType< T >, I, O >
 	CachedCellImg< T, ? > cellImg(
 			final PrimitiveBlocks< S > blocks,
@@ -104,6 +135,7 @@ public class BlockAlgoUtils
 				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions) );
 	}
 
+	@Deprecated
 	public static < S extends NativeType< S >, T extends NativeType< T >, I, O >
 	CellLoader< T > cellLoader( final PrimitiveBlocks< S > blocks, BlockProcessor< I, O > blockProcessor )
 	{
@@ -120,6 +152,7 @@ public class BlockAlgoUtils
 		};
 	}
 
+	@Deprecated
 	public static < S extends NativeType< S >, T extends NativeType< T >, I, O >
 	CachedCellImg< T, ? > cellImg(
 			final PrimitiveBlocks< S > blocks,
