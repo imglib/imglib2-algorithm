@@ -78,7 +78,7 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	T getTargetType();
 
 	/**
-	 * Get a thread-safe version of this {@code BlockProcessor}.
+	 * Get a thread-safe version of this {@code UnaryBlockOperator}.
 	 * (Implemented as a wrapper that makes {@link ThreadLocal} copies).
 	 */
 	UnaryBlockOperator< S, T > threadSafe();
