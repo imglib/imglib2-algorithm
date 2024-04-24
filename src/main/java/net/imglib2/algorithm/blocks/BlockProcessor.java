@@ -33,7 +33,6 @@
  */
 package net.imglib2.algorithm.blocks;
 
-import java.util.function.Supplier;
 import net.imglib2.Interval;
 import net.imglib2.blocks.PrimitiveBlocks;
 
@@ -53,7 +52,7 @@ import net.imglib2.blocks.PrimitiveBlocks;
  */
 public interface BlockProcessor< I, O >
 {
-	Supplier< ? extends BlockProcessor< I, O > > threadSafeSupplier();
+	BlockProcessor< I, O > independentCopy();
 
 	void setTargetInterval( Interval interval );
 

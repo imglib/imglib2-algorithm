@@ -34,13 +34,12 @@
 package net.imglib2.algorithm.blocks.downsample;
 
 import java.util.Arrays;
-import java.util.function.Supplier;
+
 import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.PrimitiveType;
-import net.imglib2.util.CloseableThreadLocal;
 import net.imglib2.util.Intervals;
 
 abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > implements BlockProcessor< P, P >
@@ -63,8 +62,6 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 	final int[] tempArraySizes;
 
 	private final BlockProcessorSourceInterval sourceInterval;
-
-	Supplier< T > threadSafeSupplier;
 
 	AbstractDownsample( final boolean[] downsampleInDim, final PrimitiveType primitiveType )
 	{
@@ -120,7 +117,6 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 		downsampleInDim = downsample.downsampleInDim;
 		downsampleDims = downsample.downsampleDims;
 		steps = downsample.steps;
-		threadSafeSupplier = downsample.threadSafeSupplier;
 
 		// init empty
 		destSize = new int[ n ];
@@ -131,16 +127,6 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 		// init new instance
 		tempArrays = createTempArrays( steps, primitiveType );
 		sourceInterval = new BlockProcessorSourceInterval( this );
-	}
-
-	abstract T newInstance();
-
-	@Override
-	public synchronized Supplier< T > threadSafeSupplier()
-	{
-		if ( threadSafeSupplier == null )
-			threadSafeSupplier = CloseableThreadLocal.withInitial( this::newInstance )::get;
-		return threadSafeSupplier;
 	}
 
 	@Override

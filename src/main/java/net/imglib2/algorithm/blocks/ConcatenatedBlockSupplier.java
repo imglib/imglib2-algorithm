@@ -17,6 +17,8 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 
 	private final T type;
 
+	private Supplier< BlockSupplier< T > > threadSafeSupplier;
+
 	public < S extends NativeType< S > > ConcatenatedBlockSupplier(
 			final BlockSupplier< S > srcSupplier,
 			final UnaryBlockOperator< S, T > operator )
@@ -28,10 +30,9 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 
 	private ConcatenatedBlockSupplier( final ConcatenatedBlockSupplier< T > s )
 	{
-		p0 = s.p0.threadSafeSupplier().get();
-		p1 = s.p1.threadSafeSupplier().get();
+		p0 = s.p0.independentCopy();
+		p1 = s.p1.independentCopy();
 		type = s.type;
-		threadSafeSupplier = s.threadSafeSupplier;
 	}
 
 	@Override
@@ -57,20 +58,17 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 		return FinalInterval.wrap( srcPos, srcMax );
 	}
 
-	private Supplier< ? extends BlockSupplier< T > > threadSafeSupplier;
-
 	@Override
-	public Supplier< ? extends BlockSupplier< T > > threadSafeSupplier()
+	public BlockSupplier< T > independentCopy()
 	{
-		if ( threadSafeSupplier == null )
-			threadSafeSupplier = CloseableThreadLocal.withInitial( () -> new ConcatenatedBlockSupplier<>( this ) )::get;
-		return threadSafeSupplier;
+		return new ConcatenatedBlockSupplier<>( this );
 	}
 
 	@Override
 	public BlockSupplier< T > threadSafe()
 	{
-		final Supplier< ? extends BlockSupplier< T > > supplier = threadSafeSupplier();
+		if ( threadSafeSupplier == null )
+			threadSafeSupplier = CloseableThreadLocal.withInitial( this::independentCopy )::get;
 		return new BlockSupplier< T >()
 		{
 			@Override
@@ -82,12 +80,13 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 			@Override
 			public void copy( final long[] srcPos, final Object dest, final int[] size )
 			{
-				supplier.get().copy( srcPos, dest, size );
+				threadSafeSupplier.get().copy( srcPos, dest, size );
 			}
 
-			public Supplier< ? extends BlockSupplier< T > > threadSafeSupplier()
+			@Override
+			public BlockSupplier< T > independentCopy()
 			{
-				return supplier;
+				return ConcatenatedBlockSupplier.this.independentCopy().threadSafe();
 			}
 
 			@Override

@@ -36,6 +36,8 @@ package net.imglib2.algorithm.blocks.downsample;
 import static net.imglib2.type.PrimitiveType.DOUBLE;
 import static net.imglib2.type.PrimitiveType.FLOAT;
 
+import net.imglib2.algorithm.blocks.BlockProcessor;
+
 class DownsampleBlockProcessors
 {
 	static class CenterFloat extends AbstractDownsample< CenterFloat, float[] >
@@ -51,7 +53,7 @@ class DownsampleBlockProcessors
 		}
 
 		@Override
-		CenterFloat newInstance()
+		public BlockProcessor< float[], float[] > independentCopy()
 		{
 			return new CenterFloat( this );
 		}
@@ -76,7 +78,7 @@ class DownsampleBlockProcessors
 		}
 
 		@Override
-		CenterDouble newInstance()
+		public BlockProcessor< double[], double[] > independentCopy()
 		{
 			return new CenterDouble( this );
 		}
@@ -101,7 +103,7 @@ class DownsampleBlockProcessors
 		}
 
 		@Override
-		HalfPixelFloat newInstance()
+		public BlockProcessor< float[], float[] > independentCopy()
 		{
 			return new HalfPixelFloat( this );
 		}
@@ -126,7 +128,7 @@ class DownsampleBlockProcessors
 		}
 
 		@Override
-		HalfPixelDouble newInstance()
+		public BlockProcessor< double[], double[] > independentCopy()
 		{
 			return new HalfPixelDouble( this );
 		}

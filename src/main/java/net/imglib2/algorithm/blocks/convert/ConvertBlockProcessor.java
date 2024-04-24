@@ -34,14 +34,13 @@
 package net.imglib2.algorithm.blocks.convert;
 
 import java.util.Arrays;
-import java.util.function.Supplier;
+
 import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
 import net.imglib2.algorithm.blocks.util.UnaryOperatorType;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.NativeType;
-import net.imglib2.util.CloseableThreadLocal;
 import net.imglib2.util.Intervals;
 
 /**
@@ -62,8 +61,6 @@ class ConvertBlockProcessor< S extends NativeType< S >, T extends NativeType< T 
 	private final TempArray< I > tempArray;
 
 	private final ConvertLoop< I, O > loop;
-
-	private Supplier< ConvertBlockProcessor< S, T, I, O > > threadSafeSupplier;
 
 	private long[] sourcePos;
 
@@ -89,20 +86,12 @@ class ConvertBlockProcessor< S extends NativeType< S >, T extends NativeType< T 
 		tempArray = convert.tempArray.newInstance();
 		loop = convert.loop;
 		sourceInterval = new BlockProcessorSourceInterval( this );
-		threadSafeSupplier = convert.threadSafeSupplier;
-	}
-
-	private ConvertBlockProcessor< S, T, I, O > newInstance()
-	{
-		return new ConvertBlockProcessor<>( this );
 	}
 
 	@Override
-	public Supplier< ? extends BlockProcessor< I, O > > threadSafeSupplier()
+	public BlockProcessor< I, O > independentCopy()
 	{
-		if ( threadSafeSupplier == null )
-			threadSafeSupplier = CloseableThreadLocal.withInitial( this::newInstance )::get;
-		return threadSafeSupplier;
+		return new ConvertBlockProcessor<>( this );
 	}
 
 	@Override

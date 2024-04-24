@@ -35,7 +35,6 @@ package net.imglib2.algorithm.blocks;
 
 import java.util.function.Supplier;
 import net.imglib2.Interval;
-import net.imglib2.util.CloseableThreadLocal;
 
 class ConcatenatedBlockProcessor< I, K, O > implements BlockProcessor< I, O >
 {
@@ -53,19 +52,10 @@ class ConcatenatedBlockProcessor< I, K, O > implements BlockProcessor< I, O >
 		this.p1 = p1;
 	}
 
-	private ConcatenatedBlockProcessor( ConcatenatedBlockProcessor< I, K, O > processor )
-	{
-		p0 = processor.p0.threadSafeSupplier().get();
-		p1 = processor.p1.threadSafeSupplier().get();
-		threadSafeSupplier = processor.threadSafeSupplier;
-	}
-
 	@Override
-	public Supplier< ? extends BlockProcessor< I, O > > threadSafeSupplier()
+	public ConcatenatedBlockProcessor< I, K, O > independentCopy()
 	{
-		if ( threadSafeSupplier == null )
-			threadSafeSupplier = CloseableThreadLocal.withInitial( () -> new ConcatenatedBlockProcessor<>( this ) )::get;
-		return threadSafeSupplier;
+		return new ConcatenatedBlockProcessor<>( p0.independentCopy(), p1.independentCopy() );
 	}
 
 	@Override
