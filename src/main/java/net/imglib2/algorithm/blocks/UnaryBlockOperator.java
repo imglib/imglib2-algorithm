@@ -84,6 +84,13 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	UnaryBlockOperator< S, T > threadSafe();
 
 	/**
+	 * Returns an instance of this {@link UnaryBlockOperator} that can be used
+	 * independently, e.g., in another thread or in another place in the same
+	 * pipeline.
+	 */
+	UnaryBlockOperator< S, T > independentCopy();
+
+	/**
 	 * Returns a {@code UnaryBlockOperator} that is equivalent to applying
 	 * {@code this}, and then applying {@code op} to the result.
 	 */

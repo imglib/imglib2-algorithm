@@ -10,17 +10,11 @@ class PrimitiveBlocksSupplier< T extends NativeType< T > > implements BlockSuppl
 {
 	private final PrimitiveBlocks< T > blocks;
 
-	private Supplier< ? extends BlockSupplier< T > > threadSafeSupplier;
+	private Supplier< BlockSupplier< T > > threadSafeSupplier;
 
 	PrimitiveBlocksSupplier( final PrimitiveBlocks< T > blocks )
 	{
 		this.blocks = blocks;
-	}
-
-	private PrimitiveBlocksSupplier( final PrimitiveBlocksSupplier< T > s )
-	{
-		this.blocks = s.blocks;
-		threadSafeSupplier = s.threadSafeSupplier;
 	}
 
 	@Override
@@ -42,17 +36,17 @@ class PrimitiveBlocksSupplier< T extends NativeType< T > > implements BlockSuppl
 	}
 
 	@Override
-	public Supplier< ? extends BlockSupplier< T > > threadSafeSupplier()
+	public BlockSupplier< T > independentCopy()
 	{
-		if ( threadSafeSupplier == null )
-			threadSafeSupplier = CloseableThreadLocal.withInitial( () -> new PrimitiveBlocksSupplier<>( this ) )::get;
-		return threadSafeSupplier;
+		final PrimitiveBlocks< T > blocksCopy = blocks.independentCopy();
+		return blocksCopy == blocks ? this : new PrimitiveBlocksSupplier<>( blocksCopy );
 	}
 
 	@Override
 	public BlockSupplier< T > threadSafe()
 	{
-		final Supplier< ? extends BlockSupplier< T > > supplier = threadSafeSupplier();
+		if ( threadSafeSupplier == null )
+			threadSafeSupplier = CloseableThreadLocal.withInitial( this::independentCopy )::get;
 		return new BlockSupplier< T >()
 		{
 			@Override
@@ -64,12 +58,13 @@ class PrimitiveBlocksSupplier< T extends NativeType< T > > implements BlockSuppl
 			@Override
 			public void copy( final long[] srcPos, final Object dest, final int[] size )
 			{
-				supplier.get().copy( srcPos, dest, size );
+				threadSafeSupplier.get().copy( srcPos, dest, size );
 			}
 
-			public Supplier< ? extends BlockSupplier< T > > threadSafeSupplier()
+			@Override
+			public BlockSupplier< T > independentCopy()
 			{
-				return supplier;
+				return PrimitiveBlocksSupplier.this.independentCopy().threadSafe();
 			}
 
 			@Override

@@ -35,13 +35,13 @@ package net.imglib2.algorithm.blocks.transform;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
+
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.PrimitiveType;
-import net.imglib2.util.CloseableThreadLocal;
 import net.imglib2.util.Intervals;
 
 /**
@@ -108,16 +108,6 @@ abstract class AbstractTransformProcessor< T extends AbstractTransformProcessor<
 		// init new instance
 		sourceInterval = new BlockProcessorSourceInterval( this );
 		tempArray = TempArray.forPrimitiveType( primitiveType );
-	}
-
-	abstract T newInstance();
-
-	@Override
-	public Supplier< T > threadSafeSupplier()
-	{
-		if ( threadSafeSupplier == null )
-			threadSafeSupplier = CloseableThreadLocal.withInitial( this::newInstance )::get;
-		return threadSafeSupplier;
 	}
 
 	abstract RealInterval estimateBounds( Interval interval );

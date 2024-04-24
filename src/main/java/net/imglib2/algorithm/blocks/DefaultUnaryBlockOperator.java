@@ -36,6 +36,7 @@ package net.imglib2.algorithm.blocks;
 import java.util.function.Supplier;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Cast;
+import net.imglib2.util.CloseableThreadLocal;
 
 public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends NativeType< T > > implements UnaryBlockOperator< S, T >
 {
@@ -69,15 +70,24 @@ public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends Nat
 	}
 
 	@Override
+	public UnaryBlockOperator< S, T > independentCopy()
+	{
+		return new DefaultUnaryBlockOperator<>( sourceType, targetType, blockProcessor.independentCopy() );
+	}
+
+	private Supplier< UnaryBlockOperator< S, T > > threadSafeSupplier;
+
+	@Override
 	public UnaryBlockOperator< S, T > threadSafe()
 	{
-		final Supplier< ? extends BlockProcessor< ?, ? > > processorSupplier = blockProcessor.threadSafeSupplier();
+		if ( threadSafeSupplier == null )
+			threadSafeSupplier = CloseableThreadLocal.withInitial( this::independentCopy )::get;
 		return new UnaryBlockOperator< S, T >()
 		{
 			@Override
 			public < I, O > BlockProcessor< I, O > blockProcessor()
 			{
-				return Cast.unchecked( processorSupplier.get() );
+				return threadSafeSupplier.get().blockProcessor();
 			}
 
 			@Override
@@ -96,6 +106,12 @@ public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends Nat
 			public UnaryBlockOperator< S, T > threadSafe()
 			{
 				return this;
+			}
+
+			@Override
+			public UnaryBlockOperator< S, T > independentCopy()
+			{
+				return DefaultUnaryBlockOperator.this.independentCopy().threadSafe();
 			}
 		};
 	}

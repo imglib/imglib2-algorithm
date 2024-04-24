@@ -3,7 +3,6 @@ package net.imglib2.algorithm.blocks;
 import static net.imglib2.blocks.PrimitiveBlocks.OnFallback.WARN;
 
 import java.util.Arrays;
-import java.util.function.Supplier;
 
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
@@ -71,7 +70,12 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >
 	 */
 	BlockSupplier< T > threadSafe();
 
-	Supplier< ? extends BlockSupplier< T > > threadSafeSupplier();
+	/**
+	 * Returns an instance of this {@link BlockSupplier} that can be used
+	 * independently, e.g., in another thread or in another place in the same
+	 * pipeline.
+	 */
+	BlockSupplier< T > independentCopy();
 
 	/**
 	 * Returns a {@code UnaryBlockOperator} that is equivalent to applying
@@ -79,7 +83,7 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >
 	 */
 	default < U extends NativeType< U > > BlockSupplier< U > andThen( UnaryBlockOperator< T, U > operator )
 	{
-		return new ConcatenatedBlockSupplier< U >( this, operator );
+		return new ConcatenatedBlockSupplier< U >( this.independentCopy(), operator.independentCopy() );
 	}
 
 	/**
@@ -134,4 +138,12 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >
 	{
 		return new PrimitiveBlocksSupplier<>( PrimitiveBlocks.of( ra, onFallback ) );
 	}
+
+	/*
+	 * Wrap the given {@code PrimitiveBlocks} as a {@code BlockSupplier}.
+	 */
+//	static < T extends NativeType< T > > BlockSupplier< T > of( PrimitiveBlocks< T > blocks )
+//	{
+//		return new PrimitiveBlocksSupplier<>( blocks );
+//	}
 }

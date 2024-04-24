@@ -83,9 +83,9 @@ class Affine3DProcessor< P > extends AbstractTransformProcessor< Affine3DProcess
 	}
 
 	@Override
-	Affine3DProcessor newInstance()
+	public BlockProcessor< P, P > independentCopy()
 	{
-		return new Affine3DProcessor( this );
+		return new Affine3DProcessor<>( this );
 	}
 
 	@Override

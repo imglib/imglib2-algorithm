@@ -49,7 +49,6 @@ import net.imglib2.img.ImgFactory;
 import net.imglib2.img.NativeImg;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.NativeTypeFactory;
-import net.imglib2.util.CloseableThreadLocal;
 import net.imglib2.util.Intervals;
 
 /**
@@ -73,8 +72,6 @@ class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< 
 	private final Supplier< Converter< ? super S, T > > converterSupplier;
 
 	private final TempArray< I > tempArray;
-
-	private Supplier< ConverterBlockProcessor< S, T, I, O > > threadSafeSupplier;
 
 	private long[] sourcePos;
 
@@ -109,8 +106,6 @@ class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< 
 		targetType = convert.targetType;
 		converterSupplier = convert.converterSupplier;
 
-		threadSafeSupplier = convert.threadSafeSupplier;
-
 		tempArray = convert.tempArray.newInstance();
 		sourceInterval = new BlockProcessorSourceInterval( this );
 		converter = converterSupplier.get();
@@ -118,17 +113,10 @@ class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< 
 		wrapTarget = Wrapper.of( targetType );
 	}
 
-	private ConverterBlockProcessor< S, T, I, O > newInstance()
+	@Override
+	public BlockProcessor< I, O > independentCopy()
 	{
 		return new ConverterBlockProcessor<>( this );
-	}
-
-	@Override
-	public Supplier< ? extends BlockProcessor< I, O > > threadSafeSupplier()
-	{
-		if ( threadSafeSupplier == null )
-			threadSafeSupplier = CloseableThreadLocal.withInitial( this::newInstance )::get;
-		return threadSafeSupplier;
 	}
 
 	@Override
