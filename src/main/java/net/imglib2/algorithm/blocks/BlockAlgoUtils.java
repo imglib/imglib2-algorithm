@@ -96,7 +96,7 @@ public class BlockAlgoUtils
 	}
 
 	@Deprecated
-	public static < S extends NativeType< S >, T extends NativeType< T >, I, O >
+	public static < S extends NativeType< S >, T extends NativeType< T > >
 	CachedCellImg< T, ? > cellImg(
 			final PrimitiveBlocks< S > blocks,
 			final UnaryBlockOperator< S, T > operator,

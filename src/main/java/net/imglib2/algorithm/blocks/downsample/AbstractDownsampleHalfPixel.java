@@ -37,7 +37,6 @@ import static net.imglib2.util.Util.safeInt;
 
 import net.imglib2.Interval;
 import net.imglib2.type.PrimitiveType;
-import net.imglib2.util.Intervals;
 
 abstract class AbstractDownsampleHalfPixel< T extends AbstractDownsampleHalfPixel< T, P >, P > extends AbstractDownsample< T, P >
 {
@@ -70,16 +69,27 @@ abstract class AbstractDownsampleHalfPixel< T extends AbstractDownsampleHalfPixe
 		}
 
 		if ( destSizeChanged )
-		{
-			int size = safeInt( Intervals.numElements( sourceSize ) );
-			tempArraySizes[ 0 ] = size;
-			for ( int i = 1; i < steps; ++i )
-			{
-				final int d = downsampleDims[ i - 1 ];
-				size = size / sourceSize[ d ] * destSize[ d ];
-				tempArraySizes[ i ] = size;
-			}
-		}
+			recomputeTempArraySizes();
 	}
 
+	@Override
+	public void setTargetInterval( final long[] pos, final int[] size )
+	{
+		boolean destSizeChanged = false;
+		for ( int d = 0; d < n; ++d )
+		{
+			sourcePos[ d ] = downsampleInDim[ d ] ? pos[ d ] * 2 : pos[ d ];
+
+			final int tdim = safeInt( size[ d ] );
+			if ( tdim != destSize[ d ] )
+			{
+				destSize[ d ] = tdim;
+				sourceSize[ d ] = downsampleInDim[ d ] ? tdim * 2 : tdim;
+				destSizeChanged = true;
+			}
+		}
+
+		if ( destSizeChanged )
+			recomputeTempArraySizes();
+	}
 }

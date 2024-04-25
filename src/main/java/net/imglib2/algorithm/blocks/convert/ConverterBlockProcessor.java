@@ -51,6 +51,7 @@ import net.imglib2.img.ImgFactory;
 import net.imglib2.img.NativeImg;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.NativeTypeFactory;
+import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 
 /**
@@ -136,6 +137,20 @@ class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< 
 	}
 
 	@Override
+	public void setTargetInterval( final long[] pos, final int[] size )
+	{
+		final int n = pos.length;
+		if ( sourcePos == null || sourcePos.length != n )
+		{
+			sourcePos = new long[ n ];
+			sourceSize = new int[ n ];
+		}
+		System.arraycopy( pos, 0, sourcePos, 0, n );
+		System.arraycopy( size, 0, sourceSize, 0, n );
+		sourceLength = safeInt( Intervals.numElements( sourceSize ) );
+	}
+
+	@Override
 	public long[] getSourcePos()
 	{
 		return sourcePos;
@@ -196,8 +211,8 @@ class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< 
 		WrapperImpl( T type )
 		{
 			super( new long[ 0 ] );
-			final NativeTypeFactory< T, A > nativeTypeFactory = ( NativeTypeFactory< T, A > ) type.getNativeTypeFactory();
-			props = ( PrimitiveTypeProperties< ?, A > ) PrimitiveTypeProperties.get( nativeTypeFactory.getPrimitiveType() );
+			final NativeTypeFactory< T, A > nativeTypeFactory = Cast.unchecked( type.getNativeTypeFactory() );
+			props = Cast.unchecked( PrimitiveTypeProperties.get( nativeTypeFactory.getPrimitiveType() ) );
 			wrapper = nativeTypeFactory.createLinkedType( this );
 		}
 

@@ -118,7 +118,7 @@ abstract class AbstractTransformProcessor< T extends AbstractTransformProcessor<
 	public void setTargetInterval( final Interval interval )
 	{
 		interval.min( destPos );
-		Arrays.setAll( destSize, d -> ( int ) interval.dimension( d ) );
+		Arrays.setAll( destSize, d -> safeInt( interval.dimension( d ) ) );
 
 		final RealInterval bounds = estimateBounds( interval );
 		switch ( interpolation )

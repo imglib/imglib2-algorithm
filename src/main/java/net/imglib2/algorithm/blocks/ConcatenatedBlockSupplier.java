@@ -1,10 +1,7 @@
 package net.imglib2.algorithm.blocks;
 
-import java.util.Arrays;
 import java.util.function.Supplier;
 
-import net.imglib2.FinalInterval;
-import net.imglib2.Interval;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Cast;
 import net.imglib2.util.CloseableThreadLocal;
@@ -44,18 +41,10 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 	@Override
 	public void copy( final long[] srcPos, final Object dest, final int[] size )
 	{
-//			p1.setTargetInterval( srcPos, size ); // TODO?
-		p1.setTargetInterval( interval( srcPos, size ) );
+		p1.setTargetInterval( srcPos, size );
 		final Object src = p1.getSourceBuffer();
 		p0.copy( p1.getSourcePos(), src, p1.getSourceSize() );
 		p1.compute( Cast.unchecked( src ), Cast.unchecked( dest ) );
-	}
-
-	private static Interval interval( long[] srcPos, int[] size )
-	{
-		final long[] srcMax = new long[ srcPos.length ];
-		Arrays.setAll( srcMax, d -> srcPos[ d ] + size[ d ] - 1 );
-		return FinalInterval.wrap( srcPos, srcMax );
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package net.imglib2.algorithm.blocks;
 
 import static net.imglib2.blocks.PrimitiveBlocks.OnFallback.WARN;
+import static net.imglib2.util.Util.safeInt;
 
 import java.util.Arrays;
 
@@ -61,7 +62,7 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >
 	{
 		final long[] srcPos = interval.minAsLongArray();
 		final int[] size = new int[ srcPos.length ];
-		Arrays.setAll( size, d -> ( int ) interval.dimension( d ) );
+		Arrays.setAll( size, d -> safeInt( interval.dimension( d ) ) );
 		copy( srcPos, dest, size );
 	}
 
@@ -83,7 +84,7 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >
 	 */
 	default < U extends NativeType< U > > BlockSupplier< U > andThen( UnaryBlockOperator< T, U > operator )
 	{
-		return new ConcatenatedBlockSupplier< U >( this.independentCopy(), operator.independentCopy() );
+		return new ConcatenatedBlockSupplier<>( this.independentCopy(), operator.independentCopy() );
 	}
 
 	/**
@@ -132,7 +133,7 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >
 	 * @return a {@code BlockSupplier} accessor for {@code ra}.
 	 * @param <T> pixel type
 	 */
-	static < T extends NativeType< T >, R extends NativeType< R > > BlockSupplier< T > of(
+	static < T extends NativeType< T > > BlockSupplier< T > of(
 			RandomAccessible< T > ra,
 			PrimitiveBlocks.OnFallback onFallback )
 	{
