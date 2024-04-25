@@ -33,7 +33,6 @@
  */
 package net.imglib2.algorithm.blocks;
 
-import java.util.function.Supplier;
 import net.imglib2.Interval;
 
 class ConcatenatedBlockProcessor< I, K, O > implements BlockProcessor< I, O >
@@ -41,8 +40,6 @@ class ConcatenatedBlockProcessor< I, K, O > implements BlockProcessor< I, O >
 	private final BlockProcessor< I, K > p0;
 
 	private final BlockProcessor< K, O > p1;
-
-	private Supplier< ConcatenatedBlockProcessor< I, K, O > > threadSafeSupplier;
 
 	public ConcatenatedBlockProcessor(
 			BlockProcessor< I, K > p0,
@@ -63,6 +60,13 @@ class ConcatenatedBlockProcessor< I, K, O > implements BlockProcessor< I, O >
 	{
 		p1.setTargetInterval( interval );
 		p0.setTargetInterval( p1.getSourceInterval() );
+	}
+
+	@Override
+	public void setTargetInterval( final long[] srcPos, final int[] size )
+	{
+		p1.setTargetInterval( srcPos, size );
+		p0.setTargetInterval( p1.getSourcePos(), p1.getSourceSize() );
 	}
 
 	@Override

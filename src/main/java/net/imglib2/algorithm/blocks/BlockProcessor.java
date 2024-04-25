@@ -33,6 +33,9 @@
  */
 package net.imglib2.algorithm.blocks;
 
+import java.util.Arrays;
+
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.blocks.PrimitiveBlocks;
 
@@ -55,6 +58,13 @@ public interface BlockProcessor< I, O >
 	BlockProcessor< I, O > independentCopy();
 
 	void setTargetInterval( Interval interval );
+
+	default void setTargetInterval( long[] srcPos, int[] size )
+	{
+		final long[] srcMax = new long[ srcPos.length ];
+		Arrays.setAll( srcMax, d -> srcPos[ d ] + size[ d ] - 1 );
+		setTargetInterval( FinalInterval.wrap( srcPos, srcMax ) );
+	}
 
 	long[] getSourcePos();
 

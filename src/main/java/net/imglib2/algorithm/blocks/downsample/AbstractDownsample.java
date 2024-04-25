@@ -61,7 +61,7 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 	// sources for every per-dimension downsampling step.
 	// dest is the tempArray of the next step, or final dest for the last step.
 	// tempArrays[0] can be used to copy the source block into.
-	private final TempArray< P > tempArrays[];
+	private final TempArray< P >[] tempArrays;
 	final int[] tempArraySizes;
 
 	private final BlockProcessorSourceInterval sourceInterval;
@@ -97,7 +97,7 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 
 	private static < P > TempArray< P >[] createTempArrays( final int steps, final PrimitiveType primitiveType )
 	{
-		final TempArray< P > tempArrays[] = new TempArray[ steps ];
+		final TempArray< P >[] tempArrays = new TempArray[ steps ];
 		tempArrays[ 0 ] = TempArray.forPrimitiveType( primitiveType );
 		if ( steps >= 2 )
 		{
@@ -151,16 +151,40 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 		}
 
 		if ( destSizeChanged )
+			recomputeTempArraySizes();
+	}
+
+	protected void recomputeTempArraySizes()
+	{
+		int size = safeInt( Intervals.numElements( sourceSize ) );
+		tempArraySizes[ 0 ] = size;
+		for ( int i = 1; i < steps; ++i )
 		{
-			int size = safeInt( Intervals.numElements( sourceSize ) );
-			tempArraySizes[ 0 ] = size;
-			for ( int i = 1; i < steps; ++i )
+			final int d = downsampleDims[ i - 1 ];
+			size = size / sourceSize[ d ] * destSize[ d ];
+			tempArraySizes[ i ] = size;
+		}
+	}
+
+	@Override
+	public void setTargetInterval( final long[] pos, final int[] size )
+	{
+		boolean destSizeChanged = false;
+		for ( int d = 0; d < n; ++d )
+		{
+			sourcePos[ d ] = downsampleInDim[ d ] ? pos[ d ] * 2 - 1 : pos[ d ];
+
+			final int tdim = safeInt( size[ d ] );
+			if ( tdim != destSize[ d ] )
 			{
-				final int d = downsampleDims[ i - 1 ];
-				size = size / sourceSize[ d ] * destSize[ d ];
-				tempArraySizes[ i ] = size;
+				destSize[ d ] = tdim;
+				sourceSize[ d ] = downsampleInDim[ d ] ? tdim * 2 + 1 : tdim;
+				destSizeChanged = true;
 			}
 		}
+
+		if ( destSizeChanged )
+			recomputeTempArraySizes();
 	}
 
 	@Override
