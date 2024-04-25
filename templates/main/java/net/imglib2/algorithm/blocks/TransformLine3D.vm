@@ -36,6 +36,7 @@ package net.imglib2.algorithm.blocks.transform;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Cast;
 
+#parse( "PixelTypes.vm" )
 
 /**
  * Compute a destination X line for 2D.
@@ -127,18 +128,20 @@ interface TransformLine3D< P >
 
 
 	// ========== NLINEAR =====================================================
+#set( $nlinear_primitive_types = ["float", "double"] )
+#foreach( $t in $nlinear_primitive_types )
 
 
-	class NLinear_float implements TransformLine3D< float[] >
+	class NLinear_${t} implements TransformLine3D< ${t}[] >
 	{
-		private NLinear_float()
+		private NLinear_${t}()
 		{
 		}
 
-		static final NLinear_float INSTANCE = new NLinear_float();
+		static final NLinear_${t} INSTANCE = new NLinear_${t}();
 
 		@Override
-		public void apply( final float[] src, final float[] dest, int offset, final int length,
+		public void apply( final ${t}[] src, final ${t}[] dest, int offset, final int length,
 		final float d0, final float d1, final float d2,
 		final int ss0, final int ss1,
 		float sf0, float sf1, float sf2 )
@@ -152,14 +155,14 @@ interface TransformLine3D< P >
 				final float r1 = sf1 - s1;
 				final float r2 = sf2 - s2;
 				final int o = s2 * ss1 + s1 * ss0 + s0;
-				final float a000 = src[ o ];
-				final float a001 = src[ o + 1 ];
-				final float a010 = src[ o + ss0 ];
-				final float a011 = src[ o + ss0 + 1 ];
-				final float a100 = src[ o + ss1 ];
-				final float a101 = src[ o + ss1 + 1 ];
-				final float a110 = src[ o + ss1 + ss0 ];
-				final float a111 = src[ o + ss1 + ss0 + 1 ];
+				final ${t} a000 = src[ o ];
+				final ${t} a001 = src[ o + 1 ];
+				final ${t} a010 = src[ o + ss0 ];
+				final ${t} a011 = src[ o + ss0 + 1 ];
+				final ${t} a100 = src[ o + ss1 ];
+				final ${t} a101 = src[ o + ss1 + 1 ];
+				final ${t} a110 = src[ o + ss1 + ss0 ];
+				final ${t} a111 = src[ o + ss1 + ss0 + 1 ];
 				dest[ offset++ ] = a000 +
 						r0 * ( -a000 + a001 ) +
 						r1 * ( ( -a000 + a010 ) +
@@ -174,68 +177,24 @@ interface TransformLine3D< P >
 			}
 		}
 	}
-
-
-	class NLinear_double implements TransformLine3D< double[] >
-	{
-		private NLinear_double()
-		{
-		}
-
-		static final NLinear_double INSTANCE = new NLinear_double();
-
-		@Override
-		public void apply( final double[] src, final double[] dest, int offset, final int length,
-		final float d0, final float d1, final float d2,
-		final int ss0, final int ss1,
-		float sf0, float sf1, float sf2 )
-		{
-			for ( int x = 0; x < length; ++x )
-			{
-				final int s0 = ( int ) sf0;
-				final int s1 = ( int ) sf1;
-				final int s2 = ( int ) sf2;
-				final float r0 = sf0 - s0;
-				final float r1 = sf1 - s1;
-				final float r2 = sf2 - s2;
-				final int o = s2 * ss1 + s1 * ss0 + s0;
-				final double a000 = src[ o ];
-				final double a001 = src[ o + 1 ];
-				final double a010 = src[ o + ss0 ];
-				final double a011 = src[ o + ss0 + 1 ];
-				final double a100 = src[ o + ss1 ];
-				final double a101 = src[ o + ss1 + 1 ];
-				final double a110 = src[ o + ss1 + ss0 ];
-				final double a111 = src[ o + ss1 + ss0 + 1 ];
-				dest[ offset++ ] = a000 +
-						r0 * ( -a000 + a001 ) +
-						r1 * ( ( -a000 + a010 ) +
-								r0 * ( a000 - a001 - a010 + a011 ) ) +
-						r2 * ( ( -a000 + a100 ) +
-								r0 * ( a000 - a001 - a100 + a101 ) +
-								r1 * ( ( a000 - a010 - a100 + a110 ) +
-										r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
-				sf0 += d0;
-				sf1 += d1;
-				sf2 += d2;
-			}
-		}
-	}
+#end
 
 
 	// ========== NEARESTNEIGHBOR =============================================
+#set( $nlinear_primitive_types = ["float", "double", "byte", "short", "int", "long"] )
+#foreach( $t in $nlinear_primitive_types )
 
 
-	class NearestNeighbor_float implements TransformLine3D< float[] >
+	class NearestNeighbor_${t} implements TransformLine3D< ${t}[] >
 	{
-		private NearestNeighbor_float()
+		private NearestNeighbor_${t}()
 		{
 		}
 
-		static final NearestNeighbor_float INSTANCE = new NearestNeighbor_float();
+		static final NearestNeighbor_${t} INSTANCE = new NearestNeighbor_${t}();
 
 		@Override
-		public void apply( final float[] src, final float[] dest, int offset, final int length,
+		public void apply( final ${t}[] src, final ${t}[] dest, int offset, final int length,
                 final float d0, final float d1, final float d2,
                 final int ss0, final int ss1,
                 float sf0, float sf1, float sf2 )
@@ -255,159 +214,5 @@ interface TransformLine3D< P >
 			}
 		}
 	}
-
-
-	class NearestNeighbor_double implements TransformLine3D< double[] >
-	{
-		private NearestNeighbor_double()
-		{
-		}
-
-		static final NearestNeighbor_double INSTANCE = new NearestNeighbor_double();
-
-		@Override
-		public void apply( final double[] src, final double[] dest, int offset, final int length,
-                final float d0, final float d1, final float d2,
-                final int ss0, final int ss1,
-                float sf0, float sf1, float sf2 )
-		{
-			sf0 += .5f;
-			sf1 += .5f;
-			sf2 += .5f;
-			for ( int x = 0; x < length; ++x )
-			{
-				final int s0 = ( int ) sf0;
-				final int s1 = ( int ) sf1;
-				final int s2 = ( int ) sf2;
-				dest[ offset++ ] = src[ s2 * ss1 + s1 * ss0 + s0 ];
-				sf0 += d0;
-				sf1 += d1;
-				sf2 += d2;
-			}
-		}
-	}
-
-
-	class NearestNeighbor_byte implements TransformLine3D< byte[] >
-	{
-		private NearestNeighbor_byte()
-		{
-		}
-
-		static final NearestNeighbor_byte INSTANCE = new NearestNeighbor_byte();
-
-		@Override
-		public void apply( final byte[] src, final byte[] dest, int offset, final int length,
-                final float d0, final float d1, final float d2,
-                final int ss0, final int ss1,
-                float sf0, float sf1, float sf2 )
-		{
-			sf0 += .5f;
-			sf1 += .5f;
-			sf2 += .5f;
-			for ( int x = 0; x < length; ++x )
-			{
-				final int s0 = ( int ) sf0;
-				final int s1 = ( int ) sf1;
-				final int s2 = ( int ) sf2;
-				dest[ offset++ ] = src[ s2 * ss1 + s1 * ss0 + s0 ];
-				sf0 += d0;
-				sf1 += d1;
-				sf2 += d2;
-			}
-		}
-	}
-
-
-	class NearestNeighbor_short implements TransformLine3D< short[] >
-	{
-		private NearestNeighbor_short()
-		{
-		}
-
-		static final NearestNeighbor_short INSTANCE = new NearestNeighbor_short();
-
-		@Override
-		public void apply( final short[] src, final short[] dest, int offset, final int length,
-                final float d0, final float d1, final float d2,
-                final int ss0, final int ss1,
-                float sf0, float sf1, float sf2 )
-		{
-			sf0 += .5f;
-			sf1 += .5f;
-			sf2 += .5f;
-			for ( int x = 0; x < length; ++x )
-			{
-				final int s0 = ( int ) sf0;
-				final int s1 = ( int ) sf1;
-				final int s2 = ( int ) sf2;
-				dest[ offset++ ] = src[ s2 * ss1 + s1 * ss0 + s0 ];
-				sf0 += d0;
-				sf1 += d1;
-				sf2 += d2;
-			}
-		}
-	}
-
-
-	class NearestNeighbor_int implements TransformLine3D< int[] >
-	{
-		private NearestNeighbor_int()
-		{
-		}
-
-		static final NearestNeighbor_int INSTANCE = new NearestNeighbor_int();
-
-		@Override
-		public void apply( final int[] src, final int[] dest, int offset, final int length,
-                final float d0, final float d1, final float d2,
-                final int ss0, final int ss1,
-                float sf0, float sf1, float sf2 )
-		{
-			sf0 += .5f;
-			sf1 += .5f;
-			sf2 += .5f;
-			for ( int x = 0; x < length; ++x )
-			{
-				final int s0 = ( int ) sf0;
-				final int s1 = ( int ) sf1;
-				final int s2 = ( int ) sf2;
-				dest[ offset++ ] = src[ s2 * ss1 + s1 * ss0 + s0 ];
-				sf0 += d0;
-				sf1 += d1;
-				sf2 += d2;
-			}
-		}
-	}
-
-
-	class NearestNeighbor_long implements TransformLine3D< long[] >
-	{
-		private NearestNeighbor_long()
-		{
-		}
-
-		static final NearestNeighbor_long INSTANCE = new NearestNeighbor_long();
-
-		@Override
-		public void apply( final long[] src, final long[] dest, int offset, final int length,
-                final float d0, final float d1, final float d2,
-                final int ss0, final int ss1,
-                float sf0, float sf1, float sf2 )
-		{
-			sf0 += .5f;
-			sf1 += .5f;
-			sf2 += .5f;
-			for ( int x = 0; x < length; ++x )
-			{
-				final int s0 = ( int ) sf0;
-				final int s1 = ( int ) sf1;
-				final int s2 = ( int ) sf2;
-				dest[ offset++ ] = src[ s2 * ss1 + s1 * ss0 + s0 ];
-				sf0 += d0;
-				sf1 += d1;
-				sf2 += d2;
-			}
-		}
-	}
+#end
 }
