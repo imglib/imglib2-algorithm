@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,6 +33,9 @@
  */
 package net.imglib2.algorithm.blocks.downsample;
 
+import java.util.Arrays;
+
+import bdv.cache.SharedQueue;
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvSource;
@@ -40,24 +43,19 @@ import bdv.util.volatiles.VolatileViews;
 import bdv.viewer.DisplayMode;
 import ij.IJ;
 import ij.ImagePlus;
-import java.util.Arrays;
-
-import net.imglib2.algorithm.blocks.BlockSupplier;
-import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.CenterDouble;
-import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.HalfPixelDouble;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
-import net.imglib2.blocks.PrimitiveBlocks;
+import net.imglib2.algorithm.blocks.BlockSupplier;
+import net.imglib2.algorithm.blocks.UnaryBlockOperator;
+import net.imglib2.algorithm.blocks.convert.Convert;
+import net.imglib2.algorithm.blocks.downsample.Downsample.Offset;
 import net.imglib2.cache.img.CachedCellImg;
-import net.imglib2.converter.Converters;
-import net.imglib2.converter.RealDoubleConverter;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.Views;
 
-public class DownsampleDoublePlayground
+public class DownsampleBdvPlayground2
 {
 	public static void main( String[] args )
 	{
@@ -75,48 +73,33 @@ public class DownsampleDoublePlayground
 		bdv.setDisplayRange( 0, 255 );
 		bdv.getBdvHandle().getViewerPanel().setDisplayMode( DisplayMode.SINGLE );
 
-		final BlockSupplier< DoubleType > blocks = BlockSupplier.of(
-				Converters.convert( Views.extendBorder( img ), new RealDoubleConverter<>(), new DoubleType() ) );
-
 		final boolean[] downsampleInDim = { true, true, true };
 		final long[] downsampledDimensions = Downsample.getDownsampledDimensions( img.dimensionsAsLongArray(), downsampleInDim );
 		final int[] cellDimensions = { 64, 64, 64 };
-		final CachedCellImg< DoubleType, ? > downsampled = BlockAlgoUtils.cellImg(
-				blocks.andThen( Downsample.downsample(
-						new DoubleType(),
-						Downsample.ComputationType.DOUBLE,
-						Downsample.Offset.CENTERED,
-						3 )
-				),
-				downsampledDimensions, cellDimensions );
 
 		final double[] calib = new double[ 3 ];
 		Arrays.setAll(calib, d -> downsampleInDim[ d ] ? 2 : 1 );
-		final BdvSource out = BdvFunctions.show(
-				VolatileViews.wrapAsVolatile( downsampled ),
-				"downsampled",
-				Bdv.options()
-						.addTo( bdv )
-						.sourceTransform( calib ) );
-		out.setDisplayRange( 0, 255 );
-//		out.setColor( new ARGBType( 0xff0000 ) );
 
-		final CachedCellImg< DoubleType, ? > downsampled2 = BlockAlgoUtils.cellImg(
-				blocks.andThen( Downsample.downsample(
-						new DoubleType(),
-						Downsample.ComputationType.DOUBLE,
-						Downsample.Offset.HALF_PIXEL,
-						3 )
-				),
-				downsampledDimensions, cellDimensions );
-		final BdvSource out2 = BdvFunctions.show(
-				VolatileViews.wrapAsVolatile( downsampled2 ),
+		final BlockSupplier< UnsignedByteType > blocks = BlockSupplier
+				.of( Views.extendMirrorDouble( img ) )
+				.andThen( Downsample.downsample(
+						img.getType(),
+						Offset.HALF_PIXEL,
+						img.numDimensions() ) );
+
+		final Img< UnsignedByteType > downsampled = BlockAlgoUtils.cellImg(
+				blocks,
+				downsampledDimensions,
+				cellDimensions );
+
+		final BdvSource out = BdvFunctions.show(
+				VolatileViews.wrapAsVolatile( downsampled, new SharedQueue( 32, 1 ) ),
 				"downsampled half-pixel",
 				Bdv.options()
 						.addTo( bdv )
-						.sourceTransform( calib ) );
-		out2.setDisplayRange( 0, 255 );
-//		out2.setColor( new ARGBType( 0x00ff00 ) );
-
+						.sourceTransform( calib )
+		);
+		out.setDisplayRange( 0, 255 );
+		out.setColor( new ARGBType( 0x00ff00 ) );
 	}
 }
