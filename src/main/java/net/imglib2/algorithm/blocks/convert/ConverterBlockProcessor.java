@@ -33,6 +33,8 @@
  */
 package net.imglib2.algorithm.blocks.convert;
 
+import static net.imglib2.util.Util.safeInt;
+
 import java.util.Arrays;
 import java.util.function.Supplier;
 
@@ -131,13 +133,6 @@ class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< 
 		interval.min( sourcePos );
 		Arrays.setAll( sourceSize, d -> safeInt( interval.dimension( d ) ) );
 		sourceLength = safeInt( Intervals.numElements( sourceSize ) );
-	}
-
-	private static int safeInt( final long value )
-	{
-		if ( value > Integer.MAX_VALUE )
-			throw new IllegalArgumentException( "value too large" );
-		return ( int ) value;
 	}
 
 	@Override

@@ -33,6 +33,8 @@
  */
 package net.imglib2.algorithm.blocks.transform;
 
+import static net.imglib2.util.Util.safeInt;
+
 import java.util.Arrays;
 import java.util.function.Supplier;
 
@@ -131,13 +133,6 @@ abstract class AbstractTransformProcessor< T extends AbstractTransformProcessor<
 			break;
 		}
 		sourceLength = safeInt( Intervals.numElements( sourceSize ) );
-	}
-
-	static int safeInt( final long value )
-	{
-		if ( value > Integer.MAX_VALUE )
-			throw new IllegalArgumentException( "value too large" );
-		return ( int ) value;
 	}
 
 	@Override

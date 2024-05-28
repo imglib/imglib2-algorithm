@@ -33,6 +33,8 @@
  */
 package net.imglib2.algorithm.blocks.downsample;
 
+import static net.imglib2.util.Util.safeInt;
+
 import java.util.Arrays;
 
 import net.imglib2.Interval;
@@ -41,6 +43,7 @@ import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Intervals;
+import net.imglib2.util.Util;
 
 abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > implements BlockProcessor< P, P >
 {
@@ -158,13 +161,6 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 				tempArraySizes[ i ] = size;
 			}
 		}
-	}
-
-	static int safeInt( final long value )
-	{
-		if ( value > Integer.MAX_VALUE )
-			throw new IllegalArgumentException( "value too large" );
-		return ( int ) value;
 	}
 
 	@Override
