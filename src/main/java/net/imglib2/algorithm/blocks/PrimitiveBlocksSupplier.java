@@ -57,6 +57,12 @@ class PrimitiveBlocksSupplier< T extends NativeType< T > > implements BlockSuppl
 	}
 
 	@Override
+	public int numDimensions()
+	{
+		return blocks.numDimensions();
+	}
+
+	@Override
 	public void copy( final long[] srcPos, final Object dest, final int[] size )
 	{
 		blocks.copy( srcPos, dest, size );
@@ -86,6 +92,12 @@ class PrimitiveBlocksSupplier< T extends NativeType< T > > implements BlockSuppl
 			public T getType()
 			{
 				return blocks.getType();
+			}
+
+			@Override
+			public int numDimensions()
+			{
+				return blocks.numDimensions();
 			}
 
 			@Override

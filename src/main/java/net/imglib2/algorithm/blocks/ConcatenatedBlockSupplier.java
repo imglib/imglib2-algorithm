@@ -47,6 +47,8 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 
 	private final T type;
 
+	private final int numDimensions;
+
 	private Supplier< BlockSupplier< T > > threadSafeSupplier;
 
 	public < S extends NativeType< S > > ConcatenatedBlockSupplier(
@@ -56,6 +58,7 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 		this.p0 = srcSupplier;
 		this.p1 = operator.blockProcessor();
 		this.type = operator.getTargetType();
+		this.numDimensions = srcSupplier.numDimensions(); // TODO: REVISE. The operator should determine the number of (target) dimensions. This is only to make it compile.
 	}
 
 	private ConcatenatedBlockSupplier( final ConcatenatedBlockSupplier< T > s )
@@ -63,12 +66,19 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 		p0 = s.p0.independentCopy();
 		p1 = s.p1.independentCopy();
 		type = s.type;
+		numDimensions = s.numDimensions;
 	}
 
 	@Override
 	public T getType()
 	{
 		return type;
+	}
+
+	@Override
+	public int numDimensions()
+	{
+		return numDimensions;
 	}
 
 	@Override
@@ -97,6 +107,12 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 			public T getType()
 			{
 				return type;
+			}
+
+			@Override
+			public int numDimensions()
+			{
+				return numDimensions;
 			}
 
 			@Override
