@@ -37,6 +37,7 @@ import static net.imglib2.blocks.PrimitiveBlocks.OnFallback.WARN;
 import static net.imglib2.util.Util.safeInt;
 
 import java.util.Arrays;
+import java.util.function.Function;
 
 import net.imglib2.EuclideanSpace;
 import net.imglib2.Interval;
@@ -144,6 +145,11 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, 
 	default < U extends NativeType< U > > BlockSupplier< U > andThen( UnaryBlockOperator< T, U > operator )
 	{
 		return new ConcatenatedBlockSupplier<>( this.independentCopy(), operator.independentCopy() );
+	}
+
+	default < U extends NativeType< U > > BlockSupplier< U > andThen( Function< BlockSupplier< T >, UnaryBlockOperator< T, U > > function )
+	{
+		return new ConcatenatedBlockSupplier<>( this.independentCopy(), function.apply( this ) );
 	}
 
 	/**
