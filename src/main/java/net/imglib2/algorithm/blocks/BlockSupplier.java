@@ -38,6 +38,7 @@ import static net.imglib2.util.Util.safeInt;
 
 import java.util.Arrays;
 
+import net.imglib2.EuclideanSpace;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.Typed;
@@ -45,7 +46,7 @@ import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Util;
 
-public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >
+public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, EuclideanSpace
 {
 	/**
 	 * Copy a block from the ({@code T}-typed) source into primitive arrays (of
