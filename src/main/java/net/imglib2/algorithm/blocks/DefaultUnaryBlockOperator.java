@@ -42,12 +42,16 @@ public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends Nat
 {
 	private final S sourceType;
 	private final T targetType;
+	private final int numSourceDimensions;
+	private final int numTargetDimensions;
 	private final BlockProcessor< ?, ? > blockProcessor;
 
-	public DefaultUnaryBlockOperator( S sourceType, T targetType, BlockProcessor< ?, ? > blockProcessor )
+	public DefaultUnaryBlockOperator( S sourceType, T targetType, int numSourceDimensions, int numTargetDimensions, BlockProcessor< ?, ? > blockProcessor )
 	{
 		this.sourceType = sourceType;
 		this.targetType = targetType;
+		this.numSourceDimensions = numSourceDimensions;
+		this.numTargetDimensions = numTargetDimensions;
 		this.blockProcessor = blockProcessor;
 	}
 
@@ -70,9 +74,21 @@ public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends Nat
 	}
 
 	@Override
+	public int numSourceDimensions()
+	{
+		return numSourceDimensions;
+	}
+
+	@Override
+	public int numTargetDimensions()
+	{
+		return numTargetDimensions;
+	}
+
+	@Override
 	public UnaryBlockOperator< S, T > independentCopy()
 	{
-		return new DefaultUnaryBlockOperator<>( sourceType, targetType, blockProcessor.independentCopy() );
+		return new DefaultUnaryBlockOperator<>( sourceType, targetType, numSourceDimensions, numTargetDimensions, blockProcessor.independentCopy() );
 	}
 
 	private Supplier< UnaryBlockOperator< S, T > > threadSafeSupplier;
@@ -100,6 +116,18 @@ public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends Nat
 			public T getTargetType()
 			{
 				return targetType;
+			}
+
+			@Override
+			public int numSourceDimensions()
+			{
+				return numSourceDimensions;
+			}
+
+			@Override
+			public int numTargetDimensions()
+			{
+				return numTargetDimensions;
 			}
 
 			@Override
