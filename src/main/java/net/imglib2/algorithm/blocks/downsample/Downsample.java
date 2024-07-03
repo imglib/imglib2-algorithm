@@ -280,19 +280,21 @@ public class Downsample
 
 
 
-	private static UnaryBlockOperator< FloatType, FloatType > downsampleFloat( Offset offset, final boolean[] downsampleInDim )
+	private static UnaryBlockOperator< FloatType, FloatType > downsampleFloat( final Offset offset, final boolean[] downsampleInDim )
 	{
 		final FloatType type = new FloatType();
-		return new DefaultUnaryBlockOperator<>( type, type,
+		final int n = downsampleInDim.length;
+		return new DefaultUnaryBlockOperator<>( type, type, n, n,
 				offset == Offset.HALF_PIXEL
 						? new HalfPixelFloat( downsampleInDim )
 						: new CenterFloat( downsampleInDim ) );
 	}
 
-	private static UnaryBlockOperator< DoubleType, DoubleType > downsampleDouble( Offset offset, final boolean[] downsampleInDim )
+	private static UnaryBlockOperator< DoubleType, DoubleType > downsampleDouble( final Offset offset, final boolean[] downsampleInDim )
 	{
 		final DoubleType type = new DoubleType();
-		return new DefaultUnaryBlockOperator<>( type, type,
+		final int n = downsampleInDim.length;
+		return new DefaultUnaryBlockOperator<>( type, type, n, n,
 				offset == Offset.HALF_PIXEL
 						? new HalfPixelDouble( downsampleInDim )
 						: new CenterDouble( downsampleInDim ) );

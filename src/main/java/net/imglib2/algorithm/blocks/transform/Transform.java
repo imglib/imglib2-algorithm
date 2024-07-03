@@ -155,8 +155,11 @@ public class Transform
 
 	private static < T extends NativeType< T > > UnaryBlockOperator< T, T > _affine( final AffineGet transform, final Interpolation interpolation, final T type )
 	{
-		return new DefaultUnaryBlockOperator<>( type, type,
-				transform.numDimensions() == 2
+		final int n = transform.numDimensions();
+		if ( n < 2 || n > 3 )
+			throw new IllegalArgumentException( "Only 2D and 3D affine transforms are supported currently" );
+		return new DefaultUnaryBlockOperator<>( type, type, n, n,
+				n == 2
 						? new Affine2DProcessor<>( ( AffineTransform2D ) transform, interpolation, type.getNativeTypeFactory().getPrimitiveType() )
 						: new Affine3DProcessor<>( ( AffineTransform3D ) transform, interpolation, type.getNativeTypeFactory().getPrimitiveType() ) );
 	}

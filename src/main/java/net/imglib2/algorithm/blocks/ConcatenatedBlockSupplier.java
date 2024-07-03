@@ -58,7 +58,16 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 		this.p0 = srcSupplier;
 		this.p1 = operator.blockProcessor();
 		this.type = operator.getTargetType();
-		this.numDimensions = srcSupplier.numDimensions(); // TODO: REVISE. The operator should determine the number of (target) dimensions. This is only to make it compile.
+		if ( operator.numSourceDimensions() > 0 )
+		{
+			if ( srcSupplier.numDimensions() != operator.numSourceDimensions() )
+				throw new IllegalArgumentException( "UnaryBlockOperator cannot be concatenated: number of dimensions mismatch." );
+			this.numDimensions = operator.numTargetDimensions();
+		}
+		else
+		{
+			this.numDimensions = srcSupplier.numDimensions();
+		}
 	}
 
 	private ConcatenatedBlockSupplier( final ConcatenatedBlockSupplier< T > s )

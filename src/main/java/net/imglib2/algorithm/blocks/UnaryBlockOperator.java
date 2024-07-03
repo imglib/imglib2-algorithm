@@ -78,6 +78,32 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	T getTargetType();
 
 	/**
+	 * Number of source dimensions.
+	 * <p>
+	 * Some operators can be applied to arbitrary dimensions, e.g., converters.
+	 * In this case, they should return {@code numSourceDimensions() <= 0}. It
+	 * is expected that these operators do not modify the number dimensions,
+	 * that is, when such an operator is applied to a 3D block, the result is
+	 * also a 3D block.
+	 *
+	 * @return the number of source dimensions
+	 */
+	int numSourceDimensions();
+
+	/**
+	 * Number of target dimensions.
+	 * <p>
+	 * Some operators can be applied to arbitrary dimensions, e.g., converters.
+	 * In this case, they should return {@code numTargetDimensions() <= 0}. It
+	 * is expected that these operators do not modify the number dimensions,
+	 * that is, when such an operator is applied to a 3D block, the result is
+	 * also a 3D block.
+	 *
+	 * @return the number of source dimensions
+	 */
+	int numTargetDimensions();
+
+	/**
 	 * Get a thread-safe version of this {@code UnaryBlockOperator}.
 	 * (Implemented as a wrapper that makes {@link ThreadLocal} copies).
 	 */
@@ -96,9 +122,18 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	 */
 	default < U extends NativeType< U > > UnaryBlockOperator< S, U > andThen( UnaryBlockOperator< T, U > op )
 	{
+		final boolean thisHasDimensions = numSourceDimensions() > 0;
+		final boolean opHasDimensions = op.numSourceDimensions() > 0;
+		if ( opHasDimensions && thisHasDimensions && numTargetDimensions() != op.numSourceDimensions() ) {
+			throw new IllegalArgumentException( "UnaryBlockOperator cannot be concatenated: number of dimensions mismatch." );
+		}
+		final int numSourceDimensions = thisHasDimensions ? numSourceDimensions() : op.numSourceDimensions();
+		final int numTargetDimensions = opHasDimensions ? op.numTargetDimensions() : numTargetDimensions();
 		return new DefaultUnaryBlockOperator<>(
 				getSourceType(),
 				op.getTargetType(),
+				numSourceDimensions,
+				numTargetDimensions,
 				blockProcessor().andThen( op.blockProcessor() ) );
 	}
 

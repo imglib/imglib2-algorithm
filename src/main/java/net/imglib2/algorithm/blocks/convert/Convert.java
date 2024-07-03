@@ -78,7 +78,9 @@ public class Convert
 	public static < S extends NativeType< S >, T extends NativeType< T > >
 	UnaryBlockOperator< S, T > convert( final S sourceType, final T targetType, final ClampType clamp )
 	{
-		return new DefaultUnaryBlockOperator<>( sourceType, targetType, new ConvertBlockProcessor<>( sourceType, targetType, clamp ) );
+		return new DefaultUnaryBlockOperator<>(
+				sourceType, targetType, 0, 0,
+				new ConvertBlockProcessor<>( sourceType, targetType, clamp ) );
 	}
 
 	/**
@@ -88,6 +90,8 @@ public class Convert
 	public static < S extends NativeType< S >, T extends NativeType< T > >
 	UnaryBlockOperator< S, T > convert( final S sourceType, final T targetType, Supplier< Converter< ? super S, T > > converterSupplier )
 	{
-		return new DefaultUnaryBlockOperator<>( sourceType, targetType, new ConverterBlockProcessor<>( sourceType, targetType, converterSupplier ) );
+		return new DefaultUnaryBlockOperator<>(
+				sourceType, targetType, 0, 0,
+				new ConverterBlockProcessor<>( sourceType, targetType, converterSupplier ) );
 	}
 }
