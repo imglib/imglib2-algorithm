@@ -34,10 +34,9 @@
 package net.imglib2.algorithm.blocks;
 
 import net.imglib2.algorithm.blocks.convert.ClampType;
+import net.imglib2.algorithm.blocks.convert.Convert;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Cast;
-
-import static net.imglib2.algorithm.blocks.convert.Convert.convert;
 
 /**
  * Wraps {@code BlockProcessor<I,O>}, where {@code I} is the primitive array
@@ -147,7 +146,7 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 		if ( newSourceType.getClass().isInstance( getSourceType() ) )
 			return Cast.unchecked( this );
 		else
-			return convert( newSourceType, getSourceType(), clamp ).andThen( this );
+			return Convert.createOperator( newSourceType, getSourceType(), clamp ).andThen( this );
 	}
 
 	/**
@@ -160,6 +159,6 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 		if ( newTargetType.getClass().isInstance( getTargetType() ) )
 			return Cast.unchecked( this );
 		else
-			return this.andThen( convert( getTargetType(), newTargetType, clamp ) );
+			return this.andThen( Convert.createOperator( getTargetType(), newTargetType, clamp ) );
 	}
 }
