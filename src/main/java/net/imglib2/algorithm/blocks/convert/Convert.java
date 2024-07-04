@@ -33,8 +33,10 @@
  */
 package net.imglib2.algorithm.blocks.convert;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.converter.Converter;
@@ -60,14 +62,100 @@ import net.imglib2.type.NativeType;
 public class Convert
 {
 	/**
+	 * Create {@link UnaryBlockOperator} to convert blocks from {@code S} to
+	 * {@code T}.
+	 * <p>
+	 * Supported source/target types are {@code ByteType}, {@code
+	 * UnsignedByteType}, {@code ShortType}, {@code UnsignedShortType}, {@code
+	 * IntType}, {@code UnsignedIntType}, {@code LongType}, {@code
+	 * UnsignedLongType}, {@code FloatType}, and {@code DoubleType}.
+	 * <p>
+	 * Target values are not clamped, so overflow may occur if the source type
+	 * has a larger range than the target type.
+	 * <p>
+	 * The returned factory function creates an operator matching the type
+	 * {@code S} of the given input {@code BlockSupplier<T>}.
+	 *
+	 * @param targetType
+	 * 		an instance of the target type
+	 * @param <S>
+	 * 		source type
+	 * @param <T>
+	 * 		target type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to convert blocks from {@code S} to {@code T}
+	 */
+	public static < S extends NativeType< S >, T extends NativeType< T > >
+	Function< BlockSupplier< S >, UnaryBlockOperator< S, T > > convert( final T targetType )
+	{
+		return convert( targetType, ClampType.NONE );
+	}
+
+	/**
+	 * Create {@link UnaryBlockOperator} to convert blocks from {@code S} to
+	 * {@code T}.
+	 * <p>
+	 * Supported source/target types are {@code ByteType}, {@code
+	 * UnsignedByteType}, {@code ShortType}, {@code UnsignedShortType}, {@code
+	 * IntType}, {@code UnsignedIntType}, {@code LongType}, {@code
+	 * UnsignedLongType}, {@code FloatType}, and {@code DoubleType}.
+	 * <p>
+	 * If the target type cannot represent the full range of the source type,
+	 * values are clamped according to the specified {@link ClampType}.
+	 * <p>
+	 * The returned factory function creates an operator matching the type
+	 * {@code S} of the given input {@code BlockSupplier<T>}.
+	 *
+	 * @param targetType
+	 * 		an instance of the target type
+	 * @param clamp
+	 * 		ClampType
+	 * @param <S>
+	 * 		source type
+	 * @param <T>
+	 * 		target type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to convert blocks from {@code S} to {@code T}
+	 */
+	public static < S extends NativeType< S >, T extends NativeType< T > >
+	Function< BlockSupplier< S >, UnaryBlockOperator< S, T > > convert( final T targetType, final ClampType clamp )
+	{
+		return s -> createOperator( s.getType(), targetType, clamp );
+	}
+
+	/**
+	 * Create {@link UnaryBlockOperator} to convert blocks from {@code S} to
+	 * {@code T} with the specified {@code Converter}.
+	 * <p>
+	 * The returned factory function creates an operator matching the type
+	 * {@code S} of the given input {@code BlockSupplier<T>}.
+	 *
+	 * @param targetType
+	 * 		an instance of the target type
+	 * @param converterSupplier
+	 * 		creates new converter instances
+	 * @param <S>
+	 * 		source type
+	 * @param <T>
+	 * 		target type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to convert blocks from {@code S} to {@code T}
+	 */
+	public static < S extends NativeType< S >, T extends NativeType< T > >
+	Function< BlockSupplier< S >, UnaryBlockOperator< S, T > > convert( final T targetType, Supplier< Converter< ? super S, T > > converterSupplier )
+	{
+		return s -> createOperator( s.getType(), targetType, converterSupplier );
+	}
+
+	/**
 	 * Create {@link UnaryBlockOperator} to convert blocks between {@code
 	 * sourceType} and {@code targetType}.
 	 * No clamping.
 	 */
 	public static < S extends NativeType< S >, T extends NativeType< T > >
-	UnaryBlockOperator< S, T > convert( final S sourceType, final T targetType )
+	UnaryBlockOperator< S, T > createOperator( final S sourceType, final T targetType )
 	{
-		return convert( sourceType, targetType, ClampType.NONE );
+		return createOperator( sourceType, targetType, ClampType.NONE );
 	}
 
 	/**
@@ -76,7 +164,7 @@ public class Convert
 	 * Clamp target values according to {@code clamp}.
 	 */
 	public static < S extends NativeType< S >, T extends NativeType< T > >
-	UnaryBlockOperator< S, T > convert( final S sourceType, final T targetType, final ClampType clamp )
+	UnaryBlockOperator< S, T > createOperator( final S sourceType, final T targetType, final ClampType clamp )
 	{
 		return new DefaultUnaryBlockOperator<>(
 				sourceType, targetType, 0, 0,
@@ -88,7 +176,7 @@ public class Convert
 	 * sourceType} and {@code targetType} with the specified {@code Converter}.
 	 */
 	public static < S extends NativeType< S >, T extends NativeType< T > >
-	UnaryBlockOperator< S, T > convert( final S sourceType, final T targetType, Supplier< Converter< ? super S, T > > converterSupplier )
+	UnaryBlockOperator< S, T > createOperator( final S sourceType, final T targetType, Supplier< Converter< ? super S, T > > converterSupplier )
 	{
 		return new DefaultUnaryBlockOperator<>(
 				sourceType, targetType, 0, 0,
