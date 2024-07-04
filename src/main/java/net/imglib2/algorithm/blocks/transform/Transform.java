@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,6 +33,7 @@
  */
 package net.imglib2.algorithm.blocks.transform;
 
+import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.algorithm.blocks.ClampType;
@@ -45,6 +46,8 @@ import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 
 import static net.imglib2.type.PrimitiveType.FLOAT;
+
+import java.util.function.Function;
 
 /**
  * Affine transform in 2D/3D with n-linear or nearest-neighbor interpolation.
@@ -69,13 +72,14 @@ public class Transform
 	}
 
 	/**
-	 * Create a {@code UnaryBlockOperator} to interpolate and affine-transform
-	 * blocks of the standard ImgLib2 {@code RealType}s.
+	 * Interpolate and affine-transform blocks of the standard ImgLib2 {@code
+	 * RealType}s.
 	 * <p>
 	 * Only 2D and 3D are supported currently!
+	 * <p>
+	 * The returned factory function creates an operator matching the type a
+	 * given input {@code BlockSupplier<T>}.
 	 *
-	 * @param type
-	 * 		instance of the input type
 	 * @param transformFromSource
 	 * 		a 2D or 3D affine transform
 	 * @param interpolation
@@ -83,12 +87,43 @@ public class Transform
 	 * @param <T>
 	 * 		the input/output type
 	 *
-	 * @return {@code UnaryBlockOperator} to affine-transform blocks of type {@code T}
+	 * @return factory for {@code UnaryBlockOperator} to affine-transform blocks of type {@code T}
 	 */
 	public static < T extends NativeType< T > >
-	UnaryBlockOperator< T, T > affine( final T type, final AffineGet transformFromSource, Interpolation interpolation )
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > affine( final AffineGet transformFromSource, Interpolation interpolation )
 	{
-		return affine( type, transformFromSource, interpolation, ComputationType.AUTO );
+		return affine( transformFromSource, interpolation, ComputationType.AUTO );
+	}
+
+	/**
+	 * Interpolate and affine-transform blocks of the standard ImgLib2 {@code
+	 * RealType}s.
+	 * <p>
+	 * Only 2D and 3D are supported currently!
+	 * <p>
+	 * The returned factory function creates an operator matching the type a
+	 * given input {@code BlockSupplier<T>}.
+	 *
+	 * @param transformFromSource
+	 * 		a 2D or 3D affine transform
+	 * @param interpolation
+	 * 		which interpolation method to use
+	 * @param computationType
+	 * 		For n-linear interpolation, this specifies in which precision
+	 * 		intermediate values should be computed. For {@code AUTO}, the type
+	 * 		that can represent the input/output type without loss of precision
+	 * 		is picked. That is, {@code FLOAT} for u8, i8, u16, i16, i32, f32,
+	 *      and otherwise {@code DOUBLE} for u32, i64, f64. For nearest-neighbor
+	 *      interpolation, {@code computationType} is not used.
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to affine-transform blocks of type {@code T}
+	 */
+	public static < T extends NativeType< T > >
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > affine( final AffineGet transformFromSource, Interpolation interpolation, final ComputationType computationType )
+	{
+		return s -> createAffineOperator( s.getType(), transformFromSource, interpolation, computationType, ClampType.CLAMP );
 	}
 
 	/**
@@ -116,7 +151,7 @@ public class Transform
 	 * @return {@code UnaryBlockOperator} to affine-transform blocks of type {@code T}
 	 */
 	public static < T extends NativeType< T > >
-	UnaryBlockOperator< T, T > affine( final T type, final AffineGet transformFromSource, Interpolation interpolation, final ComputationType computationType )
+	UnaryBlockOperator< T, T > createAffineOperator( final T type, final AffineGet transformFromSource, Interpolation interpolation, final ComputationType computationType, final ClampType clampType )
 	{
 		final int n = transformFromSource.numDimensions();
 		if ( n < 2 || n > 3 ) {
@@ -145,7 +180,7 @@ public class Transform
 			final UnaryBlockOperator< ?, ? > op = processAsFloat
 					? _affine( transformToSource, interpolation, new FloatType() )
 					: _affine( transformToSource, interpolation, new DoubleType() );
-			return op.adaptSourceType( type, ClampType.NONE ).adaptTargetType( type, ClampType.CLAMP );
+			return op.adaptSourceType( type, ClampType.NONE ).adaptTargetType( type, clampType );
 		}
 		else // if ( interpolation == Interpolation.NEARESTNEIGHBOR )
 		{
@@ -156,8 +191,6 @@ public class Transform
 	private static < T extends NativeType< T > > UnaryBlockOperator< T, T > _affine( final AffineGet transform, final Interpolation interpolation, final T type )
 	{
 		final int n = transform.numDimensions();
-		if ( n < 2 || n > 3 )
-			throw new IllegalArgumentException( "Only 2D and 3D affine transforms are supported currently" );
 		return new DefaultUnaryBlockOperator<>( type, type, n, n,
 				n == 2
 						? new Affine2DProcessor<>( ( AffineTransform2D ) transform, interpolation, type.getNativeTypeFactory().getPrimitiveType() )

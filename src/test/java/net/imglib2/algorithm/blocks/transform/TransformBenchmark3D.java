@@ -43,6 +43,8 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.algorithm.blocks.BlockProcessor;
+import net.imglib2.algorithm.blocks.ClampType;
+import net.imglib2.algorithm.blocks.transform.Transform.ComputationType;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.converter.Converters;
@@ -151,15 +153,18 @@ public class TransformBenchmark3D
 						Views.extendZero( img ),
 						new RealFloatConverter<>(),
 						new FloatType() ) );
-		processor = Transform.affine( new FloatType(), affine, Interpolation.NLINEAR ).blockProcessor();
+		final FloatType type2 = new FloatType();
+		processor = Transform.createAffineOperator( type2, affine, Interpolation.NLINEAR, ComputationType.AUTO, ClampType.CLAMP ).blockProcessor();
 		blocksDouble = PrimitiveBlocks.of(
 				Converters.convert(
 						Views.extendZero( img ),
 						new RealDoubleConverter<>(),
 						new DoubleType() ) );
-		processorDouble = Transform.affine( new DoubleType(), affine, Interpolation.NLINEAR ).blockProcessor();
+		final DoubleType type1 = new DoubleType();
+		processorDouble = Transform.createAffineOperator( type1, affine, Interpolation.NLINEAR, ComputationType.AUTO, ClampType.CLAMP ).blockProcessor();
 		blocksUnsignedByte = PrimitiveBlocks.of( Views.extendZero( img ) );
-		processorUnsignedByte = Transform.affine( new UnsignedByteType(), affine, Interpolation.NLINEAR ).blockProcessor();
+		final UnsignedByteType type = new UnsignedByteType();
+		processorUnsignedByte = Transform.createAffineOperator( type, affine, Interpolation.NLINEAR, ComputationType.AUTO, ClampType.CLAMP ).blockProcessor();
 		blocksFloat();
 		blocksDouble();
 		blocksUnsignedByte();
