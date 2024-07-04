@@ -40,13 +40,11 @@ import ij.IJ;
 import ij.ImagePlus;
 import java.util.Arrays;
 import net.imglib2.Cursor;
-import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
-import net.imglib2.algorithm.blocks.BlockProcessor;
+import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
-import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
@@ -105,18 +103,12 @@ public class TransformPlayground3D
 		final int[] size = { 64, 64, 64 };
 		final RandomAccessibleInterval< UnsignedByteType > copy = copy( transformed, new UnsignedByteType(), min, size );
 
-
-		final PrimitiveBlocks< UnsignedByteType > blocks = PrimitiveBlocks.of( Views.extendZero( img ) );
-		BlockProcessor< byte[], byte[] > processor = Transform.affine( new UnsignedByteType(), affine, Interpolation.NLINEAR ).blockProcessor();
-		long[] max = new long[ size.length ];
-		Arrays.setAll( max, d -> min[ d ] + size[ d ] - 1 );
-		processor.setTargetInterval( FinalInterval.wrap( min, max ) );
-		blocks.copy( processor.getSourcePos(), processor.getSourceBuffer(), processor.getSourceSize() );
+		final BlockSupplier< UnsignedByteType > blocks = BlockSupplier
+				.of( Views.extendZero( img ) )
+				.andThen( Transform.affine( affine, Interpolation.NLINEAR ) );
 		final byte[] dest = new byte[ ( int ) Intervals.numElements( size ) ];
-		processor.compute( processor.getSourceBuffer(), dest );
+		blocks.copy( min, dest, size );
 		final RandomAccessibleInterval< UnsignedByteType > destImg = ArrayImgs.unsignedBytes( dest, size[ 0 ], size[ 1 ], size[ 2 ] );
-
-
 
 		// ----------------------------------------------
 
