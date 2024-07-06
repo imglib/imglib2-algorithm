@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -111,6 +111,31 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, 
 	 * pipeline.
 	 */
 	BlockSupplier< T > independentCopy();
+
+	/**
+	 * Returns a new {@code BlockSupplier} that handles {@link #copy} requests
+	 * by splitting into {@code tileSize} portions that are each handled by this
+	 * {@code BlockSupplier} and assembled into the final result.
+	 * <p>
+	 * Example use cases:
+	 * <ul>
+	 * <li>Compute large outputs (e.g. for writing to N5 or wrapping as {@code
+	 *     ArrayImg}) with operators that have better performance with small
+	 *     block sizes.</li>
+	 * <li>Avoid excessively large blocks when chaining downsampling
+	 *     operators.</li>
+	 * </ul>
+	 *
+	 * @param tileSize
+	 * 		(maximum) dimensions of a request to the {@code srcSupplier}.
+	 *      {@code tileSize} is expanded or truncated to the necessary size. For
+	 * 		example, if {@code tileSize=={64}} and this {@code BlockSupplier} is 3D,
+	 * 		then {@code tileSize} is expanded to {@code {64, 64, 64}}.
+	 */
+	default BlockSupplier< T > tile( int... tileSize )
+	{
+		return new TilingBlockSupplier<>( this, tileSize );
+	}
 
 	/**
 	 * Returns a {@code UnaryBlockOperator} that is equivalent to applying
