@@ -54,12 +54,8 @@ import net.imglib2.util.Intervals;
  * @param <O>
  * 		output primitive array type, e.g., float[]
  */
-class ConvertBlockProcessor< S extends NativeType< S >, T extends NativeType< T >, I, O > implements BlockProcessor< I, O >
+class ConvertBlockProcessor< I, O > implements BlockProcessor< I, O >
 {
-	private final S sourceType;
-
-	private final T targetType;
-
 	private final TempArray< I > tempArray;
 
 	private final ConvertLoop< I, O > loop;
@@ -72,19 +68,15 @@ class ConvertBlockProcessor< S extends NativeType< S >, T extends NativeType< T 
 
 	private final BlockProcessorSourceInterval sourceInterval;
 
-	public ConvertBlockProcessor( final S sourceType, final T targetType, final ClampType clamp )
+	public < S extends NativeType< S >, T extends NativeType< T > > ConvertBlockProcessor( final S sourceType, final T targetType, final ClampType clamp )
 	{
-		this.sourceType = sourceType;
-		this.targetType = targetType;
 		tempArray = TempArray.forPrimitiveType( sourceType.getNativeTypeFactory().getPrimitiveType() );
 		loop = ConvertLoops.get( UnaryOperatorType.of( sourceType, targetType ), clamp );
 		sourceInterval = new BlockProcessorSourceInterval( this );
 	}
 
-	private ConvertBlockProcessor( ConvertBlockProcessor< S, T, I, O > convert )
+	private ConvertBlockProcessor( ConvertBlockProcessor< I, O > convert )
 	{
-		sourceType = convert.sourceType;
-		targetType = convert.targetType;
 		tempArray = convert.tempArray.newInstance();
 		loop = convert.loop;
 		sourceInterval = new BlockProcessorSourceInterval( this );
