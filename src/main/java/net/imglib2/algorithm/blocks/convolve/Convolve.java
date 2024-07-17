@@ -71,12 +71,6 @@ public class Convolve
 	 * The returned factory function creates an operator matching the
 	 * type and dimensionality of a given input {@code BlockSupplier<T>}.
 	 *
-	 * @param computationType
-	 * 		specifies in which precision intermediate values should be
-	 * 		computed. For {@code AUTO}, the type that can represent the
-	 * 		input/output type without loss of precision is picked. That is,
-	 * 		{@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
-	 * 		DOUBLE} for u32, i64, f64.
 	 * @param sigma
 	 *      sigmas in each dimension. if the image has fewer or more dimensions
 	 *      than values given, values will be truncated or the final value
