@@ -54,7 +54,9 @@ import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
+import net.imglib2.algorithm.blocks.convert.Convert;
 import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
+import net.imglib2.algorithm.blocks.util.OperandType;
 import net.imglib2.blocks.SubArrayCopy;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.img.Img;
@@ -63,6 +65,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
@@ -88,15 +91,15 @@ public class DogBdvPlayground
 		System.out.println( "sigmaLarger = " + sigmaLarger );
 
 
-		final BlockSupplier< UnsignedByteType > blocks = BlockSupplier.of( Views.extendMirrorDouble( img ) );
+		final BlockSupplier< FloatType > blocks = BlockSupplier.of( Views.extendMirrorDouble( img ) ).andThen( Convert.convert( new FloatType() ) );
 
-		final Function< BlockSupplier< UnsignedByteType >, UnaryBlockOperator< UnsignedByteType, UnsignedByteType > >
+		final Function< BlockSupplier< FloatType >, UnaryBlockOperator< FloatType, FloatType > >
 				g1 = Convolve.gauss( sigmaSmaller );
-		final Function< BlockSupplier< UnsignedByteType >, UnaryBlockOperator< UnsignedByteType, UnsignedByteType > >
+		final Function< BlockSupplier< FloatType >, UnaryBlockOperator< FloatType, FloatType > >
 				g2 = Convolve.gauss( sigmaLarger );
 
-		final UnaryBlockOperator< UnsignedByteType, UnsignedByteType > gOp1 = g1.apply( blocks );
-		final UnaryBlockOperator< UnsignedByteType, UnsignedByteType > gOp2 = g2.apply( blocks );
+		final UnaryBlockOperator< FloatType, FloatType > gOp1 = g1.apply( blocks );
+		final UnaryBlockOperator< FloatType, FloatType > gOp2 = g2.apply( blocks );
 
 		final BlockProcessor< ?, ? > gProc1 = gOp1.blockProcessor();
 		final BlockProcessor< ?, ? > gProc2 = gOp2.blockProcessor();
@@ -116,8 +119,8 @@ public class DogBdvPlayground
 		System.out.println( "jp.getSourceInterval() = " + Intervals.toString( jp.getSourceInterval() ) );
 
 
-		final UnsignedByteType type = new UnsignedByteType();
-		final UnaryBlockOperator< UnsignedByteType, UnsignedByteType > joined = new DefaultUnaryBlockOperator<>( type, type, 3, 3, jp );
+		final FloatType type = new FloatType();
+		final UnaryBlockOperator< FloatType, FloatType > joined = new DefaultUnaryBlockOperator<>( type, type, 3, 3, jp );
 
 
 
@@ -126,7 +129,7 @@ public class DogBdvPlayground
 
 		final long[] dimensions = img.dimensionsAsLongArray();
 		final int[] cellDimensions = { 64, 64, 64 };
-		final Img< UnsignedByteType > convolved = BlockAlgoUtils.cellImg(
+		final Img< FloatType > convolved = BlockAlgoUtils.cellImg(
 				blocks.andThen( joined ),
 				dimensions,
 				cellDimensions );
@@ -144,7 +147,7 @@ public class DogBdvPlayground
 				"DoG",
 				Bdv.options().addTo( bdv )
 		);
-		out.setDisplayRange( 0, 255 );
+		out.setDisplayRange( -10, 10 );
 //		out.setColor( new ARGBType( 0x00ff00 ) );
 		out.setColor( new ARGBType( 0xffffff ) );
 
@@ -206,6 +209,8 @@ public class DogBdvPlayground
 
 		private final BlockProcessorSourceInterval sourceInterval;
 
+		private final SubtractLoop< O > subtract;
+
 		public < S extends NativeType< S >, T extends NativeType< T > > JoinedlockProcessor(
 				final S sourceType, final T targetType,
 				final BlockProcessor< I, O > p0,
@@ -222,6 +227,8 @@ public class DogBdvPlayground
 			copy = SubArrayCopy.forPrimitiveType( sourcePrimitiveType );
 
 			sourceInterval = new BlockProcessorSourceInterval( this );
+
+			subtract = SubtractLoops.get( OperandType.of( targetType ) );
 		}
 
 		private JoinedlockProcessor( JoinedlockProcessor< I, O > processor )
@@ -233,6 +240,7 @@ public class DogBdvPlayground
 			tempArrayDest1 = processor.tempArrayDest1.newInstance();
 			copy = processor.copy;
 			sourceInterval = new BlockProcessorSourceInterval( this );
+			subtract = processor.subtract;
 		}
 
 		@Override
@@ -337,20 +345,7 @@ public class DogBdvPlayground
 
 		void reduce( final O dest0, final O dest1, final O dest )
 		{
-			// TODO
-			//  [ ] compute dest1 - dest0
-			diff_u8( ( byte[] ) dest0, ( byte[] ) dest1, ( byte[] ) dest, destLength );
-		}
-
-
-		// TODO
-		//   [ ] generate subtraction loops
-		private static void diff_u8( byte[] src0, byte[] src1, byte[] dest, int length )
-		{
-			for ( int i = 0; i < length; i++ )
-			{
-				dest[ i ] = ( byte ) ( src0[ i ] - src1[ i ] );
-			}
+			subtract.apply( dest1, dest0, dest, destLength );
 		}
 	}
 
