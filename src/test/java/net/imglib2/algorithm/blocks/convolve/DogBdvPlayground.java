@@ -63,6 +63,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
@@ -197,6 +198,7 @@ public class DogBdvPlayground
 		private long[] sourcePos;
 		private int[] sourceSize;
 		private int sourceLength;
+		private SubArrayExtractor< I > subArray;
 
 		private long[] destPos;
 		private int[] destSize;
@@ -269,6 +271,7 @@ public class DogBdvPlayground
 			{
 				sourcePos = new long[ n ];
 				sourceSize = new int[ n ];
+				subArray = new SubArrayExtractor<>( n, copy );
 			}
 			Arrays.setAll(sourcePos, d -> Math.min( sourcePos0[ d ], sourcePos1[ d ] ) );
 			Arrays.setAll(sourceSize, d -> Util.safeInt(Math.max(
@@ -315,26 +318,16 @@ public class DogBdvPlayground
 			// processor (or both), use src directly as input. Otherwise, use
 			// SubArrayCopy.
 
-			// TODO
-			//  [+] for pi in {p0, p1)
-			//    [+] extract srci from src
-			//    [+] get temp desti
-			//    [+] compute into desti
-			//  [ ] extract to separate class (allocates everything in constructor)
-			//          inputs:
-			//          src, sourceInterval, p0
-			//  [ ] compute dest1 - dest0 (or the other way around, figure that out)
 
-
-			// p0
-			final I src0 = new SubIntervalSource<>( sourcePos.length, copy ).extract( src, sourcePos, sourceSize, p0 );
+			final I src0 = subArray.extract( src, sourcePos, sourceSize, p0 );
 			final O dest0 = tempArrayDest0.get( destLength );
 			p0.compute( src0, dest0 );
 
-			// TODO -- for checking the above, we just copy dest0 to dest
-			System.arraycopy( dest0, 0, dest, 0, destLength );
+			final I src1 = subArray.extract( src, sourcePos, sourceSize, p1 );
+			final O dest1 = tempArrayDest1.get( destLength );
+			p1.compute( src1, dest1 );
 
-
+			reduce( dest0, dest1, dest );
 
 
 			// TODO
@@ -342,40 +335,69 @@ public class DogBdvPlayground
 //			p1.compute( p1.getSourceBuffer(), dest );
 		}
 
-		static final class SubIntervalSource< I > implements EuclideanSpace
+		void reduce( final O dest0, final O dest1, final O dest )
 		{
-			private final int[] zeros;
-			private final int[] relativeSrcPos; // TODO rename to "offset" / "pos" / ...?
-			private final SubArrayCopy.Typed< I, I > copy;
+			// TODO
+			//  [ ] compute dest1 - dest0
+			diff_u8( ( byte[] ) dest0, ( byte[] ) dest1, ( byte[] ) dest, destLength );
+		}
 
-			SubIntervalSource( final int numDimensions, final SubArrayCopy.Typed< I, I > copy )
-			{
-				relativeSrcPos = new int[ numDimensions ];
-				zeros = new int[ numDimensions ];
-				this.copy = copy;
-			}
 
-			@Override
-			public int numDimensions()
+		// TODO
+		//   [ ] generate subtraction loops
+		private static void diff_u8( byte[] src0, byte[] src1, byte[] dest, int length )
+		{
+			for ( int i = 0; i < length; i++ )
 			{
-				return zeros.length;
+				dest[ i ] = ( byte ) ( src0[ i ] - src1[ i ] );
 			}
+		}
+	}
 
-			I extract( final I src, final long[] sourcePos, final int[] sourceSize, final BlockProcessor< I, ? > p0 )
+
+	static final class SubArrayExtractor< I > implements EuclideanSpace
+	{
+		private final SubArrayCopy.Typed< I, I > copy;
+		private final int[] relSourcePos;
+		private final int[] sourceStrides;
+		private final int[] destStrides;
+
+		SubArrayExtractor( final int numDimensions, final SubArrayCopy.Typed< I, I > copy )
+		{
+			this.copy = copy;
+			relSourcePos = new int[ numDimensions ];
+			sourceStrides = new int[ numDimensions ];
+			destStrides = new int[ numDimensions ];
+		}
+
+		I extract( final I src, final long[] sourcePos, final int[] sourceSize, final BlockProcessor< I, ? > p0 )
+		{
+			if ( Arrays.equals( sourcePos, p0.getSourcePos() ) && Arrays.equals( sourceSize, p0.getSourceSize() ) )
 			{
-				if ( Arrays.equals( sourcePos, p0.getSourcePos() ) && Arrays.equals( sourceSize, p0.getSourceSize() ) )
-				{
-					return src;
-				}
-				else
-				{
-					I buf = p0.getSourceBuffer();
-					Arrays.setAll( relativeSrcPos, d -> ( int ) ( p0.getSourcePos()[ d ] - sourcePos[ d ] ) );
-					copy.copy( src, sourceSize, relativeSrcPos, buf, p0.getSourceSize(), zeros, p0.getSourceSize() );
-	//				copy.copyNDRangeRecursive(  ); // TODO: avoid allocating some arrays that could be allocated per processor
-					return buf;
-				}
+				return src;
 			}
+			else
+			{
+				final int[] destSize = p0.getSourceSize();
+				IntervalIndexer.createAllocationSteps( sourceSize, sourceStrides );
+				IntervalIndexer.createAllocationSteps( destSize, destStrides );
+				Arrays.setAll( relSourcePos, d -> ( int ) ( p0.getSourcePos()[ d ] - sourcePos[ d ] ) );
+				final int oSrc = IntervalIndexer.positionToIndex( relSourcePos, sourceSize );
+				final int oDest = 0;
+
+				I buf = p0.getSourceBuffer();
+				copy.copyNDRangeRecursive( numDimensions() - 1,
+						src, sourceStrides, oSrc,
+						buf, destStrides, oDest,
+						destSize );
+				return buf;
+			}
+		}
+
+		@Override
+		public int numDimensions()
+		{
+			return relSourcePos.length;
 		}
 	}
 }
