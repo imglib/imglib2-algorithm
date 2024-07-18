@@ -38,8 +38,10 @@ import net.imglib2.util.Cast;
 
 #parse( "PixelTypes.vm" )
 #foreach( $t1 in $types )
-import static net.imglib2.algorithm.blocks.convolve.ConvertScalars.from_${t1};
-import static net.imglib2.algorithm.blocks.convolve.ConvertScalars.to_${t1};
+import static net.imglib2.algorithm.blocks.convert.ConvertScalars.from_${t1};
+import static net.imglib2.algorithm.blocks.convert.ConvertScalars.to_${t1};
+import static net.imglib2.algorithm.blocks.convert.ConvertScalars.to_${t1}_clamp;
+import static net.imglib2.algorithm.blocks.convert.ConvertScalars.to_${t1}_clamp_min;
 #end
 
 /*
@@ -49,17 +51,67 @@ import static net.imglib2.algorithm.blocks.convolve.ConvertScalars.to_${t1};
 
 class SubtractLoops
 {
-    static < I > SubtractLoop< I > get( OperandType type )
-    {
-        switch( type )
-        {
+	/**
+	 * How to clamp values after subtraction.
+	 */
+	public enum ClampType
+	{
+		/**
+		 * don't clamp
+		 */
+		NONE,
+
+		/**
+		 * clamp to lower and upper bound
+		 */
+		CLAMP,
+
+		/**
+		 * clamp only to lower bound
+		 */
+		CLAMP_MIN;
+	}
+
+	static < I > SubtractLoop< I > get( OperandType type )
+	{
+		return get( type, ClampType.NONE );
+	}
+
+	static < I > SubtractLoop< I > get( OperandType type, ClampType clampType )
+	{
+		switch ( clampType )
+		{
+		case NONE:
+			switch ( type )
+			{
 #foreach( $t1 in $types )
-        case ${t1.toUpperCase()}: return Cast.unchecked( Subtract_${t1}.INSTANCE );
+			case ${t1.toUpperCase()}: return Cast.unchecked( Subtract_${t1}.INSTANCE );
 #end
-        default:
-            throw new IllegalArgumentException();
-        }
-    }
+			default:
+				throw new IllegalArgumentException();
+			}
+		case CLAMP:
+			switch ( type )
+			{
+#foreach( $t1 in $types )
+				case ${t1.toUpperCase()}: return Cast.unchecked( Subtract_${t1}_clamp.INSTANCE );
+#end
+			default:
+				throw new IllegalArgumentException();
+			}
+		case CLAMP_MIN:
+			switch ( type )
+			{
+#foreach( $t1 in $types )
+				case ${t1.toUpperCase()}: return Cast.unchecked( Subtract_${t1}_clamp_min.INSTANCE );
+#end
+			default:
+				throw new IllegalArgumentException();
+			}
+		default:
+			throw new IllegalArgumentException();
+		}
+	}
 
 #foreach( $t1 in $types )
 #set( $sp1 = $storage_primitive[$t1] )
@@ -72,6 +124,30 @@ class SubtractLoops
 		{
 			for ( int i = 0; i < length; ++i )
 				dest[ i ] = to_${t1}( from_${t1}( src0[ i ] ) - from_${t1}( src1[ i ] ) );
+		}
+	}
+
+	static class Subtract_${t1}_clamp implements SubtractLoop< ${sp1}[] >
+	{
+		static final Subtract_${t1}_clamp INSTANCE = new Subtract_${t1}_clamp();
+
+		@Override
+		public void apply( final ${sp1}[] src0, final ${sp1}[] src1, final ${sp1}[] dest, final int length )
+		{
+			for ( int i = 0; i < length; ++i )
+				dest[ i ] = to_${t1}_clamp( from_${t1}( src0[ i ] ) - from_${t1}( src1[ i ] ) );
+		}
+	}
+
+	static class Subtract_${t1}_clamp_min implements SubtractLoop< ${sp1}[] >
+	{
+		static final Subtract_${t1}_clamp_min INSTANCE = new Subtract_${t1}_clamp_min();
+
+		@Override
+		public void apply( final ${sp1}[] src0, final ${sp1}[] src1, final ${sp1}[] dest, final int length )
+		{
+			for ( int i = 0; i < length; ++i )
+				dest[ i ] = to_${t1}_clamp_min( from_${t1}( src0[ i ] ) - from_${t1}( src1[ i ] ) );
 		}
 	}
 
