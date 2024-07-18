@@ -75,12 +75,11 @@ public class DogBdvPlayground
 {
 	public static void main( String[] args )
 	{
-		System.setProperty("apple.laf.useScreenMenuBar", "true");
+		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 
 		final String fn = "/Users/pietzsch/workspace/data/e002_stack_fused-8bit.tif";
 		final ImagePlus imp = IJ.openImage( fn );
 		final Img< UnsignedByteType > img = ImageJFunctions.wrapByte( imp );
-
 
 
 		final int sensitivity = 4;
@@ -108,12 +107,14 @@ public class DogBdvPlayground
 		System.out.println( "targetInterval = " + Intervals.toString( targetInterval ) );
 
 		gProc1.setTargetInterval( targetInterval );
-		System.out.println( "gProc1.getSourceInterval() = " + Intervals.toString( gProc1.getSourceInterval() ) );;
+		System.out.println( "gProc1.getSourceInterval() = " + Intervals.toString( gProc1.getSourceInterval() ) );
+		;
 
 		gProc2.setTargetInterval( targetInterval );
-		System.out.println( "gProc2.getSourceInterval() = " + Intervals.toString( gProc2.getSourceInterval() ) );;
+		System.out.println( "gProc2.getSourceInterval() = " + Intervals.toString( gProc2.getSourceInterval() ) );
+		;
 
-		final JoinedlockProcessor jp = new JoinedlockProcessor(
+		final DoGProcessor jp = new DoGProcessor(
 				gOp1.getSourceType(), gOp1.getTargetType(), gProc1, gProc2 );
 		jp.setTargetInterval( targetInterval );
 		System.out.println( "jp.getSourceInterval() = " + Intervals.toString( jp.getSourceInterval() ) );
@@ -121,10 +122,6 @@ public class DogBdvPlayground
 
 		final FloatType type = new FloatType();
 		final UnaryBlockOperator< FloatType, FloatType > joined = new DefaultUnaryBlockOperator<>( type, type, 3, 3, jp );
-
-
-
-
 
 
 		final long[] dimensions = img.dimensionsAsLongArray();
@@ -153,8 +150,9 @@ public class DogBdvPlayground
 
 	}
 
-	private static double computeSigma2(final double sigma1, final int stepsPerOctave) {
-		final double k = Math.pow(2f, 1f / stepsPerOctave);
+	private static double computeSigma2( final double sigma1, final int stepsPerOctave )
+	{
+		final double k = Math.pow( 2f, 1f / stepsPerOctave );
 		return sigma1 * k;
 	}
 
@@ -182,13 +180,39 @@ public class DogBdvPlayground
 	 */
 
 
+	public static class DoGProcessor< I, O > extends JoinedlockProcessor< I, O >
+	{
+		private final SubtractLoop< O > subtract;
 
+		public < S extends NativeType< S >, T extends NativeType< T > > DoGProcessor( final S sourceType, final T targetType, final BlockProcessor< I, O > p0, final BlockProcessor< I, O > p1 )
+		{
+			super( sourceType, targetType, p0, p1 );
+			subtract = SubtractLoops.get( OperandType.of( targetType ) );
+		}
 
+		public DoGProcessor( final DoGProcessor< I, O > processor )
+		{
+			super( processor );
+			subtract = processor.subtract;
+		}
+
+		@Override
+		public BlockProcessor< I, O > independentCopy()
+		{
+			return new DoGProcessor<>( this );
+		}
+
+		@Override
+		void reduce( final O dest0, final O dest1, final O dest )
+		{
+			subtract.apply( dest1, dest0, dest, destLength );
+		}
+	}
 
 	// TODO make generic:
 	//  O0, O1, T0, T1,
 	//  join O0, O1 --> O
-	static class JoinedlockProcessor< I, O > implements BlockProcessor< I, O >
+	abstract static class JoinedlockProcessor< I, O > implements BlockProcessor< I, O >
 	{
 		private final BlockProcessor< I, O > p0;
 		private final BlockProcessor< I, O > p1;
@@ -205,11 +229,9 @@ public class DogBdvPlayground
 
 		private long[] destPos;
 		private int[] destSize;
-		private int destLength;
+		int destLength;
 
 		private final BlockProcessorSourceInterval sourceInterval;
-
-		private final SubtractLoop< O > subtract;
 
 		public < S extends NativeType< S >, T extends NativeType< T > > JoinedlockProcessor(
 				final S sourceType, final T targetType,
@@ -227,11 +249,9 @@ public class DogBdvPlayground
 			copy = SubArrayCopy.forPrimitiveType( sourcePrimitiveType );
 
 			sourceInterval = new BlockProcessorSourceInterval( this );
-
-			subtract = SubtractLoops.get( OperandType.of( targetType ) );
 		}
 
-		private JoinedlockProcessor( JoinedlockProcessor< I, O > processor )
+		JoinedlockProcessor( JoinedlockProcessor< I, O > processor )
 		{
 			p0 = processor.p0.independentCopy();
 			p1 = processor.p1.independentCopy();
@@ -240,13 +260,6 @@ public class DogBdvPlayground
 			tempArrayDest1 = processor.tempArrayDest1.newInstance();
 			copy = processor.copy;
 			sourceInterval = new BlockProcessorSourceInterval( this );
-			subtract = processor.subtract;
-		}
-
-		@Override
-		public JoinedlockProcessor< I, O > independentCopy()
-		{
-			return new JoinedlockProcessor<>( this );
 		}
 
 		@Override
@@ -326,7 +339,6 @@ public class DogBdvPlayground
 			// processor (or both), use src directly as input. Otherwise, use
 			// SubArrayCopy.
 
-
 			final I src0 = subArray.extract( src, sourcePos, sourceSize, p0 );
 			final O dest0 = tempArrayDest0.get( destLength );
 			p0.compute( src0, dest0 );
@@ -336,19 +348,10 @@ public class DogBdvPlayground
 			p1.compute( src1, dest1 );
 
 			reduce( dest0, dest1, dest );
-
-
-			// TODO
-//			p0.compute( src, p1.getSourceBuffer() );
-//			p1.compute( p1.getSourceBuffer(), dest );
 		}
 
-		void reduce( final O dest0, final O dest1, final O dest )
-		{
-			subtract.apply( dest1, dest0, dest, destLength );
-		}
+		abstract void reduce( final O dest0, final O dest1, final O dest );
 	}
-
 
 	static final class SubArrayExtractor< I > implements EuclideanSpace
 	{
