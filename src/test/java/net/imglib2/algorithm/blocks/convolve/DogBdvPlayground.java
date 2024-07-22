@@ -43,6 +43,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
 import net.imglib2.algorithm.blocks.BlockSupplier;
+import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.algorithm.blocks.convert.Convert;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -63,7 +64,7 @@ public class DogBdvPlayground
 
 
 		final int sensitivity = 4;
-		final double sigmaSmaller = 8;
+		final double sigmaSmaller = 2;
 		final double k = k( sensitivity );
 
 
@@ -79,7 +80,7 @@ public class DogBdvPlayground
 		final BlockSupplier< FloatType > blocks = BlockSupplier
 				.of( Views.extendMirrorDouble( img ) )
 				.andThen( Convert.convert( new FloatType() ) )
-				.andThen( DoG.DoG( Convolve.ComputationType.AUTO, k, sigmaSmaller ) );
+				.andThen( DifferenceOfGaussian.DoG( ComputationType.AUTO, k, sigmaSmaller ) );
 
 		final long[] dimensions = img.dimensionsAsLongArray();
 		final int[] cellDimensions = { 64, 64, 64 };
