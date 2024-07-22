@@ -113,15 +113,18 @@ public class Convolve
 		return s -> {
 			final T type = s.getType();
 			final int n = s.numDimensions();
-			final double[] expanded = Util.expandArray( sigma, n );
-			final Kernel1D[] kernels = new Kernel1D[ n ];
-			for ( int d = 0; d < n; d++ ) {
-				if ( expanded[ d ] > 0 ) {
-					kernels[ d ] = Kernel1D.symmetric( Gauss3.halfkernel( expanded[ d ] ) );
-				}
-			}
-			return createOperator( type, computationType, kernels );
+			return createOperator( type, computationType, gaussKernels( n, sigma ) );
 		};
+	}
+
+	static Kernel1D[] gaussKernels( final int n, final double[] sigma )
+	{
+		final double[] expanded = Util.expandArray( sigma, n );
+		final Kernel1D[] kernels = new Kernel1D[ n ];
+		for ( int d = 0; d < n; d++ )
+			if ( expanded[ d ] > 0 )
+				kernels[ d ] = Kernel1D.symmetric( Gauss3.halfkernel( expanded[ d ] ) );
+		return kernels;
 	}
 
 	/**
