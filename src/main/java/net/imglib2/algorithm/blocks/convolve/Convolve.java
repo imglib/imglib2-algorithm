@@ -1,5 +1,6 @@
 package net.imglib2.algorithm.blocks.convolve;
 
+import static net.imglib2.algorithm.blocks.convert.ClampType.NONE;
 import static net.imglib2.type.PrimitiveType.FLOAT;
 
 import java.util.function.Function;
@@ -7,7 +8,6 @@ import java.util.function.Function;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
-import net.imglib2.algorithm.blocks.convert.ClampType;
 import net.imglib2.algorithm.blocks.convolve.ConvolveProcessors.ConvolveDouble;
 import net.imglib2.algorithm.blocks.convolve.ConvolveProcessors.ConvolveFloat;
 import net.imglib2.algorithm.convolution.kernel.Kernel1D;
@@ -59,6 +59,33 @@ public class Convolve
 	{
 		FLOAT, DOUBLE, AUTO
 	}
+
+	/**
+	 * How to clamp values when converting to target type.
+	 */
+	public enum ClampType
+	{
+		/**
+		 * don't clamp
+		 */
+		NONE,
+
+		/**
+		 * clamp to lower and upper bound
+		 */
+		CLAMP,
+
+		/**
+		 * clamp only to lower bound
+		 */
+		CLAMP_MIN,
+
+		/**
+		 * clamp only to upper bound
+		 */
+		CLAMP_MAX
+	}
+
 
 	/**
 	 * Convolve blocks of the standard ImgLib2 {@code RealType}s with a Gaussian kernel.
@@ -113,7 +140,7 @@ public class Convolve
 		return s -> {
 			final T type = s.getType();
 			final int n = s.numDimensions();
-			return createOperator( type, computationType, gaussKernels( n, sigma ) );
+			return createOperator( type, computationType, ClampType.NONE, gaussKernels( n, sigma ) );
 		};
 	}
 
@@ -153,7 +180,7 @@ public class Convolve
 	 * @return {@code UnaryBlockOperator} to downsample blocks of type {@code T}
 	 */
 	public static < T extends NativeType< T > >
-	UnaryBlockOperator< T, T > createOperator( final T type, final ComputationType computationType, final Kernel1D[] kernels )
+	UnaryBlockOperator< T, T > createOperator( final T type, final ComputationType computationType, final ClampType clampType, final Kernel1D[] kernels )
 	{
 		final boolean processAsFloat;
 		switch ( computationType )
@@ -173,7 +200,7 @@ public class Convolve
 		final UnaryBlockOperator< ?, ? > op = processAsFloat
 				? convolveFloat( kernels )
 				: convolveDouble( kernels );
-		return op.adaptSourceType( type, ClampType.NONE ).adaptTargetType( type, ClampType.NONE );
+		return op.adaptSourceType( type, NONE ).adaptTargetType( type, NONE );
 	}
 
 	private static UnaryBlockOperator< FloatType, FloatType > convolveFloat( final Kernel1D[] kernels )

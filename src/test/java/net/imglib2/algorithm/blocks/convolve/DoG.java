@@ -24,6 +24,7 @@ import net.imglib2.type.numeric.real.FloatType;
  */
 public class DoG
 {
+
 	public static < T extends NativeType< T > >
 	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > DoG( final Convolve.ComputationType computationType, final double k, final double... sigmaSmaller )
 	{
