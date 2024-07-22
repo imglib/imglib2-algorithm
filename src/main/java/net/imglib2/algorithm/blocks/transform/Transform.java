@@ -35,7 +35,7 @@ package net.imglib2.algorithm.blocks.transform;
 
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
-import net.imglib2.algorithm.blocks.convert.ClampType;
+import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.realtransform.AffineGet;
 import net.imglib2.realtransform.AffineTransform2D;
 import net.imglib2.realtransform.AffineTransform3D;
