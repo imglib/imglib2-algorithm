@@ -33,6 +33,7 @@
  */
 package net.imglib2.algorithm.blocks.convolve;
 
+import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.util.OperandType;
 import net.imglib2.util.Cast;
 
@@ -42,6 +43,7 @@ import static net.imglib2.algorithm.blocks.util.ConvertScalars.from_${t1};
 import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1};
 import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1}_clamp;
 import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1}_clamp_min;
+import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1}_clamp_max;
 #end
 
 /*
@@ -108,6 +110,15 @@ class SubtractLoops
 			default:
 				throw new IllegalArgumentException();
 			}
+		case CLAMP_MAX:
+			switch ( type )
+			{
+#foreach( $t1 in $types )
+				case ${t1.toUpperCase()}: return Cast.unchecked( Subtract_${t1}_clamp_max.INSTANCE );
+#end
+			default:
+				throw new IllegalArgumentException();
+			}
 		default:
 			throw new IllegalArgumentException();
 		}
@@ -148,6 +159,18 @@ class SubtractLoops
 		{
 			for ( int i = 0; i < length; ++i )
 				dest[ i ] = to_${t1}_clamp_min( from_${t1}( src0[ i ] ) - from_${t1}( src1[ i ] ) );
+		}
+	}
+
+	static class Subtract_${t1}_clamp_max implements SubtractLoop< ${sp1}[] >
+	{
+		static final Subtract_${t1}_clamp_max INSTANCE = new Subtract_${t1}_clamp_min();
+
+		@Override
+		public void apply( final ${sp1}[] src0, final ${sp1}[] src1, final ${sp1}[] dest, final int length )
+		{
+			for ( int i = 0; i < length; ++i )
+				dest[ i ] = to_${t1}_clamp_max( from_${t1}( src0[ i ] ) - from_${t1}( src1[ i ] ) );
 		}
 	}
 
