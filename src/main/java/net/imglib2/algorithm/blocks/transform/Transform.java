@@ -37,6 +37,7 @@ import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.algorithm.blocks.ClampType;
+import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.realtransform.AffineGet;
 import net.imglib2.realtransform.AffineTransform2D;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -54,16 +55,6 @@ import java.util.function.Function;
  */
 public class Transform
 {
-	/**
-	 * Specify in which precision should intermediate values be computed. (For
-	 * {@code AUTO}, the type that can represent the input/output type without
-	 * loss of precision is picked. That is, {@code FLOAT} for u8, i8, u16, i16,
-	 * i32, f32, and otherwise {@code DOUBLE} for u32, i64, f64.
-	 */
-	public enum ComputationType
-	{
-		FLOAT, DOUBLE, AUTO
-	}
 
 	public enum Interpolation
 	{
