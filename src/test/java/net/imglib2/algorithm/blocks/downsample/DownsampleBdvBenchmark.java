@@ -45,7 +45,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.blocks.BlockSupplier;
-import net.imglib2.algorithm.blocks.downsample.Downsample.ComputationType;
+import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.algorithm.blocks.downsample.Downsample.Offset;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
 import net.imglib2.cache.img.CachedCellImg;

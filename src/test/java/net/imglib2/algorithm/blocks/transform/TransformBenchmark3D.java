@@ -44,7 +44,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.ClampType;
-import net.imglib2.algorithm.blocks.transform.Transform.ComputationType;
+import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.converter.Converters;

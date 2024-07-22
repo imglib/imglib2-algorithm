@@ -44,6 +44,7 @@ import java.util.Arrays;
 
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
+import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.converter.Converters;
 import net.imglib2.converter.RealDoubleConverter;
@@ -80,7 +81,7 @@ public class DownsampleDoublePlayground
 		final int[] cellDimensions = { 64, 64, 64 };
 		final CachedCellImg< DoubleType, ? > downsampled = BlockAlgoUtils.cellImg(
 				blocks.andThen( Downsample.downsample(
-						Downsample.ComputationType.DOUBLE,
+						ComputationType.DOUBLE,
 						Downsample.Offset.CENTERED )
 				),
 				downsampledDimensions, cellDimensions );
@@ -98,7 +99,7 @@ public class DownsampleDoublePlayground
 
 		final CachedCellImg< DoubleType, ? > downsampled2 = BlockAlgoUtils.cellImg(
 				blocks.andThen( Downsample.downsample(
-						Downsample.ComputationType.DOUBLE,
+						ComputationType.DOUBLE,
 						Downsample.Offset.HALF_PIXEL )
 				),
 				downsampledDimensions, cellDimensions );
