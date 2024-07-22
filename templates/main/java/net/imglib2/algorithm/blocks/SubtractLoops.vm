@@ -53,26 +53,6 @@ import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1}_clamp_ma
 
 class SubtractLoops
 {
-	/**
-	 * How to clamp values after subtraction.
-	 */
-	public enum ClampType
-	{
-		/**
-		 * don't clamp
-		 */
-		NONE,
-
-		/**
-		 * clamp to lower and upper bound
-		 */
-		CLAMP,
-
-		/**
-		 * clamp only to lower bound
-		 */
-		CLAMP_MIN;
-	}
 
 	static < I > SubtractLoop< I > get( OperandType type )
 	{
@@ -164,7 +144,7 @@ class SubtractLoops
 
 	static class Subtract_${t1}_clamp_max implements SubtractLoop< ${sp1}[] >
 	{
-		static final Subtract_${t1}_clamp_max INSTANCE = new Subtract_${t1}_clamp_min();
+		static final Subtract_${t1}_clamp_max INSTANCE = new Subtract_${t1}_clamp_max();
 
 		@Override
 		public void apply( final ${sp1}[] src0, final ${sp1}[] src1, final ${sp1}[] dest, final int length )

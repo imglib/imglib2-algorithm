@@ -90,26 +90,6 @@ import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_f64_clamp_max;
 
 class SubtractLoops
 {
-	/**
-	 * How to clamp values after subtraction.
-	 */
-	public enum ClampType
-	{
-		/**
-		 * don't clamp
-		 */
-		NONE,
-
-		/**
-		 * clamp to lower and upper bound
-		 */
-		CLAMP,
-
-		/**
-		 * clamp only to lower bound
-		 */
-		CLAMP_MIN;
-	}
 
 	static < I > SubtractLoop< I > get( OperandType type )
 	{
@@ -223,7 +203,7 @@ class SubtractLoops
 
 	static class Subtract_i8_clamp_max implements SubtractLoop< byte[] >
 	{
-		static final Subtract_i8_clamp_max INSTANCE = new Subtract_i8_clamp_min();
+		static final Subtract_i8_clamp_max INSTANCE = new Subtract_i8_clamp_max();
 
 		@Override
 		public void apply( final byte[] src0, final byte[] src1, final byte[] dest, final int length )
@@ -271,7 +251,7 @@ class SubtractLoops
 
 	static class Subtract_u8_clamp_max implements SubtractLoop< byte[] >
 	{
-		static final Subtract_u8_clamp_max INSTANCE = new Subtract_u8_clamp_min();
+		static final Subtract_u8_clamp_max INSTANCE = new Subtract_u8_clamp_max();
 
 		@Override
 		public void apply( final byte[] src0, final byte[] src1, final byte[] dest, final int length )
@@ -319,7 +299,7 @@ class SubtractLoops
 
 	static class Subtract_i16_clamp_max implements SubtractLoop< short[] >
 	{
-		static final Subtract_i16_clamp_max INSTANCE = new Subtract_i16_clamp_min();
+		static final Subtract_i16_clamp_max INSTANCE = new Subtract_i16_clamp_max();
 
 		@Override
 		public void apply( final short[] src0, final short[] src1, final short[] dest, final int length )
@@ -367,7 +347,7 @@ class SubtractLoops
 
 	static class Subtract_u16_clamp_max implements SubtractLoop< short[] >
 	{
-		static final Subtract_u16_clamp_max INSTANCE = new Subtract_u16_clamp_min();
+		static final Subtract_u16_clamp_max INSTANCE = new Subtract_u16_clamp_max();
 
 		@Override
 		public void apply( final short[] src0, final short[] src1, final short[] dest, final int length )
@@ -415,7 +395,7 @@ class SubtractLoops
 
 	static class Subtract_i32_clamp_max implements SubtractLoop< int[] >
 	{
-		static final Subtract_i32_clamp_max INSTANCE = new Subtract_i32_clamp_min();
+		static final Subtract_i32_clamp_max INSTANCE = new Subtract_i32_clamp_max();
 
 		@Override
 		public void apply( final int[] src0, final int[] src1, final int[] dest, final int length )
@@ -463,7 +443,7 @@ class SubtractLoops
 
 	static class Subtract_u32_clamp_max implements SubtractLoop< int[] >
 	{
-		static final Subtract_u32_clamp_max INSTANCE = new Subtract_u32_clamp_min();
+		static final Subtract_u32_clamp_max INSTANCE = new Subtract_u32_clamp_max();
 
 		@Override
 		public void apply( final int[] src0, final int[] src1, final int[] dest, final int length )
@@ -511,7 +491,7 @@ class SubtractLoops
 
 	static class Subtract_i64_clamp_max implements SubtractLoop< long[] >
 	{
-		static final Subtract_i64_clamp_max INSTANCE = new Subtract_i64_clamp_min();
+		static final Subtract_i64_clamp_max INSTANCE = new Subtract_i64_clamp_max();
 
 		@Override
 		public void apply( final long[] src0, final long[] src1, final long[] dest, final int length )
@@ -559,7 +539,7 @@ class SubtractLoops
 
 	static class Subtract_f32_clamp_max implements SubtractLoop< float[] >
 	{
-		static final Subtract_f32_clamp_max INSTANCE = new Subtract_f32_clamp_min();
+		static final Subtract_f32_clamp_max INSTANCE = new Subtract_f32_clamp_max();
 
 		@Override
 		public void apply( final float[] src0, final float[] src1, final float[] dest, final int length )
@@ -607,7 +587,7 @@ class SubtractLoops
 
 	static class Subtract_f64_clamp_max implements SubtractLoop< double[] >
 	{
-		static final Subtract_f64_clamp_max INSTANCE = new Subtract_f64_clamp_min();
+		static final Subtract_f64_clamp_max INSTANCE = new Subtract_f64_clamp_max();
 
 		@Override
 		public void apply( final double[] src0, final double[] src1, final double[] dest, final int length )

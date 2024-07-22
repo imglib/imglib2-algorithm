@@ -6,6 +6,7 @@ import static net.imglib2.type.PrimitiveType.FLOAT;
 import java.util.function.Function;
 
 import net.imglib2.algorithm.blocks.BlockSupplier;
+import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.algorithm.blocks.convolve.ConvolveProcessors.ConvolveDouble;
@@ -59,33 +60,6 @@ public class Convolve
 	{
 		FLOAT, DOUBLE, AUTO
 	}
-
-	/**
-	 * How to clamp values when converting to target type.
-	 */
-	public enum ClampType
-	{
-		/**
-		 * don't clamp
-		 */
-		NONE,
-
-		/**
-		 * clamp to lower and upper bound
-		 */
-		CLAMP,
-
-		/**
-		 * clamp only to lower bound
-		 */
-		CLAMP_MIN,
-
-		/**
-		 * clamp only to upper bound
-		 */
-		CLAMP_MAX
-	}
-
 
 	/**
 	 * Convolve blocks of the standard ImgLib2 {@code RealType}s with a Gaussian kernel.
@@ -200,7 +174,7 @@ public class Convolve
 		final UnaryBlockOperator< ?, ? > op = processAsFloat
 				? convolveFloat( kernels )
 				: convolveDouble( kernels );
-		return op.adaptSourceType( type, NONE ).adaptTargetType( type, NONE );
+		return op.adaptSourceType( type, NONE ).adaptTargetType( type, clampType );
 	}
 
 	private static UnaryBlockOperator< FloatType, FloatType > convolveFloat( final Kernel1D[] kernels )
