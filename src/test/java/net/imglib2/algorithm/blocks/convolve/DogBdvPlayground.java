@@ -33,9 +33,6 @@
  */
 package net.imglib2.algorithm.blocks.convolve;
 
-import static net.imglib2.util.Util.safeInt;
-
-import java.util.Arrays;
 import java.util.function.Function;
 
 import bdv.cache.SharedQueue;
@@ -46,29 +43,19 @@ import bdv.util.volatiles.VolatileViews;
 import bdv.viewer.DisplayMode;
 import ij.IJ;
 import ij.ImagePlus;
-import net.imglib2.EuclideanSpace;
 import net.imglib2.FinalInterval;
-import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
 import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.algorithm.blocks.convert.Convert;
-import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
-import net.imglib2.algorithm.blocks.util.OperandType;
-import net.imglib2.blocks.SubArrayCopy;
-import net.imglib2.blocks.TempArray;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
-import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
 public class DogBdvPlayground
@@ -156,246 +143,4 @@ public class DogBdvPlayground
 		return sigma1 * k;
 	}
 
-
-	/*
-	 * TODO:
-	 *   Do we want a generic joining processor that always does the right thing?
-	 *   That is:
-	 *     - Take the union of the source intervals of the merged processors.
-	 *     - Use a separate sourceBuffer TempArray (union could be bigger than
-	 *       both of the processors' source intervals.
-	 *     - If the union matches the source interval of one processor (or
-	 *       both), use it directly as input.
-	 *     - Otherwise SubArrayCopy.
-	 *   ==>
-	 *     Now that I wrote that... Yes! Let's do it
-	 *
-	 *
-	 * TODO:
-	 *   [+] Create appropriate sourceBuffer (TempArray? mechanics?)
-	 * 	     - just pass in PrimitiveType...?
-	 * 	 [ ] will that also work for SubArrayCopy?
-	 *   [ ] Implement logic
-	 *   [ ] Verify that types do match (?)
-	 */
-
-
-	public static class DoGProcessor< I, O > extends JoinedlockProcessor< I, O >
-	{
-		private final SubtractLoop< O > subtract;
-
-		public < S extends NativeType< S >, T extends NativeType< T > > DoGProcessor( final S sourceType, final T targetType, final BlockProcessor< I, O > p0, final BlockProcessor< I, O > p1 )
-		{
-			super( sourceType, targetType, p0, p1 );
-			subtract = SubtractLoops.get( OperandType.of( targetType ) );
-		}
-
-		public DoGProcessor( final DoGProcessor< I, O > processor )
-		{
-			super( processor );
-			subtract = processor.subtract;
-		}
-
-		@Override
-		public BlockProcessor< I, O > independentCopy()
-		{
-			return new DoGProcessor<>( this );
-		}
-
-		@Override
-		void reduce( final O dest0, final O dest1, final O dest )
-		{
-			subtract.apply( dest1, dest0, dest, destLength );
-		}
-	}
-
-	// TODO make generic:
-	//  O0, O1, T0, T1,
-	//  join O0, O1 --> O
-	abstract static class JoinedlockProcessor< I, O > implements BlockProcessor< I, O >
-	{
-		private final BlockProcessor< I, O > p0;
-		private final BlockProcessor< I, O > p1;
-
-		private final TempArray< I > tempArraySrc;
-		private final TempArray< O > tempArrayDest0;
-		private final TempArray< O > tempArrayDest1;
-		private final SubArrayCopy.Typed< I, I > copy;
-
-		private long[] sourcePos;
-		private int[] sourceSize;
-		private int sourceLength;
-		private SubArrayExtractor< I > subArray;
-
-		private long[] destPos;
-		private int[] destSize;
-		int destLength;
-
-		private final BlockProcessorSourceInterval sourceInterval;
-
-		public < S extends NativeType< S >, T extends NativeType< T > > JoinedlockProcessor(
-				final S sourceType, final T targetType,
-				final BlockProcessor< I, O > p0,
-				final BlockProcessor< I, O > p1 )
-		{
-			this.p0 = p0; // TODO .independentCopy() ???
-			this.p1 = p1; // TODO .independentCopy() ???
-
-			final PrimitiveType sourcePrimitiveType = sourceType.getNativeTypeFactory().getPrimitiveType();
-			final PrimitiveType targetPrimitiveType = targetType.getNativeTypeFactory().getPrimitiveType();
-			tempArraySrc = TempArray.forPrimitiveType( sourcePrimitiveType );
-			tempArrayDest0 = TempArray.forPrimitiveType( targetPrimitiveType );
-			tempArrayDest1 = TempArray.forPrimitiveType( targetPrimitiveType );
-			copy = SubArrayCopy.forPrimitiveType( sourcePrimitiveType );
-
-			sourceInterval = new BlockProcessorSourceInterval( this );
-		}
-
-		JoinedlockProcessor( JoinedlockProcessor< I, O > processor )
-		{
-			p0 = processor.p0.independentCopy();
-			p1 = processor.p1.independentCopy();
-			tempArraySrc = processor.tempArraySrc.newInstance();
-			tempArrayDest0 = processor.tempArrayDest0.newInstance();
-			tempArrayDest1 = processor.tempArrayDest1.newInstance();
-			copy = processor.copy;
-			sourceInterval = new BlockProcessorSourceInterval( this );
-		}
-
-		@Override
-		public void setTargetInterval( final Interval interval )
-		{
-			p0.setTargetInterval( interval );
-			p1.setTargetInterval( interval );
-
-			final long[] sourcePos0 = p0.getSourcePos();
-			final long[] sourcePos1 = p1.getSourcePos();
-			final int[] sourceSize0 = p0.getSourceSize();
-			final int[] sourceSize1 = p1.getSourceSize();
-
-			final int m = interval.numDimensions();
-			if ( destPos == null || destPos.length != m )
-			{
-				destPos = new long[ m ];
-				destSize = new int[ m ];
-			}
-			interval.min( destPos );
-			Arrays.setAll(destSize, d -> Util.safeInt( interval.dimension( d ) ) );
-			destLength = safeInt( Intervals.numElements( destSize ) );
-
-			// Take the union of the source intervals of the merged processors.
-			// Use a separate sourceBuffer TempArray (because the union could be
-			// bigger than both of the processors' source intervals).
-			final int n = sourcePos0.length;
-			assert n == sourcePos1.length;
-			if ( sourcePos == null || sourcePos.length != n )
-			{
-				sourcePos = new long[ n ];
-				sourceSize = new int[ n ];
-				subArray = new SubArrayExtractor<>( n, copy );
-			}
-			Arrays.setAll(sourcePos, d -> Math.min( sourcePos0[ d ], sourcePos1[ d ] ) );
-			Arrays.setAll(sourceSize, d -> Util.safeInt(Math.max(
-					sourcePos0[ d ] + sourceSize0[ d ],
-					sourcePos1[ d ] + sourceSize1[ d ] ) - sourcePos[ d ] ) );
-			sourceLength = safeInt( Intervals.numElements( sourceSize ) );
-		}
-
-		// TODO
-//		@Override
-//		public void setTargetInterval( final long[] srcPos, final int[] size )
-//		{
-//		}
-
-		@Override
-		public long[] getSourcePos()
-		{
-			return sourcePos;
-		}
-
-		@Override
-		public int[] getSourceSize()
-		{
-			return sourceSize;
-		}
-
-		@Override
-		public Interval getSourceInterval()
-		{
-			return sourceInterval;
-		}
-
-		@Override
-		public I getSourceBuffer()
-		{
-			return tempArraySrc.get( sourceLength );
-		}
-
-
-		@Override
-		public void compute( final I src, final O dest )
-		{
-			// If the source interval union matches the source interval of one
-			// processor (or both), use src directly as input. Otherwise, use
-			// SubArrayCopy.
-
-			final I src0 = subArray.extract( src, sourcePos, sourceSize, p0 );
-			final O dest0 = tempArrayDest0.get( destLength );
-			p0.compute( src0, dest0 );
-
-			final I src1 = subArray.extract( src, sourcePos, sourceSize, p1 );
-			final O dest1 = tempArrayDest1.get( destLength );
-			p1.compute( src1, dest1 );
-
-			reduce( dest0, dest1, dest );
-		}
-
-		abstract void reduce( final O dest0, final O dest1, final O dest );
-	}
-
-	static final class SubArrayExtractor< I > implements EuclideanSpace
-	{
-		private final SubArrayCopy.Typed< I, I > copy;
-		private final int[] relSourcePos;
-		private final int[] sourceStrides;
-		private final int[] destStrides;
-
-		SubArrayExtractor( final int numDimensions, final SubArrayCopy.Typed< I, I > copy )
-		{
-			this.copy = copy;
-			relSourcePos = new int[ numDimensions ];
-			sourceStrides = new int[ numDimensions ];
-			destStrides = new int[ numDimensions ];
-		}
-
-		I extract( final I src, final long[] sourcePos, final int[] sourceSize, final BlockProcessor< I, ? > p0 )
-		{
-			if ( Arrays.equals( sourcePos, p0.getSourcePos() ) && Arrays.equals( sourceSize, p0.getSourceSize() ) )
-			{
-				return src;
-			}
-			else
-			{
-				final int[] destSize = p0.getSourceSize();
-				IntervalIndexer.createAllocationSteps( sourceSize, sourceStrides );
-				IntervalIndexer.createAllocationSteps( destSize, destStrides );
-				Arrays.setAll( relSourcePos, d -> ( int ) ( p0.getSourcePos()[ d ] - sourcePos[ d ] ) );
-				final int oSrc = IntervalIndexer.positionToIndex( relSourcePos, sourceSize );
-				final int oDest = 0;
-
-				I buf = p0.getSourceBuffer();
-				copy.copyNDRangeRecursive( numDimensions() - 1,
-						src, sourceStrides, oSrc,
-						buf, destStrides, oDest,
-						destSize );
-				return buf;
-			}
-		}
-
-		@Override
-		public int numDimensions()
-		{
-			return relSourcePos.length;
-		}
-	}
 }
