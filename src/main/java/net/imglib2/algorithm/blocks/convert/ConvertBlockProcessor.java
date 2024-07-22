@@ -39,6 +39,7 @@ import java.util.Arrays;
 
 import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.BlockProcessor;
+import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
 import net.imglib2.algorithm.blocks.util.UnaryOperatorType;
 import net.imglib2.blocks.TempArray;

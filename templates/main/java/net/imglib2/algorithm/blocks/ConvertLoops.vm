@@ -33,6 +33,7 @@
  */
 package net.imglib2.algorithm.blocks.convert;
 
+import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.util.UnaryOperatorType;
 import net.imglib2.util.Cast;
 

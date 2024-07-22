@@ -37,6 +37,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import net.imglib2.algorithm.blocks.BlockSupplier;
+import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.converter.Converter;
