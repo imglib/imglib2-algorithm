@@ -104,17 +104,16 @@ public class Convolve
 		return s -> {
 			final T type = s.getType();
 			final int n = s.numDimensions();
-			return createOperator( type, computationType, ClampType.NONE, gaussKernels( n, sigma ) );
+			return createOperator( type, computationType, ClampType.NONE, gaussKernels( Util.expandArray( sigma, n ) ) );
 		};
 	}
 
-	static Kernel1D[] gaussKernels( final int n, final double[] sigma )
+	static Kernel1D[] gaussKernels( final double[] sigma )
 	{
-		final double[] expanded = Util.expandArray( sigma, n );
-		final Kernel1D[] kernels = new Kernel1D[ n ];
-		for ( int d = 0; d < n; d++ )
-			if ( expanded[ d ] > 0 )
-				kernels[ d ] = Kernel1D.symmetric( Gauss3.halfkernel( expanded[ d ] ) );
+		final Kernel1D[] kernels = new Kernel1D[ sigma.length ];
+		for ( int d = 0; d < sigma.length; d++ )
+			if ( sigma[ d ] > 0 )
+				kernels[ d ] = Kernel1D.symmetric( Gauss3.halfkernel( sigma[ d ] ) );
 		return kernels;
 	}
 
