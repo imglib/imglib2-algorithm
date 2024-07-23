@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.algorithm.blocks.convolve;
+package net.imglib2.algorithm.blocks.extrema;
 
 import bdv.cache.SharedQueue;
 import bdv.util.Bdv;
@@ -44,6 +44,7 @@ import ij.ImagePlus;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.convert.Convert;
+import net.imglib2.algorithm.blocks.convolve.DifferenceOfGaussian;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.ARGBType;
@@ -51,66 +52,22 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 
-public class DogBdvPlayground
+public class LocalExtremaBdvPlayground
 {
 	public static void main( String[] args )
 	{
 		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 
-		final String fn = "/Users/pietzsch/workspace/data/e002_stack_fused-8bit.tif";
+		final String fn = "/Users/pietzsch/Desktop/dog.tif";
 		ImagePlus imp = IJ.openImage( fn );
-		final Img< UnsignedByteType > img = ImageJFunctions.wrapByte( imp );
-
-
-		final int sensitivity = 4;
-		final double sigmaSmaller = 2;
-		final double k = k( sensitivity );
-
+		final Img< FloatType > img = ImageJFunctions.wrapFloat( imp );
 
 		final BdvSource bdv = BdvFunctions.show(
 				img,
 				"img",
 				Bdv.options() );
 		bdv.setColor( new ARGBType( 0xffffff ) );
-		bdv.setDisplayRange( 0, 255 );
+		bdv.setDisplayRange( -10, 10 );
 		bdv.getBdvHandle().getViewerPanel().setDisplayMode( DisplayMode.SINGLE );
-
-
-		final BlockSupplier< FloatType > blocks = BlockSupplier
-				.of( Views.extendMirrorDouble( img ) )
-				.andThen( Convert.convert( new FloatType() ) )
-				.andThen( DifferenceOfGaussian.DoG( k, sigmaSmaller ) );
-
-		final long[] dimensions = img.dimensionsAsLongArray();
-		final int[] cellDimensions = { 64, 64, 64 };
-		final Img< FloatType > dog = BlockAlgoUtils.cellImg(
-				blocks,
-				dimensions,
-				cellDimensions );
-
-
-		imp = ImageJFunctions.show( dog );
-		IJ.save( imp, "/Users/pietzsch/Desktop/dog.tif" );
-
-		final BdvSource out = BdvFunctions.show(
-				VolatileViews.wrapAsVolatile( dog, new SharedQueue( 8, 1 ) ),
-				"DoG",
-				Bdv.options().addTo( bdv )
-		);
-		out.setDisplayRange( -10, 10 );
-//		out.setColor( new ARGBType( 0x00ff00 ) );
-		out.setColor( new ARGBType( 0xffffff ) );
-
 	}
-
-	private static double computeSigma2( final double sigma1, final int stepsPerOctave )
-	{
-		return sigma1 * k( stepsPerOctave );
-	}
-
-	private static double k( final int stepsPerOctave )
-	{
-		return Math.pow( 2f, 1f / stepsPerOctave );
-	}
-
 }
