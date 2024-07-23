@@ -48,9 +48,9 @@ class ConvolveProcessors
 		final TempArray< P > tempArrayAux1;
 		final TempArray< P > tempArraySource;
 
-		private final int ols[];
-		private final int ils[];
-		private final int ksteps[];
+		private final int[] ols;
+		private final int[] ils;
+		private final int[] ksteps;
 
 		private int aux0Length;
 		private int aux1Length;
