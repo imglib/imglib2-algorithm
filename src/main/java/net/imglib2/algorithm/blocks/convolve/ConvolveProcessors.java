@@ -147,7 +147,7 @@ class ConvolveProcessors
 			sourceInterval = new BlockProcessorSourceInterval( this );
 		}
 
-		AbstractConvolve( T convolve )
+		AbstractConvolve( final T convolve )
 		{
 			n = convolve.n;
 			kernels = convolve.kernels;
