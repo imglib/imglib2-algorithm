@@ -1,10 +1,14 @@
 package net.imglib2.algorithm.blocks.extrema;
 
+import static net.imglib2.util.Util.safeInt;
+
 import java.util.Arrays;
 
 import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
+import net.imglib2.blocks.TempArray;
+import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Intervals;
 
 public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
@@ -15,9 +19,13 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 	final long[] sourcePos;
 	final int[] sourceSize;
 
-	private final int ols[];
-	private final int ils[];
-	private final int ksteps[];
+	final TempArray< float[] > tempArraySource;
+
+	private final int[] ols;
+	private final int[] ils;
+	private final int[] ksteps;
+
+	private int sourceLength;
 
 	private final BlockProcessorSourceInterval sourceInterval;
 
@@ -31,6 +39,9 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 		sourceSize = new int[ n ];
 		sourcePos = new long[ n ];
 
+		final PrimitiveType primitiveType = PrimitiveType.FLOAT;
+		tempArraySource = TempArray.forPrimitiveType( primitiveType );
+
 		ols = new int[n];
 		ils = new int[n];
 		ksteps = new int[n];
@@ -38,12 +49,13 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 		sourceInterval = new BlockProcessorSourceInterval( this );
 	}
 
-	private LocalMaximaProcessor( final LocalMaximaProcessor convolve )
+	private LocalMaximaProcessor( final LocalMaximaProcessor convolve ) // TODO rename argument
 	{
 		n = convolve.n;
 		destSize = new int[ n ];
 		sourceSize = new int[ n ];
 		sourcePos = new long[ n ];
+		tempArraySource = convolve.tempArraySource.newInstance();
 		ols = new int[ n ];
 		ils = new int[ n ];
 		ksteps = new int[ n ];
@@ -81,6 +93,7 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 
 			sourceSize[ d ] += 2; // 2 == kernelsize - 1
 		}
+		sourceLength = safeInt( Intervals.numElements( sourceSize ) );
 	}
 
 	// TODO
@@ -110,7 +123,7 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 	@Override
 	public float[] getSourceBuffer()
 	{
-		throw new UnsupportedOperationException();
+		return tempArraySource.get( sourceLength );
 	}
 
 	@Override
@@ -181,10 +194,10 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 					byte _m = sourceM[ sob + x + kstep];
 					float _c = sourceI[ sob + x + kstep + kstep ];
 
-					float _e = Math.min( _a, _b );
+					float _e = Math.max( _a, _c );
 					byte _f = 0;
 
-					if ( _b < _e )
+					if ( _b > _e )
 					{
 						_e = _b;
 						_f = _m;
