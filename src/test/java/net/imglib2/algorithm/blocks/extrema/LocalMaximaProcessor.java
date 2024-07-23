@@ -19,6 +19,25 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 	final long[] sourcePos;
 	final int[] sourceSize;
 
+	// buf indices:
+	//   0 intermediate 0
+	//   1 intermediate 1
+	//   2 src
+	//   3 dest
+	private static final int BUF_AUX0 = 0;
+	private static final int BUF_AUX1 = 1;
+	private static final int BUF_SRC = 2;
+	private static final int BUF_DEST = 3;
+
+	final int[] fromBufI;
+	final int[] toBufI;
+	final int[] fromBufM;
+	final int[] toBufM;
+
+	final TempArray< float[] > tempArrayAuxI0;
+	final TempArray< float[] > tempArrayAuxI1;
+	final TempArray< byte[] > tempArrayAuxM0;
+	final TempArray< byte[] > tempArrayAuxM1;
 	final TempArray< float[] > tempArraySource;
 
 	private final int[] ols;
@@ -39,7 +58,23 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 		sourceSize = new int[ n ];
 		sourcePos = new long[ n ];
 
+		fromBufI = new int[ n ];
+		toBufI = new int[ n ];
+		fromBufM = new int[ n ];
+		toBufM = new int[ n ];
+		for ( int d = 0; d < n; ++d )
+		{
+			fromBufI[ d ] = ( d == 0 ) ? BUF_SRC : ( d + 1 ) % 2;
+			toBufI[ d ] = d % 2;
+			fromBufM[ d ] = ( d + 1 ) % 2;
+			toBufM[ d ] = ( d == n - 1 ) ? BUF_DEST : d % 2;
+		}
+
 		final PrimitiveType primitiveType = PrimitiveType.FLOAT;
+		tempArrayAuxI0 = TempArray.forPrimitiveType( primitiveType );
+		tempArrayAuxI1 = TempArray.forPrimitiveType( primitiveType );
+		tempArrayAuxM0 = TempArray.forPrimitiveType( PrimitiveType.BYTE );
+		tempArrayAuxM1 = TempArray.forPrimitiveType( PrimitiveType.BYTE );
 		tempArraySource = TempArray.forPrimitiveType( primitiveType );
 
 		ols = new int[n];
@@ -55,6 +90,14 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 		destSize = new int[ n ];
 		sourceSize = new int[ n ];
 		sourcePos = new long[ n ];
+		fromBufI = convolve.fromBufI;
+		toBufI = convolve.toBufI;
+		fromBufM = convolve.fromBufM;
+		toBufM = convolve.toBufM;
+		tempArrayAuxI0 = convolve.tempArrayAuxI0.newInstance();
+		tempArrayAuxI1 = convolve.tempArrayAuxI1.newInstance();
+		tempArrayAuxM0 = convolve.tempArrayAuxM0.newInstance();
+		tempArrayAuxM1 = convolve.tempArrayAuxM1.newInstance();
 		tempArraySource = convolve.tempArraySource.newInstance();
 		ols = new int[ n ];
 		ils = new int[ n ];
@@ -131,35 +174,35 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 	{
 		// TODO re-usable aux buffers etc, see ConvolveProcessors
 		final int auxLength = ( int ) Intervals.numElements( sourceSize );
-		float[] sourceI = null;
-		byte[] sourceM = null;
-		float[] targetI = null;
-		byte[] targetM = null;
+
+		final float[] auxI0 = tempArrayAuxI0.get( auxLength );
+		final float[] auxI1 = tempArrayAuxI1.get( auxLength );
+		final byte[] auxM0 = tempArrayAuxM0.get( auxLength );
+		final byte[] auxM1 = tempArrayAuxM1.get( auxLength );
+		Arrays.fill( auxM1, ( byte ) 1 );
 		for ( int d = 0; d < n; ++d )
 		{
-			if ( d == 0 )
-			{
-				sourceI = src;
-				sourceM = new byte[ auxLength ];
-				Arrays.fill( sourceM, ( byte ) 1 );
-				targetI = new float[ auxLength ];
-				targetM = new byte[ auxLength ];
-			}
-			else if ( d == n - 1 )
-			{
-				sourceI = targetI;
-				sourceM = targetM;
-				targetI = new float[ auxLength ];
-				targetM = dest;
-			}
-			else
-			{
-				sourceI = targetI;
-				sourceM = targetM;
-				targetI = new float[ auxLength ];
-				targetM = new byte[ auxLength ];
-			}
+			final float[] sourceI = selectBuf( fromBufI[ d ], src, null, auxI0, auxI1 );
+			final float[] targetI = selectBuf( toBufI[ d ], src, null, auxI0, auxI1 );
+			final byte[] sourceM = selectBuf( fromBufM[ d ], null, dest, auxM0, auxM1 );
+			final byte[] targetM = selectBuf( toBufM[ d ], null, dest, auxM0, auxM1 );
 			compute( sourceI, sourceM, targetI, targetM, ols[ d ], ils[ d ], ksteps[ d ], bw );
+		}
+	}
+
+	private < P > P selectBuf( final int bufId, final P src, final P dest, final P aux0, final P aux1 )
+	{
+		switch ( bufId )
+		{
+		case BUF_AUX0:
+			return aux0;
+		case BUF_AUX1:
+			return aux1;
+		case BUF_SRC:
+			return src;
+		case BUF_DEST:
+		default:
+			return dest;
 		}
 	}
 
