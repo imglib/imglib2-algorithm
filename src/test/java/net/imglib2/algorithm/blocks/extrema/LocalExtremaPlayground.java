@@ -40,6 +40,7 @@ import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.view.Views;
 
 public class LocalExtremaPlayground
 {
@@ -61,9 +62,13 @@ public class LocalExtremaPlayground
 
 		final int n = 2;
 		final LocalMaximaProcessor proc = new LocalMaximaProcessor( n );
-		final UnaryBlockOperator< FloatType, UnsignedByteType > operator = new DefaultUnaryBlockOperator<>( new FloatType(), new UnsignedByteType(), n, n, proc );
+		final UnaryBlockOperator< FloatType, UnsignedByteType > operator =
+				new DefaultUnaryBlockOperator<>( new FloatType(), new UnsignedByteType(), n, n, proc );
 
-		final BlockSupplier< UnsignedByteType > sup = BlockSupplier.of( img ).andThen( operator );
+		final BlockSupplier< FloatType > blocks = BlockSupplier
+				.of( Views.extendBorder( img ) );
+		final BlockSupplier< UnsignedByteType > sup = blocks
+				.andThen( operator );
 		final byte[] mvalues = new byte[ 6 * 6 ];
 		sup.copy( new int[] { 0, 0 }, mvalues, new int[] { 6, 6 } );
 
