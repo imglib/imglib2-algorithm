@@ -1,6 +1,5 @@
 package net.imglib2.algorithm.blocks.extrema;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -19,17 +18,10 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import net.imglib2.FinalInterval;
 import net.imglib2.Point;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
-import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.algorithm.localextrema.LocalExtrema;
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.basictypeaccess.array.FloatArray;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
@@ -42,6 +34,7 @@ import net.imglib2.util.Util;
 @Fork( 1 )
 public class LocalExtremaBenchmark
 {
+//	final int[] size = { 128, 128, 128 };
 	final int[] size = { 64, 64, 64 };
 //	final int[] size = { 32, 32, 32 };
 //	final int[] size = { 16, 16, 16 };
