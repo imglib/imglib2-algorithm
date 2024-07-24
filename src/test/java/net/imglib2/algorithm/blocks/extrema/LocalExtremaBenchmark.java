@@ -72,7 +72,7 @@ public class LocalExtremaBenchmark
 		return dest;
 	}
 
-	@Benchmark
+//	@Benchmark
 	public Object reference()
 	{
 		final Img< FloatType > srcImg = ArrayImgs.floats( srcBuf, Util.int2long( proc.getSourceSize() ) );
