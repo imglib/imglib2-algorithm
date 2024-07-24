@@ -1,5 +1,6 @@
 package net.imglib2.algorithm.blocks.extrema;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -7,11 +8,14 @@ import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -34,18 +38,21 @@ import net.imglib2.util.Util;
 @Fork( 1 )
 public class LocalExtremaBenchmark
 {
-//	final int[] size = { 128, 128, 128 };
-	final int[] size = { 64, 64, 64 };
-//	final int[] size = { 32, 32, 32 };
-//	final int[] size = { 16, 16, 16 };
-//	final int[] size = { 8, 8, 8 };
 
-	final LocalMaximaProcessor proc;
-	final float[] srcBuf;
+	@Param( { "16", "32", "64", "92", "128" } )
+	public int size_d;
 
-	public LocalExtremaBenchmark()
+	int[] size;
+	LocalMaximaProcessor proc;
+	float[] srcBuf;
+
+	@Setup( Level.Trial )
+	public void setUp()
 	{
-		final int n = size.length;
+		final int n = 3;
+		size = new int[ n ];
+		System.out.println( "size_d = " + size_d );
+		Arrays.fill( size, size_d );
 		proc = new LocalMaximaProcessor( n );
 		proc.setTargetInterval( new long[ n ], size );
 
