@@ -186,7 +186,7 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 			final float[] targetI = selectBuf( toBufI[ d ], src, null, auxI0, auxI1 );
 			final byte[] sourceM = selectBuf( fromBufM[ d ], null, dest, auxM0, auxM1 );
 			final byte[] targetM = selectBuf( toBufM[ d ], null, dest, auxM0, auxM1 );
-			compute1( sourceI, sourceM, targetI, targetM, ols[ d ], ils[ d ], ksteps[ d ], bw );
+			compute0( sourceI, sourceM, targetI, targetM, ols[ d ], ils[ d ], ksteps[ d ], bw );
 		}
 	}
 
@@ -240,8 +240,8 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 				System.arraycopy( sourceI, sob + kstep, lineI0, 0, bwb );
 				System.arraycopy( sourceM, sob + kstep, lineM0, 0, bwb );
 				lineMax0( lineI0, lineI1, lineM0, lineM1, bwb );
-				System.arraycopy( lineI1, tob, targetI, 0, bwb );
-				System.arraycopy( lineM1, tob, targetM, 0, bwb );
+				System.arraycopy( lineI1, 0, targetI, tob, bwb );
+				System.arraycopy( lineM1, 0, targetM, tob, bwb );
 			}
 		}
 	}
