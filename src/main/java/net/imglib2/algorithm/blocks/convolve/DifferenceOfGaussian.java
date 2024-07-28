@@ -21,23 +21,87 @@ import net.imglib2.util.Util;
 /**
  * Difference of Gaussian.
  * <p>
- * TODO: document supported types etc similar to Convolve
+ * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
+ * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
+ * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
+ * <p>
+ * For {@code T} other than {@code DoubleType} or {@code FloatType}, the input
+ * will be converted to float/double for computation and the result converted
+ * back to {@code T}. To avoid unnecessary conversions, if you want the result
+ * as {@code FloatType} then you should explicitly convert to {@code FloatType}
+ * <em>before</em> applying the DoG operator.
+ * This code:
+ * <pre>{@code
+ * RandomAccessible< UnsignedByteType > input;
+ * BlockSupplier< FloatType > convolved = BlockSupplier.of( input )
+ *         .andThen( Convert.convert( new FloatType() ) )
+ *         .andThen( DifferenceOfGaussian.DoG( sigmaSmaller, sigmaLarger ) );
+ * }</pre>
+ * avoids loss of precision and is more efficient than
+ * <pre>{@code
+ * RandomAccessible< UnsignedByteType > input;
+ * BlockSupplier< FloatType > convolved = BlockSupplier.of( input )
+ *         .andThen( DifferenceOfGaussian.DoG( sigmaSmaller, sigmaLarger ) )
+ *         .andThen( Convert.convert( new FloatType() ) );
+ * }</pre>
+ *
  */
 public class DifferenceOfGaussian
 {
 
+	/**
+	 * Compute Difference-of-Gaussian for blocks of the standard ImgLib2 {@code
+	 * RealType}s.
+	 * <p>
+	 * Like {@link #DoG(double[], double[])}, but {@code sigmaLarger} is
+	 * determined as {@code k * sigmaSmaller}.
+	 */
 	public static < T extends NativeType< T > >
 	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > DoG( final double k, final double... sigmaSmaller )
 	{
 		return DoG( ComputationType.AUTO, k, sigmaSmaller );
 	}
 
+	/**
+	 * Compute Difference-of-Gaussian for blocks of the standard ImgLib2 {@code
+	 * RealType}s: Input convolved with Gaussian of {@code sigmaSmaller} is
+	 * subtracted from input convolved with Gaussian of {@code sigmaLarger}.
+	 * <p>
+	 * Precision for intermediate values is chosen as to represent the
+	 * input/output type without loss of precision. That is, {@code FLOAT} for
+	 * u8, i8, u16, i16, i32, f32, and otherwise {@code DOUBLE} for u32, i64,
+	 * f64.
+	 * <p>
+	 * The returned factory function creates an operator matching the
+	 * type and dimensionality of a given input {@code BlockSupplier<T>}.
+	 *
+	 * @param sigmaSmaller
+	 * 		sigmas in each dimension for smaller Gaussian.
+	 * 		if the image has fewer or more dimensions than values given,
+	 * 		values will be truncated or the final value repeated as necessary.
+	 * @param sigmaLarger
+	 * 		sigmas in each dimension for larger Gaussian
+	 * 		({@code sigmaLarger > sigmaSmaller}).
+	 * 		if the image has fewer or more dimensions than values given,
+	 * 		values will be truncated or the final value repeated as necessary.
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to compute DoG for blocks of type {@code T}
+	 */
 	public static < T extends NativeType< T > >
 	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > DoG( final double[] sigmaSmaller, final double[] sigmaLarger )
 	{
 		return DoG( ComputationType.AUTO, sigmaSmaller, sigmaLarger );
 	}
 
+	/**
+	 * Compute Difference-of-Gaussian for blocks of the standard ImgLib2 {@code
+	 * RealType}s.
+	 * <p>
+	 * Like {@link #DoG(ComputationType, double[], double[])}, but {@code
+	 * sigmaLarger} is determined as {@code k * sigmaSmaller}.
+	 */
 	public static < T extends NativeType< T > >
 	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > DoG( final ComputationType computationType, final double k, final double... sigmaSmaller )
 	{
@@ -46,6 +110,34 @@ public class DifferenceOfGaussian
 		return DoG( computationType, sigmaSmaller, sigmaLarger );
 	}
 
+	/**
+	 * Compute Difference-of-Gaussian for blocks of the standard ImgLib2 {@code
+	 * RealType}s: Input convolved with Gaussian of {@code sigmaSmaller} is
+	 * subtracted from input convolved with Gaussian of {@code sigmaLarger}.
+	 * <p>
+	 * The returned factory function creates an operator matching the
+	 * type and dimensionality of a given input {@code BlockSupplier<T>}.
+	 *
+	 * @param computationType
+	 * 		specifies in which precision intermediate values should be
+	 * 		computed. For {@code AUTO}, the type that can represent the
+	 * 		input/output type without loss of precision is picked. That is,
+	 * 		{@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
+	 * 		DOUBLE} for u32, i64, f64.
+	 * @param sigmaSmaller
+	 * 		sigmas in each dimension for smaller Gaussian.
+	 * 		if the image has fewer or more dimensions than values given,
+	 * 		values will be truncated or the final value repeated as necessary.
+	 * @param sigmaLarger
+	 * 		sigmas in each dimension for larger Gaussian
+	 * 		({@code sigmaLarger > sigmaSmaller}).
+	 * 		if the image has fewer or more dimensions than values given,
+	 * 		values will be truncated or the final value repeated as necessary.
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to compute DoG for blocks of type {@code T}
+	 */
 	public static < T extends NativeType< T > >
 	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > DoG( final ComputationType computationType, final double[] sigmaSmaller, final double[] sigmaLarger )
 	{
@@ -59,10 +151,11 @@ public class DifferenceOfGaussian
 	}
 
 	/**
-	 * TODO: javadoc
-	 * <p>
-	 * Create a {@code UnaryBlockOperator} to compute DoG with the given sigmas...
-	 * TODO: see Convolve.createOperator javadoc
+	 * Create a {@code UnaryBlockOperator} to compute Difference-of-Gaussian
+	 * with the given sigmas. (Input convolved with Gaussian of {@code
+	 * sigmaSmaller} is subtracted from input convolved with Gaussian of {@code
+	 * sigmaLarger}). {@code sigmaSmaller.length} and {@code sigmaLarger.length}
+	 * must match the dimensionality of the input image.
 	 *
 	 * @param type
 	 * 		instance of the input type
@@ -70,12 +163,13 @@ public class DifferenceOfGaussian
 	 * 		specifies in which precision intermediate values should be
 	 * 		computed. For {@code AUTO}, the type that can represent the
 	 * 		input/output type without loss of precision is picked. That is,
-	 *        {@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
+	 * 		{@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
 	 * 		DOUBLE} for u32, i64, f64.
 	 * @param sigmaSmaller
-	 *      sigmas in each dimension for smaller Gaussian
+	 * 		sigmas in each dimension for smaller Gaussian
 	 * @param sigmaLarger
-	 *      sigmas in each dimension for larger Gaussian
+	 * 		sigmas in each dimension for larger Gaussian
+	 * 		({@code sigmaLarger > sigmaSmaller})
 	 * @param <T>
 	 * 		the input/output type
 	 *
