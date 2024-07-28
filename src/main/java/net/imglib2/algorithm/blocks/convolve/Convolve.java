@@ -31,19 +31,19 @@ import net.imglib2.util.Util;
  * will be converted to float/double for computation and the result converted
  * back to {@code T}. To avoid unnecessary conversions, if you want the result
  * as {@code FloatType} then you should explicitly convert to {@code FloatType}
- * <em>before</em> applying the downsampling operator.
+ * <em>before</em> applying the convolve operator.
  * This code:
  * <pre>{@code
  * RandomAccessible< UnsignedByteType > input;
  * BlockSupplier< FloatType > convolved = BlockSupplier.of( input )
  *         .andThen( Convert.convert( new FloatType() ) )
- *         .andThen( Convolve.convolve( kernels );
+ *         .andThen( Convolve.convolve( kernels ) );
  * }</pre>
  * avoids loss of precision and is more efficient than
  * <pre>{@code
  * RandomAccessible< UnsignedByteType > input;
  * BlockSupplier< FloatType > convolved = BlockSupplier.of( input )
- *         .andThen( Convolve.convolve( kernels )
+ *         .andThen( Convolve.convolve( kernels ) )
  *         .andThen( Convert.convert( new FloatType() ) );
  * }</pre>
  *
