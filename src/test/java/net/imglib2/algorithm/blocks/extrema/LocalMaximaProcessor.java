@@ -186,7 +186,7 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 			final byte[] sourceM = selectBuf( fromBufM[ d ], null, dest, auxM0, auxM1 );
 			final byte[] targetM = selectBuf( toBufM[ d ], null, dest, auxM0, auxM1 );
 			if ( d == 0 )
-				compute000( sourceI, targetI, targetM, ols[ d ], ils[ d ], bw );
+				compute0( sourceI, targetI, targetM, ols[ d ], ils[ d ], bw );
 			else if ( d == n - 1 )
 				compute2( sourceI, sourceM, targetM, ols[ d ], ils[ d ], ksteps[ d ], bw );
 			else
@@ -210,8 +210,7 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 		}
 	}
 
-
-	private void compute000(
+	private void compute0(
 			final float[] sourceI,
 			final float[] targetI,
 			final byte[] targetM,
@@ -241,104 +240,6 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 			}
 		}
 	}
-
-	private void compute00(
-			final float[] sourceI,
-			final float[] targetI,
-			final byte[] targetM,
-			final int ol,
-			final int til,
-			final int bw )
-	{
-		final float[] lineI0 = new float[ bw + 2 ];
-		final float[] lineI1 = new float[ bw ];
-		final byte[] lineM1 = new byte[ bw ];
-
-		final int sil = til + 2;
-		final int nBlocks = ( til - 1 ) / bw + 1;
-		final int trailing = til - ( nBlocks - 1 ) * bw;
-		for ( int o = 0; o < ol; ++o )
-		{
-			final int to = o * til;
-			final int so = o * sil;
-			for ( int b = 0; b < nBlocks; ++b )
-			{
-				final int tob = to + b * bw;
-				final int sob = so + b * bw;
-				final int bwb = ( b == nBlocks - 1 ) ? trailing : bw;
-
-				System.arraycopy( sourceI, sob, lineI0, 0, bwb + 2 );
-				lineMax00( lineI0, lineI1, lineM1, bwb );
-				System.arraycopy( lineI1, 0, targetI, tob, bwb );
-				System.arraycopy( lineM1, 0, targetM, tob, bwb );
-			}
-		}
-	}
-
-	private static void lineMax00( final float[] s0, final float[] s1, final byte[] m1, final int l )
-	{
-		for ( int x = 0; x < l; ++x )
-		{
-			final float ab = Math.max( s0[ x ], s0[ x + 2 ] );
-			s1[ x ] = Math.max( s0[ x + 1 ], ab );
-			m1[ x ] = s0[ x + 1 ] > ab ? ( byte ) 1 : ( byte ) 0;
-		}
-	}
-
-
-
-
-	private void compute0(
-			final float[] sourceI,
-			final float[] targetI,
-			final byte[] targetM,
-			final int ol,
-			final int til,
-			final int bw )
-	{
-		final float[] lineI0 = new float[ bw ];
-		final float[] lineI1 = new float[ bw ];
-		final byte[] lineM1 = new byte[ bw ];
-
-		final int sil = til + 2;
-		final int nBlocks = ( til - 1 ) / bw + 1;
-		final int trailing = til - ( nBlocks - 1 ) * bw;
-		for ( int o = 0; o < ol; ++o )
-		{
-			final int to = o * til;
-			final int so = o * sil;
-			for ( int b = 0; b < nBlocks; ++b )
-			{
-				final int tob = to + b * bw;
-				final int sob = so + b * bw;
-				final int bwb = ( b == nBlocks - 1 ) ? trailing : bw;
-
-				System.arraycopy( sourceI, sob, lineI0, 0, bwb );
-				System.arraycopy( sourceI, sob + 2, lineI1, 0, bwb );
-				lineMax0( lineI0, lineI1, bwb );
-				System.arraycopy( sourceI, sob + 1, lineI0, 0, bwb );
-				lineMax0( lineI0, lineI1, lineM1, bwb );
-				System.arraycopy( lineI1, 0, targetI, tob, bwb );
-				System.arraycopy( lineM1, 0, targetM, tob, bwb );
-			}
-		}
-	}
-
-	private static void lineMax0( final float[] s0, final float[] s1, final int l )
-	{
-		for ( int x = 0; x < l; ++x )
-			s1[ x ] = Math.max( s0[ x ], s1[ x ] );
-	}
-
-	private static void lineMax0( final float[] s0, final float[] s1, final byte[] m1, final int l )
-	{
-		for ( int x = 0; x < l; ++x )
-		{
-			m1[ x ] = s0[ x ] > s1[ x ] ? ( byte ) 1 : ( byte ) 0;
-			s1[ x ] = Math.max( s0[ x ], s1[ x ] );
-		}
-	}
-
 
 	private void compute1(
 			final float[] sourceI,
@@ -370,7 +271,7 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 
 				System.arraycopy( sourceI, sob, lineI0, 0, bwb );
 				System.arraycopy( sourceI, sob + 2 * kstep, lineI1, 0, bwb );
-				lineMax0( lineI0, lineI1, bwb );
+				lineMax( lineI0, lineI1, bwb );
 				System.arraycopy( sourceI, sob + kstep, lineI0, 0, bwb );
 				System.arraycopy( sourceM, sob + kstep, lineM0, 0, bwb );
 				lineMax1( lineI0, lineI1, lineM0, lineM1, bwb );
@@ -378,6 +279,12 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 				System.arraycopy( lineM1, 0, targetM, tob, bwb );
 			}
 		}
+	}
+
+	private static void lineMax( final float[] s0, final float[] s1, final int l )
+	{
+		for ( int x = 0; x < l; ++x )
+			s1[ x ] = Math.max( s0[ x ], s1[ x ] );
 	}
 
 	private static void lineMax1( final float[] s0, final float[] s1, final byte[] m0, final byte[] m1, final int l )
@@ -388,8 +295,6 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 			s1[ x ] = Math.max( s0[ x ], s1[ x ] );
 		}
 	}
-
-
 
 	private void compute2(
 			final float[] sourceI,
@@ -420,7 +325,7 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 
 				System.arraycopy( sourceI, sob, lineI0, 0, bwb );
 				System.arraycopy( sourceI, sob + 2 * kstep, lineI1, 0, bwb );
-				lineMax0( lineI0, lineI1, bwb );
+				lineMax( lineI0, lineI1, bwb );
 				System.arraycopy( sourceI, sob + kstep, lineI0, 0, bwb );
 				System.arraycopy( sourceM, sob + kstep, lineM0, 0, bwb );
 				lineMax2( lineI0, lineI1, lineM0, lineM1, bwb );
@@ -434,9 +339,4 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 		for ( int x = 0; x < l; ++x )
 			m1[ x ] = s0[ x ] > s1[ x ] ? m0[ x ] : ( byte ) 0;
 	}
-
-
-
-
-
 }
