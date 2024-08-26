@@ -213,6 +213,7 @@ public class Grids
 	 * Get all blocks of size {@code blockSize} contained within an interval
 	 * specified by {@code dimensions} and their positions within a cell grid.
 	 *
+	 * @implNote op name='grid.partition', type=Function
 	 * @param dimensions
 	 * @param blockSize
 	 * @return list of blocks as specified by {@link Interval} and the position
@@ -229,6 +230,7 @@ public class Grids
 	 * specified by {@code min}, {@code max} and their positions within a cell
 	 * grid.
 	 *
+	 * @implNote op name='grid.partition', type=Function
 	 * @param min
 	 * @param max
 	 * @param blockSize
@@ -245,6 +247,7 @@ public class Grids
 	 * Get all blocks of size {@code blockSize} contained within an interval
 	 * specified by {@code dimensions} and their positions within a cell grid.
 	 *
+	 * @implNote op name='grid.partition', type=Function
 	 * @param dimensions
 	 * @param blockSize
 	 * @return list of blocks as specified by {@link Interval}
@@ -260,6 +263,7 @@ public class Grids
 	 * specified by {@code min}, {@code max} and their positions within a cell
 	 * grid.
 	 *
+	 * @implNote op name='grid.partition', type=Function
 	 * @param min
 	 * @param max
 	 * @param blockSize
@@ -275,6 +279,7 @@ public class Grids
 	 * Get all blocks of size {@code blockSize} contained within an interval
 	 * specified by {@code dimensions}.
 	 *
+	 * @implNote op name='grid.partition', type=Function
 	 * @param dimensions
 	 * @param blockSize
 	 * @return list of blocks defined by minimum
@@ -289,6 +294,7 @@ public class Grids
 	 * Get all blocks of size {@code blockSize} contained within an interval
 	 * specified by {@code dimensions}.
 	 *
+	 * @implNote op name='grid.partition', type=Function
 	 * @param dimensions
 	 * @param blockSize
 	 * @param func
@@ -306,6 +312,7 @@ public class Grids
 	 * Get all blocks of size {@code blockSize} contained within an interval
 	 * specified by {@code min} and {@code max}.
 	 *
+	 * @implNote op name='grid.partition', type=Function
 	 * @param min
 	 * @param max
 	 * @param blockSize
@@ -321,6 +328,7 @@ public class Grids
 	 * Get all blocks of size {@code blockSize} contained within an interval
 	 * specified by {@code min} and {@code max}.
 	 *
+	 * @implNote op name='grid.partition', type=Function
 	 * @param min
 	 * @param max
 	 * @param blockSize
@@ -466,6 +474,7 @@ public class Grids
 	 * into a {@link Pair} of {@link Interval} and {@link long[]} that specify
 	 * the block and its position in grid coordinates.
 	 *
+	 * @implNote op name='grid.partition', type=Function
 	 * @param min
 	 *            minimum of the grid
 	 * @param max

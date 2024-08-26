@@ -65,11 +65,21 @@ public class Vbreak extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @param source the input data
+	 * @return a copy of {@code source}, with horizontal bridges removed
+	 * @implNote op name='morphology.vbreak'
+	 */
 	public static < T extends BooleanType< T > > Img< T > vbreak( final Img< T > source )
 	{
 		return new Vbreak().calculate( source );
 	}
 
+	/**
+	 * @param source the input data
+	 * @param target a preallocated output buffer
+	 * @implNote op name='morphology.vbreak', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void vbreak( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Vbreak().calculate( source, target );

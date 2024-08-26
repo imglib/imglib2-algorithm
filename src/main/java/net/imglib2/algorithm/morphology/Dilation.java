@@ -76,6 +76,7 @@ public class Dilation
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
 	 *
+	 * @implNote op names='morphology.dilate', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -121,6 +122,7 @@ public class Dilation
 	 * image. This normally unseen parameter is required to operate on
 	 * {@code T extends Comparable & Type}.
 	 *
+	 * @implNote op names='morphology.dilate', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -160,6 +162,7 @@ public class Dilation
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
 	 *
+	 * @implNote op names='morphology.dilate', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -200,6 +203,7 @@ public class Dilation
 	 * image. This normally unseen parameter is required to operate on
 	 * {@code T extends Comparable & Type}.
 	 *
+	 * @implNote op names='morphology.dilate', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -259,6 +263,7 @@ public class Dilation
 	 *            the structuring element, as a list of {@link Shape}s.
 	 * @param numThreads
 	 *            the number of threads to use for the calculation.
+	 * @implNote op name='morphology.dilate', type=Computer2
 	 */
 	public static < T extends RealType< T >> void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final int numThreads )
 	{
@@ -316,6 +321,7 @@ public class Dilation
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
 	 *            a sub-type of {@code T extends Comparable & Type}.
+	 * @implNote op name='morphology.dilate', type=Computer2
 	 */
 	public static < T extends Type< T > & Comparable< T > > void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final T minVal, final int numThreads )
 	{
@@ -394,6 +400,7 @@ public class Dilation
 	 *            the structuring element, as a {@link Shape}.
 	 * @param numThreads
 	 *            the number of threads to use for the calculation.
+	 * @implNote op name='morphology.dilate', type=Computer2
 	 */
 	public static < T extends RealType< T >> void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final int numThreads )
 	{
@@ -446,6 +453,7 @@ public class Dilation
 	 * @param <T>
 	 *            the type of the source image and the dilation result. Must be
 	 *            a sub-type of {@code T extends Comparable & Type}.
+	 * @implNote op name='morphology.dilate', type=Computer2
 	 */
 	public static < T extends Type< T > & Comparable< T > > void dilate( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final T minVal, int numThreads )
 	{
@@ -597,6 +605,7 @@ public class Dilation
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
 	 *
+	 * @implNote op name='morphology.dilate', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -655,6 +664,7 @@ public class Dilation
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
 	 *
+	 * @implNote op name='morphology.dilate', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -707,6 +717,7 @@ public class Dilation
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
 	 *
+	 * @implNote op name='morphology.dilate', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -767,6 +778,7 @@ public class Dilation
 	 * dimensions equals to the maximum of the number of dimension of both
 	 * source and structuring element.
 	 *
+	 * @implNote op name='morphology.dilate', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -821,6 +833,7 @@ public class Dilation
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
 	 *
+	 * @implNote op name='morphology.dilate', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -870,6 +883,7 @@ public class Dilation
 	 * image. This normally unseen parameter is required to operate on
 	 * {@code T extends Comparable & Type}.
 	 *
+	 * @implNote op name='morphology.dilate', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -913,6 +927,7 @@ public class Dilation
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}
 	 * <p>
 	 *
+	 * @implNote op name='morphology.dilate', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -965,6 +980,7 @@ public class Dilation
 	 * image. This normally unseen parameter is required to operate on
 	 * {@code T extends Comparable & Type}.
 	 *
+	 * @implNote op name='morphology.dilate', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval

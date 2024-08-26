@@ -157,6 +157,7 @@ public class Lazy
 	 * Create a memory {@link CachedCellImg} with a cell generator
 	 * {@link Consumer}.
 	 *
+	 * @implNote op name='create.img, engine.create', type=Function
 	 * @param targetInterval
 	 * @param blockSize
 	 * @param type

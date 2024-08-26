@@ -114,6 +114,7 @@ public class SeparableKernelConvolution
 	 *            the required source interval.
 	 * @param target
 	 *            target image.
+	 * @implNote op name='filter.convolve', type=Computer
 	 */
 	public static void convolve( final Kernel1D[] kernels,
 			final RandomAccessible< ? extends NumericType< ? > > source,

@@ -65,11 +65,21 @@ public class Life extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @param source the input data
+	 * @return a copy of {@code source}, operated on by a single iteration of the Game of Life
+	 * @implNote op name='morphology.life'
+	 */
 	public static < T extends BooleanType< T > > Img< T > life( final Img< T > source )
 	{
 		return new Life().calculate( source );
 	}
 
+	/**
+	 * @param source the input data
+	 * @param target a preallocated output buffer
+	 * @implNote op name='morphology.life', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void life( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Life().calculate( source, target );

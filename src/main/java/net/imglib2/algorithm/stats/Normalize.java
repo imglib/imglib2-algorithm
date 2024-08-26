@@ -42,7 +42,8 @@ public class Normalize
 {
 	/**
 	 * Normalize values of an {@link IterableInterval} to the range [min, max].
-	 * 
+	 *
+	 * @implNote op name='image.normalize', type=Inplace1
 	 * @param iterable
 	 *            the interval to be normalized.
 	 * @param min

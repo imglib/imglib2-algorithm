@@ -106,6 +106,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * Returns the size of the vote space output image given an input
 	 * {@link RandomAccessibleInterval}.
 	 *
+	 * @implNote op names='features.hough.getVotespaceSize', type=Function
 	 * @param dimensions
 	 *            - the {@link Dimensions} over which the Hough Line Transform
 	 *            will be run
@@ -120,6 +121,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * Returns the size of the vote space output image given an input
 	 * {@link RandomAccessibleInterval}.
 	 *
+	 * @implNote op names='features.hough.getVotespaceSize', type=Function
 	 * @param dimensions
 	 *            - the {@link Dimensions} over which the Hough Line Transform
 	 *            will be run
@@ -136,6 +138,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * Returns the size of the voteSpace output image given desired {@code nRho}
 	 * and {@code nTheta} values.
 	 *
+	 * @implNote op names='features.hough.getVotespaceSize', type=Function
 	 * @param nRho
 	 *            - the number of bins for rho resolution
 	 * @param nTheta
@@ -150,6 +153,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Pick vote space peaks with a {@link LocalExtrema}.
 	 *
+	 * @implNote op names='features.hough.pickPeaks', type=Function
 	 * @param voteSpace
 	 *            - the {@link RandomAccessibleInterval} containing the output
 	 *            of a Hough Transform vote
@@ -171,6 +175,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	/**
 	 * Pick vote space peaks with a {@link LocalExtrema}.
 	 *
+	 * @implNote op names='features.hough.pickPeaks', type=Function
 	 * @param voteSpace
 	 *            - the {@link RandomAccessibleInterval} containing the output
 	 *            of a Hough Transform vote
@@ -202,6 +207,8 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * Runs a Hough Line Tranform on an image and populates the vote space
 	 * parameter with the results.
 	 *
+	 * @implNote op names='features.hough.voteLines',
+	 *           type=Computer
 	 * @param input
 	 *            - the {@link RandomAccessibleInterval} to run the Hough Line
 	 *            Transform over
@@ -228,6 +235,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 *            are stored
 	 * @param nTheta
 	 *            - the number of bins for theta resolution
+	 * @implNote op name='features.hough.voteLines', type=Computer2
 	 */
 	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines(
 			final RandomAccessibleInterval< T > input,
@@ -272,6 +280,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 *            - the number of bins for theta resolution
 	 * @param nRho
 	 *            - the number of bins for rho resolution
+	 * @implNote op names='features.hough.voteLines', type=Computer2
 	 */
 	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines(
 			final RandomAccessibleInterval< T > input,
@@ -299,6 +308,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * @param threshold
 	 *            - the minimum value allowed by the populator. Any input less
 	 *            than this value will be disregarded by the populator.
+	 * @implNote op name='features.hough.voteLines', type=Computer2
 	 */
 	public static < T extends Comparable< T >, U extends IntegerType< U > > void voteLines(
 			final RandomAccessibleInterval< T > input,
@@ -366,6 +376,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 *            above the minimum value allowed by the populator. Any input
 	 *            less than or equal to this value will be disregarded by the
 	 *            populator.
+	 * @implNote op name='features.hough.voteLines', type=Computer2
 	 */
 	public static < T, U extends IntegerType< U > > void voteLines(
 			final RandomAccessibleInterval< T > input,
@@ -431,6 +442,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * y-intercept value. Used with {@link HoughTransforms#getSlope} to create
 	 * line equations.
 	 *
+	 * @implNote op name='features.hough.intercept', type=Function
 	 * @param rho
 	 *            - the {@code rho} of the line
 	 * @param theta
@@ -449,6 +461,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 	 * value. Used with {@link HoughTransforms#getIntercept} to create line
 	 * equations.
 	 *
+	 * @implNote op name='features.hough.slope', type=Function
 	 * @param theta
 	 *            - the {@code theta} of the line
 	 * @return {@code double} - the y-intercept of the line

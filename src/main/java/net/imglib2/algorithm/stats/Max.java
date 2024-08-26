@@ -46,11 +46,12 @@ public class Max
 {
 	/**
 	 * Find the maximum value and its position in an {@link IterableInterval}.
-	 * 
+	 *
 	 * @param iterable
 	 *            input interval.
 	 * @return a cursor positioned on the global maximum. If several maxima with
 	 *         the same value exist, the cursor is on the first one.
+	 * @implNote op name='stats.max', type=Function
 	 */
 	public static < T extends Comparable< T > > Cursor< T > findMax( final IterableInterval< T > iterable )
 	{

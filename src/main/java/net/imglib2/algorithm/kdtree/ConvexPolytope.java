@@ -65,6 +65,7 @@ public class ConvexPolytope extends AbstractEuclideanSpace
 	/**
 	 * Apply an {@link AffineGet affine transformation} to a {@link HyperPlane}.
 	 *
+	 * @implNote op name='transform.affine', type=Function
 	 * @param polytope
 	 *            a polytope.
 	 * @param transform

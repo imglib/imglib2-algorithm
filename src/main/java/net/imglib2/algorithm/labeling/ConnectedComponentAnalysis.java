@@ -117,6 +117,7 @@ public class ConnectedComponentAnalysis
 	 * generalization for higher dimenions over a binary mask. {@code mask} and
 	 * {@code labeling} are expected to have equal min and max.
 	 *
+	 * @implNote op name='labeling.cca', type=Computer
 	 * @param mask
 	 *            Boolean mask to distinguish foreground ({@code true}) from
 	 *            background ({@code false}).
@@ -154,6 +155,7 @@ public class ConnectedComponentAnalysis
 	 *            ({@link DiamondShape}), 8-neighborhood
 	 *            ({@link RectangleNeighborhood}) and their generalisations for
 	 *            higher dimensions.
+	 * @implNote op name='labeling.cca', type=Computer2
 	 */
 	public static < B extends BooleanType< B >, L extends IntegerType< L > > void connectedComponents(
 			final RandomAccessibleInterval< B > mask,
@@ -200,6 +202,7 @@ public class ConnectedComponentAnalysis
 	 * @param idForSet
 	 *            Create id for a set from the root id of a set. Multiple calls
 	 *            with the same argument should always return the same result.
+	 * @implNote op name='labeling.cca', type=Computer2
 	 */
 	public static < B extends BooleanType< B >, L extends IntegerType< L > > void connectedComponents(
 			final RandomAccessibleInterval< B > mask,

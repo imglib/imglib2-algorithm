@@ -70,6 +70,7 @@ public class Thresholder
 	 *            the number of threads to use for thresholding.
 	 * @return a new {@link Img} of type {@link BitType} and of same dimension
 	 *         that the source image.
+	 * @implNote op name='threshold.apply'
 	 */
 	public static final < T extends Type< T > & Comparable< T >> Img< BitType > threshold( final Img< T > source, final T threshold, final boolean above, final int numThreads )
 	{

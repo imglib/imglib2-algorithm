@@ -167,6 +167,7 @@ public class LocalExtrema
 	 * {@code source} accordingly. The returned coordinate list is valid
 	 * for the original {@code source}.
 	 *
+	 * @implNote op name='image.localExtrema', type=Function
 	 * @param source
 	 *            Find local extrema within this
 	 *            {@link RandomAccessibleInterval}
@@ -208,6 +209,7 @@ public class LocalExtrema
 	 * {@code source} accordingly. The returned coordinate list is valid
 	 * for the original {@code source}.
 	 *
+	 * @implNote op name='image.localExtrema', type=Function
 	 * @param source
 	 *            Find local extrema within this
 	 *            {@link RandomAccessibleInterval}
@@ -248,6 +250,7 @@ public class LocalExtrema
 	 * The task is parallelized along the longest dimension of
 	 * {@code interval}
 	 *
+	 * @implNote op name='image.localExtrema', type=Function
 	 * @param source
 	 *            Find local extrema of the function defined by this
 	 *            {@link RandomAccessible}
@@ -287,6 +290,7 @@ public class LocalExtrema
 	 * test for being an extremum can be specified as an implementation of the
 	 * {@link LocalNeighborhoodCheck} interface.
 	 *
+	 * @implNote op name='image.localExtrema', type=Function
 	 * @param source
 	 *            Find local extrema of the function defined by this
 	 *            {@link RandomAccessible}
@@ -367,6 +371,7 @@ public class LocalExtrema
 	 * expand {@code source} accordingly. The returned coordinate list is
 	 * valid for the original {@code source}.
 	 *
+	 * @implNote op name='image.localExtrema', type=Function
 	 * @param source
 	 *            Find local extrema within this
 	 *            {@link RandomAccessibleInterval}
@@ -393,6 +398,7 @@ public class LocalExtrema
 	 * {@code source} accordingly. The returned coordinate list is valid
 	 * for the original {@code source}.
 	 *
+	 * @implNote op name='image.localExtrema', type=Function
 	 * @param source
 	 *            Find local extrema within this
 	 *            {@link RandomAccessibleInterval}
@@ -427,6 +433,7 @@ public class LocalExtrema
 	 *
 	 * The local neighborhood is defined as {@link RectangleShape} with span 1.
 	 *
+	 * @implNote op name='image.localExtrema', type=Function
 	 * @param source
 	 *            Find local extrema within this {@link RandomAccessible}
 	 * @param interval
@@ -451,6 +458,7 @@ public class LocalExtrema
 	 * test for being an extremum can be specified as an implementation of the
 	 * {@link LocalNeighborhoodCheck} interface.
 	 *
+	 * @implNote op name='image.localExtrema', type=Function
 	 * @param source
 	 *            Find local extrema within this {@link RandomAccessible}
 	 * @param interval
@@ -495,6 +503,7 @@ public class LocalExtrema
 	 * determining by how much a {@link RandomAccessibleInterval} should be
 	 * expanded to include min and max positions in the local extrema search.
 	 *
+	 * @implNote op name='geom.borderSize', type=Function
 	 * @param shape
 	 *            Defines the local neighborhood
 	 * @param nDim
@@ -523,6 +532,7 @@ public class LocalExtrema
 	 * Shrink a {@link RandomAccessibleInterval} symmetrically, i.e. the margin
 	 * is applied both to min and max.
 	 *
+	 * @implNote op name='image.shrink', type=Function
 	 * @param source
 	 * @param margin
 	 * @return
@@ -538,6 +548,7 @@ public class LocalExtrema
 
 	/**
 	 *
+	 * @implNote op name='image.biggestDimension', type=Function
 	 * @param interval
 	 * @return The biggest dimension of interval.
 	 */

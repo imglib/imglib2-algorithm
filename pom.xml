@@ -206,6 +206,22 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<imglib2-roi.version>0.15.0</imglib2-roi.version>
 		<imglib2-cache.version>1.0.0-beta-18</imglib2-cache.version>
 		<sc.fiji.bigdataviewer-core.version>10.4.16</sc.fiji.bigdataviewer-core.version>
+
+		<!--
+		NB: Older versions of OpenJDK 11 have a bug in the javadoc tool,
+		which causes errors like:
+
+		[ERROR] javadoc: error - The code being documented uses packages
+		in the unnamed module, but the packages defined in
+		https://github.com/scijava/scijava/apidocs/ are in named modules.
+
+		The most recent version of OpenJDK 11 known to have this problem
+		is 11.0.8; the oldest version known to have fixed it is 11.0.17.
+		Therefore, we set the minimum build JDK version to 11.0.17 here.
+		-->
+		<scijava.jvm.build.version>[11.0.17,)</scijava.jvm.build.version>
+		<scijava.jvm.version>8</scijava.jvm.version>
+		<scijava.parse.ops>true</scijava.parse.ops>
 	</properties>
 
 	<repositories>
@@ -281,4 +297,39 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<!-- TODO: Remove relevant sections once upstream -->
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.scijava</groupId>
+							<artifactId>scijava-ops-indexer</artifactId>
+							<version>1.0.0</version>
+						</path>
+					</annotationProcessorPaths>
+					<fork>true</fork>
+					<compilerArgs>
+						<arg>-Ascijava.ops.parse=${scijava.parse.ops}</arg>
+						<arg>-Ascijava.ops.opVersion=${project.version}</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<tags>
+						<tag>
+							<name>implNote</name>
+							<placement>a</placement>
+							<head>Implementation Note:</head>
+						</tag>
+					</tags>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

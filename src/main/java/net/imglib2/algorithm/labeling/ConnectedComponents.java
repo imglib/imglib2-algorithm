@@ -99,6 +99,7 @@ public final class ConnectedComponents
 	 * @param se
 	 *            structuring element to use. 8-connected or 4-connected
 	 *            (respectively n-dimensional analog)
+	 * @implNote op name='labeling.cca', type=Computer2
 	 */
 	public static < T extends IntegerType< T >, L, I extends IntegerType< I > > void labelAllConnectedComponents(
 			final RandomAccessible< T > input,
@@ -132,6 +133,7 @@ public final class ConnectedComponents
 	 *            (respectively n-dimensional analog)
 	 * @param service
 	 *            service providing threads for multi-threading
+	 * @implNote op name='labeling.cca', type=Computer2
 	 */
 	public static < T extends IntegerType< T >, L, I extends IntegerType< I > > void labelAllConnectedComponents(
 			final RandomAccessible< T > input,
