@@ -139,11 +139,12 @@ public class DifferenceOfGaussian
 	 * Compute the difference of Gaussian for the input. Input convolved with
 	 * Gaussian of sigmaSmaller is subtracted from input convolved with Gaussian
 	 * of sigmaLarger (where sigmaLarger &gt; sigmaSmaller).
-	 * </p>
+	 * <p>
 	 * This method differs from
 	 * {@link #DoG(double[], double[], RandomAccessible, RandomAccessible, RandomAccessibleInterval, ExecutorService)}
 	 * only in that its parameter order is tailored to an Op. The output comes
 	 * last, and the primary input (the input image) comes first.
+	 * </p>
 	 *
 	 * @implNote op name="filter.DoG", type=Computer
 	 * @param input
