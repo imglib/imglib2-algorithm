@@ -74,7 +74,7 @@ public class SubpixelEdgelDetection
 	 * Note: The input image type must be a signed type! Otherwise gradient
 	 * computation will not work.
 	 *
-	 * @implNote op name='image.subpixelEdgels', type=Function
+	 * @implNote op name='features.subpixelEdgels', type=Function
 	 * @param input
 	 *            input image
 	 * @param factory
