@@ -66,11 +66,21 @@ public class Majority extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @param source the input data
+	 * @return an {@link Img} where each sample is equal to the majority value surrounding it in {@code source}
+	 * @implNote op name='morphology.majority'
+	 */
 	public static < T extends BooleanType< T > > Img< T > majority( final Img< T > source )
 	{
 		return new Majority().calculate( source );
 	}
 
+	/**
+	 * @param source the input data
+	 * @param target a preallocated output buffer
+	 * @implNote op name='morphology.majority', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void majority( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Majority().calculate( source, target );

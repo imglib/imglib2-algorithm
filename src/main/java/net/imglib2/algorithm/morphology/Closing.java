@@ -63,7 +63,8 @@ public class Closing
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strels
@@ -104,7 +105,8 @@ public class Closing
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strels
@@ -138,7 +140,8 @@ public class Closing
 	 * >Closing_(morphology)</a>.
 	 * <p>
 	 * The closing operation is simply a dilation followed by an erosion.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strel
@@ -174,7 +177,8 @@ public class Closing
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strel
@@ -238,6 +242,7 @@ public class Closing
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
+	 * @implNote op name='morphology.close', type=Computer2
 	 */
 	public static < T extends RealType< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final int numThreads )
 	{
@@ -300,6 +305,7 @@ public class Closing
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@code Compparable}.
+	 * @implNote op name='morphology.close', type=Computer2
 	 */
 	public static < T extends Type< T > & Comparable< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -349,6 +355,7 @@ public class Closing
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
+	 * @implNote op name='morphology.close', type=Computer2
 	 */
 	public static < T extends RealType< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final int numThreads )
 	{
@@ -406,6 +413,7 @@ public class Closing
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@code Comparable}.
+	 * @implNote op name='morphology.close', type=Computer2
 	 */
 	public static < T extends Type< T > & Comparable< T > > void close( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -443,7 +451,8 @@ public class Closing
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -495,7 +504,8 @@ public class Closing
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -546,7 +556,8 @@ public class Closing
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -598,7 +609,8 @@ public class Closing
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.close', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval

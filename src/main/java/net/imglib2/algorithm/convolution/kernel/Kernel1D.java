@@ -56,6 +56,8 @@ public class Kernel1D
 	 * @param halfKernel
 	 *            the upper half (starting at the center pixel) of the symmetric
 	 *            convolution kernel.
+	 * @return a {@link Kernel1D} used for one dimensional convolutions
+	 * @implNote op name='create.kernel1DSymmetric'
 	 */
 	public static Kernel1D symmetric( final double... halfKernel )
 	{
@@ -68,6 +70,9 @@ public class Kernel1D
 	/**
 	 * Similar to {@link #symmetric(double[])} but creates an array of
 	 * one-dimensional convolution kernels.
+	 * @param halfKernels the upper halves (starting at the center pixel) of the symmetric convolution kernels
+	 * @return an array of {@link Kernel1D}s used for one dimensional convolutions
+	 * @implNote op name='create.kernel1DSymmetric'
 	 */
 	public static Kernel1D[] symmetric( final double[][] halfKernels )
 	{
@@ -82,6 +87,8 @@ public class Kernel1D
 	 * @param originIndex
 	 *            the index of the array element which is the origin of the
 	 *            kernel
+	 * @return an asymmetric {@link Kernel1D} used for one dimensional convolutions
+	 * @implNote op name='create.kernel1DAsymmetric'
 	 */
 	public static Kernel1D asymmetric( final double[] fullKernel, final int originIndex )
 	{
@@ -94,6 +101,9 @@ public class Kernel1D
 	/**
 	 * Creates a one-dimensional asymmetric convolution kernel, where the origin
 	 * of the kernel is in the middle.
+	 * @param kernel the raw data of the symmetric convolution kernel
+	 * @return a {@link Kernel1D} used for one dimensional convolutions
+	 * @implNote op name='create.kernel1DCentralAsymmetric'
 	 */
 	public static Kernel1D centralAsymmetric( final double... kernel )
 	{
@@ -103,6 +113,13 @@ public class Kernel1D
 	/**
 	 * Similar to {@link #asymmetric(double[], int)} but creates an array of
 	 * one-dimensional convolution kernels.
+	 * @param fullKernels
+	 *            arrays containing the values of each kernel
+	 * @param originIndices
+	 *            the indices of the array elements at the origin of each
+	 *            kernel
+	 * @return an array of {@link Kernel1D}s used for one dimensional convolutions
+	 * @implNote op name='create.kernel1DAsymmetric'
 	 */
 	public static Kernel1D[] asymmetric( final double[][] fullKernels, final int[] originIndices )
 	{
@@ -113,6 +130,9 @@ public class Kernel1D
 	/**
 	 * Similar to {@link #centralAsymmetric(double...)} but creates an array of
 	 * one-dimensional convolution kernels.
+	 * @param kernels the upper halves (starting at the center pixel) of the symmetric convolution kernels
+	 * @return an array of {@link Kernel1D}s used for one dimensional convolutions
+	 * @implNote op name='create.kernel1DCentralAsymmetric'
 	 */
 	public static Kernel1D[] centralAsymmetric( final double[][] kernels )
 	{

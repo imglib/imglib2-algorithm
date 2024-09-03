@@ -77,7 +77,8 @@ public class BlackTopHat
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
-	 * 
+	 *
+	 * @implNote op name='morphology.blackTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -120,7 +121,8 @@ public class BlackTopHat
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.blackTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -159,7 +161,8 @@ public class BlackTopHat
 	 * limited to flat structuring elements, only having {@code on/off} pixels,
 	 * contrary to grayscale structuring elements. This allows to simply use a
 	 * {@link Shape} as a type for these structuring elements.
-	 * 
+	 *
+	 * @implNote op name='morphology.blackTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -196,7 +199,8 @@ public class BlackTopHat
 	 * (against {@link Comparable}) than any of the value found in the source
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on {@code T extends Comparable & Sub}.
-	 * 
+	 *
+	 * @implNote op name='morphology.blackTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -261,6 +265,7 @@ public class BlackTopHat
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
+	 * @implNote op name='morphology.blackTopHat', type=Computer2
 	 */
 	public static < T extends RealType< T > > void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final int numThreads )
 	{
@@ -320,6 +325,7 @@ public class BlackTopHat
 	 *            sub-type of {@code T extends Comparable & Sub}, because we
 	 *            want to be able to compare pixels between themselves and to
 	 *            subtract them.
+	 * @implNote op name='morphology.blackTopHat', type=Computer2
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -358,6 +364,7 @@ public class BlackTopHat
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
+	 * @implNote op name='morphology.blackTopHat', type=Computer2
 	 */
 	public static < T extends RealType< T > > void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final int numThreads )
 	{
@@ -411,6 +418,7 @@ public class BlackTopHat
 	 *            sub-type of {@code T extends Comparable & Sub}, because we
 	 *            want to be able to compare pixels between themselves and to
 	 *            subtract them.
+	 * @implNote op name='morphology.blackTopHat', type=Computer2
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHat( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -451,6 +459,7 @@ public class BlackTopHat
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
 	 *            {@code T extends RealType}.
+	 * @implNote op name='morphology.blackTopHat', type=Inplace1
 	 */
 	public static < T extends RealType< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< ? extends Shape > strels, final int numThreads )
 	{
@@ -513,6 +522,7 @@ public class BlackTopHat
 	 *            sub-type of {@code T extends Comparable & Sub}, because we
 	 *            want to be able to compare pixels between themselves and to
 	 *            subtract them.
+	 * @implNote op name='morphology.blackTopHat', type=Inplace1
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final List< ? extends Shape> strels, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -555,6 +565,7 @@ public class BlackTopHat
 	 * @param <T>
 	 *            the type of the source image. Must be a sub-type of
 	 *            {@code T extends RealType}.
+	 * @implNote op name='morphology.blackTopHat', type=Inplace1
 	 */
 	public static < T extends RealType< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final Shape strel, final int numThreads )
 	{
@@ -612,6 +623,7 @@ public class BlackTopHat
 	 *            sub-type of {@code T extends Comparable & Sub}, because we
 	 *            want to be able to compare pixels between themselves and to
 	 *            subtract them.
+	 * @implNote op name='morphology.blackTopHat', type=Inplace1
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void blackTopHatInPlace( final RandomAccessible< T > source, final Interval interval, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{

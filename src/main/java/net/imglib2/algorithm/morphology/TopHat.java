@@ -78,7 +78,8 @@ public class TopHat
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
 	 * <p>
-	 * 
+	 *
+	 * @implNote op names='morphology.topHat, morphology.whiteTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -122,7 +123,8 @@ public class TopHat
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op names='morphology.topHat, morphology.whiteTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strels
@@ -161,7 +163,8 @@ public class TopHat
 	 * limited to flat structuring elements, only having {@code on/off}
 	 * pixels, contrary to grayscale structuring elements. This allows to simply
 	 * use a {@link Shape} as a type for these structuring elements.
-	 * 
+	 *
+	 * @implNote op names='morphology.topHat, morphology.whiteTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -199,7 +202,8 @@ public class TopHat
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
 	 * {@code T extends Comparable & Sub}.
-	 * 
+	 *
+	 * @implNote op names='morphology.topHat, morphology.whiteTopHat', type=Function
 	 * @param source
 	 *            the source image.
 	 * @param strel
@@ -264,6 +268,7 @@ public class TopHat
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
+	 * @implNote op name='morphology.topHat, morphology.whiteTopHat', type=Computer2
 	 */
 	public static < T extends RealType< T >> void topHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final int numThreads )
 	{
@@ -325,6 +330,7 @@ public class TopHat
 	 *            sub-type of {@code T extends Comparable & Sub},
 	 *            because we want to be able to compare pixels between
 	 *            themselves and to subtract them.
+	 * @implNote op name='morphology.topHat, morphology.whiteTopHat', type=Computer2
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void topHat( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -364,6 +370,7 @@ public class TopHat
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
+	 * @implNote op name='morphology.topHat, morphology.whiteTopHat', type=Computer2
 	 */
 	public static < T extends RealType< T >> void topHat( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final int numThreads )
 	{
@@ -419,6 +426,7 @@ public class TopHat
 	 *            sub-type of {@code T extends Comparable & Sub},
 	 *            because we want to be able to compare pixels between
 	 *            themselves and to subtract them.
+	 * @implNote op name='morphology.topHat, morphology.whiteTopHat', type=Computer2
 	 */
 	public static < T extends Type< T > & Comparable< T > & Sub< T >> void topHat( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -447,7 +455,8 @@ public class TopHat
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is left untouched.
-	 * 
+	 *
+	 * @implNote op name='morphology.topHat, morphology.whiteTopHat', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -502,7 +511,8 @@ public class TopHat
 	 * conversely for the min value. These normally unseen parameters are
 	 * required to operate on
 	 * {@code T extends Comparable & Sub}.
-	 * 
+	 *
+	 * @implNote op name='morphology.topHat, morphology.whiteTopHat', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -552,7 +562,8 @@ public class TopHat
 	 * It is the caller responsibility to ensure that the source is sufficiently
 	 * padded to properly cover the target range plus the shape size. See
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}.
-	 * 
+	 *
+	 * @implNote op name='morphology.topHat, morphology.whiteTopHat', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -602,7 +613,8 @@ public class TopHat
 	 * conversely for the min value. These normally unseen parameters are
 	 * required to operate on
 	 * {@code T extends Comparable & Sub}.
-	 * 
+	 *
+	 * @implNote op name='morphology.topHat, morphology.whiteTopHat', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval

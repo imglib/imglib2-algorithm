@@ -65,11 +65,21 @@ public class Clean extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @param source the input data
+	 * @return a copy of {@code source}, with isolated pixels removed
+	 * @implNote op name='morphology.clean'
+	 */
 	public static < T extends BooleanType< T > > Img< T > clean( final Img< T > source )
 	{
 		return new Clean().calculate( source );
 	}
 
+	/**
+	 * @param source the input data
+	 * @param target a preallocated output buffer
+	 * @implNote op name='morphology.clean', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void clean( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Clean().calculate( source, target );

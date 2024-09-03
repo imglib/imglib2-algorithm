@@ -66,11 +66,21 @@ public class Remove extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @param source the input data
+	 * @return a copy of {@code source}, keeping only the perimeter of solid objects.
+	 * @implNote op name='morphology.outline'
+	 */
 	public static < T extends BooleanType< T > > Img< T > remove( final Img< T > source )
 	{
 		return new Remove().calculate( source );
 	}
 
+	/**
+	 * @param source the input data
+	 * @param target a prallocated output buffer
+	 * @implNote op name='morphology.outline', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void remove( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Remove().calculate( source, target );

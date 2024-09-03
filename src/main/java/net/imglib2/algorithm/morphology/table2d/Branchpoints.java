@@ -69,11 +69,21 @@ public class Branchpoints extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @param source the input data
+	 * @return a copy of {@code source}, containing <b>only</b> skeleton branchpoints
+	 * @implNote op name='morphology.branchpoints'
+	 */
 	public static < T extends BooleanType< T > > Img< T > branchpoints( final Img< T > source )
 	{
 		return new Branchpoints().calculate( source );
 	}
 
+	/**
+	 * @param source the input data
+	 * @param target a preallocated output buffer
+	 * @implNote op name='morphology.branchpoints', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void branchpoints( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Branchpoints().calculate( source, target );

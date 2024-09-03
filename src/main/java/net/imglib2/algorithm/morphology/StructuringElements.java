@@ -628,6 +628,7 @@ public class StructuringElements
 	 * @param increments
 	 *            the values by which each element of the position vector is to
 	 *            be incremented when iterating.
+	 * @return a {@link Shape} structuring element.
 	 * @see <a
 	 *      href="http://www.sciencedirect.com/science/article/pii/0167865596000669">[1]</a>
 	 *      Jones and Soilles.Periodic lines: Definition, cascades, and

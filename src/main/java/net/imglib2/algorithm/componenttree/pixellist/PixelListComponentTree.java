@@ -74,6 +74,7 @@ public final class PixelListComponentTree< T extends Type< T > > implements Comp
 	 * using an {@link ArrayImgFactory} or {@link CellImgFactory} depending on
 	 * input image size.
 	 *
+	 * @implNote op name='create.pixelListComponentTree',type=Function
 	 * @param input
 	 *            the input image.
 	 * @param type
@@ -92,6 +93,7 @@ public final class PixelListComponentTree< T extends Type< T > > implements Comp
 	/**
 	 * Build a component tree from an input image.
 	 *
+	 * @implNote op name='create.pixelListComponentTree',type=Function
 	 * @param input
 	 *            the input image.
 	 * @param type
@@ -120,6 +122,7 @@ public final class PixelListComponentTree< T extends Type< T > > implements Comp
 	 * using an {@link ArrayImgFactory} or {@link CellImgFactory} depending on
 	 * input image size.
 	 *
+	 * @implNote op name='create.pixelListComponentTree',type=Function
 	 * @param input
 	 *            the input image.
 	 * @param maxValue
@@ -138,6 +141,7 @@ public final class PixelListComponentTree< T extends Type< T > > implements Comp
 	/**
 	 * Build a component tree from an input image.
 	 *
+	 * @implNote op name='create.pixelListComponentTree',type=Function
 	 * @param input
 	 *            the input image.
 	 * @param maxValue

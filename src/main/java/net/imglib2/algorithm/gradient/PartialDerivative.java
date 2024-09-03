@@ -107,6 +107,7 @@ public class PartialDerivative
 	 * @param es
 	 *            {@link ExecutorService} providing workers for gradient
 	 *            computation. Service is managed (created, shutdown) by caller.
+	 * @implNote op name='filter.partialDerivative, filter.gradientCentralDifference', type=Computer2, priority='-1000.'
 	 */
 	public static < T extends NumericType< T > > void gradientCentralDifferenceParallel(
 			final RandomAccessible< T > source,
@@ -177,6 +178,7 @@ public class PartialDerivative
 	 *            output image
 	 * @param dimension
 	 *            along which dimension the partial derivatives are computed
+	 * @implNote op name='filter.partialDerivative, filter.gradientCentralDifference', type=Computer2, priority='-1000.'
 	 */
 	public static < T extends NumericType< T > > void gradientCentralDifference( final RandomAccessible< T > source,
 			final RandomAccessibleInterval< T > result, final int dimension )
@@ -200,6 +202,7 @@ public class PartialDerivative
 	 *            the gradient image plus a one pixel border in dimension.
 	 * @param result output image
 	 * @param dimension along which dimension the partial derivatives are computed
+	 * @implNote op name='filter.gradientBackwardDifference', type=Computer2
 	 */
 	public static < T extends NumericType< T > > void gradientBackwardDifference( final RandomAccessible< T > source,
 			final RandomAccessibleInterval< T > result, final int dimension )
@@ -222,6 +225,7 @@ public class PartialDerivative
 	 *            the gradient image plus a one pixel border in dimension.
 	 * @param result output image
 	 * @param dimension along which dimension the partial derivatives are computed
+	 * @implNote op name='filter.gradientForwardDifference', type=Computer2
 	 */
 	public static < T extends NumericType< T > > void gradientForwardDifference( final RandomAccessible< T > source,
 			final RandomAccessibleInterval< T > result, final int dimension )

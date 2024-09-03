@@ -74,6 +74,7 @@ public class HyperPlane extends AbstractEuclideanSpace
 	/**
 	 * Apply an {@link AffineGet affine transformation} to a {@link HyperPlane}.
 	 *
+	 * @implNote op name='transform.affine', type=Function
 	 * @param plane
 	 *            a plane.
 	 * @param transform

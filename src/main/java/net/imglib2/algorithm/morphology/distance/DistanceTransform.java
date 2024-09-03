@@ -122,6 +122,7 @@ public class DistanceTransform
 	 *            should be squared, too).
 	 * @param <T>
 	 *            {@link RealType} input
+	 * @implNote op name='image.distanceTransform', type=Inplace1
 	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
@@ -161,6 +162,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', type=Inplace1
 	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
@@ -195,6 +197,7 @@ public class DistanceTransform
 	 *            {@link RealType} input
 	 * @param <U>
 	 *            {@link RealType} intermediate results
+	 * @implNote op name='image.distanceTransform', type=Computer2
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
@@ -239,6 +242,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', type=Computer2
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
@@ -279,6 +283,7 @@ public class DistanceTransform
 	 *            {@link RealType} intermediate results
 	 * @param <V>
 	 *            {@link RealType} output
+	 * @implNote op name='image.distanceTransform', type=Computer3
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
@@ -343,6 +348,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', type=Computer3
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
@@ -383,6 +389,7 @@ public class DistanceTransform
 	 *            {@link Distance} between two points.
 	 * @param <T>
 	 *            {@link RealType} input
+	 * @implNote op name='image.distanceTransform', type=Inplace1
 	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
@@ -415,6 +422,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', type=Inplace1
 	 */
 	public static < T extends RealType< T > > void transform(
 			final RandomAccessibleInterval< T > source,
@@ -442,6 +450,7 @@ public class DistanceTransform
 	 *            {@link RealType} input
 	 * @param <U>
 	 *            {@link RealType} intermediate results
+	 * @implNote op name='image.distanceTransform', type=Computer2
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
@@ -479,6 +488,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', type=Computer2
 	 */
 	public static < T extends RealType< T >, U extends RealType< U > > void transform(
 			final RandomAccessible< T > source,
@@ -512,6 +522,7 @@ public class DistanceTransform
 	 *            {@link RealType} intermediate results
 	 * @param <V>
 	 *            {@link RealType} output
+	 * @implNote op name='image.distanceTransform', type=Computer2
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
@@ -583,6 +594,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', type=Computer3
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V > > void transform(
 			final RandomAccessible< T > source,
@@ -646,6 +658,7 @@ public class DistanceTransform
 	 *            {@link BooleanType} binary mask input
 	 * @param <U>
 	 *            {@link RealType} intermediate results
+	 * @implNote op name='image.distanceTransform', priority='100', type=Computer2
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -688,6 +701,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', priority='100', type=Computer2
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -726,6 +740,7 @@ public class DistanceTransform
 	 *            {@link RealType} intermediate results
 	 * @param <V>
 	 *            {@link RealType} output
+	 * @implNote op name='image.distanceTransform', priority='100', type=Computer3
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -779,6 +794,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', priority='100', type=Computer3
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -818,6 +834,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', priority='100', type=Inplace1
 	 */
 	public static < B extends BooleanType< B > > void binaryTransform(
 			final RandomAccessibleInterval< B > source,
@@ -843,6 +860,7 @@ public class DistanceTransform
 	 *            {@link BooleanType} binary mask input
 	 * @param <U>
 	 *            {@link RealType} intermediate results
+	 * @implNote op name='image.distanceTransform', priority='100', type=Computer2
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -878,6 +896,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', priority='100', type=Computer2
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -909,6 +928,7 @@ public class DistanceTransform
 	 *            {@link RealType} intermediate results
 	 * @param <V>
 	 *            {@link RealType} output
+	 * @implNote op name='image.distanceTransform', priority='100', type=Computer3
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
 			final RandomAccessible< B > source,
@@ -954,6 +974,7 @@ public class DistanceTransform
 	 * @throws ExecutionException
 	 *             if the computation threw an exception (distance transform may
 	 *             be computed only partially)
+	 * @implNote op name='image.distanceTransform', priority='100', type=Computer3
 	 */
 	public static < B extends BooleanType< B >, U extends RealType< U >, V extends RealType< V > > void binaryTransform(
 			final RandomAccessible< B > source,

@@ -66,11 +66,21 @@ public class Bridge extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @param source the input data
+	 * @return a copy of {@code source}, with bridges placed to join objects with only a single separating pixel.
+	 * @implNote op name='morphology.bridge'
+	 */
 	public static < T extends BooleanType< T > > Img< T > bridge( final Img< T > source )
 	{
 		return new Bridge().calculate( source );
 	}
 
+	/**
+	 * @param source the input data
+	 * @param target a preallocated output buffer
+	 * @implNote op name='morphology.bridge', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void bridge( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Bridge().calculate( source, target );

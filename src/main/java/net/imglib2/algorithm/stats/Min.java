@@ -46,7 +46,8 @@ public class Min
 {
 	/**
 	 * Find the minimum value and its position in an {@link IterableInterval}.
-	 * 
+	 *
+	 * @implNote op name='stats.min', type=Function
 	 * @param iterable
 	 *            input interval.
 	 * @return a cursor positioned on the global minimum. If several minima with

@@ -67,11 +67,21 @@ public class Endpoints extends Abstract3x3TableOperation
 		return false;
 	}
 
+	/**
+	 * @param source the input data
+	 * @return a copy of {@code source}, containing only the elements at the end of a skeleton
+	 * @implNote op name='morphology.endpoints'
+	 */
 	public static < T extends BooleanType< T > > Img< T > endpoints( final Img< T > source )
 	{
 		return new Endpoints().calculate( source );
 	}
 
+	/**
+	 * @param source the input data
+	 * @param target a preallocated output buffer
+	 * @implNote op name='morphology.endpoints', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void endpoints( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		new Endpoints().calculate( source, target );

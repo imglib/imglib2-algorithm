@@ -88,11 +88,23 @@ public class FastGauss
 		return new LineConvolution<>( new FastGaussConvolverRealType( sigma ), direction );
 	}
 
+	/**
+	 * @param sigmas the standard deviations of the Gaussian blur (in each dimension)
+	 * @param input the input data to blur
+	 * @param output the preallocated output buffer
+	 * @implNote op name='filter.gauss', type=Computer
+	 */
 	public static void convolve( final double[] sigmas, final RandomAccessible< ? extends RealType< ? > > input, final RandomAccessibleInterval< ? extends RealType< ? > > output )
 	{
 		convolution( sigmas ).process( input, output );
 	}
 
+	/**
+	 * @param sigma the standard deviation of the Gaussian blur (in all dimensions)
+	 * @param input the input data to blur
+	 * @param output the preallocated output buffer
+	 * @implNote op name='filter.gauss', type=Computer
+	 */
 	public static void convolve( final double sigma, final RandomAccessible< ? extends RealType< ? > > input, final RandomAccessibleInterval< ? extends RealType< ? > > output )
 	{
 		convolution( sigma ).process( input, output );

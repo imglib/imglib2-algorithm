@@ -70,7 +70,8 @@ public class Opening
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is returned.
-	 * 
+	 *
+	 * @implNote op name='morphology.open', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strels
@@ -111,7 +112,8 @@ public class Opening
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.open', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strels
@@ -145,7 +147,8 @@ public class Opening
 	 * >Opening_(morphology)</a>.
 	 * <p>
 	 * The opening operation is simply an erosion followed by a dilation.
-	 * 
+	 *
+	 * @implNote op name='morphology.open', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strel
@@ -181,7 +184,8 @@ public class Opening
 	 * image, and the converse for the max value. These normally unseen
 	 * parameters are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.open', type=Function
 	 * @param source
 	 *            the {@link Img} to operate on.
 	 * @param strel
@@ -245,6 +249,7 @@ public class Opening
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
+	 * @implNote op name='morphology.erode', type=Computer2
 	 */
 	public static < T extends RealType< T > > void open( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final int numThreads )
 	{
@@ -307,6 +312,7 @@ public class Opening
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@code Compparable}.
+	 * @implNote op name='morphology.erode', type=Computer2
 	 */
 	public static < T extends Type< T > & Comparable< T > > void open( final RandomAccessible< T > source, final IterableInterval< T > target, final List< ? extends Shape > strels, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -356,6 +362,7 @@ public class Opening
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@link RealType}.
+	 * @implNote op name='morphology.open', type=Computer2
 	 */
 	public static < T extends RealType< T > > void open( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final int numThreads )
 	{
@@ -413,6 +420,7 @@ public class Opening
 	 * @param <T>
 	 *            the type of the source and the result. Must extends
 	 *            {@code Comparable}.
+	 * @implNote op name='morphology.erode', type=Computer2
 	 */
 	public static < T extends Type< T > & Comparable< T > > void open( final RandomAccessible< T > source, final IterableInterval< T > target, final Shape strel, final T minVal, final T maxVal, final int numThreads )
 	{
@@ -450,7 +458,8 @@ public class Opening
 	 * allow for performance optimization through structuring element
 	 * decomposition. Each shape is processed in order as given in the list. If
 	 * the list is empty, the source image is left untouched.
-	 * 
+	 *
+	 * @implNote op name='morphology.open', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -502,7 +511,8 @@ public class Opening
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.open', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -545,7 +555,8 @@ public class Opening
 	 * It is the caller responsibility to ensure that the source is sufficiently
 	 * padded to properly cover the target range plus the shape size. See
 	 * <i>e.g.</i> {@link Views#extendValue(RandomAccessibleInterval, Type)}.
-	 * 
+	 *
+	 * @implNote op name='morphology.open', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval
@@ -592,7 +603,8 @@ public class Opening
 	 * image, and conversely for the min value. These normally unseen parameters
 	 * are required to operate on
 	 * {@code T extends Comparable & Type}.
-	 * 
+	 *
+	 * @implNote op name='morphology.open', type=Inplace1
 	 * @param source
 	 *            the source image.
 	 * @param interval

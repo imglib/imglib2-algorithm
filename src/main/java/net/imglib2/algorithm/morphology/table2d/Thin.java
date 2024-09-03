@@ -71,11 +71,21 @@ import net.imglib2.util.Util;
  */
 public class Thin
 {
+	/**
+	 * @param source the input data
+	 * @return a copy of {@code source}, with lines in the image being thinned
+	 * @implNote op name='morphology.thin'
+	 */
 	public static < T extends BooleanType< T > > Img< T > thin( final Img< T > source )
 	{
 		return new Thin2().calculate( new Thin1().calculate( source ) );
 	}
 
+	/**
+	 * @param source the input data
+	 * @param target a preallocated output buffer
+	 * @implNote op name='morphology.thin', type=Computer
+	 */
 	public static < T extends BooleanType< T > > void thin( final RandomAccessible< T > source, final IterableInterval< T > target )
 	{
 		final T extendedVal = target.firstElement().createVariable();
