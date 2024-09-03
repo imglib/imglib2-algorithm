@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -137,6 +137,58 @@ class DownsampleBlockProcessors
 		void downsample( final double[] source, final int[] destSize, final double[] dest, final int dim )
 		{
 			downsample_halfpixel_double( source, destSize, dest, dim );
+		}
+	}
+
+	static class AvgBlockFloat extends AbstractDownsampleAvgBlock< AvgBlockFloat, float[] >
+	{
+		public AvgBlockFloat( final int[] downsamplingFactors )
+		{
+			super( downsamplingFactors, FLOAT );
+		}
+
+		private AvgBlockFloat( AvgBlockFloat downsample )
+		{
+			super( downsample );
+		}
+
+		@Override
+		public BlockProcessor< float[], float[] > independentCopy()
+		{
+			return new AvgBlockFloat( this );
+		}
+
+		@Override
+		void downsample( final float[] source, final int[] destSize, final float[] dest, final int dim )
+		{
+			final int factor = this.downsamplingFactors[ dim ];
+			downsample_avgblock_float( source, destSize, dest, dim, factor );
+		}
+	}
+
+	static class AvgBlockDouble extends AbstractDownsampleAvgBlock< AvgBlockDouble, double[] >
+	{
+		public AvgBlockDouble( final int[] downsamplingFactors )
+		{
+			super( downsamplingFactors, DOUBLE );
+		}
+
+		private AvgBlockDouble( AvgBlockDouble downsample )
+		{
+			super( downsample );
+		}
+
+		@Override
+		public BlockProcessor< double[], double[] > independentCopy()
+		{
+			return new AvgBlockDouble( this );
+		}
+
+		@Override
+		void downsample( final double[] source, final int[] destSize, final double[] dest, final int dim )
+		{
+			final int factor = this.downsamplingFactors[ dim ];
+			downsample_avgblock_double( source, destSize, dest, dim, factor );
 		}
 	}
 
@@ -268,7 +320,7 @@ class DownsampleBlockProcessors
 					source[ 2 * x + 1 ] );
 	}
 
-	static void downsampleN_halfpixel_float( final float[] source, final int[] destSize, final float[] dest, final int dim )
+	private static void downsampleN_halfpixel_float( final float[] source, final int[] destSize, final float[] dest, final int dim )
 	{
 		int len0 = mulDims( destSize, 0, dim );
 		int len1 = mulDims( destSize, dim, destSize.length );
@@ -306,7 +358,7 @@ class DownsampleBlockProcessors
 					source[ 2 * x + 1 ] );
 	}
 
-	static void downsampleN_halfpixel_double( final double[] source, final int[] destSize, final double[] dest, final int dim )
+	private static void downsampleN_halfpixel_double( final double[] source, final int[] destSize, final double[] dest, final int dim )
 	{
 		int len0 = mulDims( destSize, 0, dim );
 		int len1 = mulDims( destSize, dim, destSize.length );
@@ -325,6 +377,148 @@ class DownsampleBlockProcessors
 	private static double avg_double( final double a, final double b )
 	{
 		return 0.5 * ( a + b );
+	}
+
+	private static void downsample_avgblock_float( final float[] source, final int[] destSize, final float[] dest, final int dim, final int factor )
+	{
+		if ( factor == 2 )
+			downsample_halfpixel_float( source, destSize, dest, dim );
+		else if ( dim == 0 )
+			downsampleX_avgblock_float( source, destSize, dest, factor );
+		else
+			downsampleN_avgblock_float( source, destSize, dest, dim, factor );
+	}
+
+	private static final int bw_float = 128;
+
+	private static void downsampleX_avgblock_float(
+			final float[] source, final int[] destSize, final float[] dest,
+			final int factor )
+	{
+		final float scale = ( float ) ( 1.0 / factor );
+		final int len = mulDims( destSize, 0, destSize.length );
+
+		final int nBlocks = ( len - 1 ) / bw_float + 1;
+		final int trailing = len - ( nBlocks - 1 ) * bw_float;
+		for ( int b = 0; b < nBlocks; ++b )
+		{
+			final int tob = b * bw_float;
+			final int bwb = ( b == nBlocks - 1 ) ? trailing : bw_float;
+
+			final int sob = factor * tob;
+			for ( int x = 0; x < bwb; ++x )
+				dest[ tob + x ] = source[ sob + factor * x ];
+			for ( int i = 1; i < factor; ++i )
+			{
+				final int sobi = sob + i;
+				for ( int x = 0; x < bwb; ++x )
+					dest[ tob + x ] += source[ sobi + factor * x ];
+			}
+			for ( int x = 0; x < bwb; ++x )
+				dest[ tob + x ] *= scale;
+		}
+	}
+
+	private static void downsampleN_avgblock_float(
+			final float[] source, final int[] destSize, final float[] dest,
+			final int dim, final int factor )
+	{
+		final float scale = ( float ) ( 1.0 / factor );
+		int len0 = mulDims( destSize, 0, dim );
+		int len1 = mulDims( destSize, dim, destSize.length );
+
+		final int nBlocks = ( len0 - 1 ) / bw_float + 1;
+		final int trailing = len0 - ( nBlocks - 1 ) * bw_float;
+		for ( int y = 0; y < len1; ++y )
+		{
+			final int destOffset = y * len0;
+			for ( int b = 0; b < nBlocks; ++b )
+			{
+				final int tob = b * bw_float + destOffset;
+				final int bwb = ( b == nBlocks - 1 ) ? trailing : bw_float;
+				final int sob = factor * destOffset + b * bw_float;
+				System.arraycopy( source, sob, dest, tob, bwb );
+				for ( int i = 1; i < factor; ++i )
+				{
+					final int sobi = sob + i * len0;
+					for ( int x = 0; x < bwb; ++x )
+						dest[ tob + x ] += source[ sobi + x ];
+				}
+				for ( int x = 0; x < bwb; ++x )
+					dest[ tob + x ] *= scale;
+			}
+		}
+	}
+
+	private static void downsample_avgblock_double( final double[] source, final int[] destSize, final double[] dest, final int dim, final int factor )
+	{
+		if ( factor == 2 )
+			downsample_halfpixel_double( source, destSize, dest, dim );
+		else if ( dim == 0 )
+			downsampleX_avgblock_double( source, destSize, dest, factor );
+		else
+			downsampleN_avgblock_double( source, destSize, dest, dim, factor );
+	}
+
+	private static final int bw_double = 64;
+
+	private static void downsampleX_avgblock_double(
+			final double[] source, final int[] destSize, final double[] dest,
+			final int factor )
+	{
+		final double scale = ( double ) ( 1.0 / factor );
+		final int len = mulDims( destSize, 0, destSize.length );
+
+		final int nBlocks = ( len - 1 ) / bw_double + 1;
+		final int trailing = len - ( nBlocks - 1 ) * bw_double;
+		for ( int b = 0; b < nBlocks; ++b )
+		{
+			final int tob = b * bw_double;
+			final int bwb = ( b == nBlocks - 1 ) ? trailing : bw_double;
+
+			final int sob = factor * tob;
+			for ( int x = 0; x < bwb; ++x )
+				dest[ tob + x ] = source[ sob + factor * x ];
+			for ( int i = 1; i < factor; ++i )
+			{
+				final int sobi = sob + i;
+				for ( int x = 0; x < bwb; ++x )
+					dest[ tob + x ] += source[ sobi + factor * x ];
+			}
+			for ( int x = 0; x < bwb; ++x )
+				dest[ tob + x ] *= scale;
+		}
+	}
+
+	private static void downsampleN_avgblock_double(
+			final double[] source, final int[] destSize, final double[] dest,
+			final int dim, final int factor )
+	{
+		final double scale = ( double ) ( 1.0 / factor );
+		int len0 = mulDims( destSize, 0, dim );
+		int len1 = mulDims( destSize, dim, destSize.length );
+
+		final int nBlocks = ( len0 - 1 ) / bw_double + 1;
+		final int trailing = len0 - ( nBlocks - 1 ) * bw_double;
+		for ( int y = 0; y < len1; ++y )
+		{
+			final int destOffset = y * len0;
+			for ( int b = 0; b < nBlocks; ++b )
+			{
+				final int tob = b * bw_double + destOffset;
+				final int bwb = ( b == nBlocks - 1 ) ? trailing : bw_double;
+				final int sob = factor * destOffset + b * bw_double;
+				System.arraycopy( source, sob, dest, tob, bwb );
+				for ( int i = 1; i < factor; ++i )
+				{
+					final int sobi = sob + i * len0;
+					for ( int x = 0; x < bwb; ++x )
+						dest[ tob + x ] += source[ sobi + x ];
+				}
+				for ( int x = 0; x < bwb; ++x )
+					dest[ tob + x ] *= scale;
+			}
+		}
 	}
 
 	private static int mulDims( int[] dims, int from, int to )

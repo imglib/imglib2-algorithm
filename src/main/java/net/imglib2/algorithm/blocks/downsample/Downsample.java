@@ -39,6 +39,8 @@ import java.util.function.Function;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.ComputationType;
+import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.AvgBlockDouble;
+import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.AvgBlockFloat;
 import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.CenterDouble;
 import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.CenterFloat;
 import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.HalfPixelDouble;
@@ -103,7 +105,11 @@ import static net.imglib2.type.PrimitiveType.FLOAT;
  *     pixels are centered on input pixels.
  * </li>
  * </ul>
- *
+ * <p>
+ * The {@link #downsample(ComputationType, int[])} methods support downsampling
+ * with arbitrary integer factor by averaging blocks of pixels. (With {@code
+ * factors={2,2,2,...}}, this is equivalent to downsampling with {@link
+ * Offset#HALF_PIXEL}).
  */
 public class Downsample
 {
@@ -149,6 +155,34 @@ public class Downsample
 		final boolean[] dDimsX = Util.expandArray( downsampleInDim, imgDimensions.length );
 		final long[] destSize = new long[ imgDimensions.length ];
 		Arrays.setAll( destSize, d -> dDimsX[ d ] ? ( imgDimensions[ d ] + 1 ) / 2 : imgDimensions[ d ] );
+		return destSize;
+	}
+
+	/**
+	 * Returns recommended size of the downsampled image, given an input image
+	 * of size {@code imgDimensions}. In each dimension, the recommended size is
+	 * input {@code imgDimension} / {@code downsamplingFactor}, rounding up
+	 * (e.g., a 5 pixel input image downsampled with factor 2, should yield a 3
+	 * pixel image).
+	 *
+	 * @param imgDimensions
+	 * 		dimensions of the input image
+	 * @param downsamplingFactors
+	 * 		in each dimension {@code d}, {@code downsamplingFactors[d]}
+	 * 		pixels in the input image should be averaged to one output pixel.
+	 *      {@code downsamplingFactors} is expanded or truncated to the
+	 * 		necessary size. For example, if {@code downsamplingFactors=={2,2,1}} and
+	 * 		the operator is applied to a 2D image, {@code downsamplingFactors} is
+	 * 		truncated to {@code {2, 2}}. If the operator is applied to a 5D image,
+	 *      {@code downsamplingFactors} is expanded to {@code {2, 2, 1, 1, 1}}
+	 *
+	 * @return the recommended size of the downsampled image
+	 */
+	public static long[] getDownsampledDimensions( final long[] imgDimensions, final int[] downsamplingFactors )
+	{
+		final int[] dFactorsX = Util.expandArray( downsamplingFactors, imgDimensions.length );
+		final long[] destSize = new long[ imgDimensions.length ];
+		Arrays.setAll( destSize, d -> ( imgDimensions[ d ] + dFactorsX[ d ] - 1 ) / dFactorsX[ d ] );
 		return destSize;
 	}
 
@@ -336,6 +370,82 @@ public class Downsample
 	}
 
 	/**
+	 * Downsample (by the given {@code downsamplingFactors}) blocks of the
+	 * standard ImgLib2 {@code RealType}s.
+	 * <p>
+	 * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
+	 * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
+	 * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
+	 * <p>
+	 * Precision for intermediate values is chosen as to represent the
+	 * input/output type without loss of precision. That is, {@code FLOAT} for
+	 * u8, i8, u16, i16, i32, f32, and otherwise {@code DOUBLE} for u32, i64,
+	 * f64.
+	 * <p>
+	 * The returned factory function creates an operator matching the
+	 * type and dimensionality of a given input {@code BlockSupplier<T>}.
+	 *
+	 * @param downsamplingFactors
+	 * 		in each dimension {@code d}, {@code downsamplingFactors[d]}
+	 * 		pixels in the input image should be averaged to one output pixel.
+	 *      {@code downsamplingFactors} is expanded or truncated to the
+	 * 		necessary size. For example, if {@code downsamplingFactors=={2,2,1}} and
+	 * 		the operator is applied to a 2D image, {@code downsamplingFactors} is
+	 * 		truncated to {@code {2, 2}}. If the operator is applied to a 5D image,
+	 *      {@code downsamplingFactors} is expanded to {@code {2, 2, 1, 1, 1}}
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to downsample blocks of type {@code T}
+	 */
+	public static < T extends NativeType< T > >
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > downsample( final int[] downsamplingFactors )
+	{
+		return downsample( ComputationType.AUTO, downsamplingFactors );
+	}
+
+	/**
+	 * Downsample (by the given {@code downsamplingFactors}) blocks of the
+	 * standard ImgLib2 {@code RealType}s.
+	 * <p>
+	 * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
+	 * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
+	 * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
+	 * <p>
+	 * The returned factory function creates an operator matching the
+	 * type and dimensionality of a given input {@code BlockSupplier<T>}.
+	 *
+	 * @param computationType
+	 * 		specifies in which precision intermediate values should be
+	 * 		computed. For {@code AUTO}, the type that can represent the
+	 * 		input/output type without loss of precision is picked. That is,
+	 * 		{@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
+	 * 		DOUBLE} for u32, i64, f64.
+	 * @param downsamplingFactors
+	 * 		in each dimension {@code d}, {@code downsamplingFactors[d]}
+	 * 		pixels in the input image should be averaged to one output pixel.
+	 *      {@code downsamplingFactors} is expanded or truncated to the
+	 * 		necessary size. For example, if {@code downsamplingFactors=={2,2,1}} and
+	 * 		the operator is applied to a 2D image, {@code downsamplingFactors} is
+	 * 		truncated to {@code {2, 2}}. If the operator is applied to a 5D image,
+	 *      {@code downsamplingFactors} is expanded to {@code {2, 2, 1, 1, 1}}
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to downsample blocks of type {@code T}
+	 */
+	public static < T extends NativeType< T > >
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > downsample( final ComputationType computationType, final int[] downsamplingFactors )
+	{
+		return s -> {
+			final T type = s.getType();
+			final int n = s.numDimensions();
+			final int[] expandedDownsamplingFactors = Util.expandArray( downsamplingFactors, n );
+			return createOperator( type, computationType, expandedDownsamplingFactors );
+		};
+	}
+
+	/**
 	 * Create a {@code UnaryBlockOperator} to downsample (by factor 2) blocks of
 	 * the standard ImgLib2 {@code RealType}. The {@code downsampleInDim}
 	 * argument specifies in which dimensions the input should be downsampled.
@@ -373,25 +483,45 @@ public class Downsample
 	public static < T extends NativeType< T > >
 	UnaryBlockOperator< T, T > createOperator( final T type, final ComputationType computationType, final Offset offset, final boolean[] downsampleInDim )
 	{
-		final boolean processAsFloat;
-		switch ( computationType )
-		{
-		case FLOAT:
-			processAsFloat = true;
-			break;
-		case DOUBLE:
-			processAsFloat = false;
-			break;
-		default:
-		case AUTO:
-			final PrimitiveType pt = type.getNativeTypeFactory().getPrimitiveType();
-			processAsFloat = pt.equals( FLOAT ) || pt.getByteCount() < FLOAT.getByteCount();
-			break;
-		}
-		final UnaryBlockOperator< ?, ? > op = processAsFloat
+		final UnaryBlockOperator< ?, ? > op = processAsFloat( computationType, type )
 				? downsampleFloat( offset, downsampleInDim )
 				: downsampleDouble( offset, downsampleInDim );
 		return op.adaptSourceType( type, ClampType.NONE ).adaptTargetType( type, ClampType.NONE );
+	}
+
+	private static < T extends NativeType< T > > boolean processAsFloat( final ComputationType computationType, final T type )
+	{
+		switch ( computationType )
+		{
+		case FLOAT:
+			return true;
+		case DOUBLE:
+			return true;
+		case AUTO:
+		default:
+			final PrimitiveType pt = type.getNativeTypeFactory().getPrimitiveType();
+			return pt.equals( FLOAT ) || pt.getByteCount() < FLOAT.getByteCount();
+		}
+	}
+
+	private static UnaryBlockOperator< FloatType, FloatType > downsampleFloat( final Offset offset, final boolean[] downsampleInDim )
+	{
+		final FloatType type = new FloatType();
+		final int n = downsampleInDim.length;
+		return new DefaultUnaryBlockOperator<>( type, type, n, n,
+				offset == Offset.HALF_PIXEL
+						? new HalfPixelFloat( downsampleInDim )
+						: new CenterFloat( downsampleInDim ) );
+	}
+
+	private static UnaryBlockOperator< DoubleType, DoubleType > downsampleDouble( final Offset offset, final boolean[] downsampleInDim )
+	{
+		final DoubleType type = new DoubleType();
+		final int n = downsampleInDim.length;
+		return new DefaultUnaryBlockOperator<>( type, type, n, n,
+				offset == Offset.HALF_PIXEL
+						? new HalfPixelDouble( downsampleInDim )
+						: new CenterDouble( downsampleInDim ) );
 	}
 
 	/**
@@ -435,23 +565,51 @@ public class Downsample
 		return createOperator( type, computationType, offset, downsampleInDim );
 	}
 
-	private static UnaryBlockOperator< FloatType, FloatType > downsampleFloat( final Offset offset, final boolean[] downsampleInDim )
+	/**
+	 * Create a {@code UnaryBlockOperator} to downsample (by the given {@code
+	 * downsamplingFactors}) blocks of the standard ImgLib2 {@code RealType}.
+	 * <p>
+	 * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
+	 * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
+	 * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
+	 *
+	 * @param type
+	 * 		instance of the input type
+	 * @param computationType
+	 * 		specifies in which precision intermediate values should be
+	 * 		computed. For {@code AUTO}, the type that can represent the
+	 * 		input/output type without loss of precision is picked. That is,
+	 * 		{@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
+	 * 		DOUBLE} for u32, i64, f64.
+	 * @param downsamplingFactors
+	 * 		in each dimension {@code d}, {@code downsamplingFactors[d]}
+	 * 		pixels in the input image should be averaged to one output pixel.
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return {@code UnaryBlockOperator} to downsample blocks of type {@code T}
+	 */
+	public static < T extends NativeType< T > >
+	UnaryBlockOperator< T, T > createOperator( final T type, final ComputationType computationType, final int[] downsamplingFactors )
 	{
-		final FloatType type = new FloatType();
-		final int n = downsampleInDim.length;
-		return new DefaultUnaryBlockOperator<>( type, type, n, n,
-				offset == Offset.HALF_PIXEL
-						? new HalfPixelFloat( downsampleInDim )
-						: new CenterFloat( downsampleInDim ) );
+		final UnaryBlockOperator< ?, ? > op = processAsFloat( computationType, type )
+				? downsampleFloat( downsamplingFactors )
+				: downsampleDouble( downsamplingFactors );
+		return op.adaptSourceType( type, ClampType.NONE ).adaptTargetType( type, ClampType.NONE );
 	}
 
-	private static UnaryBlockOperator< DoubleType, DoubleType > downsampleDouble( final Offset offset, final boolean[] downsampleInDim )
+	private static UnaryBlockOperator< FloatType, FloatType > downsampleFloat( final int[] downsamplingFactors )
+	{
+		final FloatType type = new FloatType();
+		final int n = downsamplingFactors.length;
+		return new DefaultUnaryBlockOperator<>( type, type, n, n, new AvgBlockFloat( downsamplingFactors ) );
+	}
+
+	private static UnaryBlockOperator< DoubleType, DoubleType > downsampleDouble( final int[] downsamplingFactors )
 	{
 		final DoubleType type = new DoubleType();
-		final int n = downsampleInDim.length;
-		return new DefaultUnaryBlockOperator<>( type, type, n, n,
-				offset == Offset.HALF_PIXEL
-						? new HalfPixelDouble( downsampleInDim )
-						: new CenterDouble( downsampleInDim ) );
+		final int n = downsamplingFactors.length;
+		return new DefaultUnaryBlockOperator<>( type, type, n, n, new AvgBlockDouble( downsamplingFactors ) );
 	}
+
 }
