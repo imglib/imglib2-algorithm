@@ -74,7 +74,7 @@ public class DifferenceOfGaussian
 	 * only in that its parameter order is tailored to an Op. The output comes
 	 * last, and the primary input (the input image) comes first.
 	 *
-	 * @implNote op name="filter.DoG", type=Computer
+	 * @implNote op name="filter.dog", type=Computer
 	 * @param input
 	 *            the input image extended to infinity (or at least covering the
 	 *            same interval as the dog result image, plus borders for
@@ -146,7 +146,7 @@ public class DifferenceOfGaussian
 	 * last, and the primary input (the input image) comes first.
 	 * </p>
 	 *
-	 * @implNote op name="filter.DoG", type=Computer
+	 * @implNote op name="filter.dog", type=Computer
 	 * @param input
 	 *            the input image extended to infinity (or at least covering the
 	 *            same interval as the dog result image, plus borders for
