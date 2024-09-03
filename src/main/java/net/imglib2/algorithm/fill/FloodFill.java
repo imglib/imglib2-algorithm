@@ -90,7 +90,7 @@ public class FloodFill
 	 *            input pixel type
 	 * @param <U>
 	 *            fill label type
-	 * @implNote op name='image.floodFill', type=Computer2
+	 * @implNote op name='morphology.floodFill', type=Computer2
 	 */
 	public static < T extends Type< T >, U extends Type< U > > void fill(
 			final RandomAccessible< T > source,
@@ -139,7 +139,7 @@ public class FloodFill
 	 *            input pixel type
 	 * @param <U>
 	 *            fill label type
-	 * @implNote op name='image.floodFill', type=Computer2
+	 * @implNote op name='morphology.floodFill', type=Computer2
 	 */
 	public static < T, U extends Type< U > > void fill(
 			final RandomAccessible< T > source,
@@ -182,7 +182,7 @@ public class FloodFill
 	 *            input pixel type
 	 * @param <U>
 	 *            fill label type
-	 * @implNote op name='image.floodFill', type=Computer2
+	 * @implNote op name='morphology.floodFill', type=Computer2
 	 */
 	public static < T, U > void fill(
 			final RandomAccessible< T > source,
