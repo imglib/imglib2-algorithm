@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
+import net.imglib2.algorithm.blocks.AbstractBlockProcessor;
 import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
 import net.imglib2.blocks.TempArray;
@@ -56,7 +57,7 @@ import net.imglib2.util.Intervals;
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
-abstract class AbstractTransformProcessor< T extends AbstractTransformProcessor< T, P >, P > implements BlockProcessor< P, P >
+abstract class AbstractTransformProcessor< T extends AbstractTransformProcessor< T, P >, P > extends AbstractBlockProcessor< P, P >
 {
 	PrimitiveType primitiveType;
 
@@ -68,48 +69,28 @@ abstract class AbstractTransformProcessor< T extends AbstractTransformProcessor<
 
 	final int[] destSize;
 
-	final long[] sourcePos;
-
-	final int[] sourceSize;
-
-	private int sourceLength;
-
-	private final BlockProcessorSourceInterval sourceInterval;
-
-	private final TempArray< P > tempArray;
-
-	Supplier< T > threadSafeSupplier;
-
 	AbstractTransformProcessor( final int n, final Transform.Interpolation interpolation, final PrimitiveType primitiveType )
 	{
+		super( primitiveType, n );
 		this.primitiveType = primitiveType;
 		this.interpolation = interpolation;
 		this.n = n;
 		destPos = new long[ n ];
 		destSize = new int[ n ];
-		sourcePos = new long[ n ];
-		sourceSize = new int[ n ];
-		sourceInterval = new BlockProcessorSourceInterval( this );
-		tempArray = TempArray.forPrimitiveType( primitiveType );
 	}
 
 	AbstractTransformProcessor( T transform )
 	{
+		super( transform );
+
 		// re-use
 		primitiveType = transform.primitiveType;
 		interpolation = transform.interpolation;
 		n = transform.n;
-		threadSafeSupplier = transform.threadSafeSupplier;
 
 		// init empty
 		destPos = new long[ n ];
 		destSize = new int[ n ];
-		sourcePos = new long[ n ];
-		sourceSize = new int[ n ];
-
-		// init new instance
-		sourceInterval = new BlockProcessorSourceInterval( this );
-		tempArray = TempArray.forPrimitiveType( primitiveType );
 	}
 
 	abstract RealInterval estimateBounds( Interval interval );
@@ -132,30 +113,5 @@ abstract class AbstractTransformProcessor< T extends AbstractTransformProcessor<
 			Arrays.setAll( sourceSize, d -> ( int ) ( ( long ) Math.floor( bounds.realMax( d ) + 0.5 ) - sourcePos[ d ] ) + 2 );
 			break;
 		}
-		sourceLength = safeInt( Intervals.numElements( sourceSize ) );
-	}
-
-	@Override
-	public long[] getSourcePos()
-	{
-		return sourcePos;
-	}
-
-	@Override
-	public int[] getSourceSize()
-	{
-		return sourceSize;
-	}
-
-	@Override
-	public Interval getSourceInterval()
-	{
-		return sourceInterval;
-	}
-
-	@Override
-	public P getSourceBuffer()
-	{
-		return tempArray.get( sourceLength );
 	}
 }

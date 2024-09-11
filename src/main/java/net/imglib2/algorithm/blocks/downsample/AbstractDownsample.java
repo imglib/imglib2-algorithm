@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -38,21 +38,17 @@ import static net.imglib2.util.Util.safeInt;
 import java.util.Arrays;
 
 import net.imglib2.Interval;
-import net.imglib2.algorithm.blocks.BlockProcessor;
-import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
+import net.imglib2.algorithm.blocks.AbstractBlockProcessor;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Intervals;
-import net.imglib2.util.Util;
 
-abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > implements BlockProcessor< P, P >
+abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > extends AbstractBlockProcessor< P, P >
 {
 	PrimitiveType primitiveType;
 
 	final int n;
 	final int[] destSize;
-	final long[] sourcePos;
-	final int[] sourceSize;
 
 	final boolean[] downsampleInDim;
 	final int[] downsampleDims;
@@ -64,15 +60,13 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 	private final TempArray< P >[] tempArrays;
 	final int[] tempArraySizes;
 
-	private final BlockProcessorSourceInterval sourceInterval;
-
 	AbstractDownsample( final boolean[] downsampleInDim, final PrimitiveType primitiveType )
 	{
-		n = downsampleInDim.length;
+		super( primitiveType, downsampleInDim.length );
 		this.primitiveType = primitiveType;
+
+		n = downsampleInDim.length;
 		destSize = new int[ n ];
-		sourceSize = new int[ n ];
-		sourcePos = new long[ n ];
 
 		this.downsampleInDim = downsampleInDim;
 		downsampleDims = downsampleDimIndices( downsampleInDim );
@@ -80,8 +74,6 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 
 		tempArrays = createTempArrays( steps, primitiveType );
 		tempArraySizes = new int[ steps ];
-
-		sourceInterval = new BlockProcessorSourceInterval( this );
 	}
 
 	private static int[] downsampleDimIndices( final boolean[] downsampleInDim )
@@ -114,6 +106,8 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 
 	AbstractDownsample( T downsample )
 	{
+		super( downsample );
+
 		// re-use
 		primitiveType = downsample.primitiveType;
 		n = downsample.n;
@@ -123,13 +117,10 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 
 		// init empty
 		destSize = new int[ n ];
-		sourcePos = new long[ n ];
-		sourceSize = new int[ n ];
 		tempArraySizes = new int[ steps ];
 
 		// init new instance
 		tempArrays = createTempArrays( steps, primitiveType );
-		sourceInterval = new BlockProcessorSourceInterval( this );
 	}
 
 	@Override
@@ -164,24 +155,6 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 			size = size / sourceSize[ d ] * destSize[ d ];
 			tempArraySizes[ i ] = size;
 		}
-	}
-
-	@Override
-	public int[] getSourceSize()
-	{
-		return sourceSize;
-	}
-
-	@Override
-	public long[] getSourcePos()
-	{
-		return sourcePos;
-	}
-
-	@Override
-	public Interval getSourceInterval()
-	{
-		return sourceInterval;
 	}
 
 	// optional. also other arrays can be passed to compute()
