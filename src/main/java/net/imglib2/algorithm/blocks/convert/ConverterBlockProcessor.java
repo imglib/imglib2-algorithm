@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,17 +33,12 @@
  */
 package net.imglib2.algorithm.blocks.convert;
 
-import static net.imglib2.util.Util.safeInt;
-
-import java.util.Arrays;
 import java.util.function.Supplier;
 
 import net.imglib2.Cursor;
-import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
+import net.imglib2.algorithm.blocks.AbstractDimensionlessBlockProcessor;
 import net.imglib2.algorithm.blocks.BlockProcessor;
-import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
-import net.imglib2.blocks.TempArray;
 import net.imglib2.converter.Converter;
 import net.imglib2.img.AbstractImg;
 import net.imglib2.img.Img;
@@ -52,7 +47,6 @@ import net.imglib2.img.NativeImg;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.NativeTypeFactory;
 import net.imglib2.util.Cast;
-import net.imglib2.util.Intervals;
 
 /**
  * Convert primitive arrays between ImgLib2 {@code NativeType}s using a {@link }Converter}.
@@ -66,23 +60,13 @@ import net.imglib2.util.Intervals;
  * @param <O>
  * 		output primitive array type, e.g., float[]. Must correspond to T.
  */
-class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< T >, I, O > implements BlockProcessor< I, O >
+class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< T >, I, O > extends AbstractDimensionlessBlockProcessor< I, O >
 {
 	private final S sourceType;
 
 	private final T targetType;
 
 	private final Supplier< Converter< ? super S, T > > converterSupplier;
-
-	private final TempArray< I > tempArray;
-
-	private long[] sourcePos;
-
-	private int[] sourceSize;
-
-	private int sourceLength;
-
-	private final BlockProcessorSourceInterval sourceInterval;
 
 	private final Converter< ? super S, T > converter;
 
@@ -92,12 +76,11 @@ class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< 
 
 	public ConverterBlockProcessor( final S sourceType, final T targetType, final Supplier< Converter< ? super S, T > > converterSupplier )
 	{
+		super( sourceType.getNativeTypeFactory().getPrimitiveType() );
 		this.sourceType = sourceType;
 		this.targetType = targetType;
 		this.converterSupplier = converterSupplier;
 
-		tempArray = TempArray.forPrimitiveType( sourceType.getNativeTypeFactory().getPrimitiveType() );
-		sourceInterval = new BlockProcessorSourceInterval( this );
 		converter = converterSupplier.get();
 		wrapSource = Wrapper.of( sourceType );
 		wrapTarget = Wrapper.of( targetType );
@@ -105,12 +88,11 @@ class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< 
 
 	private ConverterBlockProcessor( ConverterBlockProcessor< S, T, I, O > convert )
 	{
+		super( convert );
 		sourceType = convert.sourceType;
 		targetType = convert.targetType;
 		converterSupplier = convert.converterSupplier;
 
-		tempArray = convert.tempArray.newInstance();
-		sourceInterval = new BlockProcessorSourceInterval( this );
 		converter = converterSupplier.get();
 		wrapSource = Wrapper.of( sourceType );
 		wrapTarget = Wrapper.of( targetType );
@@ -123,49 +105,12 @@ class ConverterBlockProcessor< S extends NativeType< S >, T extends NativeType< 
 	}
 
 	@Override
-	public void setTargetInterval( final Interval interval )
-	{
-		final int n = interval.numDimensions();
-		if ( sourcePos == null || sourcePos.length != n )
-		{
-			sourcePos = new long[ n ];
-			sourceSize = new int[ n ];
-		}
-		interval.min( sourcePos );
-		Arrays.setAll( sourceSize, d -> safeInt( interval.dimension( d ) ) );
-		sourceLength = safeInt( Intervals.numElements( sourceSize ) );
-	}
-
-	@Override
-	public long[] getSourcePos()
-	{
-		return sourcePos;
-	}
-
-	@Override
-	public int[] getSourceSize()
-	{
-		return sourceSize;
-	}
-
-	@Override
-	public Interval getSourceInterval()
-	{
-		return sourceInterval;
-	}
-
-	@Override
-	public I getSourceBuffer()
-	{
-		return tempArray.get( sourceLength );
-	}
-
-	@Override
 	public void compute( final I src, final O dest )
 	{
 		final S in = wrapSource.wrap( src );
 		final T out = wrapTarget.wrap( dest );
-		for ( int i = 0; i < sourceLength; i++ )
+		final int len = sourceLength();
+		for ( int i = 0; i < len; i++ )
 		{
 			in.index().set( i );
 			out.index().set( i );
