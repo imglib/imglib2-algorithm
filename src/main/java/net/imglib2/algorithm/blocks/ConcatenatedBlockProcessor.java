@@ -63,13 +63,6 @@ class ConcatenatedBlockProcessor< I, K, O > implements BlockProcessor< I, O >
 	}
 
 	@Override
-	public void setTargetInterval( final long[] srcPos, final int[] size )
-	{
-		p1.setTargetInterval( srcPos, size );
-		p0.setTargetInterval( p1.getSourcePos(), p1.getSourceSize() );
-	}
-
-	@Override
 	public long[] getSourcePos()
 	{
 		return p0.getSourcePos();

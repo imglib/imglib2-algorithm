@@ -94,25 +94,4 @@ abstract class AbstractDownsampleAvgBlock< T extends AbstractDownsampleAvgBlock<
 		if ( destSizeChanged )
 			recomputeTempArraySizes();
 	}
-
-	@Override
-	public void setTargetInterval( final long[] pos, final int[] size )
-	{
-		boolean destSizeChanged = false;
-		for ( int d = 0; d < n; ++d )
-		{
-			sourcePos[ d ] = pos[ d ] * downsamplingFactors[ d ];
-
-			final int tdim = safeInt( size[ d ] );
-			if ( tdim != destSize[ d ] )
-			{
-				destSize[ d ] = tdim;
-				sourceSize[ d ] = tdim * downsamplingFactors[ d ];
-				destSizeChanged = true;
-			}
-		}
-
-		if ( destSizeChanged )
-			recomputeTempArraySizes();
-	}
 }
