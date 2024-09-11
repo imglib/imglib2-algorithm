@@ -80,7 +80,7 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	 * <p>
 	 * Some operators can be applied to arbitrary dimensions, e.g., converters.
 	 * In this case, they should return {@code numSourceDimensions() <= 0}. It
-	 * is expected that these operators do not modify the number dimensions,
+	 * is expected that these operators do not modify the number of dimensions,
 	 * that is, when such an operator is applied to a 3D block, the result is
 	 * also a 3D block.
 	 *
@@ -93,11 +93,11 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	 * <p>
 	 * Some operators can be applied to arbitrary dimensions, e.g., converters.
 	 * In this case, they should return {@code numTargetDimensions() <= 0}. It
-	 * is expected that these operators do not modify the number dimensions,
+	 * is expected that these operators do not modify the number of dimensions,
 	 * that is, when such an operator is applied to a 3D block, the result is
 	 * also a 3D block.
 	 *
-	 * @return the number of source dimensions
+	 * @return the number of target dimensions
 	 */
 	int numTargetDimensions();
 
