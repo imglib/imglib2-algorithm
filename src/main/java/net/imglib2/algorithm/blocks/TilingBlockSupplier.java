@@ -33,14 +33,11 @@
  */
 package net.imglib2.algorithm.blocks;
 
-import java.util.function.Supplier;
-
 import net.imglib2.blocks.SubArrayCopy;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Cast;
-import net.imglib2.util.CloseableThreadLocal;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 
@@ -70,7 +67,7 @@ import net.imglib2.util.Util;
  * @param <P>
  * 		corresponding primitive array type
  */
-class TilingBlockSupplier< T extends NativeType< T >, P > implements BlockSupplier< T >
+class TilingBlockSupplier< T extends NativeType< T >, P > extends AbstractBlockSupplier< T >
 {
 	private final BlockSupplier< T > p0;
 
@@ -82,8 +79,6 @@ class TilingBlockSupplier< T extends NativeType< T >, P > implements BlockSuppli
 	private final int innerTileNumElements;
 
 	private final SubArrayCopy.Typed< P, P > subArrayCopy;
-
-	private Supplier< BlockSupplier< T > > threadSafeSupplier;
 
 	final int[] tile_pos_in_dest;
 	final long[] tile_pos_in_src;
@@ -201,44 +196,5 @@ class TilingBlockSupplier< T extends NativeType< T >, P > implements BlockSuppli
 	public BlockSupplier< T > independentCopy()
 	{
 		return new TilingBlockSupplier<>( this );
-	}
-
-	@Override
-	public BlockSupplier< T > threadSafe()
-	{
-		if ( threadSafeSupplier == null )
-			threadSafeSupplier = CloseableThreadLocal.withInitial( this::independentCopy )::get;
-		return new BlockSupplier< T >()
-		{
-			@Override
-			public T getType()
-			{
-				return p0.getType();
-			}
-
-			@Override
-			public int numDimensions()
-			{
-				return p0.numDimensions();
-			}
-
-			@Override
-			public void copy( final long[] srcPos, final Object dest, final int[] size )
-			{
-				threadSafeSupplier.get().copy( srcPos, dest, size );
-			}
-
-			@Override
-			public BlockSupplier< T > independentCopy()
-			{
-				return TilingBlockSupplier.this.independentCopy().threadSafe();
-			}
-
-			@Override
-			public BlockSupplier< T > threadSafe()
-			{
-				return this;
-			}
-		};
 	}
 }
