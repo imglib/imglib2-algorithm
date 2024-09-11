@@ -167,27 +167,6 @@ abstract class AbstractDownsample< T extends AbstractDownsample< T, P >, P > imp
 	}
 
 	@Override
-	public void setTargetInterval( final long[] pos, final int[] size )
-	{
-		boolean destSizeChanged = false;
-		for ( int d = 0; d < n; ++d )
-		{
-			sourcePos[ d ] = downsampleInDim[ d ] ? pos[ d ] * 2 - 1 : pos[ d ];
-
-			final int tdim = safeInt( size[ d ] );
-			if ( tdim != destSize[ d ] )
-			{
-				destSize[ d ] = tdim;
-				sourceSize[ d ] = downsampleInDim[ d ] ? tdim * 2 + 1 : tdim;
-				destSizeChanged = true;
-			}
-		}
-
-		if ( destSizeChanged )
-			recomputeTempArraySizes();
-	}
-
-	@Override
 	public int[] getSourceSize()
 	{
 		return sourceSize;

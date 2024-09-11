@@ -104,20 +104,6 @@ class ConvertBlockProcessor< I, O > implements BlockProcessor< I, O >
 	}
 
 	@Override
-	public void setTargetInterval( final long[] pos, final int[] size )
-	{
-		final int n = pos.length;
-		if ( sourcePos == null || sourcePos.length != n )
-		{
-			sourcePos = new long[ n ];
-			sourceSize = new int[ n ];
-		}
-		System.arraycopy( pos, 0, sourcePos, 0, n );
-		System.arraycopy( size, 0, sourceSize, 0, n );
-		sourceLength = safeInt( Intervals.numElements( sourceSize ) );
-	}
-
-	@Override
 	public long[] getSourcePos()
 	{
 		return sourcePos;
