@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,13 +33,10 @@
  */
 package net.imglib2.algorithm.blocks;
 
-import java.util.function.Supplier;
-
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Cast;
-import net.imglib2.util.CloseableThreadLocal;
 
-class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSupplier< T >
+class ConcatenatedBlockSupplier< T extends NativeType< T > > extends AbstractBlockSupplier< T >
 {
 	private final BlockSupplier< ? > p0;
 
@@ -48,8 +45,6 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 	private final T type;
 
 	private final int numDimensions;
-
-	private Supplier< BlockSupplier< T > > threadSafeSupplier;
 
 	public < S extends NativeType< S > > ConcatenatedBlockSupplier(
 			final BlockSupplier< S > srcSupplier,
@@ -103,44 +98,5 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > implements BlockSup
 	public BlockSupplier< T > independentCopy()
 	{
 		return new ConcatenatedBlockSupplier<>( this );
-	}
-
-	@Override
-	public BlockSupplier< T > threadSafe()
-	{
-		if ( threadSafeSupplier == null )
-			threadSafeSupplier = CloseableThreadLocal.withInitial( this::independentCopy )::get;
-		return new BlockSupplier< T >()
-		{
-			@Override
-			public T getType()
-			{
-				return type;
-			}
-
-			@Override
-			public int numDimensions()
-			{
-				return numDimensions;
-			}
-
-			@Override
-			public void copy( final long[] srcPos, final Object dest, final int[] size )
-			{
-				threadSafeSupplier.get().copy( srcPos, dest, size );
-			}
-
-			@Override
-			public BlockSupplier< T > independentCopy()
-			{
-				return ConcatenatedBlockSupplier.this.independentCopy().threadSafe();
-			}
-
-			@Override
-			public BlockSupplier< T > threadSafe()
-			{
-				return this;
-			}
-		};
 	}
 }
