@@ -120,6 +120,9 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	 */
 	default < U extends NativeType< U > > UnaryBlockOperator< S, U > andThen( UnaryBlockOperator< T, U > op )
 	{
+		if ( op instanceof NoOpUnaryBlockOperator )
+			return Cast.unchecked( this );
+
 		final boolean thisHasDimensions = numSourceDimensions() > 0;
 		final boolean opHasDimensions = op.numSourceDimensions() > 0;
 		if ( opHasDimensions && thisHasDimensions && numTargetDimensions() != op.numSourceDimensions() ) {

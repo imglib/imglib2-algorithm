@@ -45,6 +45,7 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.Typed;
 import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.type.NativeType;
+import net.imglib2.util.Cast;
 import net.imglib2.util.Util;
 
 public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, EuclideanSpace
@@ -144,12 +145,19 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, 
 	 */
 	default < U extends NativeType< U > > BlockSupplier< U > andThen( UnaryBlockOperator< T, U > operator )
 	{
-		return new ConcatenatedBlockSupplier<>( this.independentCopy(), operator.independentCopy() );
+		if ( operator instanceof NoOpUnaryBlockOperator )
+			return Cast.unchecked( this );
+		else
+			return new ConcatenatedBlockSupplier<>( this.independentCopy(), operator.independentCopy() );
 	}
 
 	default < U extends NativeType< U > > BlockSupplier< U > andThen( Function< BlockSupplier< T >, UnaryBlockOperator< T, U > > function )
 	{
-		return new ConcatenatedBlockSupplier<>( this.independentCopy(), function.apply( this ) );
+		final UnaryBlockOperator< T, U > op = function.apply( this );
+		if ( op instanceof NoOpUnaryBlockOperator )
+			return Cast.unchecked( this );
+		else
+			return new ConcatenatedBlockSupplier<>( this.independentCopy(), op );
 	}
 
 	/**
