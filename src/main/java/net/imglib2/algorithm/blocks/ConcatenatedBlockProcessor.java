@@ -96,7 +96,8 @@ class ConcatenatedBlockProcessor< I, K, O > implements BlockProcessor< I, O >
 	@Override
 	public void compute( final I src, final O dest )
 	{
-		p0.compute( src, p1.getSourceBuffer() );
-		p1.compute( p1.getSourceBuffer(), dest );
+		final K temp = p1.getSourceBuffer();
+		p0.compute( src, temp );
+		p1.compute( temp, dest );
 	}
 }
