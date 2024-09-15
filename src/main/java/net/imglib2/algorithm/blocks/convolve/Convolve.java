@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.ClampType;
+import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.algorithm.blocks.convolve.ConvolveProcessors.ConvolveDouble;
@@ -49,17 +50,6 @@ import net.imglib2.util.Util;
  */
 public class Convolve
 {
-
-	/**
-	 * Specify in which precision should intermediate values be computed. (For
-	 * {@code AUTO}, the type that can represent the input/output type without
-	 * loss of precision is picked. That is, {@code FLOAT} for u8, i8, u16, i16,
-	 * i32, f32, and otherwise {@code DOUBLE} for u32, i64, f64.
-	 */
-	public enum ComputationType
-	{
-		FLOAT, DOUBLE, AUTO
-	}
 
 	/**
 	 * Convolve blocks of the standard ImgLib2 {@code RealType}s with a Gaussian kernel.
