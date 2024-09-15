@@ -1,6 +1,6 @@
 package net.imglib2.algorithm.blocks.convolve;
 
-import static net.imglib2.algorithm.blocks.convert.ClampType.NONE;
+import static net.imglib2.algorithm.blocks.ClampType.NONE;
 import static net.imglib2.type.PrimitiveType.FLOAT;
 
 import java.util.function.Function;
