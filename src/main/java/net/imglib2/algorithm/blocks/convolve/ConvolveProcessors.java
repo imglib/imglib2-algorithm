@@ -7,8 +7,8 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import net.imglib2.Interval;
+import net.imglib2.algorithm.blocks.AbstractBlockProcessor;
 import net.imglib2.algorithm.blocks.BlockProcessor;
-import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
 import net.imglib2.algorithm.convolution.kernel.Kernel1D;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.PrimitiveType;
@@ -20,7 +20,7 @@ import net.imglib2.util.Intervals;
  */
 class ConvolveProcessors
 {
-	abstract static class AbstractConvolve< T extends AbstractConvolve< T, P >, P > implements BlockProcessor< P, P >
+	abstract static class AbstractConvolve< T extends AbstractConvolve< T, P >, P > extends AbstractBlockProcessor< P, P >
 	{
 		final P[] kernels;
 		final int[] kernelOffsets;
@@ -28,8 +28,6 @@ class ConvolveProcessors
 
 		final int n;
 		final int[] destSize;
-		final long[] sourcePos;
-		final int[] sourceSize;
 
 		// buf indices:
 		//   0 intermediate 0
@@ -46,7 +44,6 @@ class ConvolveProcessors
 
 		final TempArray< P > tempArrayAux0;
 		final TempArray< P > tempArrayAux1;
-		final TempArray< P > tempArraySource;
 
 		private final int[] ols;
 		private final int[] ils;
@@ -54,9 +51,6 @@ class ConvolveProcessors
 
 		private int aux0Length;
 		private int aux1Length;
-		private int sourceLength;
-
-		private final BlockProcessorSourceInterval sourceInterval;
 
 		// TODO: make this configurable. provide good default values (probably dependent on data type)
 		private final int bw = 2048;
@@ -70,6 +64,7 @@ class ConvolveProcessors
 		 */
 		AbstractConvolve( final Kernel1D[] kernel1Ds, final Function< Kernel1D, P > extractKernel, final PrimitiveType primitiveType )
 		{
+			super( primitiveType, kernel1Ds.length );
 			n = kernel1Ds.length;
 
 			kernels = Cast.unchecked( new Object[ n ] );
@@ -87,8 +82,6 @@ class ConvolveProcessors
 			}
 
 			destSize = new int[ n ];
-			sourceSize = new int[ n ];
-			sourcePos = new long[ n ];
 			fromBuf = new int[ n ];
 			toBuf = new int[ n ];
 
@@ -138,33 +131,27 @@ class ConvolveProcessors
 
 			tempArrayAux0 = TempArray.forPrimitiveType( primitiveType );
 			tempArrayAux1 = TempArray.forPrimitiveType( primitiveType );
-			tempArraySource = TempArray.forPrimitiveType( primitiveType );
 
 			ols = new int[n];
 			ils = new int[n];
 			ksteps = new int[n];
-
-			sourceInterval = new BlockProcessorSourceInterval( this );
 		}
 
 		AbstractConvolve( final T convolve )
 		{
+			super( convolve );
 			n = convolve.n;
 			kernels = convolve.kernels;
 			kernelOffsets = convolve.kernelOffsets;
 			kernelSizes = convolve.kernelSizes;
 			destSize = new int[ n ];
-			sourceSize = new int[ n ];
-			sourcePos = new long[ n ];
 			fromBuf = convolve.fromBuf;
 			toBuf = convolve.toBuf;
 			tempArrayAux0 = convolve.tempArrayAux0.newInstance();
 			tempArrayAux1 = convolve.tempArrayAux1.newInstance();
-			tempArraySource = convolve.tempArraySource.newInstance();
 			ols = new int[ n ];
 			ils = new int[ n ];
 			ksteps = new int[ n ];
-			sourceInterval = new BlockProcessorSourceInterval( this );
 		}
 
 		@Override
@@ -202,31 +189,6 @@ class ConvolveProcessors
 					sourceSize[ d ] += kernelSizes[ d ] - 1;
 				}
 			}
-			sourceLength = safeInt( Intervals.numElements( sourceSize ) );
-		}
-
-		@Override
-		public long[] getSourcePos()
-		{
-			return sourcePos;
-		}
-
-		@Override
-		public int[] getSourceSize()
-		{
-			return sourceSize;
-		}
-
-		@Override
-		public Interval getSourceInterval()
-		{
-			return sourceInterval;
-		}
-
-		@Override
-		public P getSourceBuffer()
-		{
-			return tempArraySource.get( sourceLength );
 		}
 
 		@Override
