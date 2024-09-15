@@ -43,10 +43,7 @@ import ij.ImagePlus;
 import java.util.Arrays;
 
 import net.imglib2.algorithm.blocks.BlockSupplier;
-import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.CenterDouble;
-import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.HalfPixelDouble;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
-import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.converter.Converters;
 import net.imglib2.converter.RealDoubleConverter;
@@ -83,10 +80,8 @@ public class DownsampleDoublePlayground
 		final int[] cellDimensions = { 64, 64, 64 };
 		final CachedCellImg< DoubleType, ? > downsampled = BlockAlgoUtils.cellImg(
 				blocks.andThen( Downsample.downsample(
-						new DoubleType(),
 						Downsample.ComputationType.DOUBLE,
-						Downsample.Offset.CENTERED,
-						3 )
+						Downsample.Offset.CENTERED )
 				),
 				downsampledDimensions, cellDimensions );
 
@@ -103,10 +98,8 @@ public class DownsampleDoublePlayground
 
 		final CachedCellImg< DoubleType, ? > downsampled2 = BlockAlgoUtils.cellImg(
 				blocks.andThen( Downsample.downsample(
-						new DoubleType(),
 						Downsample.ComputationType.DOUBLE,
-						Downsample.Offset.HALF_PIXEL,
-						3 )
+						Downsample.Offset.HALF_PIXEL )
 				),
 				downsampledDimensions, cellDimensions );
 		final BdvSource out2 = BdvFunctions.show(

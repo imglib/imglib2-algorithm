@@ -34,6 +34,9 @@
 package net.imglib2.algorithm.blocks.downsample;
 
 import java.util.Arrays;
+import java.util.function.Function;
+
+import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.CenterDouble;
 import net.imglib2.algorithm.blocks.downsample.DownsampleBlockProcessors.CenterFloat;
@@ -45,15 +48,82 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Util;
 
 import static net.imglib2.type.PrimitiveType.FLOAT;
 
 /**
- * Downsampling by factor 2.
- * Coordinates of downsampled pixel: either centered, or shifted by half a pixel.
+ * Downsampling by factor 2 in selected dimensions.
+ * <p>
+ * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
+ * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
+ * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
+ * <p>
+ * For {@code T} other than {@code DoubleType} or {@code FloatType}, the input
+ * will be converted to float/double for computation and the result converted
+ * back to {@code T}. To avoid unnecessary conversions, if you want the result
+ * as {@code FloatType} then you should explicitly convert to {@code FloatType}
+ * <em>before</em> applying the downsampling operator.
+ * This code:
+ * <pre>{@code
+ * RandomAccessible< UnsignedByteType > input;
+ * BlockSupplier< FloatType > downsampled = BlockSupplier.of( input )
+ *         .andThen( Convert.convert( new FloatType() ) )
+ *         .andThen( Downsample.downsample( Offset.HALF_PIXEL ) );
+ * }</pre>
+ * avoids loss of precision and is more efficient than
+ * <pre>{@code
+ * RandomAccessible< UnsignedByteType > input;
+ * BlockSupplier< FloatType > downsampled = BlockSupplier.of( input )
+ *         .andThen( Downsample.downsample( Offset.HALF_PIXEL ) )
+ *         .andThen( Convert.convert( new FloatType() ) );
+ * }</pre>
+ * <p>
+ * The {@link #downsample(ComputationType, Offset)} methods return factory
+ * functions that create {@code UnaryBlockOperator} to match the type and
+ * dimensionality of a given input {@code BlockSupplier<T>}. For example, the
+ * following code creates 2D downsampling operator for 2D {@code input}, a 3D
+ * operator for 3D {@code input}, etc.
+ * <pre>{@code
+ * RandomAccessible< UnsignedByteType > input;
+ * BlockSupplier< UnsignedByteType > downsampled = BlockSupplier.of( input )
+ *         .andThen( Downsample.downsample( Offset.HALF_PIXEL ) );
+ * }</pre>
+ * <p>
+ * An {@link Offset} specifies whether downsampled pixels are placed on corners or centers of input pixels:
+ * <ul>
+ * <li>{@link Offset#HALF_PIXEL} means that each downsampled pixel is computed
+ *     as the average of 2 neighboring pixels (respectively 4 pixels for 2D, 8
+ *     voxels for 3D, etc.) Downsampled pixels are shifted by half a pixel.
+ * </li>
+ * <li>{@link Offset#CENTERED} means that each downsampled pixel is computed as
+ *     the weighted average (with weights {@code {.25, .5, .25}}) of 3 neighboring
+ *     pixels (respectively 9 pixels for 2D, 27 voxels for 3D, etc.). Downsampled
+ *     pixels are centered on input pixels.
+ * </li>
+ * </ul>
+ *
  */
 public class Downsample
 {
+	/**
+	 * Returns recommended size of the downsampled image, given an input image
+	 * of size {@code imgDimensions}. In each dimension the recommended size is
+	 * input size / 2, rounding up (e.g., a 5 pixel input image should be
+	 * downsampled to a 3 pixel image).
+	 *
+	 * @param imgDimensions
+	 * 		dimensions of the input image
+	 *
+	 * @return the recommended size of the downsampled image
+	 */
+	public static long[] getDownsampledDimensions( final long[] imgDimensions )
+	{
+		final long[] destSize = new long[ imgDimensions.length ];
+		Arrays.setAll( destSize, d -> ( imgDimensions[ d ] + 1 ) / 2 );
+		return destSize;
+	}
+
 	/**
 	 * Returns recommended size of the downsampled image, given an input image
 	 * of size {@code imgDimensions}. In each dimension (that should be
@@ -61,18 +131,23 @@ public class Downsample
 	 * a 5 pixel input image should be downsampled to a 3 pixel image).
 	 *
 	 * @param imgDimensions
-	 * dimensions of the input image
+	 * 		dimensions of the input image
 	 * @param downsampleInDim
-	 * for each dimension (same length as imgDimensions}: {@code true} if the input image should be down
-	 * @return
+	 * 		for each dimension {@code d}: if {@code downsampleInDim[d]==true} then
+	 * 		the input image should be downsampled in dimension {@code d}.
+	 * 		{@code downsampleInDim} is expanded or truncated to the necessary size.
+	 * 		For example, if {@code downsampleInDim=={true,true,false}} and the
+	 * 		operator is applied to a 2D image, {@code downsampleInDim} is truncated
+	 * 		to {@code {true, true}}. If the operator is applied to a 5D image, {@code
+	 * 		downsampleInDim} is expanded to {@code {true, true, false, false, false}}
+	 *
+	 * @return the recommended size of the downsampled image
 	 */
 	public static long[] getDownsampledDimensions( final long[] imgDimensions, final boolean[] downsampleInDim )
 	{
-		final int n = imgDimensions.length;
-		if ( downsampleInDim.length != n )
-			throw new IllegalArgumentException();
-		final long[] destSize = new long[ n ];
-		Arrays.setAll( destSize, d -> downsampleInDim[ d ] ? ( imgDimensions[ d ] + 1 ) / 2 : imgDimensions[ d ] );
+		final boolean[] dDimsX = Util.expandArray( downsampleInDim, imgDimensions.length );
+		final long[] destSize = new long[ imgDimensions.length ];
+		Arrays.setAll( destSize, d -> dDimsX[ d ] ? ( imgDimensions[ d ] + 1 ) / 2 : imgDimensions[ d ] );
 		return destSize;
 	}
 
@@ -96,22 +171,184 @@ public class Downsample
 		 * Downsampled pixel centers fall on input pixel centers.
 		 * Each downsampled pixel is computed as the weighted average (with
 		 * weights {@code {.25, .5, .25}}) of 3 neighboring pixels (respectively
-		 * 9 pixels for 2D, 27 voxels for 3D, etc).
+		 * 9 pixels for 2D, 27 voxels for 3D, etc.)
 		 */
 		CENTERED,
 
 		/**
 		 * Downsampled pixels are shifted by half a pixel.
 		 * Each downsampled pixel is computed as the average of 2 neighboring
-		 * pixels (respectively 4 pixels for 2D, 8 voxels for 3D, etc).
+		 * pixels (respectively 4 pixels for 2D, 8 voxels for 3D, etc.)
 		 */
 		HALF_PIXEL
 	}
 
 	/**
+	 * Downsample (by factor 2, in all dimensions) blocks of the standard
+	 * ImgLib2 {@code RealType}s.
+	 * <p>
+	 * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
+	 * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
+	 * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
+	 * <p>
+	 * Precision for intermediate values is chosen as to represent the
+	 * input/output type without loss of precision. That is, {@code FLOAT} for
+	 * u8, i8, u16, i16, i32, f32, and otherwise {@code DOUBLE} for u32, i64,
+	 * f64.
+	 * <p>
+	 * Downsampled pixels are computed as the average of 2 neighboring pixels
+	 * (respectively 4 pixels for 2D, 8 voxels for 3D, etc.) This means
+	 * downsampled pixels are shifted by half a pixel.
+	 * <p>
+	 * The returned factory function creates an operator matching the
+	 * type and dimensionality of a given input {@code BlockSupplier<T>}.
+	 *
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to downsample blocks of type {@code T}
+	 */
+	public static < T extends NativeType< T > >
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > downsample()
+	{
+		return downsample( Offset.HALF_PIXEL );
+	}
+
+	/**
+	 * Downsample (by factor 2, in all dimensions) blocks of the standard
+	 * ImgLib2 {@code RealType}s.
+	 * <p>
+	 * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
+	 * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
+	 * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
+	 * <p>
+	 * Precision for intermediate values is chosen as to represent the
+	 * input/output type without loss of precision. That is, {@code FLOAT} for
+	 * u8, i8, u16, i16, i32, f32, and otherwise {@code DOUBLE} for u32, i64,
+	 * f64.
+	 * <p>
+	 * The returned factory function creates an operator matching the
+	 * type and dimensionality of a given input {@code BlockSupplier<T>}.
+	 *
+	 * @param offset
+	 * 		Specifies where downsampled pixels should be placed.
+	 * 		{@code HALF_PIXEL} means that each downsampled pixel is computed
+	 * 		as the average of 2 neighboring pixels (respectively 4 pixels for
+	 * 		2D, 8 voxels for 3D, etc.), and	downsampled pixels are shifted by
+	 * 		half a pixel.
+	 * 		{@code CENTERED} means that each downsampled pixel is computed as
+	 * 		the weighted average (with weights {@code {.25, .5, .25}}) of 3
+	 * 		neighboring pixels (respectively 9 pixels for 2D, 27 voxels for 3D,
+	 * 		etc.) Downsampled pixels are centered on input pixels.
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to downsample blocks of type {@code T}
+	 */
+	public static < T extends NativeType< T > >
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > downsample( final Offset offset )
+	{
+		return downsample( ComputationType.AUTO, offset );
+	}
+
+	/**
+	 * Downsample (by factor 2, in all dimensions) blocks of the standard
+	 * ImgLib2 {@code RealType}s.
+	 * <p>
+	 * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
+	 * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
+	 * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
+	 * <p>
+	 * The returned factory function creates an operator matching the
+	 * type and dimensionality of a given input {@code BlockSupplier<T>}.
+	 *
+	 * @param computationType
+	 * 		specifies in which precision intermediate values should be
+	 * 		computed. For {@code AUTO}, the type that can represent the
+	 * 		input/output type without loss of precision is picked. That is,
+	 * 		{@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
+	 * 		DOUBLE} for u32, i64, f64.
+	 * @param offset
+	 * 		Specifies where downsampled pixels should be placed.
+	 * 		{@code HALF_PIXEL} means that each downsampled pixel is computed
+	 * 		as the average of 2 neighboring pixels (respectively 4 pixels for
+	 * 		2D, 8 voxels for 3D, etc.), and	downsampled pixels are shifted by
+	 * 		half a pixel.
+	 * 		{@code CENTERED} means that each downsampled pixel is computed as
+	 * 		the weighted average (with weights {@code {.25, .5, .25}}) of 3
+	 * 		neighboring pixels (respectively 9 pixels for 2D, 27 voxels for 3D,
+	 * 		etc.) Downsampled pixels are centered on input pixels.
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to downsample blocks of type {@code T}
+	 */
+	public static < T extends NativeType< T > >
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > downsample( final ComputationType computationType, final Offset offset )
+	{
+		return s -> {
+			final T type = s.getType();
+			final int n = s.numDimensions();
+			return createOperator( type, computationType, offset, n );
+		};
+	}
+
+	/**
+	 * Downsample (by factor 2) blocks of the standard ImgLib2 {@code
+	 * RealType}s. The {@code downsampleInDim} argument specifies in which
+	 * dimensions the input should be downsampled.
+	 * <p>
+	 * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
+	 * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
+	 * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
+	 * <p>
+	 * The returned factory function creates an operator matching the
+	 * type and dimensionality of a given input {@code BlockSupplier<T>}.
+	 *
+	 * @param computationType
+	 * 		specifies in which precision intermediate values should be
+	 * 		computed. For {@code AUTO}, the type that can represent the
+	 * 		input/output type without loss of precision is picked. That is,
+	 * 		{@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
+	 * 		DOUBLE} for u32, i64, f64.
+	 * @param offset
+	 * 		Specifies where downsampled pixels should be placed.
+	 * 		{@code HALF_PIXEL} means that each downsampled pixel is computed
+	 * 		as the average of 2 neighboring pixels (respectively 4 pixels for
+	 * 		2D, 8 voxels for 3D, etc.), and	downsampled pixels are shifted by
+	 * 		half a pixel.
+	 * 		{@code CENTERED} means that each downsampled pixel is computed as
+	 * 		the weighted average (with weights {@code {.25, .5, .25}}) of 3
+	 * 		neighboring pixels (respectively 9 pixels for 2D, 27 voxels for 3D,
+	 * 		etc.) Downsampled pixels are centered on input pixels.
+	 * @param downsampleInDim
+	 * 		for each dimension {@code d}: if {@code downsampleInDim[d]==true} then
+	 * 		the input image should be downsampled in dimension {@code d}.
+	 * 		{@code downsampleInDim} is expanded or truncated to the necessary size.
+	 * 		For example, if {@code downsampleInDim=={true,true,false}} and the
+	 * 		operator is applied to a 2D image, {@code downsampleInDim} is truncated
+	 * 		to {@code {true, true}}. If the operator is applied to a 5D image, {@code
+	 * 		downsampleInDim} is expanded to {@code {true, true, false, false, false}}
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to downsample blocks of type {@code T}
+	 */
+	public static < T extends NativeType< T > >
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > downsample( final ComputationType computationType, final Offset offset, final boolean[] downsampleInDim )
+	{
+		return s -> {
+			final T type = s.getType();
+			final int n = s.numDimensions();
+			final boolean[] expandedDownsampleInDim = Util.expandArray( downsampleInDim, n );
+			return createOperator( type, computationType, offset, expandedDownsampleInDim );
+		};
+	}
+
+	/**
 	 * Create a {@code UnaryBlockOperator} to downsample (by factor 2) blocks of
 	 * the standard ImgLib2 {@code RealType}. The {@code downsampleInDim}
-	 * argument spwecifies in which dimensions the input should be downsampled.
+	 * argument specifies in which dimensions the input should be downsampled.
 	 * <p>
 	 * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
 	 * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
@@ -121,30 +358,30 @@ public class Downsample
 	 * 		instance of the input type
 	 * @param computationType
 	 * 		specifies in which precision intermediate values should be
-	 *      computed. For {@code AUTO}, the type that can represent the
-	 *      input/output type without loss of precision is picked. That is,
-	 *      {@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
-	 *      DOUBLE} for u32, i64, f64.
+	 * 		computed. For {@code AUTO}, the type that can represent the
+	 * 		input/output type without loss of precision is picked. That is,
+	 * 		{@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
+	 * 		DOUBLE} for u32, i64, f64.
 	 * @param offset
 	 * 		Specifies where downsampled pixels should be placed.
 	 * 		{@code HALF_PIXEL} means that each downsampled pixel is computed
-	 *      as the average of 2 neighboring pixels (respectively 4 pixels for
-	 *      2D, 8 voxels for 3D, etc), and	downsampled pixels are shifted by
-	 *      half a pixel.
-	 *      {@code CENTERED} means that each downsampled pixel is computed as
-	 *      the weighted average (with weights {@code {.25, .5, .25}}) of 3
-	 *      neighboring pixels (respectively 9 pixels for 2D, 27 voxels for 3D,
-	 *      etc). Downsampled pixels are centered on input pixels.
+	 * 		as the average of 2 neighboring pixels (respectively 4 pixels for
+	 * 		2D, 8 voxels for 3D, etc.), and downsampled pixels are shifted by
+	 * 		half a pixel.
+	 * 		{@code CENTERED} means that each downsampled pixel is computed as
+	 * 		the weighted average (with weights {@code {.25, .5, .25}}) of 3
+	 * 		neighboring pixels (respectively 9 pixels for 2D, 27 voxels for 3D,
+	 * 		etc.) Downsampled pixels are centered on input pixels.
 	 * @param downsampleInDim
-	 *      for each dimension {@code d}: if {@code downsampleInDim[d]==true} if
-	 *      the input image should be downsampled in dimension {@code d}.
+	 * 		for each dimension {@code d}: if {@code downsampleInDim[d]==true} then
+	 * 		the input image should be downsampled in dimension {@code d}.
 	 * @param <T>
 	 * 		the input/output type
 	 *
 	 * @return {@code UnaryBlockOperator} to downsample blocks of type {@code T}
 	 */
 	public static < T extends NativeType< T > >
-	UnaryBlockOperator< T, T > downsample( final T type, final ComputationType computationType, final Offset offset, final boolean[] downsampleInDim )
+	UnaryBlockOperator< T, T > createOperator( final T type, final ComputationType computationType, final Offset offset, final boolean[] downsampleInDim )
 	{
 		final boolean processAsFloat;
 		switch ( computationType )
@@ -179,106 +416,34 @@ public class Downsample
 	 * 		instance of the input type
 	 * @param computationType
 	 * 		specifies in which precision intermediate values should be
-	 *      computed. For {@code AUTO}, the type that can represent the
-	 *      input/output type without loss of precision is picked. That is,
-	 *      {@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
-	 *      DOUBLE} for u32, i64, f64.
+	 * 		computed. For {@code AUTO}, the type that can represent the
+	 * 		input/output type without loss of precision is picked. That is,
+	 * 		{@code FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code
+	 * 		DOUBLE} for u32, i64, f64.
 	 * @param offset
 	 * 		Specifies where downsampled pixels should be placed.
 	 * 		{@code HALF_PIXEL} means that each downsampled pixel is computed
-	 *      as the average of 2 neighboring pixels (respectively 4 pixels for
-	 *      2D, 8 voxels for 3D, etc), and	downsampled pixels are shifted by
-	 *      half a pixel.
-	 *      {@code CENTERED} means that each downsampled pixel is computed as
-	 *      the weighted average (with weights {@code {.25, .5, .25}}) of 3
-	 *      neighboring pixels (respectively 9 pixels for 2D, 27 voxels for 3D,
-	 *      etc). Downsampled pixels are centered on input pixels.
+	 * 		as the average of 2 neighboring pixels (respectively 4 pixels for
+	 * 		2D, 8 voxels for 3D, etc.), and	downsampled pixels are shifted by
+	 * 		half a pixel.
+	 * 		{@code CENTERED} means that each downsampled pixel is computed as
+	 * 		the weighted average (with weights {@code {.25, .5, .25}}) of 3
+	 * 		neighboring pixels (respectively 9 pixels for 2D, 27 voxels for 3D,
+	 * 		etc.) Downsampled pixels are centered on input pixels.
 	 * @param numDimensions
-	 *      number of dimensions in input/output image.
+	 * 		number of dimensions in input/output image.
 	 * @param <T>
 	 * 		the input/output type
 	 *
 	 * @return {@code UnaryBlockOperator} to downsample blocks of type {@code T}
 	 */
 	public static < T extends NativeType< T > >
-	UnaryBlockOperator< T, T > downsample( final T type, final ComputationType computationType, final Offset offset, final int numDimensions )
+	UnaryBlockOperator< T, T > createOperator( final T type, final ComputationType computationType, final Offset offset, final int numDimensions )
 	{
 		final boolean[] downsampleInDim = new boolean[ numDimensions ];
 		Arrays.fill( downsampleInDim, true );
-		return downsample( type, computationType, offset, downsampleInDim );
+		return createOperator( type, computationType, offset, downsampleInDim );
 	}
-
-	/**
-	 * Create a {@code UnaryBlockOperator} to downsample (by factor 2, in all
-	 * dimensions) blocks of the standard ImgLib2 {@code RealType}.
-	 * <p>
-	 * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
-	 * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
-	 * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
-	 * <p>
-	 * Precision for intermediate values is chosen as to represent the
-	 * input/output type without loss of precision is picked. That is, {@code
-	 * FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code DOUBLE} for
-	 * u32, i64, f64.
-	 *
-	 * @param type
-	 * 		instance of the input type
-	 * @param offset
-	 * 		Specifies where downsampled pixels should be placed.
-	 * 		{@code HALF_PIXEL} means that each downsampled pixel is computed
-	 *      as the average of 2 neighboring pixels (respectively 4 pixels for
-	 *      2D, 8 voxels for 3D, etc), and	downsampled pixels are shifted by
-	 *      half a pixel.
-	 *      {@code CENTERED} means that each downsampled pixel is computed as
-	 *      the weighted average (with weights {@code {.25, .5, .25}}) of 3
-	 *      neighboring pixels (respectively 9 pixels for 2D, 27 voxels for 3D,
-	 *      etc). Downsampled pixels are centered on input pixels.
-	 * @param numDimensions
-	 *      number of dimensions in input/output image.
-	 * @param <T>
-	 * 		the input/output type
-	 *
-	 * @return {@code UnaryBlockOperator} to downsample blocks of type {@code T}
-	 */
-	public static < T extends NativeType< T > >
-	UnaryBlockOperator< T, T > downsample( final T type, final Offset offset, final int numDimensions )
-	{
-		return downsample( type, ComputationType.AUTO, offset, numDimensions );
-	}
-
-	/**
-	 * Create a {@code UnaryBlockOperator} to downsample (by factor 2, in all
-	 * dimensions) blocks of the standard ImgLib2 {@code RealType}.
-	 * <p>
-	 * Supported types are {@code UnsignedByteType}, {@code UnsignedShortType},
-	 * {@code UnsignedIntType}, {@code ByteType}, {@code ShortType}, {@code
-	 * IntType}, {@code LongType}, {@code FloatType}, {@code DoubleType}).
-	 * <p>
-	 * Precision for intermediate values is chosen as to represent the
-	 * input/output type without loss of precision is picked. That is, {@code
-	 * FLOAT} for u8, i8, u16, i16, i32, f32, and otherwise {@code DOUBLE} for
-	 * u32, i64, f64.
-	 * <p>
-	 * Downsampled pixels are computed as the average of 2 neighboring pixels
-	 * (respectively 4 pixels for 2D, 8 voxels for 3D, etc). This means
-	 * downsampled pixels are shifted by half a pixel.
-	 *
-	 * @param type
-	 * 		instance of the input type
-	 * @param numDimensions
-	 *      number of dimensions in input/output image.
-	 * @param <T>
-	 * 		the input/output type
-	 *
-	 * @return {@code UnaryBlockOperator} to downsample blocks of type {@code T}
-	 */
-	public static < T extends NativeType< T > >
-	UnaryBlockOperator< T, T > downsample( final T type, final int numDimensions )
-	{
-		return downsample( type, ComputationType.AUTO, Offset.HALF_PIXEL, numDimensions );
-	}
-
-
 
 	private static UnaryBlockOperator< FloatType, FloatType > downsampleFloat( final Offset offset, final boolean[] downsampleInDim )
 	{

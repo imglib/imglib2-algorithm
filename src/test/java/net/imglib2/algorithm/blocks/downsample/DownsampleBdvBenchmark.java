@@ -44,10 +44,10 @@ import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.downsample.Downsample.ComputationType;
 import net.imglib2.algorithm.blocks.downsample.Downsample.Offset;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
-import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgFactory;
@@ -130,17 +130,10 @@ public class DownsampleBdvBenchmark
 	@Benchmark
 	public void benchmarkDownsampleDouble()
 	{
-		final PrimitiveBlocks< UnsignedByteType > blocks = PrimitiveBlocks.of( Views.extendBorder( raw ) );
-
-//		final CellLoader< DoubleType> loader = cellLoader( blocks, net.imglib2.algorithm.blocks.downsample.Downsample.downsample( new DoubleType(), ComputationType.AUTO, Offset.CENTERED, downsampleInDim ) );
-//		final CachedCellImg< DoubleType, ? > downsampleDouble =  new ReadOnlyCachedCellImgFactory().create(
-//				downsampledDimensions,
-//				new DoubleType(),
-//				loader,
-//				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions).cacheType( BOUNDED ).maxCacheSize( 1 ) );
-		final CachedCellImg< UnsignedByteType, ? > downsampleDouble = BlockAlgoUtils.cellImg(
-				blocks, Downsample.downsample( new UnsignedByteType(), ComputationType.DOUBLE, Offset.HALF_PIXEL, downsampleInDim ), new UnsignedByteType(), downsampledDimensions, cellDimensions );
-
+		final BlockSupplier< UnsignedByteType > blocks = BlockSupplier
+				.of( Views.extendBorder( raw ) )
+				.andThen( Downsample.downsample( ComputationType.DOUBLE, Offset.HALF_PIXEL, downsampleInDim ) );
+		final CachedCellImg< UnsignedByteType, ? > downsampleDouble = BlockAlgoUtils.cellImg( blocks, downsampledDimensions, cellDimensions );
 		touchAllCellsSingleThreaded( downsampleDouble );
 		downsampleDouble.getCache().invalidateAll();
 	}
@@ -148,17 +141,10 @@ public class DownsampleBdvBenchmark
 	@Benchmark
 	public void benchmarkDownsampleFloat()
 	{
-		final PrimitiveBlocks< UnsignedByteType > blocksFloat = PrimitiveBlocks.of( Views.extendBorder( raw ) );
-
-//		final CellLoader< FloatType> loader = cellLoader( blocksFloat, net.imglib2.algorithm.blocks.downsample.Downsample.downsample( new FloatType(), ComputationType.AUTO, Offset.CENTERED, downsampleInDim ) );
-//		final CachedCellImg< FloatType, ? > downsampleFloat =  new ReadOnlyCachedCellImgFactory().create(
-//				downsampledDimensions,
-//				new FloatType(),
-//				loader,
-//				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions).cacheType( BOUNDED ).maxCacheSize( 1 ) );
-		final CachedCellImg< UnsignedByteType, ? > downsampleFloat = BlockAlgoUtils.cellImg(
-				blocksFloat, Downsample.downsample( new UnsignedByteType(), ComputationType.FLOAT, Offset.HALF_PIXEL, downsampleInDim ), new UnsignedByteType(), downsampledDimensions, cellDimensions );
-
+		final BlockSupplier< UnsignedByteType > blocks = BlockSupplier
+				.of( Views.extendBorder( raw ) )
+				.andThen( Downsample.downsample( ComputationType.FLOAT, Offset.HALF_PIXEL, downsampleInDim ) );
+		final CachedCellImg< UnsignedByteType, ? > downsampleFloat = BlockAlgoUtils.cellImg( blocks, downsampledDimensions, cellDimensions );
 		touchAllCellsSingleThreaded( downsampleFloat );
 		downsampleFloat.getCache().invalidateAll();
 	}
