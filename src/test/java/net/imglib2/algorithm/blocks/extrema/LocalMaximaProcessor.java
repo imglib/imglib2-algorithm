@@ -1,23 +1,19 @@
 package net.imglib2.algorithm.blocks.extrema;
 
-import static net.imglib2.util.Util.safeInt;
-
 import java.util.Arrays;
 
 import net.imglib2.Interval;
+import net.imglib2.algorithm.blocks.AbstractBlockProcessor;
 import net.imglib2.algorithm.blocks.BlockProcessor;
-import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Intervals;
 
-public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
+public class LocalMaximaProcessor extends AbstractBlockProcessor< float[], byte[] >
 {
 
 	final int n;
 	final int[] destSize;
-	final long[] sourcePos;
-	final int[] sourceSize;
 
 	// buf indices:
 	//   0 intermediate 0
@@ -38,25 +34,19 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 	final TempArray< float[] > tempArrayAuxI1;
 	final TempArray< byte[] > tempArrayAuxM0;
 	final TempArray< byte[] > tempArrayAuxM1;
-	final TempArray< float[] > tempArraySource;
 
 	private final int[] ols;
 	private final int[] ils;
 	private final int[] ksteps;
-
-	private int sourceLength;
-
-	private final BlockProcessorSourceInterval sourceInterval;
 
 	// TODO: make this configurable. provide good default values (probably dependent on data type)
 	private final int bw = 2048;
 
 	LocalMaximaProcessor( final int numDimensions )
 	{
+		super( PrimitiveType.FLOAT, numDimensions );
 		n = numDimensions;
 		destSize = new int[ n ];
-		sourceSize = new int[ n ];
-		sourcePos = new long[ n ];
 
 		fromBufI = new int[ n ];
 		toBufI = new int[ n ];
@@ -75,21 +65,17 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 		tempArrayAuxI1 = TempArray.forPrimitiveType( primitiveType );
 		tempArrayAuxM0 = TempArray.forPrimitiveType( PrimitiveType.BYTE );
 		tempArrayAuxM1 = TempArray.forPrimitiveType( PrimitiveType.BYTE );
-		tempArraySource = TempArray.forPrimitiveType( primitiveType );
 
 		ols = new int[n];
 		ils = new int[n];
 		ksteps = new int[n];
-
-		sourceInterval = new BlockProcessorSourceInterval( this );
 	}
 
 	private LocalMaximaProcessor( final LocalMaximaProcessor convolve ) // TODO rename argument
 	{
+		super( convolve );
 		n = convolve.n;
 		destSize = new int[ n ];
-		sourceSize = new int[ n ];
-		sourcePos = new long[ n ];
 		fromBufI = convolve.fromBufI;
 		toBufI = convolve.toBufI;
 		fromBufM = convolve.fromBufM;
@@ -98,11 +84,9 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 		tempArrayAuxI1 = convolve.tempArrayAuxI1.newInstance();
 		tempArrayAuxM0 = convolve.tempArrayAuxM0.newInstance();
 		tempArrayAuxM1 = convolve.tempArrayAuxM1.newInstance();
-		tempArraySource = convolve.tempArraySource.newInstance();
 		ols = new int[ n ];
 		ils = new int[ n ];
 		ksteps = new int[ n ];
-		sourceInterval = new BlockProcessorSourceInterval( this );
 	}
 
 	@Override
@@ -136,37 +120,6 @@ public class LocalMaximaProcessor implements BlockProcessor< float[], byte[] >
 
 			sourceSize[ d ] += 2; // 2 == kernelsize - 1
 		}
-		sourceLength = safeInt( Intervals.numElements( sourceSize ) );
-	}
-
-	// TODO
-//	@Override
-//	public void setTargetInterval( final long[] srcPos, final int[] size )
-//	{
-//	}
-
-	@Override
-	public long[] getSourcePos()
-	{
-		return sourcePos;
-	}
-
-	@Override
-	public int[] getSourceSize()
-	{
-		return sourceSize;
-	}
-
-	@Override
-	public Interval getSourceInterval()
-	{
-		return sourceInterval;
-	}
-
-	@Override
-	public float[] getSourceBuffer()
-	{
-		return tempArraySource.get( sourceLength );
 	}
 
 	@Override
