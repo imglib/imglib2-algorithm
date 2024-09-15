@@ -6,6 +6,8 @@ import net.imglib2.type.NativeType;
 import net.imglib2.util.CloseableThreadLocal;
 
 /**
+ * Boilerplate for {@link BlockSupplier} to simplify implementations.
+ * <p>
  * Implements {@link BlockSupplier#threadSafe()} as a wrapper that makes {@link
  * ThreadLocal} {@link BlockSupplier#independentCopy()} copies.
  */

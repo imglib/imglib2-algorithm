@@ -38,6 +38,23 @@ import net.imglib2.type.NativeType;
 import net.imglib2.util.Cast;
 import net.imglib2.util.CloseableThreadLocal;
 
+/**
+ * Default implementation of {@link UnaryBlockOperator}.
+ * <p>
+ * If you implement a {@code BlockProcessor<I,O>}, you typically wrap it with a
+ * {@code DefaultUnaryBlockOperator}, specifying the source {@code S} and target
+ * {@code T} ImgLib2 {@code NativeType}s corresponding to primitive array types
+ * {@code I} and {@code O}, and the number of source and target dimension.
+ * <p>
+ * The {@link UnaryBlockOperator} can then be used in {@link
+ * BlockSupplier#andThen(UnaryBlockOperator)} chains in a type- and
+ * simensionality-safe manner.
+ *
+ * @param <S>
+ * 		source type
+ * @param <T>
+ * 		target type
+ */
 public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends NativeType< T > > implements UnaryBlockOperator< S, T >
 {
 	private final S sourceType;
