@@ -42,6 +42,7 @@ import net.imglib2.util.Cast;
 import static net.imglib2.algorithm.blocks.util.ConvertScalars.from_${t1};
 import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1};
 import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1}_clamp;
+import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1}_clamp_min;
 import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1}_clamp_max;
 #end
 
@@ -52,52 +53,63 @@ import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1}_clamp_ma
 
 class ConvertLoops
 {
-    static < I, O > ConvertLoop< I, O > get( UnaryOperatorType type )
-    {
-        return get( type, ClampType.NONE );
-    }
+	static < I, O > ConvertLoop< I, O > get( UnaryOperatorType type )
+	{
+		return get( type, ClampType.NONE );
+	}
 
-    static < I, O > ConvertLoop< I, O > get( UnaryOperatorType type, ClampType clampType )
-    {
-        switch ( clampType )
-        {
-        case NONE:
-            switch( type )
-            {
+	static < I, O > ConvertLoop< I, O > get( UnaryOperatorType type, ClampType clampType )
+	{
+		switch ( clampType )
+		{
+		case NONE:
+			switch( type )
+			{
 #foreach( $t1 in $types )
 #foreach( $t2 in $types )
-            case ${t1.toUpperCase()}_TO_${t2.toUpperCase()}: return Cast.unchecked( Convert_${t1}_to_${t2}.INSTANCE );
+			case ${t1.toUpperCase()}_TO_${t2.toUpperCase()}: return Cast.unchecked( Convert_${t1}_to_${t2}.INSTANCE );
 #end
 #end
-            default:
-                throw new IllegalArgumentException();
-            }
-        case CLAMP:
-            switch( type )
-            {
+			default:
+				throw new IllegalArgumentException();
+			}
+		case CLAMP:
+			switch( type )
+			{
 #foreach( $t1 in $types )
 #foreach( $t2 in $types )
-            case ${t1.toUpperCase()}_TO_${t2.toUpperCase()}: return Cast.unchecked( Convert_${t1}_to_${t2}_clamp.INSTANCE );
+			case ${t1.toUpperCase()}_TO_${t2.toUpperCase()}: return Cast.unchecked( Convert_${t1}_to_${t2}_clamp.INSTANCE );
 #end
 #end
-            default:
-                throw new IllegalArgumentException();
-            }
-        case CLAMP_MAX:
-            switch( type )
-            {
+			default:
+				throw new IllegalArgumentException();
+			}
+		case CLAMP_MIN:
+			switch( type )
+			{
 #foreach( $t1 in $types )
 #foreach( $t2 in $types )
-            case ${t1.toUpperCase()}_TO_${t2.toUpperCase()}: return Cast.unchecked( Convert_${t1}_to_${t2}_clamp_max.INSTANCE );
+					case ${t1.toUpperCase()}_TO_${t2.toUpperCase()}: return Cast.unchecked( Convert_${t1}_to_${t2}_clamp_min.INSTANCE );
 #end
 #end
-            default:
-                throw new IllegalArgumentException();
-            }
-        default:
-            throw new IllegalArgumentException();
-        }
-    }
+			default:
+				throw new IllegalArgumentException();
+			}
+		case CLAMP_MAX:
+			switch( type )
+			{
+#foreach( $t1 in $types )
+#foreach( $t2 in $types )
+					case ${t1.toUpperCase()}_TO_${t2.toUpperCase()}: return Cast.unchecked( Convert_${t1}_to_${t2}_clamp_max.INSTANCE );
+#end
+#end
+			default:
+				throw new IllegalArgumentException();
+			}
+		default:
+			throw new IllegalArgumentException();
+		}
+	}
 
 #foreach( $t1 in $types )
 #set( $sp1 = $storage_primitive[$t1] )
@@ -125,6 +137,18 @@ class ConvertLoops
 		{
 			for ( int i = 0; i < length; ++i )
 				dest[ i ] = to_${t2}_clamp( from_$t1( src[ i ] ) );
+		}
+	}
+
+	static class Convert_${t1}_to_${t2}_clamp_min implements ConvertLoop< ${sp1}[], ${sp2}[] >
+	{
+		static final Convert_${t1}_to_${t2}_clamp_min INSTANCE = new Convert_${t1}_to_${t2}_clamp_min();
+
+		@Override
+		public void apply( final ${sp1}[] src, final ${sp2}[] dest, final int length )
+		{
+			for ( int i = 0; i < length; ++i )
+				dest[ i ] = to_${t2}_clamp_min( from_$t1( src[ i ] ) );
 		}
 	}
 
