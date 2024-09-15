@@ -38,10 +38,10 @@ import net.imglib2.util.Cast;
 
 #parse( "PixelTypes.vm" )
 #foreach( $t1 in $types )
-import static net.imglib2.algorithm.blocks.convert.ConvertScalars.from_${t1};
-import static net.imglib2.algorithm.blocks.convert.ConvertScalars.to_${t1};
-import static net.imglib2.algorithm.blocks.convert.ConvertScalars.to_${t1}_clamp;
-import static net.imglib2.algorithm.blocks.convert.ConvertScalars.to_${t1}_clamp_min;
+import static net.imglib2.algorithm.blocks.util.ConvertScalars.from_${t1};
+import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1};
+import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1}_clamp;
+import static net.imglib2.algorithm.blocks.util.ConvertScalars.to_${t1}_clamp_min;
 #end
 
 /*
