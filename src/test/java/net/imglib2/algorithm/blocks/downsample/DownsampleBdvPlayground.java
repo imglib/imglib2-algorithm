@@ -43,10 +43,10 @@ import ij.IJ;
 import ij.ImagePlus;
 import java.util.Arrays;
 import net.imglib2.RandomAccess;
+import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.downsample.Downsample.ComputationType;
 import net.imglib2.algorithm.blocks.downsample.Downsample.Offset;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
-import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgFactory;
@@ -57,8 +57,6 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
-
-import static net.imglib2.algorithm.blocks.downsample.Downsample.downsample;
 
 public class DownsampleBdvPlayground
 {
@@ -83,7 +81,6 @@ public class DownsampleBdvPlayground
 		final int[] cellDimensions = { 64, 64, 64 };
 
 		final ExtendedRandomAccessibleInterval< UnsignedByteType, Img< UnsignedByteType > > extended = Views.extendBorder( img );
-		final PrimitiveBlocks< UnsignedByteType > blocks = PrimitiveBlocks.of( extended );
 		final UnsignedByteType type = new UnsignedByteType();
 
 		final double[] calib = new double[ 3 ];
@@ -121,13 +118,10 @@ public class DownsampleBdvPlayground
 		out.setColor( new ARGBType( 0xff0000 ) );
 
 
-
-		final CachedCellImg< UnsignedByteType, ? > downsampled2 = BlockAlgoUtils.cellImg(
-				blocks,
-				downsample( type, ComputationType.AUTO, Offset.HALF_PIXEL, downsampleInDim ),
-				type,
-				downsampledDimensions,
-				cellDimensions );
+		final BlockSupplier< UnsignedByteType > blocks = BlockSupplier
+				.of( extended )
+				.andThen( Downsample.downsample( ComputationType.AUTO, Offset.HALF_PIXEL, downsampleInDim ) );
+		final CachedCellImg< UnsignedByteType, ? > downsampled2 = BlockAlgoUtils.cellImg( blocks, downsampledDimensions, cellDimensions );
 		final BdvSource out2 = BdvFunctions.show(
 				VolatileViews.wrapAsVolatile( downsampled2 ),
 				"downsampled half-pixel",

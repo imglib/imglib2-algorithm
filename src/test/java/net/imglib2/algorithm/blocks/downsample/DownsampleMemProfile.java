@@ -36,13 +36,14 @@ package net.imglib2.algorithm.blocks.downsample;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.blocks.BlockAlgoUtils;
+import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.downsample.Downsample.ComputationType;
 import net.imglib2.algorithm.blocks.downsample.Downsample.Offset;
-import net.imglib2.algorithm.blocks.BlockAlgoUtils;
-import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.cell.AbstractCellImg;
@@ -76,16 +77,12 @@ public class DownsampleMemProfile
 
 	public void benchmarkDownsampleFloat()
 	{
-		final PrimitiveBlocks< UnsignedByteType > blocksFloat = PrimitiveBlocks.of( Views.extendBorder( raw ) );
+		final BlockSupplier< UnsignedByteType > blocksFloat = BlockSupplier
+				.of( Views.extendBorder( raw ) )
+				.andThen( Downsample.downsample(ComputationType.FLOAT, Offset.CENTERED, downsampleInDim ) );
 
-//		final CellLoader< FloatType> loader = cellLoader( blocksFloat, net.imglib2.algorithm.blocks.downsample.Downsample.downsample( new FloatType(), ComputationType.AUTO, Offset.CENTERED, downsampleInDim ) );
-//		final CachedCellImg< FloatType, ? > downsampleFloat =  new ReadOnlyCachedCellImgFactory().create(
-//				downsampledDimensions,
-//				new FloatType(),
-//				loader,
-//				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions).cacheType( BOUNDED ).maxCacheSize( 1 ) );
 		final CachedCellImg< UnsignedByteType, ? > downsampleFloat = BlockAlgoUtils.cellImg(
-				blocksFloat, Downsample.downsample( new UnsignedByteType(), ComputationType.FLOAT, Offset.CENTERED, downsampleInDim ), new UnsignedByteType(), downsampledDimensions, cellDimensions );
+				blocksFloat, downsampledDimensions, cellDimensions );
 
 //		touchAllCellsSingleThreaded( downsampleFloat );
 		touchAllCells( downsampleFloat );

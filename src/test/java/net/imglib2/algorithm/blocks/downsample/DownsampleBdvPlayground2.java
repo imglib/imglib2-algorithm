@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -45,10 +45,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
 import net.imglib2.algorithm.blocks.BlockSupplier;
-import net.imglib2.algorithm.blocks.UnaryBlockOperator;
-import net.imglib2.algorithm.blocks.convert.Convert;
 import net.imglib2.algorithm.blocks.downsample.Downsample.Offset;
-import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.ARGBType;
@@ -80,12 +77,10 @@ public class DownsampleBdvPlayground2
 		final double[] calib = new double[ 3 ];
 		Arrays.setAll(calib, d -> downsampleInDim[ d ] ? 2 : 1 );
 
-		final BlockSupplier< UnsignedByteType > blocks = BlockSupplier
+		BlockSupplier< UnsignedByteType > blocks = BlockSupplier
 				.of( Views.extendMirrorDouble( img ) )
-				.andThen( Downsample.downsample(
-						img.getType(),
-						Offset.HALF_PIXEL,
-						img.numDimensions() ) );
+				.andThen( Downsample.downsample( Offset.HALF_PIXEL ) )
+				.tile( 16 );
 
 		final Img< UnsignedByteType > downsampled = BlockAlgoUtils.cellImg(
 				blocks,

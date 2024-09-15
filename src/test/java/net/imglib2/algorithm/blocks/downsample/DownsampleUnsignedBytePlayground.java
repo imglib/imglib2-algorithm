@@ -41,18 +41,17 @@ import bdv.viewer.DisplayMode;
 import ij.IJ;
 import ij.ImagePlus;
 import java.util.Arrays;
+
+import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.downsample.Downsample.ComputationType;
 import net.imglib2.algorithm.blocks.downsample.Downsample.Offset;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
-import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.Views;
-
-import static net.imglib2.algorithm.blocks.downsample.Downsample.downsample;
 
 public class DownsampleUnsignedBytePlayground
 {
@@ -76,13 +75,10 @@ public class DownsampleUnsignedBytePlayground
 		final long[] downsampledDimensions = Downsample.getDownsampledDimensions( img.dimensionsAsLongArray(), downsampleInDim );
 		final int[] cellDimensions = { 64, 64, 64 };
 
-		final PrimitiveBlocks< UnsignedByteType > blocks = PrimitiveBlocks.of( Views.extendBorder( img ) );
-		final UnsignedByteType type = new UnsignedByteType();
+		final BlockSupplier< UnsignedByteType > blocks = BlockSupplier.of( Views.extendBorder( img ) );
 
 		final CachedCellImg< UnsignedByteType, ? > downsampled = BlockAlgoUtils.cellImg(
-				blocks,
-				downsample( type, ComputationType.AUTO, Offset.CENTERED, downsampleInDim ),
-				type,
+				blocks.andThen( Downsample.downsample( ComputationType.AUTO, Offset.CENTERED, downsampleInDim ) ),
 				downsampledDimensions,
 				cellDimensions );
 
@@ -98,9 +94,7 @@ public class DownsampleUnsignedBytePlayground
 		out.setColor( new ARGBType( 0xff0000 ) );
 
 		final CachedCellImg< UnsignedByteType, ? > downsampled2 = BlockAlgoUtils.cellImg(
-				blocks,
-				downsample( type, ComputationType.AUTO, Offset.HALF_PIXEL, downsampleInDim ),
-				type,
+				blocks.andThen( Downsample.downsample( ComputationType.AUTO, Offset.HALF_PIXEL, downsampleInDim ) ),
 				downsampledDimensions,
 				cellDimensions );
 		final BdvSource out2 = BdvFunctions.show(
