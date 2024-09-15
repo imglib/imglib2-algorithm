@@ -201,11 +201,11 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
-		<imglib2.version>7.0.3</imglib2.version>
+		<imglib2.version>7.1.1</imglib2.version>
 		<imglib2-realtransform.version>4.0.3</imglib2-realtransform.version>
-		<imglib2-roi.version>0.15.0</imglib2-roi.version>
+		<imglib2-roi.version>0.15.1</imglib2-roi.version>
 		<imglib2-cache.version>1.0.0-beta-18</imglib2-cache.version>
-		<sc.fiji.bigdataviewer-core.version>10.4.16</sc.fiji.bigdataviewer-core.version>
+		<sc.fiji.bigdataviewer-core.version>10.6.1</sc.fiji.bigdataviewer-core.version>
 	</properties>
 
 	<repositories>
@@ -253,11 +253,6 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>bigdataviewer-vistools</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
