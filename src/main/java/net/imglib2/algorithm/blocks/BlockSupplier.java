@@ -44,6 +44,7 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.Typed;
 import net.imglib2.blocks.PrimitiveBlocks;
+import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Cast;
 import net.imglib2.util.Util;
@@ -154,6 +155,25 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, 
 	default < U extends NativeType< U > > BlockSupplier< U > andThen( Function< BlockSupplier< T >, UnaryBlockOperator< T, U > > function )
 	{
 		return andThen( function.apply( this ) );
+	}
+
+	/**
+	 * Return a {@code CachedCellImg} which copies cells from this {@code BlockSupplier}.
+	 *
+	 * @param dimensions
+	 * 		dimensions of the {@code CachedCellImg} to create
+	 * @param cellDimensions
+	 * 		block size of the {@code CachedCellImg} to create.
+	 * 		This is extended or truncated as necessary.
+	 * 		For example if {@code cellDimensions={64,32}} then for creating a 3D
+	 * 		image it will be augmented to {@code {64,32,32}}. For creating a 1D image
+	 * 		it will be truncated to {@code {64}}.
+	 *
+	 * @return a {@code CachedCellImg} which copies cells from this {@code BlockSupplier}.
+	 */
+	default CachedCellImg< T, ? > toCellImg( final long[] dimensions, final int... cellDimensions )
+	{
+		return BlockAlgoUtils.cellImg( this, dimensions, cellDimensions );
 	}
 
 	/**
