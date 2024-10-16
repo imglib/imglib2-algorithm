@@ -6,8 +6,8 @@ import java.util.Arrays;
 
 import net.imglib2.EuclideanSpace;
 import net.imglib2.Interval;
+import net.imglib2.algorithm.blocks.AbstractDimensionlessBlockProcessor;
 import net.imglib2.algorithm.blocks.BlockProcessor;
-import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
 import net.imglib2.blocks.SubArrayCopy;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.NativeType;
@@ -16,55 +16,47 @@ import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 
-abstract class JoinedBlockProcessor< I, O0, O1, P > implements BlockProcessor< I, P >
+abstract class JoinedBlockProcessor< I, O0, O1, P > extends AbstractDimensionlessBlockProcessor< I, P >
 {
 	private final BlockProcessor< I, O0 > p0;
 	private final BlockProcessor< I, O1 > p1;
 
-	private final TempArray< I > tempArraySrc;
 	private final TempArray< O0 > tempArrayDest0;
 	private final TempArray< O1 > tempArrayDest1;
 	private final SubArrayCopy.Typed< I, I > copy;
 
-	private long[] sourcePos;
-	private int[] sourceSize;
-	private int sourceLength;
 	private SubArrayExtractor< I > subArray;
 
 	long[] destPos;
 	int[] destSize;
 	int destLength;
 
-	private final BlockProcessorSourceInterval sourceInterval;
-
 	public < S extends NativeType< S >, T0 extends NativeType< T0 >, T1 extends NativeType< T1 > > JoinedBlockProcessor(
 			final S sourceType, final T0 targetType0, final T1 targetType1,
 			final BlockProcessor< I, O0 > p0,
 			final BlockProcessor< I, O1 > p1 )
 	{
+		super( sourceType.getNativeTypeFactory().getPrimitiveType() );
+
 		this.p0 = p0; // TODO .independentCopy() ???
 		this.p1 = p1; // TODO .independentCopy() ???
 
 		final PrimitiveType sourcePrimitiveType = sourceType.getNativeTypeFactory().getPrimitiveType();
 		final PrimitiveType targetPrimitiveType0 = targetType0.getNativeTypeFactory().getPrimitiveType();
 		final PrimitiveType targetPrimitiveType1 = targetType1.getNativeTypeFactory().getPrimitiveType();
-		tempArraySrc = TempArray.forPrimitiveType( sourcePrimitiveType );
 		tempArrayDest0 = TempArray.forPrimitiveType( targetPrimitiveType0 );
 		tempArrayDest1 = TempArray.forPrimitiveType( targetPrimitiveType1 );
 		copy = SubArrayCopy.forPrimitiveType( sourcePrimitiveType );
-
-		sourceInterval = new BlockProcessorSourceInterval( this );
 	}
 
 	JoinedBlockProcessor( JoinedBlockProcessor< I, O0, O1, P > processor )
 	{
+		super( processor );
 		p0 = processor.p0.independentCopy();
 		p1 = processor.p1.independentCopy();
-		tempArraySrc = processor.tempArraySrc.newInstance();
 		tempArrayDest0 = processor.tempArrayDest0.newInstance();
 		tempArrayDest1 = processor.tempArrayDest1.newInstance();
 		copy = processor.copy;
-		sourceInterval = new BlockProcessorSourceInterval( this );
 	}
 
 	@Override
@@ -93,49 +85,15 @@ abstract class JoinedBlockProcessor< I, O0, O1, P > implements BlockProcessor< I
 		// bigger than both of the processors' source intervals).
 		final int n = sourcePos0.length;
 		assert n == sourcePos1.length;
-		if ( sourcePos == null || sourcePos.length != n )
+		if( updateNumSourceDimsensions( n ) )
 		{
-			sourcePos = new long[ n ];
-			sourceSize = new int[ n ];
 			subArray = new SubArrayExtractor<>( n, copy );
 		}
 		Arrays.setAll( sourcePos, d -> Math.min( sourcePos0[ d ], sourcePos1[ d ] ) );
 		Arrays.setAll( sourceSize, d -> Util.safeInt( Math.max(
 				sourcePos0[ d ] + sourceSize0[ d ],
 				sourcePos1[ d ] + sourceSize1[ d ] ) - sourcePos[ d ] ) );
-		sourceLength = safeInt( Intervals.numElements( sourceSize ) );
 	}
-
-	// TODO
-//	@Override
-//	public void setTargetInterval( final long[] srcPos, final int[] size )
-//	{
-//	}
-
-	@Override
-	public long[] getSourcePos()
-	{
-		return sourcePos;
-	}
-
-	@Override
-	public int[] getSourceSize()
-	{
-		return sourceSize;
-	}
-
-	@Override
-	public Interval getSourceInterval()
-	{
-		return sourceInterval;
-	}
-
-	@Override
-	public I getSourceBuffer()
-	{
-		return tempArraySrc.get( sourceLength );
-	}
-
 
 	@Override
 	public void compute( final I src, final P dest )
