@@ -153,11 +153,7 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, 
 
 	default < U extends NativeType< U > > BlockSupplier< U > andThen( Function< BlockSupplier< T >, UnaryBlockOperator< T, U > > function )
 	{
-		final UnaryBlockOperator< T, U > op = function.apply( this );
-		if ( op instanceof NoOpUnaryBlockOperator )
-			return Cast.unchecked( this );
-		else
-			return new ConcatenatedBlockSupplier<>( this.independentCopy(), op );
+		return andThen( function.apply( this ) );
 	}
 
 	/**
