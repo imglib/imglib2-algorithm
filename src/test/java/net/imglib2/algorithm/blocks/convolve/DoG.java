@@ -10,7 +10,7 @@ import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
-import net.imglib2.algorithm.blocks.convert.ClampType;
+import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.convolution.kernel.Kernel1D;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.PrimitiveType;
