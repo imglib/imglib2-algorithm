@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,46 +33,61 @@
  */
 package net.imglib2.algorithm.blocks;
 
-import net.imglib2.Interval;
+import net.imglib2.type.NativeType;
 
 /**
- * Wraps {@code long[] pos} and {@code int[] size} as a {@code Interval}, for
- * the default implementation of {@link BlockProcessor#setTargetInterval(long[],
- * int[])}.
+ * Abstract implementation of {@link UnaryBlockOperator}.
+ * Takes care of source/target type/dimensionality boilerplate.
+ *
+ * @param <S>
+ * 		source type
+ * @param <T>
+ * 		target type
  */
-class BlockProcessorTargetInterval implements Interval
+public abstract class AbstractUnaryBlockOperator< S extends NativeType< S >, T extends NativeType< T > > implements UnaryBlockOperator< S, T >
 {
-	private final long[] min;
+	private final S sourceType;
+	private final T targetType;
+	private final int numSourceDimensions;
+	private final int numTargetDimensions;
 
-	private final int[] size;
-
-	BlockProcessorTargetInterval( long[] min, int[] size )
+	protected AbstractUnaryBlockOperator( S sourceType, T targetType, int numSourceDimensions, int numTargetDimensions )
 	{
-		this.min = min;
-		this.size = size;
+		this.sourceType = sourceType;
+		this.targetType = targetType;
+		this.numSourceDimensions = numSourceDimensions;
+		this.numTargetDimensions = numTargetDimensions;
+	}
+
+	protected AbstractUnaryBlockOperator( AbstractUnaryBlockOperator< S, T > op )
+	{
+		this.sourceType = op.sourceType;
+		this.targetType = op.targetType;
+		this.numSourceDimensions = op.numSourceDimensions;
+		this.numTargetDimensions = op.numTargetDimensions;
 	}
 
 	@Override
-	public long min( final int i )
+	public S getSourceType()
 	{
-		return min[ i ];
+		return sourceType;
 	}
 
 	@Override
-	public long max( final int i )
+	public T getTargetType()
 	{
-		return min[ i ] + size[ i ] - 1;
+		return targetType;
 	}
 
 	@Override
-	public long dimension( final int d )
+	public int numSourceDimensions()
 	{
-		return size[ d ];
+		return numSourceDimensions;
 	}
 
 	@Override
-	public int numDimensions()
+	public int numTargetDimensions()
 	{
-		return min.length;
+		return numTargetDimensions;
 	}
 }

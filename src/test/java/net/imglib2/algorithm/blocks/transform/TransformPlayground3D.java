@@ -45,6 +45,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
+import net.imglib2.blocks.BlockInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
@@ -107,7 +108,7 @@ public class TransformPlayground3D
 				.of( Views.extendZero( img ) )
 				.andThen( Transform.affine( affine, Interpolation.NLINEAR ) );
 		final byte[] dest = new byte[ ( int ) Intervals.numElements( size ) ];
-		blocks.copy( min, dest, size );
+		blocks.copy( BlockInterval.wrap( min, size ), dest );
 		final RandomAccessibleInterval< UnsignedByteType > destImg = ArrayImgs.unsignedBytes( dest, size[ 0 ], size[ 1 ], size[ 2 ] );
 
 		// ----------------------------------------------

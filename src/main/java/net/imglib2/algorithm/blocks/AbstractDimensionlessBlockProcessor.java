@@ -35,10 +35,8 @@ package net.imglib2.algorithm.blocks;
 
 import static net.imglib2.util.Util.safeInt;
 
-import java.util.Arrays;
-
 import net.imglib2.Interval;
-import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
+import net.imglib2.blocks.BlockInterval;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Intervals;
@@ -50,12 +48,10 @@ import net.imglib2.util.Intervals;
  * number of dimensions (such as converters). For {@code BlockProcessor} with a
  * fixed number of source dimensions, see {@link AbstractBlockProcessor}.
  * <p>
- * {@link BlockProcessor#getSourcePos() getSourcePos()}, {@link
- * BlockProcessor#getSourceSize() getSourceSize()}, and {@link
- * BlockProcessor#getSourceInterval() getSourceInterval()} are implemented to
- * return the {@code protected} fields {@code long[] sourcePos} and {@code
- * }int[] sourceSize}. The {@code }protected} method {@code }int sourceLength()}
- * can be used to get the number of elements in the source interval.
+ * A {@link BlockInterval} is exposed through {@link #getSourceInterval()}
+ * (after {@link #setTargetInterval} has been called). The {@code protected}
+ * method {@link #sourceLength()} returns the number of elements in the source
+ * interval.
  * <p>
  * {@link BlockProcessor#getSourceBuffer() getSourceBuffer()} is implemented
  * according to the {@code sourcePrimitiveType} specified at construction.
@@ -69,11 +65,7 @@ public abstract class AbstractDimensionlessBlockProcessor< I, O > implements Blo
 {
 	private final TempArray< I > tempArray;
 
-	protected long[] sourcePos;
-
-	protected int[] sourceSize;
-
-	private final BlockProcessorSourceInterval sourceInterval = new BlockProcessorSourceInterval( this );
+	protected BlockInterval sourceInterval;
 
 	protected AbstractDimensionlessBlockProcessor( final PrimitiveType sourcePrimitiveType )
 	{
@@ -88,26 +80,24 @@ public abstract class AbstractDimensionlessBlockProcessor< I, O > implements Blo
 	@Override
 	public void setTargetInterval( final Interval interval )
 	{
-		updateNumSourceDimsensions( interval.numDimensions() );
-		interval.min( sourcePos );
-		Arrays.setAll( sourceSize, d -> safeInt( interval.dimension( d ) ) );
+		updateNumSourceDimensions( interval.numDimensions() );
+		sourceInterval.setFrom( interval );
 	}
 
 	/**
-	 * Re-allocates {@code sourcePos} and {@code sourceSize} arrays if they do
-	 * not already exist and have {@code length==n}.
+	 * Re-allocates {@code sourceInterval} if it does not already exist and
+	 * match {@code numDimensions()==n}.
 	 *
 	 * @param n
 	 * 		new number of source dimensions
 	 *
-	 * @return {@code true} if {@code sourcePos} and {@code sourceSize} arrays were re-allocated
+	 * @return {@code true} if {@code sourceInterval} was re-allocated
 	 */
-	protected boolean updateNumSourceDimsensions( final int n )
+	protected boolean updateNumSourceDimensions( final int n )
 	{
-		if ( sourcePos == null || sourcePos.length != n )
+		if ( sourceInterval == null || sourceInterval.numDimensions() != n )
 		{
-			sourcePos = new long[ n ];
-			sourceSize = new int[ n ];
+			sourceInterval = new BlockInterval( n );
 			return true;
 		}
 		return false;
@@ -115,23 +105,11 @@ public abstract class AbstractDimensionlessBlockProcessor< I, O > implements Blo
 
 	protected int sourceLength()
 	{
-		return safeInt( Intervals.numElements( sourceSize ) );
+		return safeInt( Intervals.numElements( sourceInterval ) );
 	}
 
 	@Override
-	public long[] getSourcePos()
-	{
-		return sourcePos;
-	}
-
-	@Override
-	public int[] getSourceSize()
-	{
-		return sourceSize;
-	}
-
-	@Override
-	public Interval getSourceInterval()
+	public BlockInterval getSourceInterval()
 	{
 		return sourceInterval;
 	}

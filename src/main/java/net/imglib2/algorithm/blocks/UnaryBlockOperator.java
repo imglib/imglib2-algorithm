@@ -33,43 +33,47 @@
  */
 package net.imglib2.algorithm.blocks;
 
+import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.convert.Convert;
 import net.imglib2.type.NativeType;
-import net.imglib2.util.Cast;
 
 /**
- * Wraps {@code BlockProcessor<I,O>}, where {@code I} is the primitive array
- * type backing ImgLib2 {@code NativeType} {@code S} and {@code O} is the
- * primitive array type backing ImgLib2 {@code NativeType} {@code T}.
+ * A {@code UnaryBlockOperator} computes blocks of {@code NativeType<T>} data
+ * from blocks of {@code NativeType<S>} data.
  * <p>
- * Typically, {@code UnaryBlockOperator} should be used rather than {@link
- * BlockProcessor} directly, to avoid mistakes with unchecked (primitive array)
- * type casts.
+ * Use the {@link UnaryBlockOperator#compute(BlockSupplier, Interval, Object)}
+ * method to compute a block of data and store it into a flat primitive array
+ * (of the appropriate primitive type corresponding to {@code T}). The input
+ * block (appropriately sized and positioned to produce the desired output
+ * {@code Interval}) is read from a {@code BlockSupplier<S>}.
+ * <p>
+ * Typically, {@code UnaryBlockOperator} are chained to a particular {@code
+ * BlockSupplier<S>} using {@link BlockSupplier#andThen} (or {@link #applyTo},
+ * instead of calling {@code compute()} explicitly.
+ * <p>
+ * Implementations are not thread-safe in general. Use {@link
+ * #independentCopy()} to obtain independent instances.
  *
  * @param <S>
- * 		source type
+ * 		source pixel type
  * @param <T>
- * 		target type
+ * 		target pixel type
  */
 public interface UnaryBlockOperator< S extends NativeType< S >, T extends NativeType< T > >
 {
 	/**
-	 * Get (an instance of) the wrapped {@code BlockProcessor}.
-	 * <p>
-	 * Note that this involves an unchecked cast, that is, the returned {@code
-	 * BlockProcessor<I,O>} will be cast to the {@code I, O} types expected by
-	 * the caller.
-	 * <p>
-	 * This is mostly intented for internal use, e.g., in {@link BlockAlgoUtils}.
+	 * Compute a block (using {@code src} to provide input data) and store into the given primitive array (of the appropriate type).
 	 *
-	 * @param <I>
-	 * 		input primitive array type, e.g., float[]. Must correspond to S.
-	 * @param <O>
-	 * 		output primitive array type, e.g., float[]. Must correspond to T.
-	 *
-	 * @return an instance of the wrapped {@code BlockProcessor}
+	 * @param src
+	 * 		the {@code BlockSupplier} that provides input data
+	 * @param interval
+	 * 		the output interval to compute
+	 * @param dest
+	 * 		primitive array to store computation result. Must correspond to {@code T}, for
+	 * 		example, if {@code T} is {@code UnsignedByteType} then {@code dest} must
+	 * 		be {@code byte[]}.
 	 */
-	< I, O > BlockProcessor< I, O > blockProcessor();
+	void compute( BlockSupplier< S > src, Interval interval, Object dest );
 
 	S getSourceType();
 
@@ -102,12 +106,6 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	int numTargetDimensions();
 
 	/**
-	 * Get a thread-safe version of this {@code UnaryBlockOperator}.
-	 * (Implemented as a wrapper that makes {@link ThreadLocal} copies).
-	 */
-	UnaryBlockOperator< S, T > threadSafe();
-
-	/**
 	 * Returns an instance of this {@link UnaryBlockOperator} that can be used
 	 * independently, e.g., in another thread or in another place in the same
 	 * pipeline.
@@ -115,27 +113,21 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	UnaryBlockOperator< S, T > independentCopy();
 
 	/**
+	 * Returns a {@code BlockSupplier<T>} that provide blocks by {@link #compute
+	 * computing} on input blocks from the given {@code BlockSupplier<S>}.
+	 */
+	default BlockSupplier< T > applyTo( BlockSupplier< S > blocks )
+	{
+		return new ConcatenatedBlockSupplier<>( blocks, independentCopy() );
+	}
+
+	/**
 	 * Returns a {@code UnaryBlockOperator} that is equivalent to applying
 	 * {@code this}, and then applying {@code op} to the result.
 	 */
 	default < U extends NativeType< U > > UnaryBlockOperator< S, U > andThen( UnaryBlockOperator< T, U > op )
 	{
-		if ( op instanceof NoOpUnaryBlockOperator )
-			return Cast.unchecked( this );
-
-		final boolean thisHasDimensions = numSourceDimensions() > 0;
-		final boolean opHasDimensions = op.numSourceDimensions() > 0;
-		if ( opHasDimensions && thisHasDimensions && numTargetDimensions() != op.numSourceDimensions() ) {
-			throw new IllegalArgumentException( "UnaryBlockOperator cannot be concatenated: number of dimensions mismatch." );
-		}
-		final int numSourceDimensions = thisHasDimensions ? numSourceDimensions() : op.numSourceDimensions();
-		final int numTargetDimensions = opHasDimensions ? op.numTargetDimensions() : numTargetDimensions();
-		return new DefaultUnaryBlockOperator<>(
-				getSourceType(),
-				op.getTargetType(),
-				numSourceDimensions,
-				numTargetDimensions,
-				blockProcessor().andThen( op.blockProcessor() ) );
+		return new ConcatenatedUnaryBlockOperator<>( this, op.independentCopy() );
 	}
 
 	/**
@@ -145,10 +137,7 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	 */
 	default < U extends NativeType< U > > UnaryBlockOperator< U, T > adaptSourceType( U newSourceType, ClampType clamp )
 	{
-		if ( newSourceType.getClass().isInstance( getSourceType() ) )
-			return Cast.unchecked( this );
-		else
-			return Convert.createOperator( newSourceType, getSourceType(), clamp ).andThen( this );
+		return Convert.createOperator( newSourceType, getSourceType(), clamp ).andThen( this );
 	}
 
 	/**
@@ -158,9 +147,6 @@ public interface UnaryBlockOperator< S extends NativeType< S >, T extends Native
 	 */
 	default  < U extends NativeType< U > > UnaryBlockOperator< S, U > adaptTargetType( U newTargetType, ClampType clamp )
 	{
-		if ( newTargetType.getClass().isInstance( getTargetType() ) )
-			return Cast.unchecked( this );
-		else
-			return this.andThen( Convert.createOperator( getTargetType(), newTargetType, clamp ) );
+		return this.andThen( Convert.createOperator( getTargetType(), newTargetType, clamp ) );
 	}
 }

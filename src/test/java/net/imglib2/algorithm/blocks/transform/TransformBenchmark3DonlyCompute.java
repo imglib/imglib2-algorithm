@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.converter.Converters;
@@ -110,13 +111,14 @@ public class TransformBenchmark3DonlyCompute
 		blocksnaiveSetup();
 	}
 
-	PrimitiveBlocks< FloatType > blocks;
+	BlockSupplier< FloatType > blocks;
 	Affine3DProcessor< float[] > processor;
 	float[] dest;
+	float[] src;
 
 	public void blocksnaiveSetup()
 	{
-		blocks = PrimitiveBlocks.of(
+		blocks = BlockSupplier.of(
 				Converters.convert(
 						Views.extendZero( img ),
 						new RealFloatConverter<>(),
@@ -125,14 +127,15 @@ public class TransformBenchmark3DonlyCompute
 		long[] max = new long[ size.length ];
 		Arrays.setAll( max, d -> min[ d ] + size[ d ] - 1 );
 		processor.setTargetInterval( FinalInterval.wrap( min, max ) );
-		blocks.copy( processor.getSourcePos(), processor.getSourceBuffer(), processor.getSourceSize() );
+		src = processor.getSourceBuffer();
+		blocks.copy( processor.getSourceInterval(), src );
 		dest = new float[ ( int ) Intervals.numElements( size ) ];
 	}
 
 	@Benchmark
 	public void compute()
 	{
-		processor.compute( processor.getSourceBuffer(), dest );
+		processor.compute( src, dest );
 	}
 
 	public static void main( String[] args ) throws RunnerException

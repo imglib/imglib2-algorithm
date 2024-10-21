@@ -33,19 +33,13 @@
  */
 package net.imglib2.algorithm.blocks.transform;
 
-import static net.imglib2.util.Util.safeInt;
-
 import java.util.Arrays;
-import java.util.function.Supplier;
 
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.algorithm.blocks.AbstractBlockProcessor;
-import net.imglib2.algorithm.blocks.BlockProcessor;
-import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
-import net.imglib2.blocks.TempArray;
+import net.imglib2.blocks.BlockInterval;
 import net.imglib2.type.PrimitiveType;
-import net.imglib2.util.Intervals;
 
 /**
  * Abstract base class for {@link Affine3DProcessor} and {@link
@@ -96,9 +90,7 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 	@Override
 	public void setTargetInterval( final Interval interval )
 	{
-		interval.min( destPos );
-		Arrays.setAll( destSize, d -> safeInt( interval.dimension( d ) ) );
-
+		BlockInterval.wrap( destPos, destSize ).setFrom( interval );
 		final RealInterval bounds = estimateBounds( interval );
 		switch ( interpolation )
 		{

@@ -34,14 +34,13 @@
 package net.imglib2.algorithm.blocks;
 
 import net.imglib2.Interval;
-import net.imglib2.blocks.PrimitiveBlocks;
 
 /**
  * A {@code BlockProcessor} computes values in a flattened primitive output
  * array from values in a flattened primitive input array.
  * <p>
- * Typically, {@code BlockProcessor} should not be used directly, but
- * wrapped in {@link UnaryBlockOperator} which has the ImgLib2 {@code Type}s
+ * Typically, {@code BlockProcessor} should not be used directly, but wrapped in
+ * {@link DefaultUnaryBlockOperator} which has the ImgLib2 {@code Type}s
  * corresponding to {@code I}, {@code O}. This helps to avoid mistakes with
  * unchecked (primitive array) type casts.
  *
@@ -56,21 +55,26 @@ public interface BlockProcessor< I, O >
 
 	void setTargetInterval( Interval interval );
 
-	default void setTargetInterval( long[] pos, int[] size )
-	{
-		setTargetInterval( new BlockProcessorTargetInterval( pos, size ) );
-	}
-
-	long[] getSourcePos();
-
-	int[] getSourceSize();
-
 	Interval getSourceInterval();
 
 	/**
 	 * Get a {@code src} array of sufficient size.
 	 * <p>
-	 * Consecutive calls may return the same array, but don't have to.
+	 * <em>Consecutive calls may return the same array (but don't have to).</em>
+	 * <p>
+	 * E.g., this is a BUG:
+	 * <pre>{@code
+	 *     blockProcessor.setTargetInterval( interval );
+	 *     blockSupplier.copy( blockProcessor.getSourceInterval(), blockProcessor.getSourceBuffer() );
+	 *     blockProcessor.compute( blockProcessor.getSourceBuffer(), dest );
+	 * }</pre>
+	 * Use this instead:
+	 * <pre>{@code
+	 *     blockProcessor.setTargetInterval( interval );
+	 *     Object buf = blockProcessor.getSourceBuffer();
+	 *     blockSupplier.copy( blockProcessor.getSourceInterval(), buf );
+	 *     blockProcessor.compute( buf, dest );
+	 * }</pre>
 	 */
 	I getSourceBuffer();
 
@@ -78,18 +82,17 @@ public interface BlockProcessor< I, O >
 	 * Compute the {@code dest} array from the {@code src} array.
 	 * <p>
 	 * {@code src} and {@code dest} are expected to be flattened arrays of the
-	 * dimensions specified in {@link #setTargetInterval} and computed in {@link
-	 * #getSourceSize}, respectively. The typical sequence is:
+	 * dimensions specified in {@link #setTargetInterval} and provided in {@link
+	 * #getSourceInterval}, respectively. The typical sequence is:
 	 * <ol>
 	 * <li>A given target array {@code dest} with known flattened layout and min
 	 * position should be computed.</li>
 	 * <li>Call {@link #setTargetInterval}. This will compute the corresponding
-	 * {@link #getSourceInterval source interval} (also available as {@link
-	 * #getSourcePos}, {@link #getSourceSize}) including {@code
+	 * {@link #getSourceInterval source interval} including {@code
 	 * BlockProcessor}-specific transformations, padding, etc.</li>
 	 * <li>Fill a {@code src} array (either provided by {@link
 	 * #getSourceBuffer}, or otherwise allocated) with the input data (see
-	 * {@link PrimitiveBlocks#copy}).</li>
+	 * {@link BlockSupplier#copy}).</li>
 	 * <li>Call {@code compute(src, dest)} to compute the target array.</li>
 	 * </ol>
 	 * Note, that the {@code src} and {@code dest} arrays may be larger than
@@ -97,8 +100,8 @@ public interface BlockProcessor< I, O >
 	 * case the trailing elements are ignored.
 	 * <p>
 	 * Typically, {@code BlockProcessor} should not be used directly, but
-	 * wrapped in {@link UnaryBlockOperator} which has the ImgLib2 {@code Type}s
-	 * corresponding to {@code I}, {@code O}.
+	 * wrapped in {@link DefaultUnaryBlockOperator} which has the ImgLib2 {@code
+	 * Type}s corresponding to {@code I}, {@code O}.
 	 *
 	 * @param src
 	 * 		flattened primitive array with input values
@@ -106,20 +109,4 @@ public interface BlockProcessor< I, O >
 	 * 		flattened primitive array to fill with output values
 	 */
 	void compute( I src, O dest );
-
-	/**
-	 * Returns a {@code BlockProcessor concatenated} such that
-	 * <pre>{@code
-	 *   concatenated.compute(src, dest);
-	 * }</pre>
-	 * is equivalent to
-	 * <pre>{@code
-	 *   this.compute(src, tmp);
-	 *   processor.compute(tmp, dest);
-	 * }</pre>
-	 */
-	default < P > BlockProcessor< I, P > andThen( BlockProcessor< O, P > processor )
-	{
-		return new ConcatenatedBlockProcessor<>( this, processor );
-	}
 }

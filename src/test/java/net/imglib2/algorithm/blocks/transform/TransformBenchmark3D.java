@@ -39,12 +39,14 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.ComputationType;
+import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.converter.Converters;
@@ -154,17 +156,23 @@ public class TransformBenchmark3D
 						new RealFloatConverter<>(),
 						new FloatType() ) );
 		final FloatType type2 = new FloatType();
-		processor = Transform.createAffineOperator( type2, affine, Interpolation.NLINEAR, ComputationType.AUTO, ClampType.CLAMP ).blockProcessor();
+		processor = ( ( DefaultUnaryBlockOperator< ?, ? > )
+				Transform.createAffineOperator( type2, affine, Interpolation.NLINEAR, ComputationType.AUTO, ClampType.CLAMP )
+		).blockProcessor();
 		blocksDouble = PrimitiveBlocks.of(
 				Converters.convert(
 						Views.extendZero( img ),
 						new RealDoubleConverter<>(),
 						new DoubleType() ) );
 		final DoubleType type1 = new DoubleType();
-		processorDouble = Transform.createAffineOperator( type1, affine, Interpolation.NLINEAR, ComputationType.AUTO, ClampType.CLAMP ).blockProcessor();
+		processorDouble = ( ( DefaultUnaryBlockOperator< ?, ? > )
+				Transform.createAffineOperator( type1, affine, Interpolation.NLINEAR, ComputationType.AUTO, ClampType.CLAMP )
+		).blockProcessor();
 		blocksUnsignedByte = PrimitiveBlocks.of( Views.extendZero( img ) );
 		final UnsignedByteType type = new UnsignedByteType();
-		processorUnsignedByte = Transform.createAffineOperator( type, affine, Interpolation.NLINEAR, ComputationType.AUTO, ClampType.CLAMP ).blockProcessor();
+		processorUnsignedByte = ( ( DefaultUnaryBlockOperator< ?, ? > )
+				Transform.createAffineOperator( type, affine, Interpolation.NLINEAR, ComputationType.AUTO, ClampType.CLAMP )
+		).blockProcessor();
 		blocksFloat();
 		blocksDouble();
 		blocksUnsignedByte();
@@ -179,9 +187,10 @@ public class TransformBenchmark3D
 		long[] max = new long[ size.length ];
 		Arrays.setAll( max, d -> min[ d ] + size[ d ] - 1 );
 		processor.setTargetInterval( FinalInterval.wrap( min, max ) );
-		blocks.copy( processor.getSourcePos(), processor.getSourceBuffer(), processor.getSourceSize() );
+		final float[] buf = processor.getSourceBuffer();
+		blocks.copy( processor.getSourceInterval(), buf );
 		final float[] dest = new float[ ( int ) Intervals.numElements( size ) ];
-		processor.compute( processor.getSourceBuffer(), dest );
+		processor.compute( buf, dest );
 		final RandomAccessibleInterval< FloatType > destImg = ArrayImgs.floats( dest, size[ 0 ], size[ 1 ], size[ 2 ] );
 		return destImg;
 	}
@@ -192,9 +201,10 @@ public class TransformBenchmark3D
 		long[] max = new long[ size.length ];
 		Arrays.setAll( max, d -> min[ d ] + size[ d ] - 1 );
 		processorDouble.setTargetInterval( FinalInterval.wrap( min, max ) );
-		blocksDouble.copy( processorDouble.getSourcePos(), processorDouble.getSourceBuffer(), processorDouble.getSourceSize() );
+		final double[] buf = processorDouble.getSourceBuffer();
+		blocksDouble.copy( processorDouble.getSourceInterval(), buf );
 		final double[] dest = new double[ ( int ) Intervals.numElements( size ) ];
-		processorDouble.compute( processorDouble.getSourceBuffer(), dest );
+		processorDouble.compute( buf, dest );
 		final RandomAccessibleInterval< DoubleType > destImg = ArrayImgs.doubles( dest, size[ 0 ], size[ 1 ], size[ 2 ] );
 		return destImg;
 	}
@@ -205,7 +215,8 @@ public class TransformBenchmark3D
 		long[] max = new long[ size.length ];
 		Arrays.setAll( max, d -> min[ d ] + size[ d ] - 1 );
 		processorUnsignedByte.setTargetInterval( FinalInterval.wrap( min, max ) );
-		blocksUnsignedByte.copy( processorUnsignedByte.getSourcePos(), processorUnsignedByte.getSourceBuffer(), processorUnsignedByte.getSourceSize() );
+		final Interval buf = processorUnsignedByte.getSourceInterval();
+		blocksUnsignedByte.copy( buf, processorUnsignedByte.getSourceBuffer() );
 		final byte[] dest = new byte[ ( int ) Intervals.numElements( size ) ];
 		processorUnsignedByte.compute( processorUnsignedByte.getSourceBuffer(), dest );
 		final RandomAccessibleInterval< UnsignedByteType > destImg = ArrayImgs.unsignedBytes( dest, size[ 0 ], size[ 1 ], size[ 2 ] );
