@@ -33,12 +33,6 @@
  */
 package net.imglib2.algorithm.blocks;
 
-import static net.imglib2.blocks.PrimitiveBlocks.OnFallback.WARN;
-import static net.imglib2.util.Util.safeInt;
-
-import java.util.Arrays;
-import java.util.function.Function;
-
 import net.imglib2.EuclideanSpace;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
@@ -46,44 +40,50 @@ import net.imglib2.Typed;
 import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.type.NativeType;
-import net.imglib2.util.Cast;
-import net.imglib2.util.Util;
 
+import java.util.function.Function;
+
+import static net.imglib2.blocks.PrimitiveBlocks.OnFallback.WARN;
+
+/**
+ * Provides blocks of data from a {@code NativeType<T>} source.
+ * Use the {@link BlockSupplier#copy} method to copy a block out of the
+ * source into flat primitive array (of the appropriate type).
+ * <p>
+ * Use the static method {@link BlockSupplier#of(RandomAccessible)
+ * BlockSupplier.of} to create a {@code BlockSupplier} accessor from an {@code
+ * RandomAccessible} source. (This is just a thin wrapper around {@link
+ * PrimitiveBlocks}).
+ * <p>
+ * Currently, only pixel types {@code T} are supported that map one-to-one to a
+ * primitive type. (For example, {@code ComplexDoubleType} or {@code
+ * Unsigned4BitType} are not supported.)
+ * <p>
+ * If a source {@code RandomAccessible} view construction cannot be understood,
+ * {@link BlockSupplier#of(RandomAccessible) BlockSupplier.of} will return a
+ * fall-back implementation. Fallback can be configured with the optional {@link
+ * PrimitiveBlocks.OnFallback OnFallback} argument to {@link
+ * BlockSupplier#of(RandomAccessible, PrimitiveBlocks.OnFallback)
+ * BlockSupplier.of}.
+ * <p>
+ * Use {@link BlockSupplier#andThen} to decorate a {@code BlockSupplier} with a
+ * sequence of {@code UnaryBlockOperator}s.
+ * <p>
+ * Use {@link BlockSupplier#toCellImg} to create {@code CachedCellImg} which
+ * copies cells from a {@code BlockSupplier}.
+ * <p>
+ * Implementations are not thread-safe in general. Use {@link #threadSafe()} to
+ * obtain a thread-safe instance (implemented using {@link ThreadLocal} copies).
+ * E.g.,
+ * <pre>{@code
+ * 		BlockSupplier<FloatType> blocks = BlockSupplier.of(view).threadSafe();
+ * }</pre>
+ *
+ * @param <T>
+ * 		pixel type
+ */
 public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, EuclideanSpace
 {
-	/**
-	 * Copy a block from the ({@code T}-typed) source into primitive arrays (of
-	 * the appropriate type).
-	 *
-	 * @param srcPos
-	 * 		min coordinate of the block to copy
-	 * @param dest
-	 * 		primitive array to copy into. Must correspond to {@code T}, for
-	 * 		example, if {@code T} is {@code UnsignedByteType} then {@code dest} must
-	 * 		be {@code byte[]}.
-	 * @param size
-	 * 		the size of the block to copy
-	 */
-	void copy( long[] srcPos, Object dest, int[] size );
-
-	/**
-	 * Copy a block from the ({@code T}-typed) source into primitive arrays (of
-	 * the appropriate type).
-	 *
-	 * @param srcPos
-	 * 		min coordinate of the block to copy
-	 * @param dest
-	 * 		primitive array to copy into. Must correspond to {@code T}, for
-	 * 		example, if {@code T} is {@code UnsignedByteType} then {@code dest} must
-	 * 		be {@code byte[]}.
-	 * @param size
-	 * 		the size of the block to copy
-	 */
-	default void copy( int[] srcPos, Object dest, int[] size )
-	{
-		copy( Util.int2long( srcPos ), dest, size );
-	}
-
 	/**
 	 * Copy a block from the ({@code T}-typed) source into primitive arrays (of
 	 * the appropriate type).
@@ -95,13 +95,7 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, 
 	 * 		example, if {@code T} is {@code UnsignedByteType} then {@code dest} must
 	 * 		be {@code byte[]}.
 	 */
-	default void copy( Interval interval, Object dest )
-	{
-		final long[] srcPos = interval.minAsLongArray();
-		final int[] size = new int[ srcPos.length ];
-		Arrays.setAll( size, d -> safeInt( interval.dimension( d ) ) );
-		copy( srcPos, dest, size );
-	}
+	void copy( Interval interval, Object dest );
 
 	/**
 	 * Get a thread-safe version of this {@code BlockSupplier}.
@@ -116,64 +110,17 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, 
 	BlockSupplier< T > independentCopy();
 
 	/**
-	 * Returns a new {@code BlockSupplier} that handles {@link #copy} requests
-	 * by splitting into {@code tileSize} portions that are each handled by this
-	 * {@code BlockSupplier} and assembled into the final result.
-	 * <p>
-	 * Example use cases:
-	 * <ul>
-	 * <li>Compute large outputs (e.g. for writing to N5 or wrapping as {@code
-	 *     ArrayImg}) with operators that have better performance with small
-	 *     block sizes.</li>
-	 * <li>Avoid excessively large blocks when chaining downsampling
-	 *     operators.</li>
-	 * </ul>
-	 *
-	 * @param tileSize
-	 * 		(maximum) dimensions of a request to the {@code srcSupplier}.
-	 *      {@code tileSize} is expanded or truncated to the necessary size. For
-	 * 		example, if {@code tileSize=={64}} and this {@code BlockSupplier} is 3D,
-	 * 		then {@code tileSize} is expanded to {@code {64, 64, 64}}.
-	 */
-	default BlockSupplier< T > tile( int... tileSize )
-	{
-		return new TilingBlockSupplier<>( this, tileSize );
-	}
-
-	/**
-	 * Returns a {@code UnaryBlockOperator} that is equivalent to applying
-	 * {@code this}, and then applying {@code op} to the result.
+	 * Returns a {@code BlockSupplier} that provide blocks using the given
+	 * {@code operator} with this {@code BlockSupplier} as input.
 	 */
 	default < U extends NativeType< U > > BlockSupplier< U > andThen( UnaryBlockOperator< T, U > operator )
 	{
-		if ( operator instanceof NoOpUnaryBlockOperator )
-			return Cast.unchecked( this );
-		else
-			return new ConcatenatedBlockSupplier<>( this.independentCopy(), operator.independentCopy() );
+		return operator.applyTo( this );
 	}
 
 	default < U extends NativeType< U > > BlockSupplier< U > andThen( Function< BlockSupplier< T >, UnaryBlockOperator< T, U > > function )
 	{
 		return andThen( function.apply( this ) );
-	}
-
-	/**
-	 * Return a {@code CachedCellImg} which copies cells from this {@code BlockSupplier}.
-	 *
-	 * @param dimensions
-	 * 		dimensions of the {@code CachedCellImg} to create
-	 * @param cellDimensions
-	 * 		block size of the {@code CachedCellImg} to create.
-	 * 		This is extended or truncated as necessary.
-	 * 		For example if {@code cellDimensions={64,32}} then for creating a 3D
-	 * 		image it will be augmented to {@code {64,32,32}}. For creating a 1D image
-	 * 		it will be truncated to {@code {64}}.
-	 *
-	 * @return a {@code CachedCellImg} which copies cells from this {@code BlockSupplier}.
-	 */
-	default CachedCellImg< T, ? > toCellImg( final long[] dimensions, final int... cellDimensions )
-	{
-		return BlockAlgoUtils.cellImg( this, dimensions, cellDimensions );
 	}
 
 	/**
@@ -229,11 +176,47 @@ public interface BlockSupplier< T extends NativeType< T > > extends Typed< T >, 
 		return new PrimitiveBlocksSupplier<>( PrimitiveBlocks.of( ra, onFallback ) );
 	}
 
-	/*
-	 * Wrap the given {@code PrimitiveBlocks} as a {@code BlockSupplier}.
+	/**
+	 * Return a {@code CachedCellImg} which copies cells from this {@code BlockSupplier}.
+	 *
+	 * @param dimensions
+	 * 		dimensions of the {@code CachedCellImg} to create
+	 * @param cellDimensions
+	 * 		block size of the {@code CachedCellImg} to create.
+	 * 		This is extended or truncated as necessary.
+	 * 		For example if {@code cellDimensions={64,32}} then for creating a 3D
+	 * 		image it will be augmented to {@code {64,32,32}}. For creating a 1D image
+	 * 		it will be truncated to {@code {64}}.
+	 *
+	 * @return a {@code CachedCellImg} which copies cells from this {@code BlockSupplier}.
 	 */
-//	static < T extends NativeType< T > > BlockSupplier< T > of( PrimitiveBlocks< T > blocks )
-//	{
-//		return new PrimitiveBlocksSupplier<>( blocks );
-//	}
+	default CachedCellImg< T, ? > toCellImg( final long[] dimensions, final int... cellDimensions )
+	{
+		return BlockAlgoUtils.cellImg( this, dimensions, cellDimensions );
+	}
+
+	/**
+	 * Returns a new {@code BlockSupplier} that handles {@link #copy} requests
+	 * by splitting into {@code tileSize} portions that are each handled by this
+	 * {@code BlockSupplier} and assembled into the final result.
+	 * <p>
+	 * Example use cases:
+	 * <ul>
+	 * <li>Compute large outputs (e.g. for writing to N5 or wrapping as {@code
+	 *     ArrayImg}) with operators that have better performance with small
+	 *     block sizes.</li>
+	 * <li>Avoid excessively large blocks when chaining downsampling
+	 *     operators.</li>
+	 * </ul>
+	 *
+	 * @param tileSize
+	 * 		(maximum) dimensions of a request to the {@code srcSupplier}.
+	 *      {@code tileSize} is expanded or truncated to the necessary size. For
+	 * 		example, if {@code tileSize=={64}} and this {@code BlockSupplier} is 3D,
+	 * 		then {@code tileSize} is expanded to {@code {64, 64, 64}}.
+	 */
+	default BlockSupplier< T > tile( int... tileSize )
+	{
+		return this.andThen( new TilingUnaryBlockOperator<>( getType(), numDimensions(), tileSize ) );
+	}
 }

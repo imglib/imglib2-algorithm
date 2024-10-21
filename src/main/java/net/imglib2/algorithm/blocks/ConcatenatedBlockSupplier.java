@@ -33,26 +33,23 @@
  */
 package net.imglib2.algorithm.blocks;
 
+import net.imglib2.Interval;
 import net.imglib2.type.NativeType;
-import net.imglib2.util.Cast;
 
-class ConcatenatedBlockSupplier< T extends NativeType< T > > extends AbstractBlockSupplier< T >
+class ConcatenatedBlockSupplier< S extends NativeType< S >, T extends NativeType< T > > extends AbstractBlockSupplier< T >
 {
-	private final BlockSupplier< ? > p0;
+	private final BlockSupplier< S > src;
 
-	private final BlockProcessor< ?, ? > p1;
-
-	private final T type;
+	private final UnaryBlockOperator< S, T > operator;
 
 	private final int numDimensions;
 
-	public < S extends NativeType< S > > ConcatenatedBlockSupplier(
+	ConcatenatedBlockSupplier(
 			final BlockSupplier< S > srcSupplier,
 			final UnaryBlockOperator< S, T > operator )
 	{
-		this.p0 = srcSupplier;
-		this.p1 = operator.blockProcessor();
-		this.type = operator.getTargetType();
+		this.src = srcSupplier;
+		this.operator = operator;
 		if ( operator.numSourceDimensions() > 0 )
 		{
 			if ( srcSupplier.numDimensions() != operator.numSourceDimensions() )
@@ -65,18 +62,17 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > extends AbstractBlo
 		}
 	}
 
-	private ConcatenatedBlockSupplier( final ConcatenatedBlockSupplier< T > s )
+	private ConcatenatedBlockSupplier( final ConcatenatedBlockSupplier< S, T > s )
 	{
-		p0 = s.p0.independentCopy();
-		p1 = s.p1.independentCopy();
-		type = s.type;
+		src = s.src.independentCopy();
+		operator = s.operator.independentCopy();
 		numDimensions = s.numDimensions;
 	}
 
 	@Override
 	public T getType()
 	{
-		return type;
+		return operator.getTargetType();
 	}
 
 	@Override
@@ -86,12 +82,9 @@ class ConcatenatedBlockSupplier< T extends NativeType< T > > extends AbstractBlo
 	}
 
 	@Override
-	public void copy( final long[] srcPos, final Object dest, final int[] size )
+	public void copy( final Interval interval, final Object dest )
 	{
-		p1.setTargetInterval( srcPos, size );
-		final Object src = p1.getSourceBuffer();
-		p0.copy( p1.getSourcePos(), src, p1.getSourceSize() );
-		p1.compute( Cast.unchecked( src ), Cast.unchecked( dest ) );
+		operator.compute( src, interval, dest );
 	}
 
 	@Override

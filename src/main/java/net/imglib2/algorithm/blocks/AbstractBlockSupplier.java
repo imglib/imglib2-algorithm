@@ -35,6 +35,7 @@ package net.imglib2.algorithm.blocks;
 
 import java.util.function.Supplier;
 
+import net.imglib2.Interval;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.CloseableThreadLocal;
 
@@ -68,9 +69,9 @@ public abstract class AbstractBlockSupplier< T extends NativeType< T > > impleme
 			}
 
 			@Override
-			public void copy( final long[] srcPos, final Object dest, final int[] size )
+			public void copy( final Interval interval, final Object dest )
 			{
-				threadSafeSupplier.get().copy( srcPos, dest, size );
+				threadSafeSupplier.get().copy( interval, dest );
 			}
 
 			@Override

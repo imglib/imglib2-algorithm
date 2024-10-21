@@ -33,6 +33,7 @@
  */
 package net.imglib2.algorithm.blocks;
 
+import net.imglib2.Interval;
 import net.imglib2.blocks.PrimitiveBlocks;
 import net.imglib2.type.NativeType;
 
@@ -58,15 +59,9 @@ class PrimitiveBlocksSupplier< T extends NativeType< T > > extends AbstractBlock
 	}
 
 	@Override
-	public void copy( final long[] srcPos, final Object dest, final int[] size )
+	public void copy( final Interval interval, final Object dest )
 	{
-		blocks.copy( srcPos, dest, size );
-	}
-
-	@Override
-	public void copy( final int[] srcPos, final Object dest, final int[] size )
-	{
-		blocks.copy( srcPos, dest, size );
+		blocks.copy( interval, dest );
 	}
 
 	@Override

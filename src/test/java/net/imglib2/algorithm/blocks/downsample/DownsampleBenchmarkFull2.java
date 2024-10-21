@@ -124,7 +124,7 @@ public class DownsampleBenchmarkFull2
 		halfPixelFloat = new HalfPixelFloat( downsampleInDim );
 		halfPixelFloat.setTargetInterval( new FinalInterval( Util.int2long( outputSize ) ) );
 
-		System.arraycopy( halfPixelFloat.getSourceSize(), 0, inputSize, 0, inputSize.length );
+		System.arraycopy( halfPixelFloat.getSourceInterval().size(), 0, inputSize, 0, inputSize.length );
 		inputF = new float[ ( int ) Intervals.numElements( inputSize ) ];
 		for ( int i = 0; i < inputF.length; i++ )
 			inputF[ i ] = random.nextFloat();

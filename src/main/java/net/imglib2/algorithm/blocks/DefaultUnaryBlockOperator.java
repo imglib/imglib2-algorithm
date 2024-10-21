@@ -33,10 +33,9 @@
  */
 package net.imglib2.algorithm.blocks;
 
-import java.util.function.Supplier;
+import net.imglib2.Interval;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Cast;
-import net.imglib2.util.CloseableThreadLocal;
 
 /**
  * Default implementation of {@link UnaryBlockOperator}.
@@ -48,117 +47,64 @@ import net.imglib2.util.CloseableThreadLocal;
  * <p>
  * The {@link UnaryBlockOperator} can then be used in {@link
  * BlockSupplier#andThen(UnaryBlockOperator)} chains in a type- and
- * simensionality-safe manner.
+ * dimensionality-safe manner.
  *
  * @param <S>
  * 		source type
  * @param <T>
  * 		target type
  */
-public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends NativeType< T > > implements UnaryBlockOperator< S, T >
+public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends NativeType< T > > extends AbstractUnaryBlockOperator< S, T >
 {
-	private final S sourceType;
-	private final T targetType;
-	private final int numSourceDimensions;
-	private final int numTargetDimensions;
-	private final BlockProcessor< ?, ? > blockProcessor;
+	@SuppressWarnings( "rawtypes" )
+	private final BlockProcessor blockProcessor;
 
 	public DefaultUnaryBlockOperator( S sourceType, T targetType, int numSourceDimensions, int numTargetDimensions, BlockProcessor< ?, ? > blockProcessor )
 	{
-		this.sourceType = sourceType;
-		this.targetType = targetType;
-		this.numSourceDimensions = numSourceDimensions;
-		this.numTargetDimensions = numTargetDimensions;
+		super( sourceType, targetType, numSourceDimensions, numTargetDimensions );
 		this.blockProcessor = blockProcessor;
 	}
 
-	@Override
-	public < I, O > BlockProcessor< I, O > blockProcessor()
+	private DefaultUnaryBlockOperator( DefaultUnaryBlockOperator< S, T > op )
 	{
-		return Cast.unchecked( blockProcessor );
+		super( op );
+		this.blockProcessor = op.blockProcessor.independentCopy();
 	}
 
+	@SuppressWarnings( "unchecked" )
 	@Override
-	public S getSourceType()
+	public void compute( final BlockSupplier< S > src, final Interval interval, final Object dest )
 	{
-		return sourceType;
-	}
-
-	@Override
-	public T getTargetType()
-	{
-		return targetType;
-	}
-
-	@Override
-	public int numSourceDimensions()
-	{
-		return numSourceDimensions;
-	}
-
-	@Override
-	public int numTargetDimensions()
-	{
-		return numTargetDimensions;
+		blockProcessor.setTargetInterval( interval );
+		final Object buf = blockProcessor.getSourceBuffer();
+		src.copy( blockProcessor.getSourceInterval(), buf );
+		blockProcessor.compute( buf, dest );
 	}
 
 	@Override
 	public UnaryBlockOperator< S, T > independentCopy()
 	{
-		return new DefaultUnaryBlockOperator<>( sourceType, targetType, numSourceDimensions, numTargetDimensions, blockProcessor.independentCopy() );
+		return new DefaultUnaryBlockOperator<>( this );
 	}
 
-	private Supplier< UnaryBlockOperator< S, T > > threadSafeSupplier;
-
-	@Override
-	public UnaryBlockOperator< S, T > threadSafe()
+	/**
+	 * Get (an instance of) the wrapped {@code BlockProcessor}.
+	 * <p>
+	 * Note that this involves an unchecked cast, that is, the returned {@code
+	 * BlockProcessor<I,O>} will be cast to the {@code I, O} types expected by
+	 * the caller.
+	 * <p>
+	 * This is mostly intended for debugging.
+	 *
+	 * @param <I>
+	 * 		input primitive array type, e.g., float[]. Must correspond to S.
+	 * @param <O>
+	 * 		output primitive array type, e.g., float[]. Must correspond to T.
+	 *
+	 * @return an instance of the wrapped {@code BlockProcessor}
+	 */
+	public < I, O > BlockProcessor< I, O > blockProcessor()
 	{
-		if ( threadSafeSupplier == null )
-			threadSafeSupplier = CloseableThreadLocal.withInitial( this::independentCopy )::get;
-		return new UnaryBlockOperator< S, T >()
-		{
-			@Override
-			public < I, O > BlockProcessor< I, O > blockProcessor()
-			{
-				return threadSafeSupplier.get().blockProcessor();
-			}
-
-			@Override
-			public S getSourceType()
-			{
-				return sourceType;
-			}
-
-			@Override
-			public T getTargetType()
-			{
-				return targetType;
-			}
-
-			@Override
-			public int numSourceDimensions()
-			{
-				return numSourceDimensions;
-			}
-
-			@Override
-			public int numTargetDimensions()
-			{
-				return numTargetDimensions;
-			}
-
-			@Override
-			public UnaryBlockOperator< S, T > threadSafe()
-			{
-				return this;
-			}
-
-			@Override
-			public UnaryBlockOperator< S, T > independentCopy()
-			{
-				return DefaultUnaryBlockOperator.this.independentCopy().threadSafe();
-			}
-		};
+		return Cast.unchecked( blockProcessor );
 	}
-
 }

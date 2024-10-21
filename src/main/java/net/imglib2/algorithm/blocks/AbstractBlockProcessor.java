@@ -35,10 +35,8 @@ package net.imglib2.algorithm.blocks;
 
 import static net.imglib2.util.Util.safeInt;
 
-import java.util.Arrays;
-
 import net.imglib2.Interval;
-import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
+import net.imglib2.blocks.BlockInterval;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Intervals;
@@ -51,12 +49,12 @@ import net.imglib2.util.Intervals;
  * adaptable number of dimensions (such as converters), see {@link
  * AbstractDimensionlessBlockProcessor}.
  * <p>
- * {@link BlockProcessor#getSourcePos() getSourcePos()}, {@link
- * BlockProcessor#getSourceSize() getSourceSize()}, and {@link
- * BlockProcessor#getSourceInterval() getSourceInterval()} are implemented to
- * return the {@code protected} fields {@code long[] sourcePos} and {@code
- * }int[] sourceSize}. The {@code }protected} method {@code }int sourceLength()}
- * can be used to get the number of elements in the source interval.
+ * A {@link BlockInterval} of the desired number of dimensions is exposed
+ * through {@link #getSourceInterval()}. (For convenience, {@code min} and
+ * {@code dimensions} of the interval are also exposed through the {@code
+ * protected} fields {@link #sourcePos} and {@link #sourceSize}.) The {@code
+ * protected} method {@link #sourceLength()} returns the number of elements in
+ * the source interval.
  * <p>
  * {@link BlockProcessor#getSourceBuffer() getSourceBuffer()} is implemented
  * according to the {@code sourcePrimitiveType} specified at construction.
@@ -70,53 +68,41 @@ public abstract class AbstractBlockProcessor< I, O > implements BlockProcessor< 
 {
 	private final TempArray< I > tempArray;
 
+	private final BlockInterval sourceInterval;
+
 	protected final long[] sourcePos;
 
 	protected final int[] sourceSize;
 
-	private final BlockProcessorSourceInterval sourceInterval = new BlockProcessorSourceInterval( this );
-
 	protected AbstractBlockProcessor( final PrimitiveType sourcePrimitiveType, final int numSourceDimensions )
 	{
 		tempArray = TempArray.forPrimitiveType( sourcePrimitiveType );
-		sourcePos = new long[ numSourceDimensions ];
-		sourceSize = new int[ numSourceDimensions ];
+		sourceInterval = new BlockInterval( numSourceDimensions );
+		sourcePos = sourceInterval.min();
+		sourceSize = sourceInterval.size();
 	}
 
 	protected AbstractBlockProcessor( final AbstractBlockProcessor< I, O > proc )
 	{
 		tempArray = proc.tempArray.newInstance();
-		final int numSourceDimensions = proc.sourcePos.length;
-		sourcePos = new long[ numSourceDimensions ];
-		sourceSize = new int[ numSourceDimensions ];
+		sourceInterval = new BlockInterval( proc.sourceInterval.numDimensions() );
+		sourcePos = sourceInterval.min();
+		sourceSize = sourceInterval.size();
 	}
 
 	protected int sourceLength()
 	{
-		return safeInt( Intervals.numElements( sourceSize ) );
+		return safeInt( Intervals.numElements( sourceInterval ) );
 	}
 
 	@Override
 	public void setTargetInterval( final Interval interval )
 	{
-		interval.min( sourcePos );
-		Arrays.setAll( sourceSize, d -> safeInt( interval.dimension( d ) ) );
+		sourceInterval.setFrom( interval );
 	}
 
 	@Override
-	public long[] getSourcePos()
-	{
-		return sourcePos;
-	}
-
-	@Override
-	public int[] getSourceSize()
-	{
-		return sourceSize;
-	}
-
-	@Override
-	public Interval getSourceInterval()
+	public BlockInterval getSourceInterval()
 	{
 		return sourceInterval;
 	}

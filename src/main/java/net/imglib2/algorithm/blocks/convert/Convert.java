@@ -37,13 +37,15 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import net.imglib2.Interval;
+import net.imglib2.algorithm.blocks.AbstractUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
-import net.imglib2.algorithm.blocks.NoOpUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.NativeType;
+import net.imglib2.util.Cast;
 
 /**
  * Create {@link UnaryBlockOperator} to convert blocks between standard ImgLib2 {@code Type}s.
@@ -170,11 +172,49 @@ public class Convert
 	UnaryBlockOperator< S, T > createOperator( final S sourceType, final T targetType, final ClampType clamp )
 	{
 		if ( Objects.equals( sourceType.getClass(), targetType.getClass() ) )
-			return new NoOpUnaryBlockOperator<>();
+			return Cast.unchecked( new Identity<>( sourceType, 0 ) );
 
 		return new DefaultUnaryBlockOperator<>(
 				sourceType, targetType, 0, 0,
 				new ConvertBlockProcessor<>( sourceType, targetType, clamp ) );
+	}
+
+	// TODO: move to upper level, make public?
+	static class Identity< T extends NativeType< T > > extends AbstractUnaryBlockOperator< T, T >
+	{
+		protected Identity( final T type, final int numDimensions )
+		{
+			super( type, type, numDimensions, numDimensions );
+		}
+
+		protected Identity( final AbstractUnaryBlockOperator< T, T > op )
+		{
+			super( op );
+		}
+
+		@Override
+		public void compute( final BlockSupplier< T > src, final Interval interval, final Object dest )
+		{
+			src.copy( interval, dest );
+		}
+
+		@Override
+		public UnaryBlockOperator< T, T > independentCopy()
+		{
+			return this;
+		}
+
+		@Override
+		public BlockSupplier< T > applyTo( final BlockSupplier< T > blocks )
+		{
+			return blocks;
+		}
+
+		@Override
+		public < U extends NativeType< U > > UnaryBlockOperator< T, U > andThen( final UnaryBlockOperator< T, U > op )
+		{
+			return op;
+		}
 	}
 
 	/**
