@@ -46,7 +46,7 @@ import net.imglib2.type.PrimitiveType;
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
-class Affine3DProcessor< P > extends AbstractTransformProcessor< Affine3DProcessor< P >, P >
+class Affine3DProcessor< P > extends AbstractTransformProcessor< P >
 {
 	private final AffineTransform3D transformToSource;
 
