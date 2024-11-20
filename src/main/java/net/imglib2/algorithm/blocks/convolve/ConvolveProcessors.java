@@ -193,7 +193,7 @@ class ConvolveProcessors
 			assert interval.numDimensions() == n;
 
 			Arrays.setAll( destSize, d -> ( int ) interval.dimension( d ) );
-			Arrays.setAll( sourcePos, d -> ( int ) interval.min( d ) + kernelOffsets[ d ] );
+			Arrays.setAll( sourcePos, d -> interval.min( d ) + kernelOffsets[ d ] );
 
 			aux0Length = 0;
 			aux1Length = 0;
