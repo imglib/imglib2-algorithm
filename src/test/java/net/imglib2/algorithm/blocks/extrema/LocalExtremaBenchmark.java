@@ -22,8 +22,11 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
 import net.imglib2.Point;
 import net.imglib2.algorithm.localextrema.LocalExtrema;
+import net.imglib2.blocks.BlockInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.real.FloatType;
@@ -42,7 +45,7 @@ public class LocalExtremaBenchmark
 	@Param( { "16", "32", "64", "92", "128" } )
 	public int size_d;
 
-	int[] size;
+	BlockInterval destInterval;
 	LocalMaximaProcessor proc;
 	float[] srcBuf;
 
@@ -50,14 +53,13 @@ public class LocalExtremaBenchmark
 	public void setUp()
 	{
 		final int n = 3;
-		size = new int[ n ];
+		destInterval = new BlockInterval( n );
 		System.out.println( "size_d = " + size_d );
-		Arrays.fill( size, size_d );
+		Arrays.fill( destInterval.size(), size_d );
 		proc = new LocalMaximaProcessor( n );
-		proc.setTargetInterval( new long[ n ], size );
+		proc.setTargetInterval( destInterval );
 
-		final int[] sourceSize = proc.getSourceSize();
-		final int sourceLen = Util.safeInt( Intervals.numElements( sourceSize ) );
+		final int sourceLen = Util.safeInt( Intervals.numElements( proc.getSourceInterval() ) );
 		srcBuf = new float[ sourceLen ];
 		final Random random = new Random();
 		for ( int i = 0; i < sourceLen; ++i )
@@ -67,7 +69,7 @@ public class LocalExtremaBenchmark
 	@Benchmark
 	public Object b()
 	{
-		final byte[] dest = new byte[ ( int ) Intervals.numElements( size ) ];
+		final byte[] dest = new byte[ ( int ) Intervals.numElements( destInterval ) ];
 		proc.compute( srcBuf, dest );
 		return dest;
 	}
@@ -75,7 +77,7 @@ public class LocalExtremaBenchmark
 //	@Benchmark
 	public Object reference()
 	{
-		final Img< FloatType > srcImg = ArrayImgs.floats( srcBuf, Util.int2long( proc.getSourceSize() ) );
+		final Img< FloatType > srcImg = ArrayImgs.floats( srcBuf, proc.getSourceInterval().dimensionsAsLongArray() );
 		final List< Point > localExtrema = LocalExtrema.findLocalExtrema( srcImg, new LocalExtrema.MaximumCheck<>( new FloatType( 0f ) ) );
 		return localExtrema;
 	}

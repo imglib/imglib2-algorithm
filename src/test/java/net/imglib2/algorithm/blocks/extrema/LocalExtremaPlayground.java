@@ -33,10 +33,12 @@
  */
 package net.imglib2.algorithm.blocks.extrema;
 
+import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
+import net.imglib2.blocks.BlockInterval;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -70,7 +72,7 @@ public class LocalExtremaPlayground
 		final BlockSupplier< UnsignedByteType > sup = blocks
 				.andThen( operator );
 		final byte[] mvalues = new byte[ 6 * 6 ];
-		sup.copy( new int[] { 0, 0 }, mvalues, new int[] { 6, 6 } );
+		sup.copy( new FinalInterval( 6, 6 ), mvalues );
 
 		final RandomAccessibleInterval< UnsignedByteType > mask = ArrayImgs.unsignedBytes( mvalues, 6, 6 );
 		printMask( mask );

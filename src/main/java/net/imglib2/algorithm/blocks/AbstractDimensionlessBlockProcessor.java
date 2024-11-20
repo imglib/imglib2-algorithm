@@ -65,7 +65,7 @@ public abstract class AbstractDimensionlessBlockProcessor< I, O > implements Blo
 {
 	private final TempArray< I > tempArray;
 
-	protected BlockInterval sourceInterval;
+	private BlockInterval sourceInterval;
 
 	protected AbstractDimensionlessBlockProcessor( final PrimitiveType sourcePrimitiveType )
 	{
