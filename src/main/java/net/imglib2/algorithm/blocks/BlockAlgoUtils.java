@@ -83,27 +83,4 @@ public class BlockAlgoUtils
 				cellLoader( blocks ),
 				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions ) );
 	}
-
-
-	// ======== DEPRECATED ====================================================
-
-
-	@Deprecated
-	public static < S extends NativeType< S >, T extends NativeType< T > >
-	CellLoader< T > cellLoader( final PrimitiveBlocks< S > blocks, final UnaryBlockOperator< S, T > operator )
-	{
-		return cellLoader( new PrimitiveBlocksSupplier<>( blocks ).andThen( operator ) );
-	}
-
-	@Deprecated
-	public static < S extends NativeType< S >, T extends NativeType< T > >
-	CachedCellImg< T, ? > cellImg(
-			final PrimitiveBlocks< S > blocks,
-			final UnaryBlockOperator< S, T > operator,
-			final T type,
-			final long[] dimensions,
-			final int[] cellDimensions )
-	{
-		return cellImg( new PrimitiveBlocksSupplier<>( blocks ).andThen( operator ), dimensions, cellDimensions );
-	}
 }
