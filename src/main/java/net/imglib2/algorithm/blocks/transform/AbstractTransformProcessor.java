@@ -52,12 +52,10 @@ import net.imglib2.util.Intervals;
  * Affine2DProcessor}. Implements source/target interval computation, and {@code
  * TempArray} and thread-safe setup.
  *
- * @param <T>
- * 		recursive type of this {@code AbstractTransformProcessor} (for {@link #threadSafeSupplier})
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
-abstract class AbstractTransformProcessor< T extends AbstractTransformProcessor< T, P >, P > extends AbstractBlockProcessor< P, P >
+abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P, P >
 {
 	PrimitiveType primitiveType;
 
@@ -79,7 +77,7 @@ abstract class AbstractTransformProcessor< T extends AbstractTransformProcessor<
 		destSize = new int[ n ];
 	}
 
-	AbstractTransformProcessor( T transform )
+	AbstractTransformProcessor( AbstractTransformProcessor< P > transform )
 	{
 		super( transform );
 
