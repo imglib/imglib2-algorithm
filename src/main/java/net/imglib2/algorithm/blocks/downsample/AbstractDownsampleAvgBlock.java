@@ -35,14 +35,8 @@ package net.imglib2.algorithm.blocks.downsample;
 
 import static net.imglib2.util.Util.safeInt;
 
-import java.util.Arrays;
-
 import net.imglib2.Interval;
-import net.imglib2.algorithm.blocks.BlockProcessor;
-import net.imglib2.algorithm.blocks.util.BlockProcessorSourceInterval;
-import net.imglib2.blocks.TempArray;
 import net.imglib2.type.PrimitiveType;
-import net.imglib2.util.Intervals;
 
 abstract class AbstractDownsampleAvgBlock< T extends AbstractDownsampleAvgBlock< T, P >, P > extends AbstractDownsample< T, P >
 {
