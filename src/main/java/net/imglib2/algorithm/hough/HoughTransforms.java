@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -44,6 +44,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.localextrema.LocalExtrema;
 import net.imglib2.algorithm.localextrema.LocalExtrema.MaximumCheck;
+import net.imglib2.type.Type;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
@@ -233,7 +234,28 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 			final RandomAccessibleInterval< U > votespace,
 			final int nTheta )
 	{
-		voteLines( input, votespace, nTheta, defaultRho( input ), Util.getTypeFromInterval( input ) );
+		voteLines( input, votespace, nTheta, defaultRho( input ), getTypeFromInterval( input ) );
+	}
+
+	private static <T> T getTypeFromInterval( RandomAccessibleInterval< T > rai )
+	{
+//		final T val1 = rai.randomAccess().get();
+//		final T val2 = ( T ) ( ( Type ) rai.getType() ).createVariable();
+//		System.out.println( "val1 = " + val1 );
+//		System.out.println( "val2 = " + val2 );
+
+		// TODO: The voteLines() method above used Util.getTypeFromInterval to
+		//       obtain a threshold value to call the voteLines() method below
+		//       which has a threshold argument. With the recent addition of
+		//       RandomAccessibleInterval.getType(), this breaks the tests/
+		//       However, it seems that it is a bug in the above voteLines() to
+		//       do it like this. Basically, it uses the value of the first
+		//       pixel of the image as the threshold, which looks wrong, and
+		//       depends on assumptions about how Util.getTypeFromInterval is
+		//       implemented. I now just "fixed" the test by just taking the
+		//       first pixel. But this is clearly wrong. I don't know how the
+		//       code is supposed to work though.
+		return rai.randomAccess().get();
 	}
 
 	/**
@@ -257,7 +279,7 @@ public class HoughTransforms< T extends RealType< T > & Comparable< T > >
 			final int nTheta,
 			final int nRho )
 	{
-		voteLines( input, votespace, nTheta, nRho, Util.getTypeFromInterval( input ) );
+		voteLines( input, votespace, nTheta, nRho, getTypeFromInterval( input ) );
 	}
 
 	/**

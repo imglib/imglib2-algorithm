@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>31.1.0</version>
+		<version>39.0.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>net.imglib2</groupId>
 	<artifactId>imglib2-algorithm</artifactId>
-	<version>0.12.2-SNAPSHOT</version>
+	<version>0.17.3-SNAPSHOT</version>
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>
@@ -166,7 +166,7 @@
 	<mailingLists>
 		<mailingList>
 			<name>Image.sc Forum</name>
-			<archive>https://forum.image.sc/tags/imglib2</archive>
+			<archive>https://forum.image.sc/tag/imglib2</archive>
 		</mailingList>
 	</mailingLists>
 
@@ -200,7 +200,8 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
-		<imglib2.version>5.13.0</imglib2.version>
+
+		<imglib2.version>7.1.4</imglib2.version>
 	</properties>
 
 	<repositories>
@@ -225,6 +226,10 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-realtransform</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-cache</artifactId>
+		</dependency>
 
 		<!-- Third-party dependencies -->
 		<dependency>
@@ -239,12 +244,18 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<groupId>org.ojalgo</groupId>
 			<artifactId>ojalgo</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-cache</artifactId>
-		</dependency>
 
 		<!-- Test dependencies -->
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -261,15 +272,4 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<additionalparam>--allow-script-in-comments -header '&lt;script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"&gt;&lt;/script&gt;'</additionalparam>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

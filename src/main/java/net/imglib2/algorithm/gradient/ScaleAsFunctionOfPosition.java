@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -77,6 +77,12 @@ public class ScaleAsFunctionOfPosition< T extends Type< T > & MulFloatingPoint >
 		return randomAccess();
 	}
 
+	@Override
+	public T getType()
+	{
+		return source.getType();
+	}
+
 	public static class ScaledRandomAccess< T extends Type< T > & MulFloatingPoint > extends AbstractConvertedRandomAccess< T, T >
 	{
 
@@ -100,9 +106,15 @@ public class ScaleAsFunctionOfPosition< T extends Type< T > & MulFloatingPoint >
 		}
 
 		@Override
+		public T getType()
+		{
+			return t;
+		}
+
+		@Override
 		public ScaledRandomAccess< T > copy()
 		{
-			return new ScaledRandomAccess<>( source.copyRandomAccess(), scalingFunction );
+			return new ScaledRandomAccess<>( source.copy(), scalingFunction );
 		}
 
 	}

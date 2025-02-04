@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -31,92 +31,45 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-
 package net.imglib2.algorithm.kdtree;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Iterator;
-
+import net.imglib2.KDTree;
 import net.imglib2.KDTreeNode;
 
-public class KDTreeNodeIterable< T > implements Iterable< KDTreeNode< T > >
+class KDTreeNodeIterable< T > implements Iterable< KDTreeNode< T > >
 {
-	private final ArrayList< KDTreeNode< T > > singleNodes;
+	private final NodeIndexIterable nodes;
 
-	private final ArrayList< KDTreeNode< T > > subtrees;
+	private final KDTree< T > tree;
 
-	public KDTreeNodeIterable( final ArrayList< KDTreeNode< T > > singleNodes, final ArrayList< KDTreeNode< T > > subtrees )
+	public KDTreeNodeIterable( final NodeIndexIterable nodes, final KDTree< T > tree )
 	{
-		this.singleNodes = singleNodes;
-		this.subtrees = subtrees;
-
+		this.nodes = nodes;
+		this.tree = tree;
 	}
 
 	@Override
 	public Iterator< KDTreeNode< T > > iterator()
 	{
-		return new KDTreeNodeIterable.Iter< T >( singleNodes, subtrees );
+		return new KDTreeNodeIterator();
 	}
 
-	private static class Iter< T > implements Iterator< KDTreeNode< T > >
+	class KDTreeNodeIterator implements Iterator< KDTreeNode< T > >
 	{
-		private final ArrayList< KDTreeNode< T > > nodes;
-
-		private int nextNodeIndex;
-
-		private final ArrayList< KDTreeNode< T > > subtrees;
-
-		private int nextSubtreeIndex;
-
-		private final ArrayDeque< KDTreeNode< T > > stack;
-
-		private Iter( final ArrayList< KDTreeNode< T > > nodes, final ArrayList< KDTreeNode< T > > subtrees )
-		{
-			this.nodes = nodes;
-			this.subtrees = subtrees;
-			nextNodeIndex = 0;
-			nextSubtreeIndex = 0;
-			stack = new ArrayDeque< KDTreeNode< T > >();
-		}
+		private final NodeIndexIterable.NodeIndexIterator indices = nodes.iterator();
+		private final KDTreeNode< T > node = tree.createNode();
 
 		@Override
 		public boolean hasNext()
 		{
-			return !stack.isEmpty() || nextSubtreeIndex < subtrees.size() || nextNodeIndex < nodes.size();
+			return indices.hasNext();
 		}
 
 		@Override
 		public KDTreeNode< T > next()
 		{
-			if ( !stack.isEmpty() )
-			{
-				final KDTreeNode< T > current = stack.pop();
-				if ( current.left != null )
-					stack.push( current.left );
-				if ( current.right != null )
-					stack.push( current.right );
-				return current;
-			}
-			else if ( nextSubtreeIndex < subtrees.size() )
-			{
-				final KDTreeNode< T > current = subtrees.get( nextSubtreeIndex++ );
-				if ( current.left != null )
-					stack.push( current.left );
-				if ( current.right != null )
-					stack.push( current.right );
-				return current;
-			}
-			else if ( nextNodeIndex < nodes.size() )
-			{
-				return nodes.get( nextNodeIndex++ );
-			}
-			else
-				return null;
+			return node.setNodeIndex( indices.next() );
 		}
-
-		@Override
-		public void remove()
-		{}
 	}
 }

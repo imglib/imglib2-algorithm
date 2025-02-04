@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -81,7 +81,13 @@ public class VolumetricSearch< I extends RealInterval > implements RandomAccessi
 		final ArrayList< IntervalWrapper< I > > wrappers = new ArrayList< IntervalWrapper< I > >( intervals.size() );
 		for ( final I interval : intervals )
 			wrappers.add( new IntervalWrapper< I >( interval ) );
-		kdtree = new KDTree< IntervalWrapper< I > >( wrappers, wrappers );
+		kdtree = new KDTree<>( wrappers, wrappers );
+	}
+
+	@Override
+	public List< I > getType()
+	{
+		return new LinkedList<>();
 	}
 
 	private static class IntervalWrapper< I extends RealInterval > implements RealLocalizable
@@ -185,10 +191,10 @@ public class VolumetricSearch< I extends RealInterval > implements RandomAccessi
 				// which still could be lower.
 				// Otherwise (coordinate is smaller/equal position, take the
 				// right branch as well
-				if ( node.left != null )
-					toDo.push( node.left );
-				if ( node.right != null && node.getSplitCoordinate() <= position[ k ] )
-					toDo.push( node.right );
+				if ( node.left() != null )
+					toDo.push( node.left() );
+				if ( node.right() != null && node.getSplitCoordinate() <= position[ k ] )
+					toDo.push( node.right() );
 			}
 			else
 			{
@@ -198,10 +204,10 @@ public class VolumetricSearch< I extends RealInterval > implements RandomAccessi
 				// which still could be higher.
 				// Otherwise (coordinate is larger/equal position, take the left
 				// branch as well
-				if ( node.right != null )
-					toDo.push( node.right );
-				if ( node.left != null && node.getSplitCoordinate() >= position[ k - numDimensions ] )
-					toDo.push( node.left );
+				if ( node.right() != null )
+					toDo.push( node.right() );
+				if ( node.left() != null && node.getSplitCoordinate() >= position[ k - numDimensions ] )
+					toDo.push( node.left() );
 			}
 		}
 
@@ -228,17 +234,17 @@ public class VolumetricSearch< I extends RealInterval > implements RandomAccessi
 		}
 
 		@Override
+		public List< I > getType()
+		{
+			return new LinkedList<>();
+		}
+
+		@Override
 		public VolumetricSearchRandomAccess copy()
 		{
 			final VolumetricSearchRandomAccess myCopy = new VolumetricSearchRandomAccess();
 			myCopy.setPosition( this );
 			return myCopy;
-		}
-
-		@Override
-		public VolumetricSearchRandomAccess copyRandomAccess()
-		{
-			return copy();
 		}
 	}
 

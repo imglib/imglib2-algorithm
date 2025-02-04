@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -98,7 +98,13 @@ public class FunctionCursor< C extends RealType< C >, O extends RealType< O > > 
 		this.scrapO = outputType.createVariable();
 		this.reset();
 	}
-	
+
+	@Override
+	public O getType()
+	{
+		return scrapO;
+	}
+
 	private final class FunctionSamplerConverter implements Sampler< O >
 	{	
 		@Override
@@ -110,6 +116,12 @@ public class FunctionCursor< C extends RealType< C >, O extends RealType< O > > 
 
 		@Override
 		public final Sampler< O > copy() { return null; }
+
+		@Override
+		public O getType()
+		{
+			return scrapO;
+		}
 	}
 	
 	private final class FunctionSamplerDirect implements Sampler< C >
@@ -122,6 +134,12 @@ public class FunctionCursor< C extends RealType< C >, O extends RealType< O > > 
 
 		@Override
 		public final Sampler< C > copy() { return null; }
+
+		@Override
+		public C getType()
+		{
+			return scrapC;
+		}
 	}
 
 	@Override
@@ -165,11 +183,5 @@ public class FunctionCursor< C extends RealType< C >, O extends RealType< O > > 
 	public AbstractCursor< O > copy()
 	{
 		return new FunctionCursor< C, O >( this.operation, this.inConverter, this.scrapC, this.scrapO, this.outConverter );
-	}
-
-	@Override
-	public AbstractCursor< O > copyCursor()
-	{
-		return this.copy();
 	}
 }

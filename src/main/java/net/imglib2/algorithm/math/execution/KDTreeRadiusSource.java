@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -43,7 +43,6 @@ import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
-import net.imglib2.Sampler;
 import net.imglib2.algorithm.math.abstractions.OFunction;
 import net.imglib2.converter.Converter;
 import net.imglib2.neighborsearch.NearestNeighborSearchOnKDTree;
@@ -100,14 +99,15 @@ implements OFunction< O >, RandomAccess< O >, RandomAccessible< O >
 		return this.outsideO;
 	}
 
+
 	@Override
-	public Sampler< O > copy()
+	public O getType()
 	{
-		return new KDTreeRadiusSource< I, O >( this.scrap.createVariable(), this.converter, this.kdtree, this.radius, this.outside, this.interval );
+		return this.scrap;
 	}
 
 	@Override
-	public RandomAccess< O > copyRandomAccess()
+	public RandomAccess< O > copy()
 	{
 		return new KDTreeRadiusSource< I, O >( this.scrap.createVariable(), this.converter, this.kdtree, this.radius, this.outside, this.interval );
 	}

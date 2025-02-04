@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -49,9 +49,9 @@ import net.imglib2.util.Intervals;
  * A neighborhood that iterates over what is termed "Periodic lines", and best
  * explained in Ronald Jones and Pierre Soilles publication:
  * <p>
- * <tt>Jones and Soilles. Periodic lines: Definition, cascades, and application
- * to granulometries. Pattern Recognition Letters (1996) vol. 17 (10) pp. 1057-1063</tt>
- * 
+ * <em>Jones and Soilles. Periodic lines: Definition, cascades, and application
+ * to granulometries. Pattern Recognition Letters (1996) vol. 17 (10) pp. 1057-1063</em>
+ *
  * @author Jean-Yves Tinevez Sep 3, 2013
  * 
  * @param <T>
@@ -154,6 +154,12 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	public T firstElement()
 	{
 		return cursor().next();
+	}
+
+	@Override
+	public T getType()
+	{
+		return sourceRandomAccess.getType();
 	}
 
 	@Override
@@ -264,7 +270,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 	@Override
 	public LocalCursor cursor()
 	{
-		return new LocalCursor( sourceRandomAccess.copyRandomAccess() );
+		return new LocalCursor( sourceRandomAccess.copy() );
 	}
 
 	@Override
@@ -289,7 +295,7 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 		private LocalCursor( final LocalCursor c )
 		{
 			super( c.numDimensions() );
-			source = c.source.copyRandomAccess();
+			source = c.source.copy();
 			index = c.index;
 		}
 
@@ -297,6 +303,12 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 		public T get()
 		{
 			return source.get();
+		}
+
+		@Override
+		public T getType()
+		{
+			return source.getType();
 		}
 
 		@Override
@@ -403,12 +415,6 @@ public class PeriodicLineNeighborhood< T > extends AbstractLocalizable implement
 		public LocalCursor copy()
 		{
 			return new LocalCursor( this );
-		}
-
-		@Override
-		public LocalCursor copyCursor()
-		{
-			return copy();
 		}
 	}
 

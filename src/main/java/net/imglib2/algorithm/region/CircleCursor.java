@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -37,6 +37,7 @@ import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
+import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.Sampler;
@@ -92,7 +93,7 @@ public class CircleCursor< T > implements Cursor< T >
 
 	private boolean hasNext;
 
-	private static enum Octant
+	private enum Octant
 	{
 		INIT, EAST, NORTH, WEST, SOUTH, O1, O2, O3, O4, O5, O6, O7, O8;
 	}
@@ -164,6 +165,24 @@ public class CircleCursor< T > implements Cursor< T >
 		final Interval interval = FinalInterval.createMinMax( minmax );
 		this.ra = rai.randomAccess( interval );
 		reset();
+	}
+
+	// copy constructor
+	private CircleCursor( final CircleCursor< T > c )
+	{
+		rai = c.rai;
+		ra = c.ra.copy();
+		center = new Point( c.center );
+		radius = c.radius;
+		dimX = c.dimX;
+		dimY = c.dimY;
+		x = c.x;
+		y = c.y;
+		dx = c.dx;
+		dy = c.dy;
+		f = c.f;
+		octant = c.octant;
+		hasNext = c.hasNext;
 	}
 
 	@Override
@@ -317,9 +336,9 @@ public class CircleCursor< T > implements Cursor< T >
 	}
 
 	@Override
-	public Sampler< T > copy()
+	public T getType()
 	{
-		return ra.copy();
+		return ra.getType();
 	}
 
 	@Override
@@ -361,8 +380,8 @@ public class CircleCursor< T > implements Cursor< T >
 	}
 
 	@Override
-	public Cursor< T > copyCursor()
+	public Cursor< T > copy()
 	{
-		return new CircleCursor<>( rai, center, radius, dimX, dimY );
+		return new CircleCursor<>( this );
 	}
 }

@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -88,7 +88,7 @@ public class BSplineInterpolator< T extends RealType< T > > extends Floor< Rando
 
 	public BSplineInterpolator( final BSplineInterpolator< T > interpolator )
 	{
-		super( interpolator.target.copyRandomAccess() );
+		super( interpolator.target.copy() );
 
 		this.shape = interpolator.shape;
 
@@ -159,6 +159,12 @@ public class BSplineInterpolator< T extends RealType< T > > extends Floor< Rando
 		else
 			value.setReal( accumulator );
 
+		return value;
+	}
+
+	@Override
+	public T getType()
+	{
 		return value;
 	}
 

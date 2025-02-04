@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -248,21 +248,26 @@ public final class Gauss3
 
 	public static double[][] halfkernels( final double[] sigma )
 	{
-		final int n = sigma.length;
-		final double[][] halfkernels = new double[ n ][];
-		final int[] size = halfkernelsizes( sigma );
-		for ( int i = 0; i < n; ++i )
-			halfkernels[ i ] = halfkernel( sigma[ i ], size[ i ], true );
+		final double[][] halfkernels = new double[ sigma.length ][];
+		Arrays.setAll( halfkernels, i -> halfkernel( sigma[ i ] ) );
 		return halfkernels;
 	}
 
 	public static int[] halfkernelsizes( final double[] sigma )
 	{
-		final int n = sigma.length;
-		final int[] size = new int[ n ];
-		for ( int i = 0; i < n; ++i )
-			size[ i ] = Math.max( 2, ( int ) ( 3 * sigma[ i ] + 0.5 ) + 1 );
+		final int[] size = new int[ sigma.length ];
+		Arrays.setAll( size, i -> halfkernelsize( sigma[ i ] ) );
 		return size;
+	}
+
+	public static int halfkernelsize( final double sigma )
+	{
+		return Math.max( 2, ( int ) ( 3 * sigma + 0.5 ) + 1 );
+	}
+
+	public static double[] halfkernel( final double sigma )
+	{
+		return halfkernel( sigma, halfkernelsize( sigma ), true );
 	}
 
 	/**

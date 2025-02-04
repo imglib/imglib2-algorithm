@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -140,7 +140,7 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 		protected LocalCursor( final LocalCursor c )
 		{
 			super( c.numDimensions() );
-			source = c.source.copyRandomAccess();
+			source = c.source.copy();
 			r = c.r.clone();
 			ri = c.ri.clone();
 			s = c.s.clone();
@@ -150,6 +150,12 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 		public T get()
 		{
 			return source.get();
+		}
+
+		@Override
+		public T getType()
+		{
+			return source.getType();
 		}
 
 		@Override
@@ -282,12 +288,6 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 		{
 			return new LocalCursor( this );
 		}
-
-		@Override
-		public LocalCursor copyCursor()
-		{
-			return copy();
-		}
 	}
 
 	@Override
@@ -306,6 +306,12 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 	public T firstElement()
 	{
 		return cursor().next();
+	}
+
+	@Override
+	public T getType()
+	{
+		return sourceRandomAccess.getType();
 	}
 
 	@Override
@@ -434,7 +440,7 @@ public class HyperSphereNeighborhood< T > extends AbstractLocalizable implements
 	@Override
 	public LocalCursor cursor()
 	{
-		return new LocalCursor( sourceRandomAccess.copyRandomAccess() );
+		return new LocalCursor( sourceRandomAccess.copy() );
 	}
 
 	@Override

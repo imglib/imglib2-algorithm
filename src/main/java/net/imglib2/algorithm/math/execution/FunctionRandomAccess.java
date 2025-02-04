@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -132,6 +132,12 @@ public class FunctionRandomAccess< C extends RealType< C >, O extends RealType< 
 			this.outConverter.convert( this.f.eval( this.point ), outputType );
 			return this.outputType;
 		}
+
+		@Override
+		public O getType()
+		{
+			return outputType;
+		}
 	}
 	
 	private final class FunctionSamplerDirect implements Sampler< O >
@@ -171,12 +177,12 @@ public class FunctionRandomAccess< C extends RealType< C >, O extends RealType< 
 		{
 			return this.f.eval( this.point );
 		}
-	}
-	
-	@Override
-	public Sampler< O > copy()
-	{
-		return this.sampler.copy();
+
+		@Override
+		public O getType()
+		{
+			return outputType;
+		}
 	}
 
 	@Override
@@ -186,7 +192,13 @@ public class FunctionRandomAccess< C extends RealType< C >, O extends RealType< 
 	}
 
 	@Override
-	public RandomAccess< O > copyRandomAccess()
+	public O getType()
+	{
+		return outputType;
+	}
+
+	@Override
+	public RandomAccess< O > copy()
 	{
 		return new FunctionRandomAccess< C, O >(
 				this.operation,

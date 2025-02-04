@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2024 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -37,9 +37,17 @@ package net.imglib2.algorithm.localextrema;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-import net.imglib2.FinalInterval;
+import Jama.LUDecomposition;
+import Jama.Matrix;
+
 import net.imglib2.Interval;
+import net.imglib2.FinalInterval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
@@ -51,8 +59,6 @@ import net.imglib2.parallel.Parallelization;
 import net.imglib2.parallel.TaskExecutor;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
-import Jama.LUDecomposition;
-import Jama.Matrix;
 
 /**
  * Refine a set of peaks to subpixel coordinates. This class provides the static
