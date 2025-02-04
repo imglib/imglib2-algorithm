@@ -45,10 +45,14 @@ import net.imglib2.RandomAccess;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.Shape;
+import net.imglib2.converter.RealTypeConverters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.test.ImgLib2Assert;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -240,4 +244,38 @@ public class ErosionTest
 		}
 	}
 
+	private final Img<IntType> input = ArrayImgs.ints( new int[] { //
+			0, 0, 0, 0, 0, //
+			0, 0, 1, 0, 0, //
+			0, 1, 1, 1, 0, //
+			0, 0, 1, 0, 0, //
+			0, 0, 0, 0, 0  //
+	}, 5, 5 );
+
+	private final Img<IntType> expected =ArrayImgs.ints( new int[] { //
+			0, 0, 0, 0, 0, //
+			0, 0, 0, 0, 0, //
+			0, 0, 1, 0, 0, //
+			0, 0, 0, 0, 0, //
+			0, 0, 0, 0, 0  //
+	}, 5, 5 );
+
+	private final Shape structuringElement = new DiamondShape( 1 );
+
+	@Test
+	public void testErode() {
+		Img<IntType> output = Erosion.erode( input, structuringElement, 1 );
+		ImgLib2Assert.assertImageEquals( expected, output );
+	}
+
+	@Test
+	public void testErodeBitType() {
+		// setup
+		Img<BitType> inputBits = ArrayImgs.bits( Intervals.dimensionsAsLongArray( input ) );
+		RealTypeConverters.copyFromTo( input, inputBits );
+		// process
+		Img<BitType> output = Erosion.erode( inputBits, structuringElement, 1 );
+		// test
+		ImgLib2Assert.assertImageEqualsIntegerType( expected, output );
+	}
 }
