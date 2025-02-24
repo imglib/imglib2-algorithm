@@ -48,7 +48,7 @@ import net.imglib2.algorithm.blocks.downsample.Downsample.Offset;
 import net.imglib2.algorithm.blocks.BlockAlgoUtils;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.img.Img;
-import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.Views;
