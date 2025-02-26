@@ -56,8 +56,10 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.BooleanType;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.real.DoubleType;
@@ -389,6 +391,130 @@ public class DistanceTransform
 			final Distance d )
 	{
 		transform( source, source, d );
+	}
+
+	/**
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on {@code source} using arbitrary
+	 * {@link Distance} d. Intermediate and final results will be stored in
+	 * {@code source} ({@link DoubleType} recommended).
+	 * <p>
+	 * Also propagates a set of input labels so that it contains the nearest label
+	 * everywhere.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param labels
+	 *            Labels to be propagated.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param <T>
+	 *            {@link RealType} input
+	 * @param <L>
+	 *            {@link IntegerType} the label type
+	 */
+	public static < T extends RealType< T >, L extends IntegerType< L > > void transformPropagateLabels(
+			final RandomAccessibleInterval< T > source,
+			final RandomAccessibleInterval< L > labels,
+			final DISTANCE_TYPE distanceType )
+	{
+		// TODO generalize distance
+		transformPropagateLabels( source, source, labels, labels, new EuclidianDistanceIsotropic( 1 ) );
+	}
+
+	/**
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on {@code source} using arbitrary
+	 * {@link Distance} d. Intermediate and final results will be stored in
+	 * {@code target} ({@link DoubleType} recommended).
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param <T>
+	 *            {@link RealType} input distance type
+	 * @param <U>
+	 *            {@link RealType} result type
+	 * @param <L>
+	 *            {@link IntegerType} label type
+	 * @param <U>
+	 *            {@link IntegerType} label result type
+	 */
+	public static < T extends RealType< T >, U extends RealType< U >, L extends IntegerType<L>, M extends IntegerType<M> > void transformPropagateLabels(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > target,
+			final RandomAccessibleInterval< L > labels,
+			final RandomAccessibleInterval< M > labelsResult,
+			final Distance d )
+	{
+		transformPropagateLabels( source, target, target, labels, labelsResult, d );
+	}
+
+	/**
+	 * Create
+	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
+	 * transforms of sampled functions</a> on {@code source} using arbitrary
+	 * {@link Distance} d. Intermediate results will be stored in {@code tmp}
+	 * ({@link DoubleType} recommended). The output will be written into
+	 * {@code target}.
+	 *
+	 * @param source
+	 *            Input function on which distance transform should be computed.
+	 * @param tmp
+	 *            Storage for intermediate results.
+	 * @param target
+	 *            Final result of distance transform.
+	 * @param d
+	 *            {@link Distance} between two points.
+	 * @param <T>
+	 *            {@link RealType} input
+	 * @param <U>
+	 *            {@link RealType} intermediate results
+	 * @param <V>
+	 *            {@link RealType} output
+	 */
+	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V >, L extends IntegerType<L>, M extends IntegerType<M> > void transformPropagateLabels(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > tmp,
+			final RandomAccessibleInterval< V > target,
+			final RandomAccessible< L > labels,
+			final RandomAccessible< M > labelsResult,
+			final Distance d )
+	{
+		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
+		final int nDim = source.numDimensions();
+		final int lastDim = nDim - 1;
+
+		if ( nDim == 1 )
+		{
+			transformAlongDimensionPropagateLabels(
+					( RandomAccessible< T > ) Views.addDimension( source ),
+					Views.addDimension( target, 0, 0 ),
+					Views.addDimension( labels ),
+					Views.addDimension( labelsResult ),
+					d, 0 );
+		}
+		else
+		{
+			transformAlongDimensionPropagateLabels( source, tmp, labels, labelsResult, d, 0 );
+		}
+
+		for ( int dim = 1; dim < nDim; ++dim )
+		{
+			if ( dim == lastDim )
+			{
+				transformAlongDimensionPropagateLabels( tmp, target, labels, labelsResult, d, dim );
+			}
+			else
+			{
+				transformAlongDimensionPropagateLabels( tmp, tmp, labels, labelsResult, d, dim );
+			}
+		}
 	}
 
 	/**
@@ -969,6 +1095,42 @@ public class DistanceTransform
 		transform( converted, tmp, target, d, es, nTasks );
 	}
 
+	@SuppressWarnings( "unchecked" )
+	public static < L extends IntegerType< L >, T extends RealType< T > > RandomAccessibleInterval< T > labelTransform(
+			final RandomAccessibleInterval< L > labels,
+			final DISTANCE_TYPE distanceType,
+			final double... weights )
+	{
+		final RandomAccessibleInterval< DoubleType > distance = Util.getSuitableImgFactory( labels, new DoubleType()).create( labels );
+		distance.getAt( 0 ).setReal( 0 );
+
+		labelTransform( labels, distance, distance, distanceType, weights );
+		return ( RandomAccessibleInterval< T > ) distance;
+	}
+
+	public static < L extends IntegerType< L >, T extends RealType< T > > void labelTransform(
+			final RandomAccessible< L > source,
+			final RandomAccessibleInterval< T > distance,
+			final DISTANCE_TYPE distanceType,
+			final double... weights )
+	{
+		labelTransform( source, distance, distance, distanceType, weights );
+	}
+
+	public static < L extends IntegerType< L >, T extends RealType< T >, U extends RealType< U > > void labelTransform(
+			final RandomAccessible< L > source,
+			final RandomAccessibleInterval< T > tmp,
+			final RandomAccessibleInterval< U > distance,
+			final DISTANCE_TYPE distanceType,
+			final double... weights )
+	{
+		final U maxVal = distance.getType().copy();
+		maxVal.setReal( maxVal.getMaxValue() );
+		final Converter< L, U > converter = new LabelsToCost<>( 0, maxVal );
+		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
+		transform( converted, tmp, distance, distanceType, weights );
+	}
+
 	/**
 	 * Create binary distance transform on {@code source} using L1 distance.
 	 * Intermediate results will be stored in {@code tmp} ({@link DoubleType}
@@ -1105,9 +1267,11 @@ public class DistanceTransform
 		final int lastDim = target.numDimensions() - 1;
 		final long size = target.dimension( dim );
 		final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
+
 		// do not permute if we already work on last dimension
 		final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( dim == lastDim ? Views.interval( source, target ) : Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
 		final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( dim == lastDim ? target : Views.permute( target, dim, lastDim ) ) ).cursor();
+
 		final RealComposite< LongType > lowerBoundDistanceIndex = Views.collapseReal( createAppropriateOneDimensionalImage( size, new LongType() ) ).randomAccess().get();
 		final RealComposite< DoubleType > envelopeIntersectLocation = Views.collapseReal( createAppropriateOneDimensionalImage( size + 1, new DoubleType() ) ).randomAccess().get();
 
@@ -1161,6 +1325,58 @@ public class DistanceTransform
 		invokeAllAndWait( es, tasks );
 	}
 
+
+	private static < T extends RealType< T >, U extends RealType< U > > void transformSingleColumn(
+			final RealComposite< T > source,
+			final RealComposite< U > target,
+			final RealComposite< LongType > lowerBoundDistanceIndex,
+			final RealComposite< DoubleType > envelopeIntersectLocation,
+			final RealComposite< LongType > nearestLabel,
+			final Distance d,
+			final int dim,
+			final long size )
+	{
+		long k = 0;
+
+		lowerBoundDistanceIndex.get( 0 ).set( 0 );
+		envelopeIntersectLocation.get( 0 ).set( Double.NEGATIVE_INFINITY );
+		envelopeIntersectLocation.get( 1 ).set( Double.POSITIVE_INFINITY );
+		for ( long position = 1; position < size; ++position )
+		{
+			long envelopeIndexAtK = lowerBoundDistanceIndex.get( k ).get();
+			final double sourceAtPosition = source.get( position ).getRealDouble();
+
+			// the point at which these parabolas intersect
+			double s = d.intersect( envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), position, sourceAtPosition, dim );
+
+			for ( double envelopeValueAtK = envelopeIntersectLocation.get( k ).get(); s <= envelopeValueAtK; envelopeValueAtK = envelopeIntersectLocation.get( k ).get() )
+			{
+				--k;
+				envelopeIndexAtK = lowerBoundDistanceIndex.get( k ).get();
+				s = d.intersect( envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), position, sourceAtPosition, dim );
+			}
+			++k;
+			lowerBoundDistanceIndex.get( k ).set( position );
+			envelopeIntersectLocation.get( k ).set( s );
+			envelopeIntersectLocation.get( k + 1 ).set( Double.POSITIVE_INFINITY );
+		}
+
+		k = 0;
+
+		for ( long position = 0; position < size; ++position )
+		{
+			while ( envelopeIntersectLocation.get( k + 1 ).get() < position )
+			{
+				++k;
+			}
+			final long envelopeIndexAtK = lowerBoundDistanceIndex.get( k ).get();
+			// copy necessary because of the following line, access to source
+			// after write to source -> source and target cannot be the same
+			target.get( position ).setReal( d.evaluate( position, envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), dim ) );
+		}
+
+	}
+
 	private static < T extends RealType< T >, U extends RealType< U > > void transformSingleColumn(
 			final RealComposite< T > source,
 			final RealComposite< U > target,
@@ -1205,6 +1421,95 @@ public class DistanceTransform
 			// copy necessary because of the following line, access to source
 			// after write to source -> source and target cannot be the same
 			target.get( position ).setReal( d.evaluate( position, envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), dim ) );
+		}
+
+	}
+
+	private static < T extends RealType< T >, U extends RealType< U >, L extends IntegerType< L >, M extends IntegerType< M > > void transformAlongDimensionPropagateLabels(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > target,
+			final RandomAccessible< L > labelSource,
+			final RandomAccessible< M > labelTarget,
+			final Distance d,
+			final int dim )
+	{
+		final int lastDim = target.numDimensions() - 1;
+		final long size = target.dimension( dim );
+		final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
+
+		// do not permute if we already work on last dimension
+		final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( dim == lastDim ? Views.interval( source, target ) : Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
+		final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( dim == lastDim ? target : Views.permute( target, dim, lastDim ) ) ).cursor();
+
+		final Cursor< RealComposite< L > > ls = Views.flatIterable(
+				Views.collapseReal( dim == lastDim ? Views.interval( labelSource, target ) : Views.permute( Views.interval( labelSource, target ), dim, lastDim ) ) ).cursor();
+
+		final Cursor< RealComposite< M > > lt = Views.flatIterable(
+				Views.collapseReal( dim == lastDim ? Views.interval( labelTarget, target ) : Views.permute( Views.interval( labelTarget, target ), dim, lastDim ) ) ).cursor();
+
+		final RealComposite< LongType > lowerBoundDistanceIndex = Views.collapseReal( createAppropriateOneDimensionalImage( size, new LongType() ) ).randomAccess().get();
+		final RealComposite< DoubleType > envelopeIntersectLocation = Views.collapseReal( createAppropriateOneDimensionalImage( size + 1, new DoubleType() ) ).randomAccess().get();
+
+		while ( s.hasNext() )
+		{
+			final RealComposite< T > sourceComp = s.next();
+			final RealComposite< U > targetComp = t.next();
+			final RealComposite< L > labelComp = ls.next();
+			final RealComposite< M > labelTargetComp = lt.next();
+			for ( long i = 0; i < size; ++i )
+			{
+				tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
+			}
+			transformSingleColumnPropagateLabels( tmp, targetComp, labelComp, labelTargetComp, lowerBoundDistanceIndex, envelopeIntersectLocation, d, dim, size );
+		}
+	}
+
+	private static < T extends RealType< T >, U extends RealType< U >, L extends IntegerType<L>, M extends IntegerType<M> > void transformSingleColumnPropagateLabels(
+			final RealComposite< T > source,
+			final RealComposite< U > target,
+			final RealComposite< L > labelsSource,
+			final RealComposite< M > labelsResult,
+			final RealComposite< LongType > lowerBoundDistanceIndex,
+			final RealComposite< DoubleType > envelopeIntersectLocation,
+			final Distance d,
+			final int dim,
+			final long size )
+	{
+		long k = 0;
+
+		lowerBoundDistanceIndex.get( 0 ).set( 0 );
+		envelopeIntersectLocation.get( 0 ).set( Double.NEGATIVE_INFINITY );
+		envelopeIntersectLocation.get( 1 ).set( Double.POSITIVE_INFINITY );
+		for ( long position = 1; position < size; ++position )
+		{
+			long envelopeIndexAtK = lowerBoundDistanceIndex.get( k ).get();
+			final double sourceAtPosition = source.get( position ).getRealDouble();
+			double s = d.intersect( envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), position, sourceAtPosition, dim );
+
+			for ( double envelopeValueAtK = envelopeIntersectLocation.get( k ).get(); s <= envelopeValueAtK; envelopeValueAtK = envelopeIntersectLocation.get( k ).get() )
+			{
+				--k;
+				envelopeIndexAtK = lowerBoundDistanceIndex.get( k ).get();
+				s = d.intersect( envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), position, sourceAtPosition, dim );
+			}
+			++k;
+			lowerBoundDistanceIndex.get( k ).set( position );
+			envelopeIntersectLocation.get( k ).set( s );
+			envelopeIntersectLocation.get( k + 1 ).set( Double.POSITIVE_INFINITY );
+		}
+
+		k = 0;
+		for ( long position = 0; position < size; ++position )
+		{
+			while ( envelopeIntersectLocation.get( k + 1 ).get() < position )
+			{
+				++k;
+			}
+			final long envelopeIndexAtK = lowerBoundDistanceIndex.get( k ).get();
+			// copy necessary because of the following line, access to source
+			// after write to source -> source and target cannot be the same
+			target.get( position ).setReal( d.evaluate( position, envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), dim ) );
+			labelsResult.get( position ).setInteger( labelsSource.get( envelopeIndexAtK ).getIntegerLong() );
 		}
 
 	}
@@ -1335,6 +1640,32 @@ public class DistanceTransform
 		return IntStream.range( 0, interval.numDimensions() ).mapToObj( i -> new ValuePair<>( i, interval.dimension( i ) ) ).max( ( p1, p2 ) -> Long.compare( p1.getB(), p2.getB() ) ).get().getA();
 	}
 
+	private static <L extends IntegerType< L >, M extends IntegerType< M > > RandomAccessibleInterval< M > makeLabels(
+			final RandomAccessibleInterval< L > labels,
+			final M type) {
+
+		final RandomAccessibleInterval< M > propagedLabels = Util.getSuitableImgFactory( labels, type ).create( labels );
+		LoopBuilder.setImages( labels, propagedLabels ).forEachPixel( (s,d) -> {
+			d.setInteger( s.getIntegerLong() );
+		});
+
+		return ( RandomAccessibleInterval< M > ) propagedLabels;
+	}
+
+	private static < L extends IntegerType< L >, T extends RealType< T > > RandomAccessibleInterval< T > makeDistances(
+			final long label,
+			final RandomAccessibleInterval< L > labels,
+			final T type) {
+
+		final RandomAccessibleInterval< T > distances = Util.getSuitableImgFactory( labels, type ).create( labels );
+		Views.pair( labels, distances ).view().interval( labels ).forEach( pair -> {
+			if( pair.getA().getIntegerLong() == label )
+				pair.getB().setReal( Double.MAX_VALUE );
+		});
+
+		return distances;
+	}
+
 	private static class BinaryMaskToCost< B extends BooleanType< B >, R extends RealType< R > > implements Converter< B, R >
 	{
 
@@ -1353,6 +1684,30 @@ public class DistanceTransform
 		public void convert( final B input, final R output )
 		{
 			output.set( input.get() ? zero : maxValForR );
+		}
+
+	}
+
+	private static class LabelsToCost< L extends IntegerType< L >, R extends RealType< R > > implements Converter< L, R >
+	{
+		private final R maxValForR;
+
+		private final R zero;
+
+		private final long label;
+
+		public LabelsToCost( final long label, final R maxValForR )
+		{
+			this.maxValForR = maxValForR;
+			this.label = label;
+			this.zero = maxValForR.createVariable();
+			zero.setZero();
+		}
+
+		@Override
+		public void convert( final L input, final R output )
+		{
+			output.set( input.getIntegerLong() == label ? zero : maxValForR );
 		}
 
 	}
