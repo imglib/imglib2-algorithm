@@ -528,7 +528,7 @@ public class DistanceTransform
 		{
 			transformAlongDimension(
 					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
+					Views.addDimension( target, 0, 0 ),
 					d,
 					0 );
 		}
@@ -601,7 +601,7 @@ public class DistanceTransform
 		{
 			transformAlongDimensionParallel(
 					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
+					Views.addDimension( target, 0, 0 ),
 					d,
 					0,
 					es,
@@ -734,8 +734,7 @@ public class DistanceTransform
 			final DISTANCE_TYPE distanceType,
 			final double... weights )
 	{
-
-		final U maxVal = Util.getTypeFromInterval( tmp ).createVariable();
+		final U maxVal = tmp.getType().copy();
 		maxVal.setReal( maxVal.getMaxValue() );
 		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
 		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
@@ -789,7 +788,7 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-		final U maxVal = Util.getTypeFromInterval( tmp ).createVariable();
+		final U maxVal = tmp.getType().copy();
 		maxVal.setReal( maxVal.getMaxValue() );
 		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
 		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
@@ -916,7 +915,7 @@ public class DistanceTransform
 			final RandomAccessibleInterval< V > target,
 			final Distance d )
 	{
-		final U maxVal = Util.getTypeFromInterval( tmp ).createVariable();
+		final U maxVal = tmp.getType().copy();
 		maxVal.setReal( maxVal.getMaxValue() );
 		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
 		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
@@ -963,7 +962,7 @@ public class DistanceTransform
 			final ExecutorService es,
 			final int nTasks ) throws InterruptedException, ExecutionException
 	{
-		final U maxVal = Util.getTypeFromInterval( tmp ).createVariable();
+		final U maxVal = tmp.getType().copy();
 		maxVal.setReal( maxVal.getMaxValue() );
 		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
 		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
@@ -1005,7 +1004,7 @@ public class DistanceTransform
 		{
 			transformL1AlongDimension(
 					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
+					Views.addDimension( target, 0, 0 ),
 					0,
 					weights[ 0 ] );
 		}
@@ -1073,7 +1072,7 @@ public class DistanceTransform
 		{
 			transformL1AlongDimensionParallel(
 					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.interval( Views.addDimension( target ), new FinalInterval( target.dimension( 0 ), 1 ) ),
+					Views.addDimension( target, 0, 0 ),
 					0,
 					weights[ 0 ],
 					es,
