@@ -1327,28 +1327,102 @@ public class DistanceTransform
 		return size > Integer.MAX_VALUE ? new CellImgFactory<>( t, Integer.MAX_VALUE ).create( dim ) : new ArrayImgFactory<>( t ).create( dim );
 	}
 
-	@SuppressWarnings( "unchecked" )
-	public static < L extends IntegerType< L >, T extends RealType< T > > RandomAccessibleInterval< T > labelTransform(
+	/**
+	 * Compute the distance and nearest neighbors of a label image.
+	 * <p>
+	 * Returns the joint distance transform of all non-background labels in the
+	 * {@code labels} image. This distance transform will be the distance to the
+	 * nearest non-background label at every point.
+	 * <p>
+	 * Simultaneously, modifies the {@code labels} image so that the label at
+	 * every point is the closest label, where initial distances are given by
+	 * the values in the distance argument.
+	 * <p>
+	 * This method uses 0 (zero) as the background label.
+	 *
+	 * @param <L>
+	 *            the label type
+	 * @param labels
+	 *            the label image
+	 * @param weights
+	 *            for distance computation per dimension
+	 * @return the distance map
+	 */
+	public static < L extends IntegerType< L > > RandomAccessibleInterval< DoubleType > voronoiDistanceTransform(
+			final RandomAccessibleInterval< L > labels,
+			final double... weights )
+	{
+		return voronoiDistanceTransform( labels, 0, weights );
+	}
+
+	/**
+	 * Compute the distance and nearest neighbors of a label image.
+	 * <p>
+	 * Returns the joint distance transform of all non-background labels in the
+	 * {@code labels} image. This distance transform will be the distance to the
+	 * nearest non-background label at every point.
+	 * <p>
+	 * Simultaneously, modifies the {@code labels} image so that the label at
+	 * every point is the closest label, where initial distances are given by
+	 * the values in the distance argument.
+	 * 
+	 * @param <L>
+	 *            the label type
+	 * @param labels
+	 *            the label image
+	 * @param backgroundLabel
+	 *            the background label
+	 * @param weights
+	 *            for distance computation per dimension
+	 * @return the distance map
+	 */
+	public static < L extends IntegerType< L > > RandomAccessibleInterval< DoubleType > voronoiDistanceTransform(
 			final RandomAccessibleInterval< L > labels,
 			final long backgroundLabel,
 			final double... weights )
 	{
 		final RandomAccessibleInterval< DoubleType > distance = makeDistances( backgroundLabel, labels, new DoubleType() );
-		labelTransform( labels, distance, weights );
-		return ( RandomAccessibleInterval< T > ) distance;
+		voronoiDistanceTransform( labels, distance, weights );
+		return distance;
 	}
 
-	@SuppressWarnings( "unchecked" )
-	public static < L extends IntegerType< L >, T extends RealType< T > > RandomAccessibleInterval< T > labelTransform(
+	/**
+	 * Compute the distance and nearest neighbors of a label image in parallel.
+	 * <p>
+	 * Returns the joint distance transform of all non-background labels in the
+	 * {@code labels} image. This distance transform will be the distance to the
+	 * nearest non-background label at every point.
+	 * <p>
+	 * Simultaneously, modifies the {@code labels} image so that the label at
+	 * every point is the closest label, where initial distances are given by
+	 * the values in the distance argument.
+	 * 
+	 * @param <L>
+	 *            the label type
+	 * @param labels
+	 *            the label image
+	 * @param backgroundLabel
+	 *            the background label
+	 * @param es
+	 *            the ExecutorService
+	 * @param nTasks
+	 *            the number of tasks in which to split the computation 
+	 * @param weights
+	 *            for distance computation per dimension
+	 * @return the distance map
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
+	 */
+	public static < L extends IntegerType< L > > RandomAccessibleInterval< DoubleType > voronoiDistanceTransform(
 			final RandomAccessibleInterval< L > labels,
 			final long backgroundLabel,
 			final ExecutorService es,
 			final int nTasks,
-			final double... weights )
+			final double... weights ) throws InterruptedException, ExecutionException
 	{
 		final RandomAccessibleInterval< DoubleType > distance = makeDistances( backgroundLabel, labels, new DoubleType() );
-		labelTransform( labels, distance, weights );
-		return ( RandomAccessibleInterval< T > ) distance;
+		labelTransform( labels, distance, es, nTasks, weights );
+		return distance;
 	}
 
 	/**
@@ -1362,27 +1436,48 @@ public class DistanceTransform
 	 * @param <T>
 	 *            distance type
 	 * @param labels
-	 *            the label iamge
+	 *            the label image
 	 * @param distance
 	 *            the distance image
 	 * @param weights
 	 *            for distance computation per dimension
 	 */
-	public static < L extends IntegerType< L >, T extends RealType< T > > void labelTransform(
+	public static < L extends IntegerType< L >, T extends RealType< T > > void voronoiDistanceTransform(
 			final RandomAccessibleInterval< L > labels,
 			final RandomAccessibleInterval< T > distance,
 			final double... weights )
 	{
-		final T maxVal = distance.getType().copy();
-		maxVal.setReal( maxVal.getMaxValue() );
-		final boolean isIsotropic = weights.length <= 1;
-		final double[] w = weights.length == labels.numDimensions() ? weights : DoubleStream.generate( () -> weights.length == 0 ? 1.0 : weights[ 0 ] ).limit( labels.numDimensions() ).toArray();
-
-		// TODO add L1 distance
-		final Distance distanceFun = isIsotropic ? new EuclidianDistanceIsotropic( w[ 0 ] ) : new EuclidianDistanceAnisotropic( w );
+		final Distance distanceFun = createEuclideanDistance(labels.numDimensions(), weights) ;
 		transformPropagateLabels( distance, distance, distance, labels, labels, distanceFun );
 	}
 
+	/**
+	 * Compute the distance and nearest neighbors of a label image in parallel.
+	 * <p>
+	 * Returns the joint distance transform of all non-background labels in the
+	 * {@code labels} image. This distance transform will be the distance to the
+	 * nearest non-background label at every point.
+	 * <p>
+	 * Simultaneously, modifies the {@code labels} image so that the label at
+	 * every point is the closest label, where initial distances are given by
+	 * the values in the distance argument.
+	 * 
+	 * @param <L>
+	 *            the label type
+	 * @param labels
+	 *            the label image
+	 * @param backgroundLabel
+	 *            the background label
+	 * @param es
+	 *            the ExecutorService
+	 * @param nTasks
+	 *            the number of tasks in which to split the computation 
+	 * @param weights
+	 *            for distance computation per dimension
+	 * @return the distance map
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
+	 */
 	public static < L extends IntegerType< L >, T extends RealType< T > > void labelTransform(
 			final RandomAccessibleInterval< L > labels,
 			final RandomAccessibleInterval< T > distance,
@@ -1390,32 +1485,28 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-		final T maxVal = distance.getType().copy();
-		maxVal.setReal( maxVal.getMaxValue() );
-		final boolean isIsotropic = weights.length <= 1;
-		final double[] w = weights.length == labels.numDimensions() ? weights : DoubleStream.generate( () -> weights.length == 0 ? 1.0 : weights[ 0 ] ).limit( labels.numDimensions() ).toArray();
-
-		// TODO add L1 distance
-		final Distance distanceFun = isIsotropic ? new EuclidianDistanceIsotropic( w[ 0 ] ) : new EuclidianDistanceAnisotropic( w );
+		final Distance distanceFun = createEuclideanDistance(labels.numDimensions(), weights) ;
 		transformPropagateLabels( distance, distance, distance, labels, labels, distanceFun, es, nTasks );
 	}
 
 	/**
-	 * Create
-	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on {@code source} using arbitrary
-	 * {@link Distance} d. Intermediate and final results will be stored in
-	 * {@code source} ({@link DoubleType} recommended).
+	 * Computes the distance transform of the input distance map {@code distance}
+	 * and simultaneously propagate a set of corresponding {@code labels}.
+	 * Distance results are stored in the input {@code targetDistance} image.
 	 * <p>
-	 * Also propagates a set of input labels so that it contains the nearest label
-	 * everywhere.
+	 * Simultaneously, propagates labels stored in the {@code labels} image so
+	 * that the label at every point is the closest label, where initial
+	 * distances are given by the values in the distance argument. Results of
+	 * label propagation are stored in {@code labelsResult}
+	 * <p>
+	 * This implementation operates in-place for both the {@code distance} and
+	 * {@code labels} images. It uses an isotropic distance function with distance 1
+	 * between samples.
 	 *
-	 * @param source
+	 * @param distance
 	 *            Input function on which distance transform should be computed.
 	 * @param labels
 	 *            Labels to be propagated.
-	 * @param d
-	 *            {@link Distance} between two points.
 	 * @param <T>
 	 *            {@link RealType} input
 	 * @param <L>
@@ -1423,158 +1514,211 @@ public class DistanceTransform
 	 */
 	public static < T extends RealType< T >, L extends IntegerType< L > > void transformPropagateLabels(
 			final RandomAccessibleInterval< T > distance,
-			final RandomAccessibleInterval< L > labels,
-			final DISTANCE_TYPE distanceType )
+			final RandomAccessibleInterval< L > labels)
 	{
-		// TODO generalize distance
 		transformPropagateLabels( distance, distance, labels, labels, new EuclidianDistanceIsotropic( 1 ) );
 	}
 
 	/**
-	 * Create
-	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on {@code source} using arbitrary
-	 * {@link Distance} d. Intermediate and final results will be stored in
-	 * {@code target} ({@link DoubleType} recommended).
+	 * Computes the distance transform of the input distance map {@code distance}
+	 * and simultaneously propagate a set of corresponding {@code labels}.
+	 * Distance results are stored in the input {@code targetDistance} image.
+	 * <p>
+	 * Simultaneously, propagates labels stored in the {@code labels} image so
+	 * that the label at every point is the closest label, where initial
+	 * distances are given by the values in the distance argument. Results of
+	 * label propagation are stored in {@code labelsResult}
+	 * <p>
+	 * This implementation uses the {@targetDistance} for temporary storage.
 	 *
-	 * Simultaneously, modifies the labels image so that the label at every
-	 * point is the closest label, where initial distances are given by the
-	 * values in the distance argument.
+	 * @param <T>
+	 *            input distance {@link RealType}
+	 * @param <U>
+	 *            output distance {@link RealType}
+	 * @param <L>
+	 *            input label {@link IntegerType}
+	 * @param <M>
+	 *            output label {@link IntegerType}
+	 * @param distance
+	 *            Input distance function from which distance transform should
+	 *            be computed.
+	 * @param tmpDistance
+	 *            Storage for intermediate distance results.
+	 * @param targetDistance
+	 *            Final result of distance transform. May be the same instance
+	 *            as distance.
+	 * @param labels
+	 *            the image of labels to be propagated
+	 * @param labelsResult
+	 *            the image in which to store the result of label propagation.
+	 *            May be the same instance as labels
+	 * @param d
+	 *            the {@link Distance} function
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, L extends IntegerType<L>, M extends IntegerType<M> > void transformPropagateLabels(
 			final RandomAccessible< T > distance,
-			final RandomAccessibleInterval< U > distanceResult,
+			final RandomAccessibleInterval< U > targetDistance,
 			final RandomAccessible< L > labels,
 			final RandomAccessibleInterval< M > labelsResult,
 			final Distance d )
 	{
-		transformPropagateLabels( distance, distanceResult, distanceResult, labels, labelsResult, d );
+		transformPropagateLabels( distance, targetDistance, targetDistance, labels, labelsResult, d );
 	}
 
 	/**
-	 * Create
-	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on {@code source} using arbitrary
-	 * {@link Distance} d. Intermediate results will be stored in {@code tmp}
-	 * ({@link DoubleType} recommended). The output will be written into
-	 * {@code target}.
+	 * Computes the distance transform of the input distance map {@code distance}
+	 * and simultaneously propagate a set of corresponding {@code labels}.
+	 * Distance results are stored in the input {@code targetDistance} image.
+	 * <p>
+	 * Simultaneously, propagates labels stored in the {@code labels} image so
+	 * that the label at every point is the closest label, where initial
+	 * distances are given by the values in the distance argument. Results of
+	 * label propagation are stored in {@code labelsResult}
 	 *
-	 * @param source
-	 *            Input function on which distance transform should be computed.
-	 * @param tmp
-	 *            Storage for intermediate results.
-	 * @param target
-	 *            Final result of distance transform.
+	 * @param <T>
+	 *            input distance {@link RealType}
+	 * @param <U>
+	 *            intermediate distance result {@link RealType}
+	 * @param <V>
+	 *            output distance {@link RealType}
+	 * @param <L>
+	 *            input label {@link IntegerType}
+	 * @param <M>
+	 *            output label {@link IntegerType}
+	 * @param distance
+	 *            Input distance function from which distance transform should
+	 *            be computed.
+	 * @param tmpDistance
+	 *            Storage for intermediate distance results.
+	 * @param targetDistance
+	 *            Final result of distance transform. May be the same instance
+	 *            as distance.
+	 * @param labels
+	 *            the image of labels to be propagated
+	 * @param labelsResult
+	 *            the image in which to store the result of label propagation.
+	 *            May be the same instance as labels
 	 * @param d
 	 *            {@link Distance} between two points.
-	 * @param <T>
-	 *            {@link RealType} input
-	 * @param <U>
-	 *            {@link RealType} intermediate results
-	 * @param <V>
-	 *            {@link RealType} output
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V >, L extends IntegerType<L>, M extends IntegerType<M> > void transformPropagateLabels(
-			final RandomAccessible< T > source,
-			final RandomAccessibleInterval< U > tmp,
-			final RandomAccessibleInterval< V > target,
+			final RandomAccessible< T > distance,
+			final RandomAccessibleInterval< U > tmpDistance,
+			final RandomAccessibleInterval< V > targetDistance,
 			final RandomAccessible< L > labels,
 			final RandomAccessibleInterval< M > labelsResult,
 			final Distance d )
 	{
-		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
-		final int nDim = source.numDimensions();
+		assert distance.numDimensions() == targetDistance.numDimensions(): "Dimension mismatch";
+		final int nDim = distance.numDimensions();
 		final int lastDim = nDim - 1;
 
 		if ( nDim == 1 )
 		{
 			transformAlongDimensionPropagateLabels(
-					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.addDimension( target, 0, 0 ),
+					( RandomAccessible< T > ) Views.addDimension( distance ),
+					Views.addDimension( targetDistance, 0, 0 ),
 					Views.addDimension( labels ),
 					Views.addDimension( labelsResult ),
 					d, 0 );
 		}
 		else
 		{
-			transformAlongDimensionPropagateLabels( source, tmp, labels, labelsResult, d, 0 );
+			transformAlongDimensionPropagateLabels( distance, tmpDistance, labels, labelsResult, d, 0 );
 		}
 
 		for ( int dim = 1; dim < nDim; ++dim )
 		{
 			if ( dim == lastDim )
 			{
-				transformAlongDimensionPropagateLabels( tmp, target, labels, labelsResult, d, dim );
+				transformAlongDimensionPropagateLabels( tmpDistance, targetDistance, labels, labelsResult, d, dim );
 			}
 			else
 			{
-				transformAlongDimensionPropagateLabels( tmp, tmp, labels, labelsResult, d, dim );
+				transformAlongDimensionPropagateLabels( tmpDistance, tmpDistance, labels, labelsResult, d, dim );
 			}
 		}
 	}
 
 	/**
-	 * Create
-	 * <a href="http://www.theoryofcomputing.org/articles/v008a019/">distance
-	 * transforms of sampled functions</a> on {@code source} using arbitrary
-	 * {@link Distance} d. Intermediate results will be stored in {@code tmp}
-	 * ({@link DoubleType} recommended). The output will be written into
-	 * {@code target}.
+	 * In parallel, computes the distance transform of the input distance map {@code distance}
+	 * and simultaneously propagate a set of corresponding {@code labels}.
+	 * Distance results are stored in the input {@code targetDistance} image.
+	 * <p>
+	 * Simultaneously, propagates labels stored in the {@code labels} image so
+	 * that the label at every point is the closest label, where initial
+	 * distances are given by the values in the distance argument. Results of
+	 * label propagation are stored in {@code labelsResult}
 	 *
-	 * @param source
-	 *            Input function on which distance transform should be computed.
-	 * @param tmp
-	 *            Storage for intermediate results.
-	 * @param target
-	 *            Final result of distance transform.
+	 * @param <T>
+	 *            input distance {@link RealType}
+	 * @param <U>
+	 *            intermediate distance result {@link RealType}
+	 * @param <V>
+	 *            output distance {@link RealType}
+	 * @param <L>
+	 *            input label {@link IntegerType}
+	 * @param <M>
+	 *            output label {@link IntegerType}
+	 * @param distance
+	 *            Input distance function from which distance transform should
+	 *            be computed.
+	 * @param tmpDistance
+	 *            Storage for intermediate distance results.
+	 * @param targetDistance
+	 *            Final result of distance transform. May be the same instance
+	 *            as distance.
+	 * @param labels
+	 *            the image of labels to be propagated
+	 * @param labelsResult
+	 *            the image in which to store the result of label propagation.
+	 *            May be the same instance as labels
 	 * @param d
 	 *            {@link Distance} between two points.
-	 * @param <T>
-	 *            {@link RealType} input
-	 * @param <U>
-	 *            {@link RealType} intermediate results
-	 * @param <V>
-	 *            {@link RealType} output
-	 * @throws ExecutionException 
-	 * @throws InterruptedException 
+	 * @param es
+	 *            the ExecutorService
+	 * @param nTasks
+	 *            the number of tasks in which to split the computation
+	 * @throws ExecutionException
+	 * @throws InterruptedException
 	 */
 	public static < T extends RealType< T >, U extends RealType< U >, V extends RealType< V >, L extends IntegerType<L>, M extends IntegerType<M> > void transformPropagateLabels(
-			final RandomAccessible< T > source,
-			final RandomAccessibleInterval< U > tmp,
-			final RandomAccessibleInterval< V > target,
+			final RandomAccessible< T > distance,
+			final RandomAccessibleInterval< U > tmpDistance,
+			final RandomAccessibleInterval< V > targetDistance,
 			final RandomAccessible< L > labels,
 			final RandomAccessibleInterval< M > labelsResult,
 			final Distance d,
 			final ExecutorService es,
 			final int nTasks) throws InterruptedException, ExecutionException
 	{
-		assert source.numDimensions() == target.numDimensions(): "Dimension mismatch";
-		final int nDim = source.numDimensions();
+		assert distance.numDimensions() == targetDistance.numDimensions(): "Dimension mismatch";
+		final int nDim = distance.numDimensions();
 		final int lastDim = nDim - 1;
 
 		if ( nDim == 1 )
 		{
 			transformAlongDimensionPropagateLabels(
-					( RandomAccessible< T > ) Views.addDimension( source ),
-					Views.addDimension( target, 0, 0 ),
+					( RandomAccessible< T > ) Views.addDimension( distance ),
+					Views.addDimension( targetDistance, 0, 0 ),
 					Views.addDimension( labels ),
 					Views.addDimension( labelsResult ),
 					d, 0 );
 		}
 		else
 		{
-			transformAlongDimensionPropagateLabelsParallel( source, tmp, labels, labelsResult, d, 0, es, nTasks );
+			transformAlongDimensionPropagateLabelsParallel( distance, tmpDistance, labels, labelsResult, d, 0, es, nTasks );
 		}
 
 		for ( int dim = 1; dim < nDim; ++dim )
 		{
 			if ( dim == lastDim )
 			{
-				transformAlongDimensionPropagateLabelsParallel( tmp, target, labels, labelsResult, d, dim, es, nTasks);
+				transformAlongDimensionPropagateLabelsParallel( tmpDistance, targetDistance, labels, labelsResult, d, dim, es, nTasks);
 			}
 			else
 			{
-				transformAlongDimensionPropagateLabelsParallel( tmp, tmp, labels, labelsResult, d, dim, es, nTasks);
+				transformAlongDimensionPropagateLabelsParallel( tmpDistance, tmpDistance, labels, labelsResult, d, dim, es, nTasks);
 			}
 		}
 	}
@@ -1716,6 +1860,13 @@ public class DistanceTransform
 		invokeAllAndWait( es, tasks );
 	}
 
+	private static Distance createEuclideanDistance( int numDimensions, double... weights )
+	{
+		final boolean isIsotropic = weights.length <= 1;
+		final double[] w = weights.length == numDimensions ? weights : DoubleStream.generate( () -> weights.length == 0 ? 1.0 : weights[ 0 ] ).limit( numDimensions ).toArray();
+		return isIsotropic ? new EuclidianDistanceIsotropic( w[ 0 ] ) : new EuclidianDistanceAnisotropic( w );
+	}
+
 	/**
 	 * Convenience method to find largest dimension of {@link Interval}
 	 * interval.
@@ -1735,10 +1886,13 @@ public class DistanceTransform
 			final RandomAccessibleInterval< L > labels,
 			final T type) {
 
+		final T maxVal = type.copy();
+		maxVal.setReal( maxVal.getMaxValue() );
+
 		final RandomAccessibleInterval< T > distances = Util.getSuitableImgFactory( labels, type ).create( labels );
 		Views.pair( labels, distances ).view().interval( labels ).forEach( pair -> {
 			if( pair.getA().getIntegerLong() == label )
-				pair.getB().setReal( Double.MAX_VALUE );
+				pair.getB().set( maxVal );
 		});
 
 		return distances;

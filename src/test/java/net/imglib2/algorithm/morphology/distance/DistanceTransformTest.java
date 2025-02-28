@@ -35,6 +35,7 @@
 package net.imglib2.algorithm.morphology.distance;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -487,7 +488,15 @@ public class DistanceTransformTest
 			final int numLabels = params.getIntPosition( 2 );
 
 			testLabelPropagationHelper( numDimensions, numLabels );
-			testLabelPropagationHelperParallel( numDimensions, numLabels );
+			try
+			{
+				testLabelPropagationHelperParallel( numDimensions, numLabels );
+			}
+			catch ( Exception e )
+			{
+				e.printStackTrace();
+				fail();
+			}
 		} );
 
 	}
@@ -507,7 +516,7 @@ public class DistanceTransformTest
 		final ArrayImg< LongType, LongArray > labels = ArrayImgs.longs( imgDims );
 
 		final Set< PointAndLabel > points = initializeLabels( rng, nLabels, labels );
-		DistanceTransform.labelTransform( labels, 0 );
+		DistanceTransform.voronoiDistanceTransform( labels, 0 );
 		validateLabelsSet( "serial", points, labels );
 	}
 
@@ -518,14 +527,16 @@ public class DistanceTransformTest
 	 *
 	 * @param ndims number of dimensions
 	 * @param nLabels number of labels
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	private void testLabelPropagationHelperParallel( int ndims, int nLabels )
+	private void testLabelPropagationHelperParallel( int ndims, int nLabels ) throws InterruptedException, ExecutionException
 	{
 
 		final long[] imgDims = LongStream.iterate( dimensionSize, d -> d - 1 ).limit( ndims ).toArray();
 		final ArrayImg< LongType, LongArray > labels = ArrayImgs.longs( imgDims );
 		final Set< PointAndLabel > points = initializeLabels( rng, nLabels, labels );
-		DistanceTransform.labelTransform( labels, 0, es, 3 * nThreads );
+		DistanceTransform.voronoiDistanceTransform( labels, 0, es, 3 * nThreads );
 		validateLabelsSet( "parallel", points, labels );
 	}
 
