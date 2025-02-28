@@ -738,7 +738,7 @@ public class DistanceTransform
 			final DISTANCE_TYPE distanceType,
 			final double... weights )
 	{
-		final U maxVal = tmp.getType().copy();
+		final U maxVal = tmp.getType().createVariable();
 		maxVal.setReal( maxVal.getMaxValue() );
 		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
 		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
@@ -792,7 +792,7 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-		final U maxVal = tmp.getType().copy();
+		final U maxVal = tmp.getType().createVariable();
 		maxVal.setReal( maxVal.getMaxValue() );
 		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
 		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
@@ -919,7 +919,7 @@ public class DistanceTransform
 			final RandomAccessibleInterval< V > target,
 			final Distance d )
 	{
-		final U maxVal = tmp.getType().copy();
+		final U maxVal = tmp.getType().createVariable();
 		maxVal.setReal( maxVal.getMaxValue() );
 		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
 		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
@@ -966,7 +966,7 @@ public class DistanceTransform
 			final ExecutorService es,
 			final int nTasks ) throws InterruptedException, ExecutionException
 	{
-		final U maxVal = tmp.getType().copy();
+		final U maxVal = tmp.getType().createVariable();
 		maxVal.setReal( maxVal.getMaxValue() );
 		final Converter< B, U > converter = new BinaryMaskToCost<>( maxVal );
 		final RandomAccessible< U > converted = Converters.convert( source, converter, maxVal.createVariable() );
