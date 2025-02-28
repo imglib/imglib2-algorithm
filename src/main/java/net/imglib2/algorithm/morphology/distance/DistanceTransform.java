@@ -1466,15 +1466,12 @@ public class DistanceTransform
 	 *            the label type
 	 * @param labels
 	 *            the label image
-	 * @param backgroundLabel
-	 *            the background label
 	 * @param es
 	 *            the ExecutorService
 	 * @param nTasks
 	 *            the number of tasks in which to split the computation 
 	 * @param weights
 	 *            for distance computation per dimension
-	 * @return the distance map
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
@@ -1529,7 +1526,7 @@ public class DistanceTransform
 	 * distances are given by the values in the distance argument. Results of
 	 * label propagation are stored in {@code labelsResult}
 	 * <p>
-	 * This implementation uses the {@targetDistance} for temporary storage.
+	 * This implementation uses the {@code targetDistance} for temporary storage.
 	 *
 	 * @param <T>
 	 *            input distance {@link RealType}
@@ -1542,8 +1539,6 @@ public class DistanceTransform
 	 * @param distance
 	 *            Input distance function from which distance transform should
 	 *            be computed.
-	 * @param tmpDistance
-	 *            Storage for intermediate distance results.
 	 * @param targetDistance
 	 *            Final result of distance transform. May be the same instance
 	 *            as distance.
