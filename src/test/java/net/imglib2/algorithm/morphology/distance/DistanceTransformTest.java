@@ -34,6 +34,7 @@
 
 package net.imglib2.algorithm.morphology.distance;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -499,6 +500,68 @@ public class DistanceTransformTest
 			}
 		} );
 
+	}
+
+	@Test
+	public void testWeights()
+	{
+		final double tolerance = 1e-9;
+		final double M = Double.MAX_VALUE;
+
+		double[] data = new double[] {
+				0, M, M, M,
+				M, 0, M, M
+		};
+		ArrayImg<DoubleType, DoubleArray> dists = ArrayImgs.doubles(data, 4, 2);
+		DistanceTransform.transform(dists, new EuclidianDistanceAnisotropic(0.1, 1.0));
+
+		final double[] expected = new double[] {0.0, 0.1, 0.4, 0.9, 0.1, 0.0, 0.1, 0.4 };
+		assertArrayEquals( expected, dists.getAccessType().getCurrentStorageArray(), tolerance );
+	}
+
+	@Test
+	public void testWeightsL1()
+	{
+		final double tolerance = 1e-9;
+		final double M = Double.MAX_VALUE;
+
+		double[] data = new double[] {
+				0, M, M, M,
+				M, 0, M, M
+		};
+		ArrayImg<DoubleType, DoubleArray> dists = ArrayImgs.doubles(data, 4, 2);
+		DistanceTransform.transform(dists, DISTANCE_TYPE.L1, 0.1, 1.0 );
+
+		final double[] expected = new double[] {0.0, 0.1, 0.2, 0.3, 0.1, 0.0, 0.1, 0.2 };
+		assertArrayEquals( expected, dists.getAccessType().getCurrentStorageArray(), tolerance );
+	}
+
+	@Test
+	public void testLabelPropagationWeights()
+	{
+		final long[] labelData = new long[]{
+				1, 0, 0, 0,
+				0, 2, 0, 0 };
+
+		final long[] expectedYClose = new long[] {
+				1, 2, 2, 2,
+				1, 2, 2, 2};
+
+		final long[] expectedXClose = new long[] {
+				1, 1, 1, 1,
+				2, 2, 2, 2};
+
+		double rx = 99.0;
+		double ry = 0.01;
+		ArrayImg<LongType, LongArray> labels = ArrayImgs.longs(Arrays.copyOf(labelData, 8), 4, 2);
+		DistanceTransform.voronoiDistanceTransform(labels, 0, rx, ry);
+		assertArrayEquals( expectedYClose,labels.getAccessType().getCurrentStorageArray());
+
+		rx = 0.01;
+		ry = 99.0;
+		ArrayImg<LongType, LongArray> labels2 = ArrayImgs.longs(Arrays.copyOf(labelData, 8), 4, 2);
+		DistanceTransform.voronoiDistanceTransform(labels2, 0, rx, ry);
+		assertArrayEquals( expectedXClose, labels2.getAccessType().getCurrentStorageArray());
 	}
 
 	/**

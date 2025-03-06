@@ -1187,7 +1187,7 @@ public class DistanceTransform
 			final double sourceAtPosition = source.get( position ).getRealDouble();
 			double s = d.intersect( envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), position, sourceAtPosition, dim );
 
-			for ( double envelopeValueAtK = envelopeIntersectLocation.get( k ).get(); s <= envelopeValueAtK; envelopeValueAtK = envelopeIntersectLocation.get( k ).get() )
+			for ( double envelopeValueAtK = envelopeIntersectLocation.get( k ).get(); s <= envelopeValueAtK && k >= 1; envelopeValueAtK = envelopeIntersectLocation.get( k ).get() )
 			{
 				--k;
 				envelopeIndexAtK = lowerBoundDistanceIndex.get( k ).get();
@@ -1785,7 +1785,7 @@ public class DistanceTransform
 			final double sourceAtPosition = source.get( position ).getRealDouble();
 			double s = d.intersect( envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), position, sourceAtPosition, dim );
 
-			for ( double envelopeValueAtK = envelopeIntersectLocation.get( k ).get(); s <= envelopeValueAtK; envelopeValueAtK = envelopeIntersectLocation.get( k ).get() )
+			for ( double envelopeValueAtK = envelopeIntersectLocation.get( k ).get(); s <= envelopeValueAtK && k >= 1; envelopeValueAtK = envelopeIntersectLocation.get( k ).get() )
 			{
 				--k;
 				envelopeIndexAtK = lowerBoundDistanceIndex.get( k ).get();
