@@ -355,9 +355,9 @@ public class DistanceTransform
 			final int nTasks,
 			final double... weights ) throws InterruptedException, ExecutionException
 	{
-
 		final boolean isIsotropic = weights.length <= 1;
-		final double[] w = weights.length == source.numDimensions() ? weights : DoubleStream.generate( () -> weights.length == 0 ? 1.0 : weights[ 0 ] ).limit( source.numDimensions() ).toArray();
+		final double[] w  = weights.length == source.numDimensions() ? weights
+					: DoubleStream.generate(() -> weights.length == 0 ? 1.0 : weights[0]).limit(source.numDimensions()).toArray();
 
 		switch ( distanceType )
 		{
@@ -1106,6 +1106,19 @@ public class DistanceTransform
 			final Distance d,
 			final int dim )
 	{
+		final long size = target.dimension( dim );
+		if( size > Integer.MAX_VALUE )
+			transformAlongDimensionComposite(source, target, d, dim);
+		else
+			transformAlongDimensionPrimitive(source, target, d, dim);
+	}
+
+	private static < T extends RealType< T >, U extends RealType< U > > void transformAlongDimensionComposite(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > target,
+			final Distance d,
+			final int dim )
+	{
 		final int lastDim = target.numDimensions() - 1;
 		final long size = target.dimension( dim );
 		final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
@@ -1126,6 +1139,35 @@ public class DistanceTransform
 				tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
 			}
 			transformSingleColumn( tmp, targetComp, lowerBoundDistanceIndex, envelopeIntersectLocation, d, dim, size );
+		}
+	}
+
+	private static < T extends RealType< T >, U extends RealType< U > > void transformAlongDimensionPrimitive(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > target,
+			final Distance d,
+			final int dim )
+	{
+		final int lastDim = target.numDimensions() - 1;
+		final long size = target.dimension( dim );
+		final RealComposite< DoubleType > tmp = Views.collapseReal( createAppropriateOneDimensionalImage( size, new DoubleType() ) ).randomAccess().get();
+
+		// do not permute if we already work on last dimension
+		final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( dim == lastDim ? Views.interval( source, target ) : Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
+		final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( dim == lastDim ? target : Views.permute( target, dim, lastDim ) ) ).cursor();
+
+		final long[] lowerBoundDistanceIndex = new long[(int)size];
+		final double[] envelopeIntersectLocation = new double[(int)size + 1];
+
+		while ( s.hasNext() )
+		{
+			final RealComposite< T > sourceComp = s.next();
+			final RealComposite< U > targetComp = t.next();
+			for ( long i = 0; i < size; ++i )
+			{
+				tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
+			}
+			transformSingleColumnPrimitive( tmp, targetComp, lowerBoundDistanceIndex, envelopeIntersectLocation, d, dim, size );
 		}
 	}
 
@@ -1165,6 +1207,53 @@ public class DistanceTransform
 		}
 
 		invokeAllAndWait( es, tasks );
+	}
+
+	private static < T extends RealType< T >, U extends RealType< U > > void transformSingleColumnPrimitive(
+			final RealComposite< T > source,
+			final RealComposite< U > target,
+			final long[] lowerBoundDistanceIndex,
+			final double[] envelopeIntersectLocation,
+			final Distance d,
+			final int dim,
+			final long size )
+	{
+		int k = 0;
+
+		lowerBoundDistanceIndex[0] = 0;
+		envelopeIntersectLocation[0] = Double.NEGATIVE_INFINITY;
+		envelopeIntersectLocation[1] = Double.POSITIVE_INFINITY;
+		for ( long position = 1; position < size; ++position )
+		{
+			long envelopeIndexAtK = lowerBoundDistanceIndex[k];
+			final double sourceAtPosition = source.get( position ).getRealDouble();
+			double s = d.intersect( envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), position, sourceAtPosition, dim );
+
+			for ( double envelopeValueAtK = envelopeIntersectLocation[k]; s <= envelopeValueAtK && k >= 1; envelopeValueAtK = envelopeIntersectLocation[k] )
+			{
+				--k;
+				envelopeIndexAtK = lowerBoundDistanceIndex[k];
+				s = d.intersect( envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), position, sourceAtPosition, dim );
+			}
+			++k;
+			lowerBoundDistanceIndex[k] = position;
+			envelopeIntersectLocation[k] = s;
+			envelopeIntersectLocation[k + 1] = Double.POSITIVE_INFINITY;
+		}
+
+		k = 0;
+
+		for ( long position = 0; position < size; ++position )
+		{
+			while ( envelopeIntersectLocation[ k + 1 ] < position )
+			{
+				++k;
+			}
+			final long envelopeIndexAtK = lowerBoundDistanceIndex[k];
+			// copy necessary because of the following line, access to source
+			// after write to source -> source and target cannot be the same
+			target.get( position ).setReal( d.evaluate( position, envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), dim ) );
+		}
 	}
 
 	private static < T extends RealType< T >, U extends RealType< U > > void transformSingleColumn(
@@ -1212,7 +1301,6 @@ public class DistanceTransform
 			// after write to source -> source and target cannot be the same
 			target.get( position ).setReal( d.evaluate( position, envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), dim ) );
 		}
-
 	}
 
 	private static < T extends RealType< T >, U extends RealType< U > > void transformL1AlongDimension(
@@ -1726,6 +1814,21 @@ public class DistanceTransform
 			final Distance d,
 			final int dim )
 	{
+		final long size = target.dimension( dim );
+		if( size > Integer.MAX_VALUE )
+			transformAlongDimensionPropagateLabelsComposite(source, target, labelSource, labelTarget, d, dim);
+		else
+			transformAlongDimensionPropagateLabelsPrimitive(source, target, labelSource, labelTarget, d, dim);
+	}
+
+	private static < T extends RealType< T >, U extends RealType< U >, L extends IntegerType< L >, M extends IntegerType< M > > void transformAlongDimensionPropagateLabelsComposite(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > target,
+			final RandomAccessible< L > labelSource,
+			final RandomAccessible< M > labelTarget,
+			final Distance d,
+			final int dim )
+	{
 		final int lastDim = target.numDimensions() - 1;
 		final long size = target.dimension( dim );
 
@@ -1759,11 +1862,11 @@ public class DistanceTransform
 				tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
 				tmpLabel.get( i ).setInteger( labelComp.get( i ).getIntegerLong() );
 			}
-			transformSingleColumnPropagateLabels( tmp, targetComp, tmpLabel, labelTargetComp, lowerBoundDistanceIndex, envelopeIntersectLocation, d, dim, size );
+			transformSingleColumnPropagateLabelsComposite( tmp, targetComp, tmpLabel, labelTargetComp, lowerBoundDistanceIndex, envelopeIntersectLocation, d, dim, size );
 		}
 	}
 
-	private static < T extends RealType< T >, U extends RealType< U >, L extends IntegerType<L>, M extends IntegerType<M> > void transformSingleColumnPropagateLabels(
+	private static < T extends RealType< T >, U extends RealType< U >, L extends IntegerType<L>, M extends IntegerType<M> > void transformSingleColumnPropagateLabelsComposite(
 			final RealComposite< T > source,
 			final RealComposite< U > target,
 			final RealComposite< L > labelsSource,
@@ -1811,6 +1914,100 @@ public class DistanceTransform
 			labelsResult.get( position ).setInteger( labelsSource.get( envelopeIndexAtK ).getIntegerLong() );
 		}
 
+	}
+
+	private static < T extends RealType< T >, U extends RealType< U >, L extends IntegerType< L >, M extends IntegerType< M > > void transformAlongDimensionPropagateLabelsPrimitive(
+			final RandomAccessible< T > source,
+			final RandomAccessibleInterval< U > target,
+			final RandomAccessible< L > labelSource,
+			final RandomAccessible< M > labelTarget,
+			final Distance d,
+			final int dim )
+	{
+		final int lastDim = target.numDimensions() - 1;
+		final int size = (int)target.dimension( dim );
+
+		final Img< DoubleType > tmpImg = createAppropriateOneDimensionalImage( size, new DoubleType() );
+		final RealComposite< DoubleType > tmp = Views.collapseReal( tmpImg ).randomAccess().get();
+
+		final Img< L > tmpLabelImg = Util.getSuitableImgFactory( tmpImg, labelSource.getType() ).create( tmpImg );
+		final RealComposite< L > tmpLabel = Views.collapseReal( tmpLabelImg ).randomAccess().get();
+
+		// do not permute if we already work on last dimension
+		final Cursor< RealComposite< T > > s = Views.flatIterable( Views.collapseReal( dim == lastDim ? Views.interval( source, target ) : Views.permute( Views.interval( source, target ), dim, lastDim ) ) ).cursor();
+		final Cursor< RealComposite< U > > t = Views.flatIterable( Views.collapseReal( dim == lastDim ? target : Views.permute( target, dim, lastDim ) ) ).cursor();
+
+		final Cursor< RealComposite< L > > ls = Views.flatIterable(
+				Views.collapseReal( dim == lastDim ? Views.interval( labelSource, target ) : Views.permute( Views.interval( labelSource, target ), dim, lastDim ) ) ).cursor();
+
+		final Cursor< RealComposite< M > > lt = Views.flatIterable(
+				Views.collapseReal( dim == lastDim ? Views.interval( labelTarget, target ) : Views.permute( Views.interval( labelTarget, target ), dim, lastDim ) ) ).cursor();
+
+		final long[] lowerBoundDistanceIndex = new long[size];
+		final double[] envelopeIntersectLocation = new double[size+1];
+
+		while ( s.hasNext() )
+		{
+			final RealComposite< T > sourceComp = s.next();
+			final RealComposite< U > targetComp = t.next();
+			final RealComposite< L > labelComp = ls.next();
+			final RealComposite< M > labelTargetComp = lt.next();
+			for ( long i = 0; i < size; ++i )
+			{
+				tmp.get( i ).set( sourceComp.get( i ).getRealDouble() );
+				tmpLabel.get( i ).setInteger( labelComp.get( i ).getIntegerLong() );
+			}
+			transformSingleColumnPropagateLabelsPrimitive( tmp, targetComp, tmpLabel, labelTargetComp, lowerBoundDistanceIndex, envelopeIntersectLocation, d, dim, size );
+		}
+	}
+
+	private static < T extends RealType< T >, U extends RealType< U >, L extends IntegerType<L>, M extends IntegerType<M> > void transformSingleColumnPropagateLabelsPrimitive(
+			final RealComposite< T > source,
+			final RealComposite< U > target,
+			final RealComposite< L > labelsSource,
+			final RealComposite< M > labelsResult,
+			final long[] lowerBoundDistanceIndex,
+			final double[] envelopeIntersectLocation,
+			final Distance d,
+			final int dim,
+			final long size )
+	{
+		int k = 0;
+
+		lowerBoundDistanceIndex[0] = 0;
+		envelopeIntersectLocation[0] = Double.NEGATIVE_INFINITY;
+		envelopeIntersectLocation[1] = Double.POSITIVE_INFINITY;
+		for ( long position = 1; position < size; ++position )
+		{
+			long envelopeIndexAtK = lowerBoundDistanceIndex[k];
+			final double sourceAtPosition = source.get( position ).getRealDouble();
+			double s = d.intersect( envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), position, sourceAtPosition, dim );
+
+			for ( double envelopeValueAtK = envelopeIntersectLocation[k]; s <= envelopeValueAtK && k >= 1; envelopeValueAtK = envelopeIntersectLocation[k] )
+			{
+				--k;
+				envelopeIndexAtK = lowerBoundDistanceIndex[k];
+				s = d.intersect( envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), position, sourceAtPosition, dim );
+			}
+			++k;
+			lowerBoundDistanceIndex[k] = position;
+			envelopeIntersectLocation[k] = s;
+			envelopeIntersectLocation[k + 1] = Double.POSITIVE_INFINITY;
+		}
+
+		k = 0;
+		for ( long position = 0; position < size; ++position )
+		{
+			while ( envelopeIntersectLocation[ k + 1 ] < position )
+			{
+				++k;
+			}
+			final long envelopeIndexAtK = lowerBoundDistanceIndex[k];
+			// copy necessary because of the following line, access to source
+			// after write to source -> source and target cannot be the same
+			target.get( position ).setReal( d.evaluate( position, envelopeIndexAtK, source.get( envelopeIndexAtK ).getRealDouble(), dim ) );
+			labelsResult.get( position ).setInteger( labelsSource.get( envelopeIndexAtK ).getIntegerLong() );
+		}
 	}
 
 	private static < T extends RealType< T >, U extends RealType< U >, L extends IntegerType< L >, M extends IntegerType< M > > void transformAlongDimensionPropagateLabelsParallel(
