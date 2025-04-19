@@ -94,7 +94,7 @@ class Affine2DProcessor< P > extends AbstractTransformProcessor< P >
 		return transformToSource.estimateBounds( interval );
 	}
 
-	// specific to 3D
+	// specific to 2D
 	@Override
 	public void compute( final P src, final P dest )
 	{
