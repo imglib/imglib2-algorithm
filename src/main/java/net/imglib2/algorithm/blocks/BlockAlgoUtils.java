@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,11 +33,14 @@
  */
 package net.imglib2.algorithm.blocks;
 
-import net.imglib2.blocks.PrimitiveBlocks;
+import net.imglib2.Interval;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgFactory;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.type.NativeType;
 
 /**
@@ -82,5 +85,28 @@ public class BlockAlgoUtils
 				blocks.getType(),
 				cellLoader( blocks ),
 				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions ) );
+	}
+
+	/**
+	 * Create a {@code ArrayImg} from the specified {@code interval} in {@code blocks}.
+	 *
+	 * @param blocks
+	 * 		provides data to be copied
+	 * @param interval
+	 * 		the interval to be copied
+	 * @param <T>
+	 * 		target type (type of the returned ArrayImg)
+	 *
+	 * @return a {@code ArrayImg} copied from {@code interval} in {@code blocks}.
+	 */
+	public static < T extends NativeType< T > >
+	ArrayImg< T, ? > arrayImg(
+			final BlockSupplier< T > blocks,
+			final Interval interval )
+	{
+		final ArrayImg< T, ? > img = new ArrayImgFactory<>( blocks.getType() ).create( interval );
+		final Object dest = ( ( ArrayDataAccess< ? > ) img.update( null ) ).getCurrentStorageArray();
+		blocks.copy( interval, dest );
+		return img;
 	}
 }
