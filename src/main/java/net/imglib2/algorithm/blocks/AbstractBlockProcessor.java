@@ -76,7 +76,12 @@ public abstract class AbstractBlockProcessor< I, O > implements BlockProcessor< 
 
 	protected AbstractBlockProcessor( final PrimitiveType sourcePrimitiveType, final int numSourceDimensions )
 	{
-		tempArray = TempArray.forPrimitiveType( sourcePrimitiveType );
+		this( sourcePrimitiveType, false, numSourceDimensions );
+	}
+
+	protected AbstractBlockProcessor( final PrimitiveType sourcePrimitiveType, final boolean isVolatile, final int numSourceDimensions )
+	{
+		tempArray = TempArray.forPrimitiveType( sourcePrimitiveType, isVolatile );
 		sourceInterval = new BlockInterval( numSourceDimensions );
 		sourcePos = sourceInterval.min();
 		sourceSize = sourceInterval.size();
