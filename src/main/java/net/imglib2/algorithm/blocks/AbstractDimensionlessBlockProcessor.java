@@ -69,7 +69,12 @@ public abstract class AbstractDimensionlessBlockProcessor< I, O > implements Blo
 
 	protected AbstractDimensionlessBlockProcessor( final PrimitiveType sourcePrimitiveType )
 	{
-		tempArray = TempArray.forPrimitiveType( sourcePrimitiveType );
+		this( sourcePrimitiveType, false );
+	}
+
+	protected AbstractDimensionlessBlockProcessor( final PrimitiveType sourcePrimitiveType, final boolean isVolatile )
+	{
+		tempArray = TempArray.forPrimitiveType( sourcePrimitiveType, isVolatile );
 	}
 
 	protected AbstractDimensionlessBlockProcessor( final AbstractDimensionlessBlockProcessor< I, O > proc )
