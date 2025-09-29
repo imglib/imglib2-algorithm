@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,6 +33,7 @@
  */
 package net.imglib2.algorithm.blocks.transform;
 
+import net.imglib2.Volatile;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
@@ -45,6 +46,8 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.volatiles.VolatileDoubleType;
+import net.imglib2.type.volatiles.VolatileFloatType;
 
 import static net.imglib2.type.PrimitiveType.FLOAT;
 
@@ -168,14 +171,27 @@ public class Transform
 				processAsFloat = pt.equals( FLOAT ) || pt.getByteCount() < FLOAT.getByteCount();
 				break;
 			}
-			final UnaryBlockOperator< ?, ? > op = processAsFloat
-					? _affine( transformToSource, interpolation, new FloatType() )
-					: _affine( transformToSource, interpolation, new DoubleType() );
+			final UnaryBlockOperator< ?, ? > op;
+			if ( type instanceof Volatile )
+			{
+				op = processAsFloat
+						? _volatile_affine( transformToSource, interpolation, new VolatileFloatType() )
+						: _volatile_affine( transformToSource, interpolation, new VolatileDoubleType() );
+			}
+			else
+			{
+				op = processAsFloat
+						? _affine( transformToSource, interpolation, new FloatType() )
+						: _affine( transformToSource, interpolation, new DoubleType() );
+			}
 			return op.adaptSourceType( type, ClampType.NONE ).adaptTargetType( type, clampType );
 		}
 		else // if ( interpolation == Interpolation.NEARESTNEIGHBOR )
 		{
-			return _affine( transformToSource, interpolation, type );
+			if ( type instanceof Volatile )
+				return _volatile_affine( transformToSource, interpolation, type );
+			else
+				return _affine( transformToSource, interpolation, type );
 		}
 	}
 
@@ -186,6 +202,15 @@ public class Transform
 				n == 2
 						? new Affine2DProcessor<>( ( AffineTransform2D ) transform, interpolation, type.getNativeTypeFactory().getPrimitiveType() )
 						: new Affine3DProcessor<>( ( AffineTransform3D ) transform, interpolation, type.getNativeTypeFactory().getPrimitiveType() ) );
+	}
+
+	private static < T extends NativeType< T > > UnaryBlockOperator< T, T > _volatile_affine( final AffineGet transform, final Interpolation interpolation, final T type )
+	{
+		final int n = transform.numDimensions();
+		if ( n == 2 )
+			throw new UnsupportedOperationException( "volatile 2D is not implemented yet" ); // TODO
+		return new DefaultUnaryBlockOperator<>( type, type, n, n,
+				new VolatileAffine3DProcessor<>( ( AffineTransform3D ) transform, interpolation, type.getNativeTypeFactory().getPrimitiveType() ) );
 	}
 
 	/**

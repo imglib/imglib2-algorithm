@@ -33,6 +33,7 @@
  */
 package net.imglib2.algorithm.blocks.transform;
 
+import net.imglib2.blocks.VolatileArray;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Cast;
 
@@ -96,36 +97,82 @@ interface TransformLine3D< P >
 			final Transform.Interpolation interpolation,
 			final PrimitiveType primitiveType )
 	{
-		if ( interpolation == Transform.Interpolation.NLINEAR )
+		return of( interpolation, primitiveType, false );
+	}
+
+	static < P > TransformLine3D< P > of(
+			final Transform.Interpolation interpolation,
+			final PrimitiveType primitiveType,
+			final boolean isVolatile )
+	{
+		if ( isVolatile )
 		{
-			switch ( primitiveType )
+			if ( interpolation == Transform.Interpolation.NLINEAR )
 			{
-			case FLOAT:
-				return Cast.unchecked( NLinear_float.INSTANCE );
-			case DOUBLE:
-				return Cast.unchecked( NLinear_double.INSTANCE );
-			default:
-				throw new IllegalArgumentException();
+				switch ( primitiveType )
+				{
+				case FLOAT:
+					return Cast.unchecked( NLinear_volatile_float.INSTANCE );
+//				case DOUBLE:
+//					return Cast.unchecked( NLinear_double.INSTANCE );
+				default:
+					throw new IllegalArgumentException();
+				}
+			}
+			else // if ( interpolation = Transform.Interpolation.NEARESTNEIGHBOR )
+			{
+				switch ( primitiveType )
+				{
+//				case BYTE:
+//					return Cast.unchecked( NearestNeighbor_byte.INSTANCE );
+				case SHORT:
+					return Cast.unchecked( NearestNeighbor_volatile_short.INSTANCE );
+//				case INT:
+//					return Cast.unchecked( NearestNeighbor_int.INSTANCE );
+//				case LONG:
+//					return Cast.unchecked( NearestNeighbor_long.INSTANCE );
+//				case FLOAT:
+//					return Cast.unchecked( NearestNeighbor_float.INSTANCE );
+//				case DOUBLE:
+//					return Cast.unchecked( NearestNeighbor_double.INSTANCE );
+				default:
+					throw new IllegalArgumentException();
+				}
 			}
 		}
-		else // if ( interpolation = Transform.Interpolation.NEARESTNEIGHBOR )
+		else
 		{
-			switch ( primitiveType )
+			if ( interpolation == Transform.Interpolation.NLINEAR )
 			{
-			case BYTE:
-				return Cast.unchecked( NearestNeighbor_byte.INSTANCE );
-			case SHORT:
-				return Cast.unchecked( NearestNeighbor_short.INSTANCE );
-			case INT:
-				return Cast.unchecked( NearestNeighbor_int.INSTANCE );
-			case LONG:
-				return Cast.unchecked( NearestNeighbor_long.INSTANCE );
-			case FLOAT:
-				return Cast.unchecked( NearestNeighbor_float.INSTANCE );
-			case DOUBLE:
-				return Cast.unchecked( NearestNeighbor_double.INSTANCE );
-			default:
-				throw new IllegalArgumentException();
+				switch ( primitiveType )
+				{
+				case FLOAT:
+					return Cast.unchecked( NLinear_float.INSTANCE );
+				case DOUBLE:
+					return Cast.unchecked( NLinear_double.INSTANCE );
+				default:
+					throw new IllegalArgumentException();
+				}
+			}
+			else // if ( interpolation = Transform.Interpolation.NEARESTNEIGHBOR )
+			{
+				switch ( primitiveType )
+				{
+				case BYTE:
+					return Cast.unchecked( NearestNeighbor_byte.INSTANCE );
+				case SHORT:
+					return Cast.unchecked( NearestNeighbor_short.INSTANCE );
+				case INT:
+					return Cast.unchecked( NearestNeighbor_int.INSTANCE );
+				case LONG:
+					return Cast.unchecked( NearestNeighbor_long.INSTANCE );
+				case FLOAT:
+					return Cast.unchecked( NearestNeighbor_float.INSTANCE );
+				case DOUBLE:
+					return Cast.unchecked( NearestNeighbor_double.INSTANCE );
+				default:
+					throw new IllegalArgumentException();
+				}
 			}
 		}
 	}
@@ -415,4 +462,137 @@ interface TransformLine3D< P >
 			}
 		}
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// ========== VOLATILE ====================================================
+
+	class NearestNeighbor_volatile_short implements TransformLine3D< VolatileArray< short[] > >
+	{
+		private NearestNeighbor_volatile_short()
+		{
+		}
+
+		static final NearestNeighbor_volatile_short INSTANCE = new NearestNeighbor_volatile_short();
+
+		@Override
+		public void apply( final VolatileArray< short[] > vsrc, final VolatileArray< short[] > vdest, int offset, final int length,
+				final float d0, final float d1, final float d2,
+				final int ss0, final int ss1,
+				float sf0, float sf1, float sf2 )
+		{
+			final short[] srcData = vsrc.data();
+			final short[] destData = vdest.data();
+			final byte[] srcValid = vsrc.valid();
+			final byte[] destValid = vdest.valid();
+
+			sf0 += .5f;
+			sf1 += .5f;
+			sf2 += .5f;
+			for ( int x = 0; x < length; ++x )
+			{
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final int s2 = ( int ) sf2;
+				final int doffset = offset++;
+				final int soffset = s2 * ss1 + s1 * ss0 + s0;
+				destData[ doffset ] = srcData[ soffset ];
+				destValid[ doffset ] = srcValid[ soffset ];
+				sf0 += d0;
+				sf1 += d1;
+				sf2 += d2;
+			}
+		}
+	}
+
+	class NLinear_volatile_float implements TransformLine3D< VolatileArray< float[] > >
+	{
+		private NLinear_volatile_float()
+		{
+		}
+
+		static final NLinear_volatile_float INSTANCE = new NLinear_volatile_float();
+
+		@Override
+		public void apply( final VolatileArray< float[] > vsrc, final VolatileArray< float[] > vdest, int offset, final int length,
+				final float d0, final float d1, final float d2,
+				final int ss0, final int ss1,
+				float sf0, float sf1, float sf2 )
+		{
+			final float[] srcData = vsrc.data();
+			final float[] destData = vdest.data();
+			final byte[] srcValid = vsrc.valid();
+			final byte[] destValid = vdest.valid();
+
+			for ( int x = 0; x < length; ++x )
+			{
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final int s2 = ( int ) sf2;
+				final float r0 = sf0 - s0;
+				final float r1 = sf1 - s1;
+				final float r2 = sf2 - s2;
+
+				final int doffset = offset++;
+				final int o = s2 * ss1 + s1 * ss0 + s0;
+
+				final float a000 = srcData[ o ];
+				final float a001 = srcData[ o + 1 ];
+				final float a010 = srcData[ o + ss0 ];
+				final float a011 = srcData[ o + ss0 + 1 ];
+				final float a100 = srcData[ o + ss1 ];
+				final float a101 = srcData[ o + ss1 + 1 ];
+				final float a110 = srcData[ o + ss1 + ss0 ];
+				final float a111 = srcData[ o + ss1 + ss0 + 1 ];
+				destData[ doffset ] = a000 +
+						r0 * ( -a000 + a001 ) +
+						r1 * ( ( -a000 + a010 ) +
+								r0 * ( a000 - a001 - a010 + a011 ) ) +
+						r2 * ( ( -a000 + a100 ) +
+								r0 * ( a000 - a001 - a100 + a101 ) +
+								r1 * ( ( a000 - a010 - a100 + a110 ) +
+										r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
+
+				final boolean valid = ( srcData[ o ] != ( byte ) 0 ) &&
+						( srcData[ o + 1 ] != ( byte ) 0 ) &&
+						( srcData[ o + ss0 ] != ( byte ) 0 ) &&
+						( srcData[ o + ss0 + 1 ] != ( byte ) 0 ) &&
+						( srcData[ o + ss1 ] != ( byte ) 0 ) &&
+						( srcData[ o + ss1 + 1 ] != ( byte ) 0 ) &&
+						( srcData[ o + ss1 + ss0 ] != ( byte ) 0 ) &&
+						( srcData[ o + ss1 + ss0 + 1 ] != ( byte ) 0 );
+				destValid[ doffset ] = valid ? ( byte ) 1 : ( byte ) 0;
+
+				sf0 += d0;
+				sf1 += d1;
+				sf2 += d2;
+			}
+		}
+	}
+
 }

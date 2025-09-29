@@ -63,7 +63,12 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 
 	AbstractTransformProcessor( final int n, final Transform.Interpolation interpolation, final PrimitiveType primitiveType )
 	{
-		super( primitiveType, n );
+		this( n, interpolation, primitiveType, false );
+	}
+
+	AbstractTransformProcessor( final int n, final Transform.Interpolation interpolation, final PrimitiveType primitiveType, final boolean isVolatile )
+	{
+		super( primitiveType, isVolatile, n );
 		this.primitiveType = primitiveType;
 		this.interpolation = interpolation;
 		this.n = n;
