@@ -38,7 +38,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import net.imglib2.Interval;
+import net.imglib2.Volatile;
 import net.imglib2.algorithm.blocks.AbstractUnaryBlockOperator;
+import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
@@ -174,9 +176,19 @@ public class Convert
 		if ( Objects.equals( sourceType.getClass(), targetType.getClass() ) )
 			return Cast.unchecked( new Identity<>( sourceType, 0 ) );
 
+		final boolean volatileSource = sourceType instanceof Volatile;
+		final boolean volatileTarget = targetType instanceof Volatile;
+		if ( volatileSource != volatileTarget )
+			throw new IllegalArgumentException();
+
+		final BlockProcessor< ?, ? > blockProcessor;
+		if ( volatileSource )
+			blockProcessor = VolatileConvertBlockProcessor.createUnchecked( sourceType, targetType, clamp );
+		else
+			blockProcessor = new ConvertBlockProcessor<>( sourceType, targetType, clamp );
 		return new DefaultUnaryBlockOperator<>(
 				sourceType, targetType, 0, 0,
-				new ConvertBlockProcessor<>( sourceType, targetType, clamp ) );
+				blockProcessor );
 	}
 
 	// TODO: move to upper level, make public?
