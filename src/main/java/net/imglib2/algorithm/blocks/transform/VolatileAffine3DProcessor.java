@@ -51,7 +51,7 @@ class VolatileAffine3DProcessor< P > extends AbstractTransformProcessor< Volatil
 {
 	private final AffineTransform3D transformToSource;
 
-	private final TransformLine3D< VolatileArray< P > > transformLine;
+	private final VolatileTransformLine3D< P > transformLine;
 
 	private final double pdest[] = new double[ 3 ];
 
@@ -62,14 +62,14 @@ class VolatileAffine3DProcessor< P > extends AbstractTransformProcessor< Volatil
 			final Transform.Interpolation interpolation,
 			final PrimitiveType primitiveType )
 	{
-		this( transformToSource, interpolation, primitiveType, TransformLine3D.of( interpolation, primitiveType, true ) );
+		this( transformToSource, interpolation, primitiveType, VolatileTransformLine3D.of( interpolation, primitiveType ) );
 	}
 
 	private VolatileAffine3DProcessor(
 			final AffineTransform3D transformToSource,
 			final Transform.Interpolation interpolation,
 			final PrimitiveType primitiveType,
-			final TransformLine3D< VolatileArray< P > > transformLine )
+			final VolatileTransformLine3D< P > transformLine )
 	{
 		super( 3, interpolation, primitiveType, true );
 		this.transformToSource = transformToSource;
