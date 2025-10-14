@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -103,8 +103,8 @@ interface VolatileTransformLine3D< P >
 			{
 			case FLOAT:
 				return Cast.unchecked( NLinear_float.INSTANCE );
-//			case DOUBLE:
-//				return Cast.unchecked( NLinear_double.INSTANCE );
+			case DOUBLE:
+				return Cast.unchecked( NLinear_double.INSTANCE );
 			default:
 				throw new IllegalArgumentException();
 			}
@@ -113,18 +113,18 @@ interface VolatileTransformLine3D< P >
 		{
 			switch ( primitiveType )
 			{
-//			case BYTE:
-//				return Cast.unchecked( NearestNeighbor_byte.INSTANCE );
+			case BYTE:
+				return Cast.unchecked( NearestNeighbor_byte.INSTANCE );
 			case SHORT:
 				return Cast.unchecked( NearestNeighbor_short.INSTANCE );
-//			case INT:
-//				return Cast.unchecked( NearestNeighbor_int.INSTANCE );
-//			case LONG:
-//				return Cast.unchecked( NearestNeighbor_long.INSTANCE );
-//			case FLOAT:
-//				return Cast.unchecked( NearestNeighbor_float.INSTANCE );
-//			case DOUBLE:
-//				return Cast.unchecked( NearestNeighbor_double.INSTANCE );
+			case INT:
+				return Cast.unchecked( NearestNeighbor_int.INSTANCE );
+			case LONG:
+				return Cast.unchecked( NearestNeighbor_long.INSTANCE );
+			case FLOAT:
+				return Cast.unchecked( NearestNeighbor_float.INSTANCE );
+			case DOUBLE:
+				return Cast.unchecked( NearestNeighbor_double.INSTANCE );
 			default:
 				throw new IllegalArgumentException();
 			}
@@ -145,14 +145,14 @@ interface VolatileTransformLine3D< P >
 
 		@Override
 		public void apply( final VolatileArray< float[] > vsrc, final VolatileArray< float[] > vdest, int offset, final int length,
-				final float d0, final float d1, final float d2,
-				final int ss0, final int ss1,
-				float sf0, float sf1, float sf2 )
+		        final float d0, final float d1, final float d2,
+		        final int ss0, final int ss1,
+		        float sf0, float sf1, float sf2 )
 		{
-			final float[] srcData = vsrc.data();
-			final float[] destData = vdest.data();
-			final byte[] srcValid = vsrc.valid();
-			final byte[] destValid = vdest.valid();
+            final float[] srcData = vsrc.data();
+            final float[] destData = vdest.data();
+            final byte[] srcValid = vsrc.valid();
+            final byte[] destValid = vdest.valid();
 
 			for ( int x = 0; x < length; ++x )
 			{
@@ -163,8 +163,8 @@ interface VolatileTransformLine3D< P >
 				final float r1 = sf1 - s1;
 				final float r2 = sf2 - s2;
 
-				final int doffset = offset++;
-				final int o = s2 * ss1 + s1 * ss0 + s0;
+                final int doffset = offset++;
+                final int o = s2 * ss1 + s1 * ss0 + s0;
 
 				final float a000 = srcData[ o ];
 				final float a001 = srcData[ o + 1 ];
@@ -174,7 +174,7 @@ interface VolatileTransformLine3D< P >
 				final float a101 = srcData[ o + ss1 + 1 ];
 				final float a110 = srcData[ o + ss1 + ss0 ];
 				final float a111 = srcData[ o + ss1 + ss0 + 1 ];
-				destData[ doffset ] = a000 +
+                destData[ doffset ] = a000 +
 						r0 * ( -a000 + a001 ) +
 						r1 * ( ( -a000 + a010 ) +
 								r0 * ( a000 - a001 - a010 + a011 ) ) +
@@ -183,15 +183,81 @@ interface VolatileTransformLine3D< P >
 								r1 * ( ( a000 - a010 - a100 + a110 ) +
 										r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
 
-				final boolean valid = ( srcData[ o ] != ( byte ) 0 ) &&
-						( srcData[ o + 1 ] != ( byte ) 0 ) &&
-						( srcData[ o + ss0 ] != ( byte ) 0 ) &&
-						( srcData[ o + ss0 + 1 ] != ( byte ) 0 ) &&
-						( srcData[ o + ss1 ] != ( byte ) 0 ) &&
-						( srcData[ o + ss1 + 1 ] != ( byte ) 0 ) &&
-						( srcData[ o + ss1 + ss0 ] != ( byte ) 0 ) &&
-						( srcData[ o + ss1 + ss0 + 1 ] != ( byte ) 0 );
-				destValid[ doffset ] = valid ? ( byte ) 1 : ( byte ) 0;
+                final boolean valid = ( srcData[ o ] != ( byte ) 0 ) &&
+                        ( srcData[ o + 1 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss0 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss0 + 1 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss1 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss1 + 1 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss1 + ss0 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss1 + ss0 + 1 ] != ( byte ) 0 );
+                destValid[ doffset ] = valid ? ( byte ) 1 : ( byte ) 0;
+
+				sf0 += d0;
+				sf1 += d1;
+				sf2 += d2;
+			}
+		}
+	}
+
+
+	class NLinear_double implements VolatileTransformLine3D< double[] >
+	{
+		private NLinear_double()
+		{
+		}
+
+		static final NLinear_double INSTANCE = new NLinear_double();
+
+		@Override
+		public void apply( final VolatileArray< double[] > vsrc, final VolatileArray< double[] > vdest, int offset, final int length,
+		        final float d0, final float d1, final float d2,
+		        final int ss0, final int ss1,
+		        float sf0, float sf1, float sf2 )
+		{
+            final double[] srcData = vsrc.data();
+            final double[] destData = vdest.data();
+            final byte[] srcValid = vsrc.valid();
+            final byte[] destValid = vdest.valid();
+
+			for ( int x = 0; x < length; ++x )
+			{
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final int s2 = ( int ) sf2;
+				final float r0 = sf0 - s0;
+				final float r1 = sf1 - s1;
+				final float r2 = sf2 - s2;
+
+                final int doffset = offset++;
+                final int o = s2 * ss1 + s1 * ss0 + s0;
+
+				final double a000 = srcData[ o ];
+				final double a001 = srcData[ o + 1 ];
+				final double a010 = srcData[ o + ss0 ];
+				final double a011 = srcData[ o + ss0 + 1 ];
+				final double a100 = srcData[ o + ss1 ];
+				final double a101 = srcData[ o + ss1 + 1 ];
+				final double a110 = srcData[ o + ss1 + ss0 ];
+				final double a111 = srcData[ o + ss1 + ss0 + 1 ];
+                destData[ doffset ] = a000 +
+						r0 * ( -a000 + a001 ) +
+						r1 * ( ( -a000 + a010 ) +
+								r0 * ( a000 - a001 - a010 + a011 ) ) +
+						r2 * ( ( -a000 + a100 ) +
+								r0 * ( a000 - a001 - a100 + a101 ) +
+								r1 * ( ( a000 - a010 - a100 + a110 ) +
+										r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
+
+                final boolean valid = ( srcData[ o ] != ( byte ) 0 ) &&
+                        ( srcData[ o + 1 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss0 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss0 + 1 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss1 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss1 + 1 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss1 + ss0 ] != ( byte ) 0 ) &&
+                        ( srcData[ o + ss1 + ss0 + 1 ] != ( byte ) 0 );
+                destValid[ doffset ] = valid ? ( byte ) 1 : ( byte ) 0;
 
 				sf0 += d0;
 				sf1 += d1;
@@ -204,6 +270,123 @@ interface VolatileTransformLine3D< P >
 	// ========== NEARESTNEIGHBOR =============================================
 
 
+	class NearestNeighbor_float implements VolatileTransformLine3D< float[] >
+	{
+		private NearestNeighbor_float()
+		{
+		}
+
+		static final NearestNeighbor_float INSTANCE = new NearestNeighbor_float();
+
+		@Override
+		public void apply( final VolatileArray< float[] > vsrc, final VolatileArray< float[] > vdest, int offset, final int length,
+                final float d0, final float d1, final float d2,
+                final int ss0, final int ss1,
+                float sf0, float sf1, float sf2 )
+		{
+            final float[] srcData = vsrc.data();
+            final float[] destData = vdest.data();
+            final byte[] srcValid = vsrc.valid();
+            final byte[] destValid = vdest.valid();
+
+            sf0 += .5f;
+			sf1 += .5f;
+			sf2 += .5f;
+			for ( int x = 0; x < length; ++x )
+			{
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final int s2 = ( int ) sf2;
+                final int doffset = offset++;
+                final int soffset = s2 * ss1 + s1 * ss0 + s0;
+                destData[ doffset ] = srcData[ soffset ];
+                destValid[ doffset ] = srcValid[ soffset ];
+				sf0 += d0;
+				sf1 += d1;
+				sf2 += d2;
+			}
+		}
+	}
+
+
+	class NearestNeighbor_double implements VolatileTransformLine3D< double[] >
+	{
+		private NearestNeighbor_double()
+		{
+		}
+
+		static final NearestNeighbor_double INSTANCE = new NearestNeighbor_double();
+
+		@Override
+		public void apply( final VolatileArray< double[] > vsrc, final VolatileArray< double[] > vdest, int offset, final int length,
+                final float d0, final float d1, final float d2,
+                final int ss0, final int ss1,
+                float sf0, float sf1, float sf2 )
+		{
+            final double[] srcData = vsrc.data();
+            final double[] destData = vdest.data();
+            final byte[] srcValid = vsrc.valid();
+            final byte[] destValid = vdest.valid();
+
+            sf0 += .5f;
+			sf1 += .5f;
+			sf2 += .5f;
+			for ( int x = 0; x < length; ++x )
+			{
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final int s2 = ( int ) sf2;
+                final int doffset = offset++;
+                final int soffset = s2 * ss1 + s1 * ss0 + s0;
+                destData[ doffset ] = srcData[ soffset ];
+                destValid[ doffset ] = srcValid[ soffset ];
+				sf0 += d0;
+				sf1 += d1;
+				sf2 += d2;
+			}
+		}
+	}
+
+
+	class NearestNeighbor_byte implements VolatileTransformLine3D< byte[] >
+	{
+		private NearestNeighbor_byte()
+		{
+		}
+
+		static final NearestNeighbor_byte INSTANCE = new NearestNeighbor_byte();
+
+		@Override
+		public void apply( final VolatileArray< byte[] > vsrc, final VolatileArray< byte[] > vdest, int offset, final int length,
+                final float d0, final float d1, final float d2,
+                final int ss0, final int ss1,
+                float sf0, float sf1, float sf2 )
+		{
+            final byte[] srcData = vsrc.data();
+            final byte[] destData = vdest.data();
+            final byte[] srcValid = vsrc.valid();
+            final byte[] destValid = vdest.valid();
+
+            sf0 += .5f;
+			sf1 += .5f;
+			sf2 += .5f;
+			for ( int x = 0; x < length; ++x )
+			{
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final int s2 = ( int ) sf2;
+                final int doffset = offset++;
+                final int soffset = s2 * ss1 + s1 * ss0 + s0;
+                destData[ doffset ] = srcData[ soffset ];
+                destValid[ doffset ] = srcValid[ soffset ];
+				sf0 += d0;
+				sf1 += d1;
+				sf2 += d2;
+			}
+		}
+	}
+
+
 	class NearestNeighbor_short implements VolatileTransformLine3D< short[] >
 	{
 		private NearestNeighbor_short()
@@ -214,16 +397,16 @@ interface VolatileTransformLine3D< P >
 
 		@Override
 		public void apply( final VolatileArray< short[] > vsrc, final VolatileArray< short[] > vdest, int offset, final int length,
-				final float d0, final float d1, final float d2,
-				final int ss0, final int ss1,
-				float sf0, float sf1, float sf2 )
+                final float d0, final float d1, final float d2,
+                final int ss0, final int ss1,
+                float sf0, float sf1, float sf2 )
 		{
-			final short[] srcData = vsrc.data();
-			final short[] destData = vdest.data();
-			final byte[] srcValid = vsrc.valid();
-			final byte[] destValid = vdest.valid();
+            final short[] srcData = vsrc.data();
+            final short[] destData = vdest.data();
+            final byte[] srcValid = vsrc.valid();
+            final byte[] destValid = vdest.valid();
 
-			sf0 += .5f;
+            sf0 += .5f;
 			sf1 += .5f;
 			sf2 += .5f;
 			for ( int x = 0; x < length; ++x )
@@ -231,10 +414,88 @@ interface VolatileTransformLine3D< P >
 				final int s0 = ( int ) sf0;
 				final int s1 = ( int ) sf1;
 				final int s2 = ( int ) sf2;
-				final int doffset = offset++;
-				final int soffset = s2 * ss1 + s1 * ss0 + s0;
-				destData[ doffset ] = srcData[ soffset ];
-				destValid[ doffset ] = srcValid[ soffset ];
+                final int doffset = offset++;
+                final int soffset = s2 * ss1 + s1 * ss0 + s0;
+                destData[ doffset ] = srcData[ soffset ];
+                destValid[ doffset ] = srcValid[ soffset ];
+				sf0 += d0;
+				sf1 += d1;
+				sf2 += d2;
+			}
+		}
+	}
+
+
+	class NearestNeighbor_int implements VolatileTransformLine3D< int[] >
+	{
+		private NearestNeighbor_int()
+		{
+		}
+
+		static final NearestNeighbor_int INSTANCE = new NearestNeighbor_int();
+
+		@Override
+		public void apply( final VolatileArray< int[] > vsrc, final VolatileArray< int[] > vdest, int offset, final int length,
+                final float d0, final float d1, final float d2,
+                final int ss0, final int ss1,
+                float sf0, float sf1, float sf2 )
+		{
+            final int[] srcData = vsrc.data();
+            final int[] destData = vdest.data();
+            final byte[] srcValid = vsrc.valid();
+            final byte[] destValid = vdest.valid();
+
+            sf0 += .5f;
+			sf1 += .5f;
+			sf2 += .5f;
+			for ( int x = 0; x < length; ++x )
+			{
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final int s2 = ( int ) sf2;
+                final int doffset = offset++;
+                final int soffset = s2 * ss1 + s1 * ss0 + s0;
+                destData[ doffset ] = srcData[ soffset ];
+                destValid[ doffset ] = srcValid[ soffset ];
+				sf0 += d0;
+				sf1 += d1;
+				sf2 += d2;
+			}
+		}
+	}
+
+
+	class NearestNeighbor_long implements VolatileTransformLine3D< long[] >
+	{
+		private NearestNeighbor_long()
+		{
+		}
+
+		static final NearestNeighbor_long INSTANCE = new NearestNeighbor_long();
+
+		@Override
+		public void apply( final VolatileArray< long[] > vsrc, final VolatileArray< long[] > vdest, int offset, final int length,
+                final float d0, final float d1, final float d2,
+                final int ss0, final int ss1,
+                float sf0, float sf1, float sf2 )
+		{
+            final long[] srcData = vsrc.data();
+            final long[] destData = vdest.data();
+            final byte[] srcValid = vsrc.valid();
+            final byte[] destValid = vdest.valid();
+
+            sf0 += .5f;
+			sf1 += .5f;
+			sf2 += .5f;
+			for ( int x = 0; x < length; ++x )
+			{
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final int s2 = ( int ) sf2;
+                final int doffset = offset++;
+                final int soffset = s2 * ss1 + s1 * ss0 + s0;
+                destData[ doffset ] = srcData[ soffset ];
+                destValid[ doffset ] = srcValid[ soffset ];
 				sf0 += d0;
 				sf1 += d1;
 				sf2 += d2;
