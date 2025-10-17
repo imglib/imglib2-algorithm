@@ -11,7 +11,7 @@
 
 	<groupId>net.imglib2</groupId>
 	<artifactId>imglib2-algorithm</artifactId>
-	<version>0.18.2-SNAPSHOT</version>
+	<version>0.18.2</version>
 
 	<name>ImgLib2 Algorithms</name>
 	<description>Useful image processing algorithms.</description>
@@ -173,7 +173,7 @@
 	<scm>
 		<connection>scm:git:https://github.com/imglib/imglib2-algorithm</connection>
 		<developerConnection>scm:git:git@github.com:imglib/imglib2-algorithm</developerConnection>
-		<tag>HEAD</tag>
+		<tag>imglib2-algorithm-0.18.2</tag>
 		<url>https://github.com/imglib/imglib2-algorithm</url>
 	</scm>
 	<issueManagement>
