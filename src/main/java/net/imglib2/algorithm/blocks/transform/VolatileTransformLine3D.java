@@ -183,14 +183,14 @@ interface VolatileTransformLine3D< P >
 								r1 * ( ( a000 - a010 - a100 + a110 ) +
 										r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
 
-                final boolean valid = ( srcData[ o ] != ( byte ) 0 ) &&
-                        ( srcData[ o + 1 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss0 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss0 + 1 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss1 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss1 + 1 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss1 + ss0 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss1 + ss0 + 1 ] != ( byte ) 0 );
+                final boolean valid = ( srcValid[ o ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + 1 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss0 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss0 + 1 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss1 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss1 + 1 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss1 + ss0 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss1 + ss0 + 1 ] != ( byte ) 0 );
                 destValid[ doffset ] = valid ? ( byte ) 1 : ( byte ) 0;
 
 				sf0 += d0;
@@ -249,14 +249,14 @@ interface VolatileTransformLine3D< P >
 								r1 * ( ( a000 - a010 - a100 + a110 ) +
 										r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
 
-                final boolean valid = ( srcData[ o ] != ( byte ) 0 ) &&
-                        ( srcData[ o + 1 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss0 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss0 + 1 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss1 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss1 + 1 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss1 + ss0 ] != ( byte ) 0 ) &&
-                        ( srcData[ o + ss1 + ss0 + 1 ] != ( byte ) 0 );
+                final boolean valid = ( srcValid[ o ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + 1 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss0 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss0 + 1 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss1 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss1 + 1 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss1 + ss0 ] != ( byte ) 0 ) &&
+                        ( srcValid[ o + ss1 + ss0 + 1 ] != ( byte ) 0 );
                 destValid[ doffset ] = valid ? ( byte ) 1 : ( byte ) 0;
 
 				sf0 += d0;
