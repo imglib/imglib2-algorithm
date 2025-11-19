@@ -49,7 +49,7 @@ import net.imglib2.type.NativeTypeFactory;
 import net.imglib2.util.Cast;
 
 /**
- * Convert primitive arrays between ImgLib2 {@code NativeType}s using a {@link }Converter}.
+ * Convert primitive arrays between ImgLib2 {@code NativeType}s using a {@link Converter}.
  *
  * @param <S>
  * 		source type
