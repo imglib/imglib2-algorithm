@@ -119,13 +119,23 @@ interface TransformLine2D< P >
 				final float r1 = sf1 - s1;
 				final int o = s1 * nss0 + n * s0;
 				// TODO: create benchmark and play with loop unrolling, inlining n, etc...
-				for ( int k = 0; k < n; ++k )
 				{
+					final int k = 0;
 					final float a00 = src[ k + o ];
 					final float a01 = src[ k + o + n ];
 					final float a10 = src[ k + o + nss0 ];
 					final float a11 = src[ k + o + nss0 + n ];
-					dest[ offset++ ] = a00 + r0 * ( a01 - a00 ) + r1 * ( a10 - a00 + r0 * ( a00 - a10 - a01 + a11 ) );
+					final float v0 = a00 + r0 * ( a01 - a00 ) + r1 * ( a10 - a00 + r0 * ( a00 - a10 - a01 + a11 ) );
+					dest[ offset++ ] = v0 + sf0;
+				}
+				{
+					final int k = 1;
+					final float a00 = src[ k + o ];
+					final float a01 = src[ k + o + n ];
+					final float a10 = src[ k + o + nss0 ];
+					final float a11 = src[ k + o + nss0 + n ];
+					final float v1 = a00 + r0 * ( a01 - a00 ) + r1 * ( a10 - a00 + r0 * ( a00 - a10 - a01 + a11 ) );
+					dest[ offset++ ] = v1 + sf1;
 				}
 				sf0 += d0;
 				sf1 += d1;
@@ -158,13 +168,23 @@ interface TransformLine2D< P >
 				final float r1 = sf1 - s1;
 				final int o = s1 * nss0 + n * s0;
 				// TODO: create benchmark and play with loop unrolling, inlining n, etc...
-				for ( int k = 0; k < n; ++k )
 				{
+					final int k = 0;
 					final double a00 = src[ k + o ];
 					final double a01 = src[ k + o + n ];
 					final double a10 = src[ k + o + nss0 ];
 					final double a11 = src[ k + o + nss0 + n ];
-					dest[ offset++ ] = a00 + r0 * ( a01 - a00 ) + r1 * ( a10 - a00 + r0 * ( a00 - a10 - a01 + a11 ) );
+					final double v0 = a00 + r0 * ( a01 - a00 ) + r1 * ( a10 - a00 + r0 * ( a00 - a10 - a01 + a11 ) );
+					dest[ offset++ ] = v0 + sf0;
+				}
+				{
+					final int k = 1;
+					final double a00 = src[ k + o ];
+					final double a01 = src[ k + o + n ];
+					final double a10 = src[ k + o + nss0 ];
+					final double a11 = src[ k + o + nss0 + n ];
+					final double v1 = a00 + r0 * ( a01 - a00 ) + r1 * ( a10 - a00 + r0 * ( a00 - a10 - a01 + a11 ) );
+					dest[ offset++ ] = v1 + sf1;
 				}
 				sf0 += d0;
 				sf1 += d1;

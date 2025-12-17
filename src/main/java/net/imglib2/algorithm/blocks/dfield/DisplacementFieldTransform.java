@@ -75,36 +75,7 @@ public class DisplacementFieldTransform
 	public static < T extends NativeType< T > >
 	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > affine( final AffineGet transformFromSource )
 	{
-		return affine( transformFromSource, ComputationType.AUTO );
-	}
-
-	/**
-	 * Interpolate and affine-transform blocks of the standard ImgLib2 {@code
-	 * RealType}s.
-	 * <p>
-	 * Only 2D and 3D are supported currently!
-	 * <p>
-	 * The returned factory function creates an operator matching the type a
-	 * given input {@code BlockSupplier<T>}.
-	 *
-	 * @param transformFromSource
-	 * 		a 2D or 3D affine transform
-	 * @param computationType
-	 * 		For n-linear interpolation, this specifies in which precision
-	 * 		intermediate values should be computed. For {@code AUTO}, the type
-	 * 		that can represent the input/output type without loss of precision
-	 * 		is picked. That is, {@code FLOAT} for u8, i8, u16, i16, i32, f32,
-	 *      and otherwise {@code DOUBLE} for u32, i64, f64. For nearest-neighbor
-	 *      interpolation, {@code computationType} is not used.
-	 * @param <T>
-	 * 		the input/output type
-	 *
-	 * @return factory for {@code UnaryBlockOperator} to affine-transform blocks of type {@code T}
-	 */
-	public static < T extends NativeType< T > >
-	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > affine( final AffineGet transformFromSource, final ComputationType computationType )
-	{
-		return s -> createAffineOperator( s.getType(), transformFromSource, computationType );
+		return s -> createAffineOperator( s.getType(), transformFromSource );
 	}
 
 	/**
@@ -112,52 +83,32 @@ public class DisplacementFieldTransform
 	 * blocks of the standard ImgLib2 {@code RealType}s.
 	 * <p>
 	 * Only 2D and 3D are supported currently!
+	 * <p>
+	 * {@code type} must be {@code DoubleType} of {@code FloatType}.
 	 *
 	 * @param type
 	 * 		instance of the input type
 	 * @param transformFromSource
 	 * 		a 2D or 3D affine transform
-	 * @param computationType
-	 * 		For n-linear interpolation, this specifies in which precision
-	 * 		intermediate values should be computed. For {@code AUTO}, the type
-	 * 		that can represent the input/output type without loss of precision
-	 * 		is picked. That is, {@code FLOAT} for u8, i8, u16, i16, i32, f32,
-	 *      and otherwise {@code DOUBLE} for u32, i64, f64. For nearest-neighbor
-	 *      interpolation, {@code computationType} is not used.
 	 * @param <T>
 	 * 		the input/output type
 	 *
 	 * @return {@code UnaryBlockOperator} to affine-transform blocks of type {@code T}
 	 */
 	public static < T extends NativeType< T > >
-	UnaryBlockOperator< T, T > createAffineOperator( final T type, final AffineGet transformFromSource, final ComputationType computationType )
+	UnaryBlockOperator< T, T > createAffineOperator( final T type, final AffineGet transformFromSource )
 	{
 		final int n = transformFromSource.numDimensions();
 		if ( n < 2 || n > 3 ) {
 			throw new IllegalArgumentException( "Only 2D and 3D affine transforms are supported currently" );
 		}
 
-		final AffineGet transformToSource = invert( transformFromSource );
-
-			final boolean processAsFloat;
-			switch ( computationType )
-			{
-			case FLOAT:
-				processAsFloat = true;
-				break;
-			case DOUBLE:
-				processAsFloat = false;
-				break;
-			default:
-			case AUTO:
-				final PrimitiveType pt = type.getNativeTypeFactory().getPrimitiveType();
-				processAsFloat = pt.equals( FLOAT ) || pt.getByteCount() < FLOAT.getByteCount();
-				break;
-			}
-			final UnaryBlockOperator< ?, ? > op = processAsFloat
-					? _affine( transformToSource, new FloatType() )
-					: _affine( transformToSource, new DoubleType() );
-			return op.adaptSourceType( type, ClampType.NONE ).adaptTargetType( type, ClampType.NONE );
+		if ( type instanceof FloatType || type instanceof DoubleType ) {
+			final AffineGet transformToSource = invert( transformFromSource );
+			return _affine( transformToSource, type );
+		} else {
+			throw new IllegalArgumentException( "Distance field must be DoubleType or FloatType" );
+		}
 	}
 
 	private static < T extends NativeType< T > > UnaryBlockOperator< T, T > _affine( final AffineGet transform, final T type )
