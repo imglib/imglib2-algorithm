@@ -64,6 +64,8 @@ abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P
 
 	F positionField;
 
+	final double[] positionOffset; // TODO: what is this exactly, ans where is it set?
+
 	AbstractLookupProcessor( final int n, final Transform.Interpolation interpolation, final PrimitiveType primitiveType )
 	{
 		super( primitiveType, n );
@@ -72,6 +74,7 @@ abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P
 		this.n = n;
 		destPos = new long[ n ];
 		destSize = new int[ n ];
+		positionOffset = new double[ n ];
 	}
 
 	AbstractLookupProcessor( AbstractLookupProcessor< F, P > transform )
@@ -86,6 +89,7 @@ abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P
 		// init empty
 		destPos = new long[ n ];
 		destSize = new int[ n ];
+		positionOffset = new double[ n ];
 	}
 
 	@Override
