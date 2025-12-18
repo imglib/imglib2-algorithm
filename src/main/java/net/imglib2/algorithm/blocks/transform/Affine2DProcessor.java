@@ -61,18 +61,9 @@ class Affine2DProcessor< P > extends AbstractTransformProcessor< P >
 			final Transform.Interpolation interpolation,
 			final PrimitiveType primitiveType )
 	{
-		this( transformToSource, interpolation, primitiveType, TransformLine2D.of( interpolation, primitiveType ) );
-	}
-
-	private Affine2DProcessor(
-			final AffineTransform2D transformToSource,
-			final Transform.Interpolation interpolation,
-			final PrimitiveType primitiveType,
-			final TransformLine2D< P > transformLine )
-	{
 		super( 2, interpolation, primitiveType );
 		this.transformToSource = transformToSource;
-		this.transformLine = transformLine;
+		this.transformLine = TransformLine2D.of( interpolation, primitiveType );
 	}
 
 	private Affine2DProcessor( Affine2DProcessor< P > processor )
