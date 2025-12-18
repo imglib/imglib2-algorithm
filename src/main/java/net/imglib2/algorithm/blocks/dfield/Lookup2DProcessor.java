@@ -8,6 +8,7 @@ class Lookup2DProcessor< F, P > extends AbstractLookupProcessor< F, P >
 {
 	private final Lookup2D< F, P > lookup;
 
+	public // TODO: make package private again (public for testing)
 	Lookup2DProcessor(
 			final PrimitiveType dfieldPrimitiveType,
 			final Transform.Interpolation interpolation,

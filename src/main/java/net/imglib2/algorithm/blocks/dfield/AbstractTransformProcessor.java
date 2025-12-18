@@ -50,6 +50,7 @@ import net.imglib2.type.PrimitiveType;
  * 		input/output primitive array type (i.e., float[] or double[])
  */
 // TODO: rename? "AbstractDisplacementFieldTransformProcessor"?
+public // TODO: make package private again (public for testing)
 abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P, P >
 {
 	PrimitiveType primitiveType;

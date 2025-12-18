@@ -69,13 +69,13 @@ public class DisplacementFieldUnaryBlockOperator< D extends NativeType< D > & Re
 	private final AbstractLookupProcessor lookupProcessor;
 
 	public DisplacementFieldUnaryBlockOperator(
-			T type, int numSourceDimensions, int numTargetDimensions,
+			T type, int numDimensions,
 			AbstractTransformProcessor fieldProcessor,
 			BlockSupplier< D > displacementField,
 			AbstractLookupProcessor lookupProcessor
 	)
 	{
-		super( type, type, numSourceDimensions, numTargetDimensions );
+		super( type, type, numDimensions, numDimensions );
 		this.fieldProcessor = fieldProcessor;
 		this.displacementField = displacementField;
 		this.lookupProcessor = lookupProcessor;

@@ -50,6 +50,7 @@ import net.imglib2.type.PrimitiveType;
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
+public // TODO: make package private again (public for testing)
 abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P, P >
 {
 	PrimitiveType primitiveType;

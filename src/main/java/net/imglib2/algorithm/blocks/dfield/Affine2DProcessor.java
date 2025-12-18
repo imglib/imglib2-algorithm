@@ -63,27 +63,18 @@ class Affine2DProcessor< P > extends AbstractTransformProcessor< P >
 	private final double displacementScale0;
 	private final double displacementScale1;
 
+	public // TODO: make package private again (public for testing)
 	Affine2DProcessor(
 			final AffineTransform2D transformToSource, // TODO: rename? "source" == "displacement field" here ...
 			final double[] displacementScale, // for a "normalized" displacement field, this is the spacing (i.e. downsampling factor wrt input grid)
 			final Interpolation inputInterpolation,
 			final PrimitiveType primitiveType )
 	{
-		this( transformToSource, displacementScale, inputInterpolation, primitiveType, TransformLine2D.of( primitiveType ) );
-	}
-
-	private Affine2DProcessor(
-			final AffineTransform2D transformToSource,
-			final double[] displacementScale,
-			final Interpolation inputInterpolation,
-			final PrimitiveType primitiveType,
-			final TransformLine2D< P > transformLine )
-	{
 		super( 2, inputInterpolation, primitiveType );
 		this.displacementScale0 = displacementScale[ 0 ];
 		this.displacementScale1 = displacementScale[ 1 ];
 		this.transformToSource = transformToSource;
-		this.transformLine = transformLine;
+		this.transformLine = TransformLine2D.of( primitiveType );
 	}
 
 	private Affine2DProcessor( Affine2DProcessor< P > processor )
