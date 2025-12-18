@@ -33,13 +33,10 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
-import static net.imglib2.type.PrimitiveType.FLOAT;
-
 import java.util.function.Function;
 
+import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.BlockSupplier;
-import net.imglib2.algorithm.blocks.ClampType;
-import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.algorithm.blocks.transform.Transform;
@@ -47,7 +44,6 @@ import net.imglib2.realtransform.AffineGet;
 import net.imglib2.realtransform.AffineTransform2D;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 
@@ -115,17 +111,23 @@ public class DisplacementFieldTransform
 	private static < T extends NativeType< T > > UnaryBlockOperator< T, T > _affine( final AffineGet transform, final T type )
 	{
 		final int n = transform.numDimensions();
-		return new DefaultUnaryBlockOperator<>( type, type, n + 1, n,
-				n == 2 ?
-						new Affine2DProcessor<>( ( AffineTransform2D ) transform,
-								new double[] { 1, 1 }, Transform.Interpolation.NLINEAR,
-								type.getNativeTypeFactory().getPrimitiveType()
-						) :
-						new Affine3DProcessor<>( ( AffineTransform3D ) transform,
-								Transform.Interpolation.NLINEAR,
-								type.getNativeTypeFactory().getPrimitiveType()
-						)
-		);
+		final BlockProcessor< ?, ? > fieldProcessor;
+		if ( n == 2 )
+		{
+			fieldProcessor =
+					new Affine2DProcessor<>( ( AffineTransform2D ) transform,
+							new double[] { 1, 1 }, Transform.Interpolation.NLINEAR,
+							type.getNativeTypeFactory().getPrimitiveType()
+					);
+		}
+		else
+		{
+			fieldProcessor = new Affine3DProcessor<>( ( AffineTransform3D ) transform,
+					Transform.Interpolation.NLINEAR,
+					type.getNativeTypeFactory().getPrimitiveType()
+			);
+		}
+		return new DefaultUnaryBlockOperator<>( type, type, n + 1, n, fieldProcessor );
 	}
 
 	private static AffineGet invert( final AffineGet transformFromSource )

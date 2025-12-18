@@ -34,25 +34,27 @@
 package net.imglib2.algorithm.blocks.dfield;
 
 import net.imglib2.Interval;
-import net.imglib2.RealInterval;
 import net.imglib2.algorithm.blocks.AbstractBlockProcessor;
-import net.imglib2.algorithm.blocks.BlockProcessor;
-import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
+import net.imglib2.algorithm.blocks.transform.Transform;
 import net.imglib2.blocks.BlockInterval;
 import net.imglib2.type.PrimitiveType;
 
 /**
- * Abstract base class for {@link Affine3DProcessor} and {@link
- * Affine2DProcessor}. Implements source/target interval computation, and {@code
- * TempArray} and thread-safe setup.
+ * TODO: javadoc
+ * <p>
+ * Abstract base class for ???. Implements source/target interval computation,
+ * and {@code TempArray} and thread-safe setup.
  *
+ * @param <F>
+ * 		position field array type (must be float[] or double[])
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
-// TODO: rename? "AbstractDisplacementFieldTransformProcessor"?
-abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P, P >
+abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P, P >
 {
 	PrimitiveType primitiveType;
+
+	Transform.Interpolation interpolation;
 
 	final int n;
 
@@ -60,79 +62,48 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 
 	final int[] destSize;
 
-	final BlockInterval inputBounds;
+	F positionField;
 
-	/**
-	 * The interpolation that will be used for sampling the input image with the
-	 * position field created by this processor. This is needed for determining
-	 * the padding of {@link #inputBounds}.
-	 */
-	final Interpolation inputInterpolation;
-
-	AbstractTransformProcessor( final int n, final Interpolation inputInterpolation, final PrimitiveType primitiveType )
+	AbstractLookupProcessor( final int n, final Transform.Interpolation interpolation, final PrimitiveType primitiveType )
 	{
-		super( primitiveType, n + 1 );
+		super( primitiveType, n );
 		this.primitiveType = primitiveType;
+		this.interpolation = interpolation;
 		this.n = n;
 		destPos = new long[ n ];
 		destSize = new int[ n ];
-		inputBounds = new BlockInterval( n );
-		this.inputInterpolation = inputInterpolation;
 	}
 
-	AbstractTransformProcessor( AbstractTransformProcessor< P > transform )
+	AbstractLookupProcessor( AbstractLookupProcessor< F, P > transform )
 	{
 		super( transform );
 
 		// re-use
 		primitiveType = transform.primitiveType;
+		interpolation = transform.interpolation;
 		n = transform.n;
-		inputInterpolation = transform.inputInterpolation;
 
 		// init empty
 		destPos = new long[ n ];
 		destSize = new int[ n ];
-		inputBounds = new BlockInterval( n );
 	}
-
-	/**
-	 * Estimate (inverse-transformed) source bounds in nD space from the given
-	 * nD target {@code interval}.
-	 * <p>
-	 * This is used by {@link #setTargetInterval} to derive the source bounds in
-	 * dimensions (1, ..., n+1). This is augmented with dimension 0, which is
-	 * always the full size n (number of dimensions of a displacement vector).
-	 */
-	abstract RealInterval estimateBounds( Interval interval );
 
 	@Override
 	public void setTargetInterval( final Interval interval )
 	{
 		BlockInterval.wrap( destPos, destSize ).setFrom( interval );
-		final RealInterval bounds = estimateBounds( interval );
-		sourcePos[ 0 ] = 0;
-		sourceSize[ 0 ] = n;
-		for ( int d = 0; d < n; ++d )
-		{
-			sourcePos[ d + 1 ] = ( long ) Math.floor( bounds.realMin( d ) - 0.5 );
-			sourceSize[ d + 1 ] = ( int ) ( ( long ) Math.floor( bounds.realMax( d ) + 0.5 ) - sourcePos[ d + 1 ] ) + 2;
-		}
 	}
 
-	/**
-	 * Get the input image bounds required to render an output image with
-	 * the position field obtained with the last {@link #compute} call.
-	 * <p>
-	 * (This depends on the displacement values, so it can be only computed
-	 * after the position field block has been created.)
-	 *
-	 * @return the {@link BlockInterval} representing the input bounds.
-	 */
-	public BlockInterval getInputBounds()
+	public void setSourceInterval( final Interval interval )
 	{
-		return inputBounds;
+		getSourceInterval().setFrom( interval );
+	}
+
+	public void setPositionField( final F field )
+	{
+		positionField = field;
 	}
 
 	@Override
-	public abstract AbstractTransformProcessor< P > independentCopy();
+	public abstract AbstractLookupProcessor< F, P > independentCopy();
 }
