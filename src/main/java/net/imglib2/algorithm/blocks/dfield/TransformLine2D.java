@@ -33,6 +33,8 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
+import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
+import net.imglib2.blocks.BlockInterval;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Cast;
 
@@ -48,7 +50,6 @@ import net.imglib2.util.Cast;
  * @param <P>
  * 		input/output primitive array type (float[] or double[])
  */
-@FunctionalInterface
 interface TransformLine2D< P >
 {
 
@@ -81,6 +82,43 @@ interface TransformLine2D< P >
 			float d0, float d1,
 			int ss0,
 			float sf0, float sf1 );
+
+	/**
+	 * Scale displacement vectors by the given scale {@code s0, s1}.
+	 * <p>
+	 * {@code length} is counted in full displacement vectors (not individual
+	 * float components).
+	 *
+	 * @param dest
+	 * 		flattened dest data
+	 * @param offset
+	 * 		offset (into {@code dest}) of the line to compute
+	 * @param length
+	 * 		length of the line to compute (in {@code dest})
+	 * @param s0
+	 *      scale factor for X to apply
+	 * @param s1
+	 *      scale factor for Y to apply
+	 */
+	void scale( P dest, int offset, int length, double s0, double s1 );
+
+	/**
+	 * Compute source bounds: Which image region will be needed to render with
+	 * the displacements in {@code dest}.
+	 * <p>
+	 * {@code length} is counted in full displacement vectors (not individual
+	 * float components).
+	 *
+	 * @param dest
+	 * 		flattened dest data
+	 * @param length
+	 * 		length of the line to compute (in {@code dest})
+	 * @param interpolation
+	 * 		to determine appropriate padding
+	 * @param bounds
+	 * 		source bounds will be written here
+	 */
+	void sourceBounds( P dest, int length, Interpolation interpolation, final BlockInterval bounds );
 
 	static < P > TransformLine2D< P > of( final PrimitiveType primitiveType )
 	{
@@ -141,6 +179,18 @@ interface TransformLine2D< P >
 				sf1 += d1;
 			}
 		}
+
+		@Override
+		public void scale( final float[] dest, final int offset, final int length, final double s0, final double s1 )
+		{
+			throw new UnsupportedOperationException( "TODO. not implemented yet ");
+		}
+
+		@Override
+		public void sourceBounds( final float[] dest, final int length, final Interpolation interpolation, final BlockInterval bounds )
+		{
+			throw new UnsupportedOperationException( "TODO. not implemented yet ");
+		}
 	}
 
 
@@ -189,6 +239,54 @@ interface TransformLine2D< P >
 				sf0 += d0;
 				sf1 += d1;
 			}
+		}
+
+		@Override
+		public void scale( final double[] dest, int offset, final int length, final double s0, final double s1 )
+		{
+			for ( int x = 0; x < length; ++x ) {
+				dest[ offset++ ] *= s0;
+				dest[ offset++ ] *= s1;
+			}
+		}
+
+		@Override
+		public void sourceBounds( final double[] dest, final int length, final Interpolation interpolation, final BlockInterval bounds )
+		{
+			double min0 = dest[ 0 ], max0 = min0;
+			double min1 = dest[ 1 ], max1 = min1;
+			for ( int i = 1; i < length; ++i )
+			{
+				final double v0 = dest[ 2 * i ];
+				if ( v0 < min0 )
+					min0 = v0;
+				else if ( v0 > max0 )
+					max0 = v0;
+				final double v1 = dest[ 2 * i + 1 ];
+				if ( v1 < min1 )
+					min1 = v1;
+				else if ( v1 > max1 )
+					max1 = v1;
+			}
+
+			final long[] boundsMin = bounds.min();
+			final int[] boundsSize = bounds.size();
+			switch ( interpolation )
+			{
+			case NEARESTNEIGHBOR:
+				boundsMin[ 0 ] = Math.round( min0 - 0.5 );
+				boundsMin[ 1 ] = Math.round( min1 - 0.5 );
+				boundsSize[ 0 ] = ( int ) ( Math.round( max0 + 0.5 ) - boundsMin[ 0 ] ) + 1;
+				boundsSize[ 1 ] = ( int ) ( Math.round( max1 + 0.5 ) - boundsMin[ 1 ] ) + 1;
+				break;
+			case NLINEAR:
+				boundsMin[ 0 ] = ( long ) Math.floor( min0 - 0.5 );
+				boundsMin[ 1 ] = ( long ) Math.floor( min1 - 0.5 );
+				boundsSize[ 0 ] = ( int ) ( ( long ) Math.floor( max0 + 0.5 ) - boundsMin[ 0 ] ) + 2;
+				boundsSize[ 1 ] = ( int ) ( ( long ) Math.floor( max1 + 0.5 ) - boundsMin[ 1 ] ) + 2;
+				break;
+			}
+
 		}
 	}
 }

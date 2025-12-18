@@ -42,6 +42,7 @@ import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
+import net.imglib2.algorithm.blocks.transform.Transform;
 import net.imglib2.realtransform.AffineGet;
 import net.imglib2.realtransform.AffineTransform2D;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -115,9 +116,16 @@ public class DisplacementFieldTransform
 	{
 		final int n = transform.numDimensions();
 		return new DefaultUnaryBlockOperator<>( type, type, n + 1, n,
-				n == 2
-						? new Affine2DProcessor<>( ( AffineTransform2D ) transform,type.getNativeTypeFactory().getPrimitiveType() )
-						: new Affine3DProcessor<>( ( AffineTransform3D ) transform, type.getNativeTypeFactory().getPrimitiveType() ) );
+				n == 2 ?
+						new Affine2DProcessor<>( ( AffineTransform2D ) transform,
+								new double[] { 1, 1 }, Transform.Interpolation.NLINEAR,
+								type.getNativeTypeFactory().getPrimitiveType()
+						) :
+						new Affine3DProcessor<>( ( AffineTransform3D ) transform,
+								Transform.Interpolation.NLINEAR,
+								type.getNativeTypeFactory().getPrimitiveType()
+						)
+		);
 	}
 
 	private static AffineGet invert( final AffineGet transformFromSource )

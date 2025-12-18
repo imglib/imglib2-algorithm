@@ -36,6 +36,7 @@ package net.imglib2.algorithm.blocks.dfield;
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.algorithm.blocks.AbstractBlockProcessor;
+import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.blocks.BlockInterval;
 import net.imglib2.type.PrimitiveType;
 
@@ -47,6 +48,7 @@ import net.imglib2.type.PrimitiveType;
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
+// TODO: rename? "AbstractDisplacementFieldTransformProcessor"?
 abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P, P >
 {
 	PrimitiveType primitiveType;
@@ -57,13 +59,24 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 
 	final int[] destSize;
 
-	AbstractTransformProcessor( final int n, final PrimitiveType primitiveType )
+	final BlockInterval inputBounds;
+
+	/**
+	 * The interpolation that will be used for sampling the input image with the
+	 * position field created by this processor. This is needed for determining
+	 * the padding of {@link #inputBounds}.
+	 */
+	final Interpolation inputInterpolation;
+
+	AbstractTransformProcessor( final int n, final Interpolation inputInterpolation, final PrimitiveType primitiveType )
 	{
 		super( primitiveType, n + 1 );
 		this.primitiveType = primitiveType;
 		this.n = n;
 		destPos = new long[ n ];
 		destSize = new int[ n ];
+		inputBounds = new BlockInterval( n );
+		this.inputInterpolation = inputInterpolation;
 	}
 
 	AbstractTransformProcessor( AbstractTransformProcessor< P > transform )
@@ -73,10 +86,12 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 		// re-use
 		primitiveType = transform.primitiveType;
 		n = transform.n;
+		inputInterpolation = transform.inputInterpolation;
 
 		// init empty
 		destPos = new long[ n ];
 		destSize = new int[ n ];
+		inputBounds = new BlockInterval( n );
 	}
 
 	/**
@@ -101,5 +116,19 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 			sourcePos[ d + 1 ] = ( long ) Math.floor( bounds.realMin( d ) - 0.5 );
 			sourceSize[ d + 1 ] = ( int ) ( ( long ) Math.floor( bounds.realMax( d ) + 0.5 ) - sourcePos[ d + 1 ] ) + 2;
 		}
+	}
+
+	/**
+	 * Get the input image bounds required to render an output image with
+	 * the position field obtained with the last {@link #compute} call.
+	 * <p>
+	 * (This depends on the displacement values, so it can be only computed
+	 * after the position field block has been created.)
+	 *
+	 * @return the {@link BlockInterval} representing the input bounds.
+	 */
+	public BlockInterval getInputBounds()
+	{
+		return inputBounds;
 	}
 }

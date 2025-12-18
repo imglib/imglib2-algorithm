@@ -36,6 +36,7 @@ package net.imglib2.algorithm.blocks.dfield;
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.algorithm.blocks.BlockProcessor;
+import net.imglib2.algorithm.blocks.transform.Transform;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.PrimitiveType;
 
@@ -58,17 +59,19 @@ class Affine3DProcessor< P > extends AbstractTransformProcessor< P >
 
 	Affine3DProcessor(
 			final AffineTransform3D transformToSource,
+			final Transform.Interpolation inputInterpolation,
 			final PrimitiveType primitiveType )
 	{
-		this( transformToSource, primitiveType, TransformLine3D.of( primitiveType ) );
+		this( transformToSource, inputInterpolation, primitiveType, TransformLine3D.of( primitiveType ) );
 	}
 
 	private Affine3DProcessor(
 			final AffineTransform3D transformToSource,
+			final Transform.Interpolation inputInterpolation,
 			final PrimitiveType primitiveType,
 			final TransformLine3D< P > transformLine )
 	{
-		super( 3, primitiveType );
+		super( 3, inputInterpolation, primitiveType );
 		this.transformToSource = transformToSource;
 		this.transformLine = transformLine;
 	}

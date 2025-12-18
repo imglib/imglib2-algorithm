@@ -33,24 +33,23 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
-import java.util.Arrays;
-
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
-import net.imglib2.blocks.BlockInterval;
 import net.imglib2.realtransform.AffineTransform2D;
 import net.imglib2.type.PrimitiveType;
+import net.imglib2.util.Intervals;
 
 /**
  * A {@link BlockProcessor} for interpolation and affine transform, using {@link
- * AffineTransform2D} and 2D source/target.
+ * AffineTransform2D} and (1+2)D displacement field source/target.
  *
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
 public // TODO: make package private again (public for testing)
+	// TODO: rename? "DisplacementFieldAffine2DProcessor"?
 class Affine2DProcessor< P > extends AbstractTransformProcessor< P >
 {
 	private final AffineTransform2D transformToSource;
@@ -61,19 +60,28 @@ class Affine2DProcessor< P > extends AbstractTransformProcessor< P >
 
 	private final double psrc[] = new double[ 2 ];
 
+	private final double displacementScale0;
+	private final double displacementScale1;
+
 	Affine2DProcessor(
-			final AffineTransform2D transformToSource,
+			final AffineTransform2D transformToSource, // TODO: rename? "source" == "displacement field" here ...
+			final double[] displacementScale, // for a "normalized" displacement field, this is the spacing (i.e. downsampling factor wrt input grid)
+			final Interpolation inputInterpolation,
 			final PrimitiveType primitiveType )
 	{
-		this( transformToSource, primitiveType, TransformLine2D.of( primitiveType ) );
+		this( transformToSource, displacementScale, inputInterpolation, primitiveType, TransformLine2D.of( primitiveType ) );
 	}
 
 	private Affine2DProcessor(
 			final AffineTransform2D transformToSource,
+			final double[] displacementScale,
+			final Interpolation inputInterpolation,
 			final PrimitiveType primitiveType,
 			final TransformLine2D< P > transformLine )
 	{
-		super( 2, primitiveType );
+		super( 2, inputInterpolation, primitiveType );
+		this.displacementScale0 = displacementScale[ 0 ];
+		this.displacementScale1 = displacementScale[ 1 ];
 		this.transformToSource = transformToSource;
 		this.transformLine = transformLine;
 	}
@@ -81,6 +89,8 @@ class Affine2DProcessor< P > extends AbstractTransformProcessor< P >
 	private Affine2DProcessor( Affine2DProcessor< P > processor )
 	{
 		super( processor );
+		displacementScale0 = processor.displacementScale0;
+		displacementScale1 = processor.displacementScale1;
 		transformToSource = processor.transformToSource;
 		transformLine = processor.transformLine;
 	}
@@ -97,7 +107,6 @@ class Affine2DProcessor< P > extends AbstractTransformProcessor< P >
 		return transformToSource.estimateBounds( interval );
 	}
 
-	// specific to 2D
 	@Override
 	public void compute( final P src, final P dest )
 	{
@@ -114,49 +123,10 @@ class Affine2DProcessor< P > extends AbstractTransformProcessor< P >
 			float sf0 = ( float ) ( psrc[ 0 ] - sourcePos[ 1 ] );
 			float sf1 = ( float ) ( psrc[ 1 ] - sourcePos[ 2 ] );
 			transformLine.apply( src, dest, i, ds0, d0, d1, ss0, sf0, sf1 );
+			transformLine.scale( dest, i, ds0, displacementScale0, displacementScale1 );
 			i += 2 * ds0;
 		}
 
-//		final int ds1 = destSize[ 1 ];
-//		final int length = ds0 * ds1;
-	}
-
-
-	private static void sourceBounds( final double[] dest, final int length, final Interpolation interpolation, final BlockInterval sourceInterval )
-	{
-		double min0 = dest[ 0 ], max0 = min0;
-		double min1 = dest[ 1 ], max1 = min1;
-		for ( int i = 1; i < length; ++i )
-		{
-			final double v0 = dest[ 2 * i ];
-			if ( v0 < min0 )
-				min0 = v0;
-			else if ( v0 > max0 )
-				max0 = v0;
-			final double v1 = dest[ 2 * i + 1 ];
-			if ( v1 < min1 )
-				min1 = v1;
-			else if ( v1 > max1 )
-				max1 = v1;
-		}
-
-		final long[] sourcePos = sourceInterval.min();
-		final int[] sourceSize = sourceInterval.size();
-		switch ( interpolation )
-		{
-		case NEARESTNEIGHBOR:
-			sourcePos[ 0 ] = Math.round( min0 - 0.5 );
-			sourcePos[ 1 ] = Math.round( min1 - 0.5 );
-			sourceSize[ 0 ] = ( int ) ( Math.round( max0 + 0.5 ) - sourcePos[ 0 ] ) + 1;
-			sourceSize[ 1 ] = ( int ) ( Math.round( max1 + 0.5 ) - sourcePos[ 1 ] ) + 1;
-			break;
-		case NLINEAR:
-			sourcePos[ 0 ] = ( long ) Math.floor( min0 - 0.5 );
-			sourcePos[ 1 ] = ( long ) Math.floor( min1 - 0.5 );
-			sourceSize[ 0 ] = ( int ) ( ( long ) Math.floor( max0 + 0.5 ) - sourcePos[ 0 ] ) + 2;
-			sourceSize[ 1 ] = ( int ) ( ( long ) Math.floor( max1 + 0.5 ) - sourcePos[ 1 ] ) + 2;
-			break;
-		}
-
+		transformLine.sourceBounds( dest, ds0 * destSize[ 1 ], inputInterpolation, inputBounds );
 	}
 }
