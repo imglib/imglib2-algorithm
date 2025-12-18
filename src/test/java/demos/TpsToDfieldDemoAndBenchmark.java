@@ -98,7 +98,7 @@ public class TpsToDfieldDemoAndBenchmark {
 		if( dfieldDownsampling != null ) {
 
 			double[] dfieldSpacing = IntStream.of(0, 1, 2).mapToDouble( i -> {
-				return imageSpacing[i] / dfieldDownsampling[i];
+				return imageSpacing[i] * dfieldDownsampling[i];
 			}).toArray();
 
 			RandomAccessibleInterval<DoubleType> dfield = renderDfield(transform, downsample(img, dfieldDownsampling), dfieldSpacing);
