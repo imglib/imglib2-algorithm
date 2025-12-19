@@ -103,7 +103,7 @@ interface Lookup2D< F, P >
 				switch ( primitiveType )
 				{
 				case FLOAT:
-					// TODO
+					return Cast.unchecked( NLinear_doubleField_float.INSTANCE );
 				case DOUBLE:
 					// TODO
 					throw new UnsupportedOperationException( "TODO. not implemented" );
@@ -141,6 +141,40 @@ interface Lookup2D< F, P >
 	// ========== NLINEAR =====================================================
 
 
+	// TODO prototype NLinear_doubleField_float
+	class NLinear_doubleField_float implements Lookup2D< double[], float[] >
+	{
+		private NLinear_doubleField_float()
+		{
+		}
+
+		static final NLinear_doubleField_float INSTANCE = new NLinear_doubleField_float();
+
+		@Override
+		public void apply( final double[] pfield,
+				double d0, double d1,
+				final float[] src, final float[] dest, final int length,
+				final int ss0 )
+		{
+			System.out.println( "NLinear_doubleField_float.apply" );
+			for ( int x = 0; x < length; ++x )
+			{
+				final double sf0 = pfield[ 2 * x ] + d0;
+				final double sf1 = pfield[ 2 * x + 1 ] + d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final float r0 = ( float ) ( sf0 - s0 );
+				final float r1 = ( float ) ( sf1 - s1 );
+				final int o = s1 * ss0 + s0;
+				final float a00 = src[ o ];
+				final float a01 = src[ o + 1 ];
+				final float a10 = src[ o + ss0 ];
+				final float a11 = src[ o + ss0 + 1 ];
+				dest[ x ] = a00 + r0 * ( a01 - a00 ) + r1 * ( a10 - a00 + r0 * ( a00 - a10 - a01 + a11 ) );
+			}
+		}
+	}
+
 	// TODO
 	// TODO
 	// TODO
@@ -168,10 +202,10 @@ interface Lookup2D< F, P >
 			d1 += .5;
 			for ( int x = 0; x < length; ++x )
 			{
-				final double p0 = pfield[ 2 * x ];
-				final double p1 = pfield[ 2 * x + 1 ];
-				final int s0 = ( int ) ( p0 + d0 );
-				final int s1 = ( int ) ( p1 + d1 );
+				final double p0 = pfield[ 2 * x ] + d0;
+				final double p1 = pfield[ 2 * x + 1 ] + d1;
+				final int s0 = ( int ) p0;
+				final int s1 = ( int ) p1;
 				dest[ x ] = src[ s1 * ss0 + s0 ];
 			}
 		}
