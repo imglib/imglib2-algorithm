@@ -33,8 +33,8 @@ class Lookup2DProcessor< F, P > extends AbstractLookupProcessor< F, P >
 	@Override
 	public void compute( final P src, final P dest )
 	{
-		final double d0 = Double.NaN; // TODO
-		final double d1 = Double.NaN; // TODO
+		final double d0 = positionOffset[ 0 ];
+		final double d1 = positionOffset[ 1 ];
 		final int length = destSize[ 0 ] * destSize[ 1 ];
 		final int ss0 = sourceSize[ 0 ];
 		lookup.apply( positionField, d0, d1, src, dest, length, ss0 );

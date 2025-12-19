@@ -65,7 +65,11 @@ abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P
 
 	F positionField;
 
-	final double[] positionOffset; // TODO: what is this exactly, ans where is it set?
+	/**
+	 * The offset to apply to {@code positionField} vectors when interpolating
+	 * into the source img block.
+	 */
+	final double[] positionOffset;
 
 	AbstractLookupProcessor( final int n, final Transform.Interpolation interpolation, final PrimitiveType primitiveType )
 	{
@@ -102,6 +106,11 @@ abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P
 	public void setSourceInterval( final Interval interval )
 	{
 		getSourceInterval().setFrom( interval );
+	}
+
+	public void setPositionOffset( final double[] offset )
+	{
+		System.arraycopy( offset, 0, positionOffset, 0, n );
 	}
 
 	public void setPositionField( final F field )

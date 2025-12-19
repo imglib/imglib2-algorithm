@@ -39,7 +39,6 @@ import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.realtransform.AffineTransform2D;
 import net.imglib2.type.PrimitiveType;
-import net.imglib2.util.Intervals;
 
 /**
  * A {@link BlockProcessor} for interpolation and affine transform, using {@link
@@ -118,6 +117,11 @@ class Affine2DProcessor< P > extends AbstractTransformProcessor< P >
 			i += 2 * ds0;
 		}
 
+		// now that we know the position vectors, compute input image bounds
 		transformLine.sourceBounds( dest, ds0 * destSize[ 1 ], inputInterpolation, inputBounds );
+
+		// now that we know the source bounds, compute the position vector offset
+		inputOffset[ 0 ] = displacementScale0 * sourcePos[ 1 ] - inputBounds.min( 0 );
+		inputOffset[ 1 ] = displacementScale1 * sourcePos[ 2 ] - inputBounds.min( 1 );
 	}
 }

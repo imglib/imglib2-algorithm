@@ -102,11 +102,14 @@ public class DisplacementFieldUnaryBlockOperator< D extends NativeType< D > & Re
 		fieldProcessor.compute( bufField, positions );
 
 		final BlockInterval bounds = fieldProcessor.getInputBounds();
+		final double[] offset = fieldProcessor.getInputOffset();
+
 		lookupProcessor.setTargetInterval( interval );
 		lookupProcessor.setSourceInterval( bounds );
 		final Object buf = lookupProcessor.getSourceBuffer();
 		src.copy( bounds, buf );
-		lookupProcessor.setPositionField( positions ); // TODO: add this method
+		lookupProcessor.setPositionField( positions );
+		lookupProcessor.setPositionOffset( offset );
 		lookupProcessor.compute( buf, dest );
 	}
 

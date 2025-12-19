@@ -36,7 +36,6 @@ package net.imglib2.algorithm.blocks.dfield;
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.algorithm.blocks.AbstractBlockProcessor;
-import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.blocks.BlockInterval;
 import net.imglib2.type.PrimitiveType;
@@ -63,6 +62,8 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 
 	final BlockInterval inputBounds;
 
+	final double[] inputOffset;
+
 	/**
 	 * The interpolation that will be used for sampling the input image with the
 	 * position field created by this processor. This is needed for determining
@@ -78,6 +79,7 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 		destPos = new long[ n ];
 		destSize = new int[ n ];
 		inputBounds = new BlockInterval( n );
+		inputOffset = new double[ n ];
 		this.inputInterpolation = inputInterpolation;
 	}
 
@@ -94,6 +96,7 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 		destPos = new long[ n ];
 		destSize = new int[ n ];
 		inputBounds = new BlockInterval( n );
+		inputOffset = new double[ n ];
 	}
 
 	/**
@@ -132,6 +135,26 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 	public BlockInterval getInputBounds()
 	{
 		return inputBounds;
+	}
+
+	/**
+	 * Get the offset to apply to vectors of the position field obtained with
+	 * the last {@link #compute} call, when interpolating into a source img
+	 * block covering {@link #getInputBounds()}.
+	 * <p>
+	 * The offsets {@code d0, d1} accounts for (scaled) offsets of both the
+	 * displacement field block and the src block.
+	 * <p>
+	 * TODO add formulas how offset is computed. See Lookup2D.
+	 * <p>
+	 * (This depends on the displacement values, so it can be only computed
+	 * after the position field block has been created.)
+	 *
+	 * @return the offset to apply to position field vectors when interpolating into the source block
+	 */
+	public double[] getInputOffset()
+	{
+		return inputOffset;
 	}
 
 	@Override
