@@ -1,3 +1,36 @@
+/*
+ * #%L
+ * ImgLib2: a general-purpose, multidimensional image processing library.
+ * %%
+ * Copyright (C) 2009 - 2025 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
+ * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
+ * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
+ * Mark Longair, Brian Northan, Nick Perry, Curtis Rueden, Johannes Schindelin,
+ * Jean-Yves Tinevez and Michael Zinsmaier.
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
 package net.imglib2.algorithm.blocks.dfield;
 
 import net.imglib2.algorithm.blocks.transform.Transform;
@@ -68,10 +101,9 @@ interface Lookup2D< F, P >
 				switch ( primitiveType )
 				{
 				case FLOAT:
-					// TODO
+					return Cast.unchecked( NLinear_floatField_float.INSTANCE );
 				case DOUBLE:
-					// TODO
-					throw new UnsupportedOperationException( "TODO. not implemented" );
+					return Cast.unchecked( NLinear_floatField_double.INSTANCE );
 				default:
 					throw new IllegalArgumentException();
 				}
@@ -81,18 +113,17 @@ interface Lookup2D< F, P >
 				switch ( primitiveType )
 				{
 				case BYTE:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_floatField_byte.INSTANCE );
 				case SHORT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_floatField_short.INSTANCE );
 				case INT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_floatField_int.INSTANCE );
 				case LONG:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_floatField_long.INSTANCE );
 				case FLOAT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_floatField_float.INSTANCE );
 				case DOUBLE:
-					// TODO
-					throw new UnsupportedOperationException( "TODO. not implemented" );
+					return Cast.unchecked( NearestNeighbor_floatField_double.INSTANCE );
 				default:
 					throw new IllegalArgumentException();
 				}
@@ -105,8 +136,7 @@ interface Lookup2D< F, P >
 				case FLOAT:
 					return Cast.unchecked( NLinear_doubleField_float.INSTANCE );
 				case DOUBLE:
-					// TODO
-					throw new UnsupportedOperationException( "TODO. not implemented" );
+					return Cast.unchecked( NLinear_doubleField_double.INSTANCE );
 				default:
 					throw new IllegalArgumentException();
 				}
@@ -118,16 +148,15 @@ interface Lookup2D< F, P >
 				case BYTE:
 					return Cast.unchecked( NearestNeighbor_doubleField_byte.INSTANCE );
 				case SHORT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_doubleField_short.INSTANCE );
 				case INT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_doubleField_int.INSTANCE );
 				case LONG:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_doubleField_long.INSTANCE );
 				case FLOAT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_doubleField_float.INSTANCE );
 				case DOUBLE:
-					// TODO
-					throw new UnsupportedOperationException( "TODO. not implemented" );
+					return Cast.unchecked( NearestNeighbor_doubleField_double.INSTANCE );
 				default:
 					throw new IllegalArgumentException();
 				}
@@ -141,26 +170,24 @@ interface Lookup2D< F, P >
 	// ========== NLINEAR =====================================================
 
 
-	// TODO prototype NLinear_doubleField_float
-	class NLinear_doubleField_float implements Lookup2D< double[], float[] >
+	class NLinear_floatField_float implements Lookup2D< float[], float[] >
 	{
-		private NLinear_doubleField_float()
+		private NLinear_floatField_float()
 		{
 		}
 
-		static final NLinear_doubleField_float INSTANCE = new NLinear_doubleField_float();
+		static final NLinear_floatField_float INSTANCE = new NLinear_floatField_float();
 
 		@Override
-		public void apply( final double[] pfield,
+		public void apply( final float[] pfield,
 				double d0, double d1,
 				final float[] src, final float[] dest, final int length,
 				final int ss0 )
 		{
-			System.out.println( "NLinear_doubleField_float.apply" );
 			for ( int x = 0; x < length; ++x )
 			{
-				final double sf0 = pfield[ 2 * x ] + d0;
-				final double sf1 = pfield[ 2 * x + 1 ] + d1;
+				final float sf0 = pfield[ 2 * x ] + (float) d0;
+				final float sf1 = pfield[ 2 * x + 1 ] + (float) d1;
 				final int s0 = ( int ) sf0;
 				final int s1 = ( int ) sf1;
 				final float r0 = ( float ) ( sf0 - s0 );
@@ -175,13 +202,331 @@ interface Lookup2D< F, P >
 		}
 	}
 
-	// TODO
-	// TODO
-	// TODO
-	// TODO
+
+	class NLinear_floatField_double implements Lookup2D< float[], double[] >
+	{
+		private NLinear_floatField_double()
+		{
+		}
+
+		static final NLinear_floatField_double INSTANCE = new NLinear_floatField_double();
+
+		@Override
+		public void apply( final float[] pfield,
+				double d0, double d1,
+				final double[] src, final double[] dest, final int length,
+				final int ss0 )
+		{
+			for ( int x = 0; x < length; ++x )
+			{
+				final float sf0 = pfield[ 2 * x ] + (float) d0;
+				final float sf1 = pfield[ 2 * x + 1 ] + (float) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final float r0 = ( float ) ( sf0 - s0 );
+				final float r1 = ( float ) ( sf1 - s1 );
+				final int o = s1 * ss0 + s0;
+				final double a00 = src[ o ];
+				final double a01 = src[ o + 1 ];
+				final double a10 = src[ o + ss0 ];
+				final double a11 = src[ o + ss0 + 1 ];
+				dest[ x ] = a00 + r0 * ( a01 - a00 ) + r1 * ( a10 - a00 + r0 * ( a00 - a10 - a01 + a11 ) );
+			}
+		}
+	}
+
+
+	class NLinear_doubleField_float implements Lookup2D< double[], float[] >
+	{
+		private NLinear_doubleField_float()
+		{
+		}
+
+		static final NLinear_doubleField_float INSTANCE = new NLinear_doubleField_float();
+
+		@Override
+		public void apply( final double[] pfield,
+				double d0, double d1,
+				final float[] src, final float[] dest, final int length,
+				final int ss0 )
+		{
+			for ( int x = 0; x < length; ++x )
+			{
+				final double sf0 = pfield[ 2 * x ] + (double) d0;
+				final double sf1 = pfield[ 2 * x + 1 ] + (double) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final float r0 = ( float ) ( sf0 - s0 );
+				final float r1 = ( float ) ( sf1 - s1 );
+				final int o = s1 * ss0 + s0;
+				final float a00 = src[ o ];
+				final float a01 = src[ o + 1 ];
+				final float a10 = src[ o + ss0 ];
+				final float a11 = src[ o + ss0 + 1 ];
+				dest[ x ] = a00 + r0 * ( a01 - a00 ) + r1 * ( a10 - a00 + r0 * ( a00 - a10 - a01 + a11 ) );
+			}
+		}
+	}
+
+
+	class NLinear_doubleField_double implements Lookup2D< double[], double[] >
+	{
+		private NLinear_doubleField_double()
+		{
+		}
+
+		static final NLinear_doubleField_double INSTANCE = new NLinear_doubleField_double();
+
+		@Override
+		public void apply( final double[] pfield,
+				double d0, double d1,
+				final double[] src, final double[] dest, final int length,
+				final int ss0 )
+		{
+			for ( int x = 0; x < length; ++x )
+			{
+				final double sf0 = pfield[ 2 * x ] + (double) d0;
+				final double sf1 = pfield[ 2 * x + 1 ] + (double) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final float r0 = ( float ) ( sf0 - s0 );
+				final float r1 = ( float ) ( sf1 - s1 );
+				final int o = s1 * ss0 + s0;
+				final double a00 = src[ o ];
+				final double a01 = src[ o + 1 ];
+				final double a10 = src[ o + ss0 ];
+				final double a11 = src[ o + ss0 + 1 ];
+				dest[ x ] = a00 + r0 * ( a01 - a00 ) + r1 * ( a10 - a00 + r0 * ( a00 - a10 - a01 + a11 ) );
+			}
+		}
+	}
 
 
 	// ========== NEARESTNEIGHBOR =============================================
+
+
+	class NearestNeighbor_floatField_float implements Lookup2D< float[], float[] >
+	{
+		private NearestNeighbor_floatField_float()
+		{
+		}
+
+		static final NearestNeighbor_floatField_float INSTANCE = new NearestNeighbor_floatField_float();
+
+		@Override
+		public void apply( final float[] pfield,
+				double d0, double d1,
+				final float[] src, final float[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final float sf0 = pfield[ 2 * x ] + (float) d0;
+				final float sf1 = pfield[ 2 * x + 1 ] + (float) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
+
+
+	class NearestNeighbor_floatField_double implements Lookup2D< float[], double[] >
+	{
+		private NearestNeighbor_floatField_double()
+		{
+		}
+
+		static final NearestNeighbor_floatField_double INSTANCE = new NearestNeighbor_floatField_double();
+
+		@Override
+		public void apply( final float[] pfield,
+				double d0, double d1,
+				final double[] src, final double[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final float sf0 = pfield[ 2 * x ] + (float) d0;
+				final float sf1 = pfield[ 2 * x + 1 ] + (float) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
+
+
+	class NearestNeighbor_floatField_byte implements Lookup2D< float[], byte[] >
+	{
+		private NearestNeighbor_floatField_byte()
+		{
+		}
+
+		static final NearestNeighbor_floatField_byte INSTANCE = new NearestNeighbor_floatField_byte();
+
+		@Override
+		public void apply( final float[] pfield,
+				double d0, double d1,
+				final byte[] src, final byte[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final float sf0 = pfield[ 2 * x ] + (float) d0;
+				final float sf1 = pfield[ 2 * x + 1 ] + (float) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
+
+
+	class NearestNeighbor_floatField_short implements Lookup2D< float[], short[] >
+	{
+		private NearestNeighbor_floatField_short()
+		{
+		}
+
+		static final NearestNeighbor_floatField_short INSTANCE = new NearestNeighbor_floatField_short();
+
+		@Override
+		public void apply( final float[] pfield,
+				double d0, double d1,
+				final short[] src, final short[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final float sf0 = pfield[ 2 * x ] + (float) d0;
+				final float sf1 = pfield[ 2 * x + 1 ] + (float) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
+
+
+	class NearestNeighbor_floatField_int implements Lookup2D< float[], int[] >
+	{
+		private NearestNeighbor_floatField_int()
+		{
+		}
+
+		static final NearestNeighbor_floatField_int INSTANCE = new NearestNeighbor_floatField_int();
+
+		@Override
+		public void apply( final float[] pfield,
+				double d0, double d1,
+				final int[] src, final int[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final float sf0 = pfield[ 2 * x ] + (float) d0;
+				final float sf1 = pfield[ 2 * x + 1 ] + (float) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
+
+
+	class NearestNeighbor_floatField_long implements Lookup2D< float[], long[] >
+	{
+		private NearestNeighbor_floatField_long()
+		{
+		}
+
+		static final NearestNeighbor_floatField_long INSTANCE = new NearestNeighbor_floatField_long();
+
+		@Override
+		public void apply( final float[] pfield,
+				double d0, double d1,
+				final long[] src, final long[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final float sf0 = pfield[ 2 * x ] + (float) d0;
+				final float sf1 = pfield[ 2 * x + 1 ] + (float) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
+
+
+	class NearestNeighbor_doubleField_float implements Lookup2D< double[], float[] >
+	{
+		private NearestNeighbor_doubleField_float()
+		{
+		}
+
+		static final NearestNeighbor_doubleField_float INSTANCE = new NearestNeighbor_doubleField_float();
+
+		@Override
+		public void apply( final double[] pfield,
+				double d0, double d1,
+				final float[] src, final float[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final double sf0 = pfield[ 2 * x ] + (double) d0;
+				final double sf1 = pfield[ 2 * x + 1 ] + (double) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
+
+
+	class NearestNeighbor_doubleField_double implements Lookup2D< double[], double[] >
+	{
+		private NearestNeighbor_doubleField_double()
+		{
+		}
+
+		static final NearestNeighbor_doubleField_double INSTANCE = new NearestNeighbor_doubleField_double();
+
+		@Override
+		public void apply( final double[] pfield,
+				double d0, double d1,
+				final double[] src, final double[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final double sf0 = pfield[ 2 * x ] + (double) d0;
+				final double sf1 = pfield[ 2 * x + 1 ] + (double) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
 
 
 	class NearestNeighbor_doubleField_byte implements Lookup2D< double[], byte[] >
@@ -202,18 +547,96 @@ interface Lookup2D< F, P >
 			d1 += .5;
 			for ( int x = 0; x < length; ++x )
 			{
-				final double p0 = pfield[ 2 * x ] + d0;
-				final double p1 = pfield[ 2 * x + 1 ] + d1;
-				final int s0 = ( int ) p0;
-				final int s1 = ( int ) p1;
+				final double sf0 = pfield[ 2 * x ] + (double) d0;
+				final double sf1 = pfield[ 2 * x + 1 ] + (double) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
 				dest[ x ] = src[ s1 * ss0 + s0 ];
 			}
 		}
 	}
 
-	// TODO
-	// TODO
-	// TODO
-	// TODO
 
+	class NearestNeighbor_doubleField_short implements Lookup2D< double[], short[] >
+	{
+		private NearestNeighbor_doubleField_short()
+		{
+		}
+
+		static final NearestNeighbor_doubleField_short INSTANCE = new NearestNeighbor_doubleField_short();
+
+		@Override
+		public void apply( final double[] pfield,
+				double d0, double d1,
+				final short[] src, final short[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final double sf0 = pfield[ 2 * x ] + (double) d0;
+				final double sf1 = pfield[ 2 * x + 1 ] + (double) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
+
+
+	class NearestNeighbor_doubleField_int implements Lookup2D< double[], int[] >
+	{
+		private NearestNeighbor_doubleField_int()
+		{
+		}
+
+		static final NearestNeighbor_doubleField_int INSTANCE = new NearestNeighbor_doubleField_int();
+
+		@Override
+		public void apply( final double[] pfield,
+				double d0, double d1,
+				final int[] src, final int[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final double sf0 = pfield[ 2 * x ] + (double) d0;
+				final double sf1 = pfield[ 2 * x + 1 ] + (double) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
+
+
+	class NearestNeighbor_doubleField_long implements Lookup2D< double[], long[] >
+	{
+		private NearestNeighbor_doubleField_long()
+		{
+		}
+
+		static final NearestNeighbor_doubleField_long INSTANCE = new NearestNeighbor_doubleField_long();
+
+		@Override
+		public void apply( final double[] pfield,
+				double d0, double d1,
+				final long[] src, final long[] dest, final int length,
+				final int ss0 )
+		{
+			d0 += .5; // +.5 for nearest-neighbor rounding
+			d1 += .5;
+			for ( int x = 0; x < length; ++x )
+			{
+				final double sf0 = pfield[ 2 * x ] + (double) d0;
+				final double sf1 = pfield[ 2 * x + 1 ] + (double) d1;
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				dest[ x ] = src[ s1 * ss0 + s0 ];
+			}
+		}
+	}
 }

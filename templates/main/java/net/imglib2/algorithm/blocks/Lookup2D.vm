@@ -33,6 +33,7 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
+import net.imglib2.algorithm.blocks.transform.Transform;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Cast;
 
@@ -101,10 +102,9 @@ interface Lookup2D< F, P >
 				switch ( primitiveType )
 				{
 				case FLOAT:
-					// TODO
+					return Cast.unchecked( NLinear_floatField_float.INSTANCE );
 				case DOUBLE:
-					// TODO
-					throw new UnsupportedOperationException( "TODO. not implemented" );
+					return Cast.unchecked( NLinear_floatField_double.INSTANCE );
 				default:
 					throw new IllegalArgumentException();
 				}
@@ -114,18 +114,17 @@ interface Lookup2D< F, P >
 				switch ( primitiveType )
 				{
 				case BYTE:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_floatField_byte.INSTANCE );
 				case SHORT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_floatField_short.INSTANCE );
 				case INT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_floatField_int.INSTANCE );
 				case LONG:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_floatField_long.INSTANCE );
 				case FLOAT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_floatField_float.INSTANCE );
 				case DOUBLE:
-					// TODO
-					throw new UnsupportedOperationException( "TODO. not implemented" );
+					return Cast.unchecked( NearestNeighbor_floatField_double.INSTANCE );
 				default:
 					throw new IllegalArgumentException();
 				}
@@ -138,8 +137,7 @@ interface Lookup2D< F, P >
 				case FLOAT:
 					return Cast.unchecked( NLinear_doubleField_float.INSTANCE );
 				case DOUBLE:
-					// TODO
-					throw new UnsupportedOperationException( "TODO. not implemented" );
+					return Cast.unchecked( NLinear_doubleField_double.INSTANCE );
 				default:
 					throw new IllegalArgumentException();
 				}
@@ -151,16 +149,15 @@ interface Lookup2D< F, P >
 				case BYTE:
 					return Cast.unchecked( NearestNeighbor_doubleField_byte.INSTANCE );
 				case SHORT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_doubleField_short.INSTANCE );
 				case INT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_doubleField_int.INSTANCE );
 				case LONG:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_doubleField_long.INSTANCE );
 				case FLOAT:
-					// TODO
+					return Cast.unchecked( NearestNeighbor_doubleField_float.INSTANCE );
 				case DOUBLE:
-					// TODO
-					throw new UnsupportedOperationException( "TODO. not implemented" );
+					return Cast.unchecked( NearestNeighbor_doubleField_double.INSTANCE );
 				default:
 					throw new IllegalArgumentException();
 				}
