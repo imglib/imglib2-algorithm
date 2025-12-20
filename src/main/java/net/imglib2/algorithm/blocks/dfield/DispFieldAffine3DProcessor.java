@@ -37,6 +37,7 @@ import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.transform.Transform;
+import net.imglib2.realtransform.AffineTransform2D;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.PrimitiveType;
 
@@ -59,7 +60,8 @@ class DispFieldAffine3DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 	private final double psrc[] = new double[ 3 ];
 
 	DispFieldAffine3DProcessor(
-			final AffineTransform3D transformToSource,
+			final AffineTransform3D transformToSource, // TODO: rename? "source" == "displacement field" here ...
+			final double[] displacementScale, // for a "normalized" displacement field, this is the spacing (i.e. downsampling factor wrt input grid)
 			final Transform.Interpolation inputInterpolation,
 			final PrimitiveType primitiveType )
 	{

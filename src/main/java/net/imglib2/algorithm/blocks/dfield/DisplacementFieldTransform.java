@@ -122,10 +122,11 @@ public class DisplacementFieldTransform
 		}
 		else
 		{
-			fieldProcessor = new DispFieldAffine3DProcessor<>( ( AffineTransform3D ) transform,
-					Transform.Interpolation.NLINEAR,
-					type.getNativeTypeFactory().getPrimitiveType()
-			);
+			fieldProcessor =
+					new DispFieldAffine3DProcessor<>( ( AffineTransform3D ) transform,
+							new double[] { 1, 1 }, Transform.Interpolation.NLINEAR,
+							type.getNativeTypeFactory().getPrimitiveType()
+					);
 		}
 		return new DefaultUnaryBlockOperator<>( type, type, n + 1, n, fieldProcessor );
 	}
