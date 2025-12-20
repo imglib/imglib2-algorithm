@@ -3,22 +3,20 @@ package net.imglib2.algorithm.blocks.dfield;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.type.PrimitiveType;
 
-public // TODO: make package private again (public for testing)
-class Lookup2DProcessor< F, P > extends AbstractLookupProcessor< F, P >
+class Lookup3DProcessor< F, P > extends AbstractLookupProcessor< F, P >
 {
-	private final Lookup2D< F, P > lookup;
+	private final Lookup3D< F, P > lookup;
 
-	public // TODO: make package private again (public for testing)
-	Lookup2DProcessor(
+	Lookup3DProcessor(
 			final PrimitiveType dfieldPrimitiveType,
 			final Interpolation interpolation,
 			final PrimitiveType primitiveType )
 	{
-		super( 2, interpolation, primitiveType );
-		lookup = Lookup2D.of( dfieldPrimitiveType, interpolation, primitiveType );
+		super( 3, interpolation, primitiveType );
+		lookup = Lookup3D.of( dfieldPrimitiveType, interpolation, primitiveType );
 	}
 
-	private Lookup2DProcessor( Lookup2DProcessor< F, P > processor )
+	private Lookup3DProcessor( Lookup3DProcessor< F, P > processor )
 	{
 		super( processor );
 		lookup = processor.lookup;
@@ -27,7 +25,7 @@ class Lookup2DProcessor< F, P > extends AbstractLookupProcessor< F, P >
 	@Override
 	public AbstractLookupProcessor< F, P > independentCopy()
 	{
-		return new Lookup2DProcessor<>( this );
+		return new Lookup3DProcessor<>( this );
 	}
 
 	@Override
@@ -35,8 +33,10 @@ class Lookup2DProcessor< F, P > extends AbstractLookupProcessor< F, P >
 	{
 		final double d0 = positionOffset[ 0 ];
 		final double d1 = positionOffset[ 1 ];
-		final int length = destSize[ 0 ] * destSize[ 1 ];
+		final double d2 = positionOffset[ 2 ];
+		final int length = destSize[ 0 ] * destSize[ 1 ] * destSize[ 2 ];
 		final int ss0 = sourceSize[ 0 ];
-		lookup.apply( positionField, d0, d1, src, dest, length, ss0 );
+		final int ss1 = sourceSize[ 1 ] * ss0;
+		lookup.apply( positionField, d0, d1, d2, src, dest, length, ss0, ss1 );
 	}
 }
