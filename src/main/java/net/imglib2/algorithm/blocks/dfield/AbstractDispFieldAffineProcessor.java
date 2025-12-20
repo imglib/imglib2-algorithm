@@ -41,16 +41,15 @@ import net.imglib2.blocks.BlockInterval;
 import net.imglib2.type.PrimitiveType;
 
 /**
- * Abstract base class for {@link Affine3DProcessor} and {@link
- * Affine2DProcessor}. Implements source/target interval computation, and {@code
+ * Abstract base class for {@link DispFieldAffine3DProcessor} and {@link
+ * DispFieldAffine2DProcessor}. Implements source/target interval computation, and {@code
  * TempArray} and thread-safe setup.
  *
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
-// TODO: rename? "AbstractDisplacementFieldTransformProcessor"?
 public // TODO: make package private again (public for testing)
-abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P, P >
+abstract class AbstractDispFieldAffineProcessor< P > extends AbstractBlockProcessor< P, P >
 {
 	PrimitiveType primitiveType;
 
@@ -71,7 +70,7 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 	 */
 	final Interpolation inputInterpolation;
 
-	AbstractTransformProcessor( final int n, final Interpolation inputInterpolation, final PrimitiveType primitiveType )
+	AbstractDispFieldAffineProcessor( final int n, final Interpolation inputInterpolation, final PrimitiveType primitiveType )
 	{
 		super( primitiveType, n + 1 );
 		this.primitiveType = primitiveType;
@@ -83,7 +82,7 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 		this.inputInterpolation = inputInterpolation;
 	}
 
-	AbstractTransformProcessor( AbstractTransformProcessor< P > transform )
+	AbstractDispFieldAffineProcessor( AbstractDispFieldAffineProcessor< P > transform )
 	{
 		super( transform );
 
@@ -158,5 +157,5 @@ abstract class AbstractTransformProcessor< P > extends AbstractBlockProcessor< P
 	}
 
 	@Override
-	public abstract AbstractTransformProcessor< P > independentCopy();
+	public abstract AbstractDispFieldAffineProcessor< P > independentCopy();
 }

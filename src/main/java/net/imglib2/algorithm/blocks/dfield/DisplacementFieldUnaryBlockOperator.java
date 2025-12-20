@@ -37,7 +37,6 @@ import static net.imglib2.util.Util.safeInt;
 
 import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.AbstractUnaryBlockOperator;
-import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.blocks.BlockInterval;
@@ -59,7 +58,7 @@ import net.imglib2.util.Intervals;
 public class DisplacementFieldUnaryBlockOperator< D extends NativeType< D > & RealType< D >, T extends NativeType< T > > extends AbstractUnaryBlockOperator< T, T >
 {
 	@SuppressWarnings( "rawtypes" )
-	private final AbstractTransformProcessor fieldProcessor;
+	private final AbstractDispFieldAffineProcessor fieldProcessor;
 
 	private final BlockSupplier< D > displacementField;
 
@@ -70,7 +69,7 @@ public class DisplacementFieldUnaryBlockOperator< D extends NativeType< D > & Re
 
 	public DisplacementFieldUnaryBlockOperator(
 			T type, int numDimensions,
-			AbstractTransformProcessor fieldProcessor,
+			AbstractDispFieldAffineProcessor fieldProcessor,
 			BlockSupplier< D > displacementField,
 			AbstractLookupProcessor lookupProcessor
 	)

@@ -115,14 +115,14 @@ public class DisplacementFieldTransform
 		if ( n == 2 )
 		{
 			fieldProcessor =
-					new Affine2DProcessor<>( ( AffineTransform2D ) transform,
+					new DispFieldAffine2DProcessor<>( ( AffineTransform2D ) transform,
 							new double[] { 1, 1 }, Transform.Interpolation.NLINEAR,
 							type.getNativeTypeFactory().getPrimitiveType()
 					);
 		}
 		else
 		{
-			fieldProcessor = new Affine3DProcessor<>( ( AffineTransform3D ) transform,
+			fieldProcessor = new DispFieldAffine3DProcessor<>( ( AffineTransform3D ) transform,
 					Transform.Interpolation.NLINEAR,
 					type.getNativeTypeFactory().getPrimitiveType()
 			);

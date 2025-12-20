@@ -44,13 +44,13 @@ import net.imglib2.util.Cast;
  * An instance for a given input/output type ({@code double[]} or {@code
  * float[]})can be obtained by {@link #of TransformLine2D.of}.
  * <p>
- * A destination X line can then be computed by {@link #apply}, giving starting
+ * A destination X line can then be computed by {@link #transformLine}, giving starting
  * position and X differential vector.
  *
  * @param <P>
  * 		input/output primitive array type (float[] or double[])
  */
-interface TransformLine2D< P >
+interface DispFieldAffine2D< P >
 {
 
 	/**
@@ -78,7 +78,7 @@ interface TransformLine2D< P >
 	 * @param sf1
 	 * 		position of the first sample on the line (transformed into source)
 	 */
-	void apply( P src, P dest, int offset, int length,
+	void transformLine( P src, P dest, int offset, int length,
 			float d0, float d1,
 			int ss0,
 			float sf0, float sf1 );
@@ -120,7 +120,7 @@ interface TransformLine2D< P >
 	 */
 	void sourceBounds( P dest, int length, Interpolation interpolation, final BlockInterval bounds );
 
-	static < P > TransformLine2D< P > of( final PrimitiveType primitiveType )
+	static < P > DispFieldAffine2D< P > of( final PrimitiveType primitiveType )
 	{
 		switch ( primitiveType )
 		{
@@ -133,7 +133,7 @@ interface TransformLine2D< P >
 		}
 	}
 
-	class NLinear_float implements TransformLine2D< float[] >
+	class NLinear_float implements DispFieldAffine2D< float[] >
 	{
 		private NLinear_float()
 		{
@@ -142,7 +142,7 @@ interface TransformLine2D< P >
 		static final NLinear_float INSTANCE = new NLinear_float();
 
 		@Override
-		public void apply( final float[] src, final float[] dest, int offset, final int length,
+		public void transformLine( final float[] src, final float[] dest, int offset, final int length,
 				final float d0, final float d1,
 				final int ss0,
 				float sf0, float sf1 )
@@ -194,7 +194,7 @@ interface TransformLine2D< P >
 	}
 
 
-	class NLinear_double implements TransformLine2D< double[] >
+	class NLinear_double implements DispFieldAffine2D< double[] >
 	{
 		private NLinear_double()
 		{
@@ -203,7 +203,7 @@ interface TransformLine2D< P >
 		static final NLinear_double INSTANCE = new NLinear_double();
 
 		@Override
-		public void apply( final double[] src, final double[] dest, int offset, final int length,
+		public void transformLine( final double[] src, final double[] dest, int offset, final int length,
 				final float d0, final float d1,
 				final int ss0,
 				float sf0, float sf1 )

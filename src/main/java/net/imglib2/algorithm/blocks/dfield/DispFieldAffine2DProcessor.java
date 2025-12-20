@@ -36,57 +36,59 @@ package net.imglib2.algorithm.blocks.dfield;
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.algorithm.blocks.BlockProcessor;
-import net.imglib2.algorithm.blocks.transform.Transform;
-import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
+import net.imglib2.realtransform.AffineTransform2D;
 import net.imglib2.type.PrimitiveType;
 
 /**
- * A {@link BlockProcessor} for interpolation and affine transform, using {@link
- * AffineTransform3D} and 3D source/target.
+ * A {@link BlockProcessor} for interpolation and affine transform of a
+ * displacement field, using {@link AffineTransform2D} and (1+2)D displacement
+ * field source/target.
  *
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
-class Affine3DProcessor< P > extends AbstractTransformProcessor< P >
+public // TODO: make package private again (public for testing)
+class DispFieldAffine2DProcessor< P > extends AbstractDispFieldAffineProcessor< P >
 {
-	private final AffineTransform3D transformToSource;
+	private final AffineTransform2D transformToSource;
 
-	private final TransformLine3D< P > transformLine;
+	private final DispFieldAffine2D< P > dispFieldAffine;
 
-	private final double pdest[] = new double[ 3 ];
+	private final double pdest[] = new double[ 2 ];
 
-	private final double psrc[] = new double[ 3 ];
+	private final double psrc[] = new double[ 2 ];
 
-	Affine3DProcessor(
-			final AffineTransform3D transformToSource,
-			final Transform.Interpolation inputInterpolation,
+	private final double displacementScale0;
+	private final double displacementScale1;
+
+	public // TODO: make package private again (public for testing)
+	DispFieldAffine2DProcessor(
+			final AffineTransform2D transformToSource, // TODO: rename? "source" == "displacement field" here ...
+			final double[] displacementScale, // for a "normalized" displacement field, this is the spacing (i.e. downsampling factor wrt input grid)
+			final Interpolation inputInterpolation,
 			final PrimitiveType primitiveType )
 	{
-		this( transformToSource, inputInterpolation, primitiveType, TransformLine3D.of( primitiveType ) );
-	}
-
-	private Affine3DProcessor(
-			final AffineTransform3D transformToSource,
-			final Transform.Interpolation inputInterpolation,
-			final PrimitiveType primitiveType,
-			final TransformLine3D< P > transformLine )
-	{
-		super( 3, inputInterpolation, primitiveType );
+		super( 2, inputInterpolation, primitiveType );
+		this.displacementScale0 = displacementScale[ 0 ];
+		this.displacementScale1 = displacementScale[ 1 ];
 		this.transformToSource = transformToSource;
-		this.transformLine = transformLine;
+		this.dispFieldAffine = DispFieldAffine2D.of( primitiveType );
 	}
 
-	private Affine3DProcessor( Affine3DProcessor< P > processor )
+	private DispFieldAffine2DProcessor( DispFieldAffine2DProcessor< P > processor )
 	{
 		super( processor );
+		displacementScale0 = processor.displacementScale0;
+		displacementScale1 = processor.displacementScale1;
 		transformToSource = processor.transformToSource;
-		transformLine = processor.transformLine;
+		dispFieldAffine = processor.dispFieldAffine;
 	}
 
 	@Override
-	public AbstractTransformProcessor< P > independentCopy()
+	public AbstractDispFieldAffineProcessor< P > independentCopy()
 	{
-		return new Affine3DProcessor<>( this );
+		return new DispFieldAffine2DProcessor<>( this );
 	}
 
 	@Override
@@ -95,31 +97,31 @@ class Affine3DProcessor< P > extends AbstractTransformProcessor< P >
 		return transformToSource.estimateBounds( interval );
 	}
 
-	// specific to 3D
 	@Override
 	public void compute( final P src, final P dest )
 	{
 		final float d0 = transformToSource.d( 0 ).getFloatPosition( 0 );
 		final float d1 = transformToSource.d( 0 ).getFloatPosition( 1 );
-		final float d2 = transformToSource.d( 0 ).getFloatPosition( 2 );
 		final int ds0 = destSize[ 0 ];
-		final int ss0 = sourceSize[ 0 ];
-		final int ss1 = sourceSize[ 1 ] * ss0;
+		final int ss0 = sourceSize[ 1 ];
 		pdest[ 0 ] = destPos[ 0 ];
 		int i = 0;
-		for ( int z = 0; z < destSize[ 2 ]; ++z )
+		for ( int y = 0; y < destSize[ 1 ]; ++y )
 		{
-			pdest[ 2 ] = z + destPos[ 2 ];
-			for ( int y = 0; y < destSize[ 1 ]; ++y )
-			{
-				pdest[ 1 ] = y + destPos[ 1 ];
-				transformToSource.apply( pdest, psrc );
-				float sf0 = ( float ) ( psrc[ 0 ] - sourcePos[ 0 ] );
-				float sf1 = ( float ) ( psrc[ 1 ] - sourcePos[ 1 ] );
-				float sf2 = ( float ) ( psrc[ 2 ] - sourcePos[ 2 ] );
-				transformLine.apply( src, dest, i, ds0, d0, d1, d2, ss0, ss1, sf0, sf1, sf2 );
-				i += ds0;
-			}
+			pdest[ 1 ] = y + destPos[ 1 ];
+			transformToSource.apply( pdest, psrc );
+			float sf0 = ( float ) ( psrc[ 0 ] - sourcePos[ 1 ] );
+			float sf1 = ( float ) ( psrc[ 1 ] - sourcePos[ 2 ] );
+			dispFieldAffine.transformLine( src, dest, i, ds0, d0, d1, ss0, sf0, sf1 );
+			dispFieldAffine.scale( dest, i, ds0, displacementScale0, displacementScale1 );
+			i += 2 * ds0;
 		}
+
+		// now that we know the position vectors, compute input image bounds
+		dispFieldAffine.sourceBounds( dest, ds0 * destSize[ 1 ], inputInterpolation, inputBounds );
+
+		// now that we know the source bounds, compute the position vector offset
+		inputOffset[ 0 ] = displacementScale0 * sourcePos[ 1 ] - inputBounds.min( 0 );
+		inputOffset[ 1 ] = displacementScale1 * sourcePos[ 2 ] - inputBounds.min( 1 );
 	}
 }

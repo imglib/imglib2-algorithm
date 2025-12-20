@@ -49,7 +49,7 @@ import net.imglib2.util.Cast;
  * 		input/output primitive array type (float[] or double[])
  */
 @FunctionalInterface
-interface TransformLine3D< P >
+interface DispFieldAffine3D< P >
 {
 
     /**
@@ -88,7 +88,7 @@ interface TransformLine3D< P >
             int ss0, int ss1,
             float sf0, float sf1, float sf2 );
 
-	static < P > TransformLine3D< P > of( final PrimitiveType primitiveType )
+	static < P > DispFieldAffine3D< P > of( final PrimitiveType primitiveType )
 	{
 		switch ( primitiveType )
 		{
@@ -101,7 +101,7 @@ interface TransformLine3D< P >
 		}
 	}
 
-	class NLinear_float implements TransformLine3D< float[] >
+	class NLinear_float implements DispFieldAffine3D< float[] >
 	{
 		private NLinear_float()
 		{
@@ -149,7 +149,7 @@ interface TransformLine3D< P >
 	}
 
 
-	class NLinear_double implements TransformLine3D< double[] >
+	class NLinear_double implements DispFieldAffine3D< double[] >
 	{
 		private NLinear_double()
 		{
