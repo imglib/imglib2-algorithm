@@ -43,11 +43,10 @@ public class DisplacementField< T extends NativeType< T > & RealType< T > >
 			final double[] scale,
 			final double[] translation )
 	{
-		// TODO: verify that dimensionality of all arguments matches
-		if ( displacements.numDimensions() != scale.length || translation.length != scale.length ) {
+		final int n = displacements.numDimensions() - 1;
+		if ( n != scale.length || n != translation.length ) {
 			throw new IllegalArgumentException( "Dimensionality of scale and translation must match the number of dimensions in the displacement field" );
 		}
-
 		this.displacements = displacements;
 		this.scale = scale;
 		this.translation = translation;
@@ -57,7 +56,7 @@ public class DisplacementField< T extends NativeType< T > & RealType< T > >
 	@Override
 	public int numDimensions()
 	{
-		return displacements.numDimensions();
+		return scale.length;
 	}
 
 	@Override
