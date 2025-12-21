@@ -35,6 +35,8 @@ package net.imglib2.algorithm.blocks.dfield;
 
 import static net.imglib2.type.PrimitiveType.FLOAT;
 
+import java.util.function.Function;
+
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.ComputationType;
@@ -55,26 +57,22 @@ import net.imglib2.type.numeric.real.FloatType;
 public class DisplacementFieldTransform
 {
 	/**
-	 * Interpolate and affine-transform blocks of the standard ImgLib2 {@code
-	 * RealType}s.
-	 * <p>
-	 * Only 2D and 3D are supported currently!
-	 * <p>
-	 * The returned factory function creates an operator matching the type a
-	 * given input {@code BlockSupplier<T>}.
-	 *
-	 * @param transformFromSource
-	 * 		a 2D or 3D affine transform
-	 * @param <T>
-	 * 		the input/output type
-	 *
-	 * @return factory for {@code UnaryBlockOperator} to affine-transform blocks of type {@code T}
+	 * TODO javadoc
 	 */
-//	public static < T extends NativeType< T > >
-//	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > affine( final AffineGet transformFromSource )
-//	{
-//		return s -> createAffineOperator( s.getType(), transformFromSource );
-//	}
+	public static < D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > displacementFieldAffine( final AffineGet transformFromSource, final DisplacementField< D > displacementField, final Interpolation interpolation )
+	{
+		return displacementFieldAffine( transformFromSource, displacementField, interpolation, ComputationType.AUTO );
+	}
+
+	/**
+	 * TODO javadoc
+	 */
+	public static < D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > displacementFieldAffine( final AffineGet transformFromSource, final DisplacementField< D > displacementField, final Interpolation interpolation, final ComputationType computationType )
+	{
+		return s -> createDisplacementFieldOperator( s.getType(), transformFromSource, displacementField, interpolation, computationType, ClampType.CLAMP );
+	}
 
 	/**
 	 * Combines an affine transformation into a (linearly interpolated)
