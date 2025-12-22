@@ -48,7 +48,6 @@ import net.imglib2.type.PrimitiveType;
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
-public // TODO: make package private again (public for testing)
 class DispFieldAffine2DProcessor< P > extends AbstractDispFieldAffineProcessor< P >
 {
 	private final AffineTransform2D transformToSource;
@@ -62,7 +61,6 @@ class DispFieldAffine2DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 	private final double displacementScale0;
 	private final double displacementScale1;
 
-	public // TODO: make package private again (public for testing)
 	DispFieldAffine2DProcessor(
 			final AffineTransform2D transformToSource, // TODO: rename? "source" == "displacement field" here ...
 			final double[] displacementScale, // for a "normalized" displacement field, this is the spacing (i.e. downsampling factor wrt input grid)
