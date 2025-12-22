@@ -54,7 +54,10 @@ interface DispFieldAffine2D< P >
 {
 
 	/**
-	 * Compute a destination X line.
+	 * Compute a destination X line. Interpolate displacements and add sample
+	 * positions (starting from {@code (sf0, sf1)} to produce (a line in) the
+	 * {@code dest} position field.
+	 *
 	 * <p>
 	 * All lengths are counted in full displacement vectors (not individual
 	 * float components).
@@ -84,7 +87,7 @@ interface DispFieldAffine2D< P >
 			float sf0, float sf1 );
 
 	/**
-	 * Scale displacement vectors by the given scale {@code s0, s1}.
+	 * Scale position vectors by the given scale {@code s0, s1}.
 	 * <p>
 	 * {@code length} is counted in full displacement vectors (not individual
 	 * float components).
@@ -104,7 +107,7 @@ interface DispFieldAffine2D< P >
 
 	/**
 	 * Compute source bounds: Which image region will be needed to render with
-	 * the displacements in {@code dest}.
+	 * the position vectors in {@code dest}.
 	 * <p>
 	 * {@code length} is counted in full displacement vectors (not individual
 	 * float components).
@@ -113,12 +116,16 @@ interface DispFieldAffine2D< P >
 	 * 		flattened dest data
 	 * @param length
 	 * 		length of the line to compute (in {@code dest})
+	 * @param o0
+	 * 		X offset to add to each position vector
+	 * @param o1
+	 * 		Y offset to add to each position vector
 	 * @param interpolation
 	 * 		to determine appropriate padding
 	 * @param bounds
 	 * 		source bounds will be written here
 	 */
-	void sourceBounds( P dest, int length, Interpolation interpolation, final BlockInterval bounds );
+	void sourceBounds( P dest, int length, double o0, double o1, Interpolation interpolation, final BlockInterval bounds );
 
 	static < P > DispFieldAffine2D< P > of( final PrimitiveType primitiveType )
 	{
@@ -187,7 +194,9 @@ interface DispFieldAffine2D< P >
 		}
 
 		@Override
-		public void sourceBounds( final float[] dest, final int length, final Interpolation interpolation, final BlockInterval bounds )
+		public void sourceBounds( final float[] dest, final int length,
+				final double o0, final double o1,
+				final Interpolation interpolation, final BlockInterval bounds )
 		{
 			throw new UnsupportedOperationException( "TODO. not implemented yet ");
 		}
@@ -251,7 +260,9 @@ interface DispFieldAffine2D< P >
 		}
 
 		@Override
-		public void sourceBounds( final double[] dest, final int length, final Interpolation interpolation, final BlockInterval bounds )
+		public void sourceBounds( final double[] dest, final int length,
+				final double o0, final double o1,
+				final Interpolation interpolation, final BlockInterval bounds )
 		{
 			double min0 = dest[ 0 ], max0 = min0;
 			double min1 = dest[ 1 ], max1 = min1;
@@ -268,6 +279,10 @@ interface DispFieldAffine2D< P >
 				else if ( v1 > max1 )
 					max1 = v1;
 			}
+			min0 += o0;
+			max0 += o0;
+			min1 += o1;
+			max1 += o1;
 
 			final long[] boundsMin = bounds.min();
 			final int[] boundsSize = bounds.size();

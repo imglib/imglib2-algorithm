@@ -118,10 +118,26 @@ class DispFieldAffine2DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 		}
 
 		// now that we know the position vectors, compute input image bounds
-		dispFieldAffine.sourceBounds( dest, ds0 * destSize[ 1 ], inputInterpolation, inputBounds );
+		//
+		// vector in dest = (
+		// 						interpolated displacement
+		// 					  + (real, not rounded) position on displacement grid, relative to sourcePos[1,2]
+		//                  ) * displacementScale
+		//
+		// sourcePos[1,2] in input grid = ( sourcePos[1,2] * displacementScale )
+		//
+		// vector in dest will look up
+		//					( sourcePos[1,2] * displacementScale )
+		// 					+ (   interpolated displacement
+		// 					    + (real, not rounded) position on displacement grid, relative to sourcePos[1,2]
+		//                    ) * displacementScale
+		//
+		final double o0 = displacementScale0 * sourcePos[ 1 ];
+		final double o1 = displacementScale1 * sourcePos[ 2 ];
+		dispFieldAffine.sourceBounds( dest, ds0 * destSize[ 1 ], o0, o1, inputInterpolation, inputBounds );
 
 		// now that we know the source bounds, compute the position vector offset
-		inputOffset[ 0 ] = displacementScale0 * sourcePos[ 1 ] - inputBounds.min( 0 );
-		inputOffset[ 1 ] = displacementScale1 * sourcePos[ 2 ] - inputBounds.min( 1 );
+		inputOffset[ 0 ] = o0 - inputBounds.min( 0 );
+		inputOffset[ 1 ] = o1 - inputBounds.min( 1 );
 	}
 }
