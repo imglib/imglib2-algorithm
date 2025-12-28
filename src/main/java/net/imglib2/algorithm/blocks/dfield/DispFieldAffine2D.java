@@ -42,7 +42,7 @@ import net.imglib2.util.Cast;
  * Compute a destination X line for 2D.
  * <p>
  * An instance for a given input/output type ({@code double[]} or {@code
- * float[]})can be obtained by {@link #of TransformLine2D.of}.
+ * float[]})can be obtained by {@link #of DispFieldAffine2D.of}.
  * <p>
  * A destination X line can then be computed by {@link #transformLine}, giving starting
  * position and X differential vector.
@@ -57,7 +57,6 @@ interface DispFieldAffine2D< P >
 	 * Compute a destination X line. Interpolate displacements and add sample
 	 * positions (starting from {@code (sf0, sf1)} to produce (a line in) the
 	 * {@code dest} position field.
-	 *
 	 * <p>
 	 * All lengths are counted in full displacement vectors (not individual
 	 * float components).
@@ -239,7 +238,6 @@ interface DispFieldAffine2D< P >
 				boundsSize[ 1 ] = ( int ) ( ( long ) Math.floor( max1 + 0.5f ) - boundsMin[ 1 ] ) + 2;
 				break;
 			}
-
 		}
 	}
 
@@ -341,7 +339,6 @@ interface DispFieldAffine2D< P >
 				boundsSize[ 1 ] = ( int ) ( ( long ) Math.floor( max1 + 0.5f ) - boundsMin[ 1 ] ) + 2;
 				break;
 			}
-
 		}
 	}
 }
