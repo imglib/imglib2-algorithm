@@ -33,27 +33,31 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
+import net.imglib2.algorithm.blocks.transform.Transform;
+import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
+import net.imglib2.blocks.BlockInterval;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Cast;
 
 /**
- * Compute a destination X line for 2D.
+ * Compute a destination X line for 3D.
  * <p>
  * An instance for a given input/output type ({@code double[]} or {@code
- * float[]})can be obtained by {@link #of TransformLine3D.of}.
+ * float[]})can be obtained by {@link #of DispFieldAffine3D.of}.
  * <p>
- * A destination X line can then be computed by {@link #apply}, giving starting
+ * A destination X line can then be computed by {@link #transformLine}, giving starting
  * position and X differential vector.
  *
  * @param <P>
  * 		input/output primitive array type (float[] or double[])
  */
-@FunctionalInterface
 interface DispFieldAffine3D< P >
 {
 
     /**
-     * Compute a destination X line.
+	 * Compute a destination X line. Interpolate displacements and add sample
+	 * positions (starting from {@code (sf0, sf1, sf2)} to produce (a line in)
+	 * the {@code dest} position field.
 	 * <p>
 	 * All lengths are counted in full displacement vectors (not individual
 	 * float components).
@@ -83,10 +87,55 @@ interface DispFieldAffine3D< P >
      * @param sf2
      * 		position of the first sample on the line (transformed into source)
      */
-    void apply( P src, P dest, int offset, int length,
+    void transformLine( P src, P dest, int offset, int length,
             float d0, float d1, float d2,
             int ss0, int ss1,
             float sf0, float sf1, float sf2 );
+
+	/**
+	 * Scale position vectors by the given scale {@code s0, s1, s2}.
+	 * <p>
+	 * {@code length} is counted in full displacement vectors (not individual
+	 * float components).
+	 *
+	 * @param dest
+	 * 		flattened dest data
+	 * @param offset
+	 * 		offset (into {@code dest}) of the line to compute
+	 * @param length
+	 * 		length of the line to compute (in {@code dest})
+	 * @param s0
+	 *      scale factor for X to apply
+	 * @param s1
+	 *      scale factor for Y to apply
+	 * @param s2
+	 *      scale factor for Z to apply
+	 */
+	void scale( P dest, int offset, int length, double s0, double s1, double s2 );
+
+	/**
+	 * Compute source bounds: Which image region will be needed to render with
+	 * the position vectors in {@code dest}.
+	 * <p>
+	 * {@code length} is counted in full displacement vectors (not individual
+	 * float components).
+	 *
+	 * @param dest
+	 * 		flattened dest data
+	 * @param length
+	 * 		length of the line to compute (in {@code dest})
+	 * @param o0
+	 * 		X offset to add to each position vector
+	 * @param o1
+	 * 		Y offset to add to each position vector
+	 * @param o2
+	 * 		Z offset to add to each position vector
+	 * @param interpolation
+	 * 		to determine appropriate padding
+	 * @param bounds
+	 * 		source bounds will be written here
+	 */
+	void sourceBounds( P dest, int length, double o0, double o1, double o2, Interpolation interpolation, final BlockInterval bounds );
 
 	static < P > DispFieldAffine3D< P > of( final PrimitiveType primitiveType )
 	{
@@ -110,7 +159,7 @@ interface DispFieldAffine3D< P >
 		static final NLinear_float INSTANCE = new NLinear_float();
 
 		@Override
-		public void apply( final float[] src, final float[] dest, int offset, final int length,
+		public void transformLine( final float[] src, final float[] dest, int offset, final int length,
 		final float d0, final float d1, final float d2,
 		final int ss0, final int ss1,
 		float sf0, float sf1, float sf2 )
@@ -146,6 +195,72 @@ interface DispFieldAffine3D< P >
 //				sf2 += d2;
 //			}
 		}
+
+		@Override
+		public void scale( final float[] dest, int offset, final int length, final double s0, final double s1, final double s2 )
+		{
+			for ( int x = 0; x < length; ++x ) {
+				dest[ offset++ ] *= s0;
+				dest[ offset++ ] *= s1;
+				dest[ offset++ ] *= s2;
+			}
+		}
+
+		@Override
+		public void sourceBounds( final float[] dest, final int length,
+				final double o0, final double o1, final double o2,
+				final Interpolation interpolation, final BlockInterval bounds )
+		{
+			float min0 = dest[ 0 ], max0 = min0;
+			float min1 = dest[ 1 ], max1 = min1;
+			float min2 = dest[ 2 ], max2 = min2;
+			for ( int i = 1; i < length; ++i )
+			{
+				final float v0 = dest[ 3 * i ];
+				if ( v0 < min0 )
+					min0 = v0;
+				else if ( v0 > max0 )
+					max0 = v0;
+				final float v1 = dest[ 3 * i + 1 ];
+				if ( v1 < min1 )
+					min1 = v1;
+				else if ( v1 > max1 )
+					max1 = v1;
+				final float v2 = dest[ 3 * i + 2 ];
+				if ( v2 < min2 )
+					min2 = v2;
+				else if ( v2 > max2 )
+					max2 = v2;
+			}
+			min0 += (float) o0;
+			max0 += (float) o0;
+			min1 += (float) o1;
+			max1 += (float) o1;
+			min2 += (float) o2;
+			max2 += (float) o2;
+
+			final long[] boundsMin = bounds.min();
+			final int[] boundsSize = bounds.size();
+			switch ( interpolation )
+			{
+			case NEARESTNEIGHBOR:
+				boundsMin[ 0 ] = Math.round( min0 - 0.5f );
+				boundsMin[ 1 ] = Math.round( min1 - 0.5f );
+				boundsMin[ 2 ] = Math.round( min2 - 0.5f );
+				boundsSize[ 0 ] = ( int ) ( Math.round( max0 + 0.5f ) - boundsMin[ 0 ] ) + 1;
+				boundsSize[ 1 ] = ( int ) ( Math.round( max1 + 0.5f ) - boundsMin[ 1 ] ) + 1;
+				boundsSize[ 2 ] = ( int ) ( Math.round( max2 + 0.5f ) - boundsMin[ 2 ] ) + 1;
+				break;
+			case NLINEAR:
+				boundsMin[ 0 ] = ( long ) Math.floor( min0 - 0.5f );
+				boundsMin[ 1 ] = ( long ) Math.floor( min1 - 0.5f );
+				boundsMin[ 2 ] = ( long ) Math.floor( min2 - 0.5f );
+				boundsSize[ 0 ] = ( int ) ( ( long ) Math.floor( max0 + 0.5f ) - boundsMin[ 0 ] ) + 2;
+				boundsSize[ 1 ] = ( int ) ( ( long ) Math.floor( max1 + 0.5f ) - boundsMin[ 1 ] ) + 2;
+				boundsSize[ 2 ] = ( int ) ( ( long ) Math.floor( max2 + 0.5f ) - boundsMin[ 2 ] ) + 2;
+				break;
+			}
+		}
 	}
 
 
@@ -158,7 +273,7 @@ interface DispFieldAffine3D< P >
 		static final NLinear_double INSTANCE = new NLinear_double();
 
 		@Override
-		public void apply( final double[] src, final double[] dest, int offset, final int length,
+		public void transformLine( final double[] src, final double[] dest, int offset, final int length,
 		final float d0, final float d1, final float d2,
 		final int ss0, final int ss1,
 		float sf0, float sf1, float sf2 )
@@ -193,6 +308,72 @@ interface DispFieldAffine3D< P >
 //				sf1 += d1;
 //				sf2 += d2;
 //			}
+		}
+
+		@Override
+		public void scale( final double[] dest, int offset, final int length, final double s0, final double s1, final double s2 )
+		{
+			for ( int x = 0; x < length; ++x ) {
+				dest[ offset++ ] *= s0;
+				dest[ offset++ ] *= s1;
+				dest[ offset++ ] *= s2;
+			}
+		}
+
+		@Override
+		public void sourceBounds( final double[] dest, final int length,
+				final double o0, final double o1, final double o2,
+				final Interpolation interpolation, final BlockInterval bounds )
+		{
+			double min0 = dest[ 0 ], max0 = min0;
+			double min1 = dest[ 1 ], max1 = min1;
+			double min2 = dest[ 2 ], max2 = min2;
+			for ( int i = 1; i < length; ++i )
+			{
+				final double v0 = dest[ 3 * i ];
+				if ( v0 < min0 )
+					min0 = v0;
+				else if ( v0 > max0 )
+					max0 = v0;
+				final double v1 = dest[ 3 * i + 1 ];
+				if ( v1 < min1 )
+					min1 = v1;
+				else if ( v1 > max1 )
+					max1 = v1;
+				final double v2 = dest[ 3 * i + 2 ];
+				if ( v2 < min2 )
+					min2 = v2;
+				else if ( v2 > max2 )
+					max2 = v2;
+			}
+			min0 += (double) o0;
+			max0 += (double) o0;
+			min1 += (double) o1;
+			max1 += (double) o1;
+			min2 += (double) o2;
+			max2 += (double) o2;
+
+			final long[] boundsMin = bounds.min();
+			final int[] boundsSize = bounds.size();
+			switch ( interpolation )
+			{
+			case NEARESTNEIGHBOR:
+				boundsMin[ 0 ] = Math.round( min0 - 0.5f );
+				boundsMin[ 1 ] = Math.round( min1 - 0.5f );
+				boundsMin[ 2 ] = Math.round( min2 - 0.5f );
+				boundsSize[ 0 ] = ( int ) ( Math.round( max0 + 0.5f ) - boundsMin[ 0 ] ) + 1;
+				boundsSize[ 1 ] = ( int ) ( Math.round( max1 + 0.5f ) - boundsMin[ 1 ] ) + 1;
+				boundsSize[ 2 ] = ( int ) ( Math.round( max2 + 0.5f ) - boundsMin[ 2 ] ) + 1;
+				break;
+			case NLINEAR:
+				boundsMin[ 0 ] = ( long ) Math.floor( min0 - 0.5f );
+				boundsMin[ 1 ] = ( long ) Math.floor( min1 - 0.5f );
+				boundsMin[ 2 ] = ( long ) Math.floor( min2 - 0.5f );
+				boundsSize[ 0 ] = ( int ) ( ( long ) Math.floor( max0 + 0.5f ) - boundsMin[ 0 ] ) + 2;
+				boundsSize[ 1 ] = ( int ) ( ( long ) Math.floor( max1 + 0.5f ) - boundsMin[ 1 ] ) + 2;
+				boundsSize[ 2 ] = ( int ) ( ( long ) Math.floor( max2 + 0.5f ) - boundsMin[ 2 ] ) + 2;
+				break;
+			}
 		}
 	}
 }

@@ -71,7 +71,7 @@ class DispFieldAffine3DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 		super( 3, inputInterpolation, primitiveType );
 		this.displacementScale0 = displacementScale[ 0 ];
 		this.displacementScale1 = displacementScale[ 1 ];
-		this.displacementScale2 = displacementScale[ 1 ];
+		this.displacementScale2 = displacementScale[ 2 ];
 		this.transformToSource = transformToSource;
 		this.dispFieldAffine = DispFieldAffine3D.of( primitiveType );
 	}
@@ -116,11 +116,11 @@ class DispFieldAffine3DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 			{
 				pdest[ 1 ] = y + destPos[ 1 ];
 				transformToSource.apply( pdest, psrc );
-				float sf0 = ( float ) ( psrc[ 0 ] - sourcePos[ 0 ] );
-				float sf1 = ( float ) ( psrc[ 1 ] - sourcePos[ 1 ] );
-				float sf2 = ( float ) ( psrc[ 2 ] - sourcePos[ 2 ] );
+				float sf0 = ( float ) ( psrc[ 0 ] - sourcePos[ 1 ] );
+				float sf1 = ( float ) ( psrc[ 1 ] - sourcePos[ 2 ] );
+				float sf2 = ( float ) ( psrc[ 2 ] - sourcePos[ 3 ] );
 				dispFieldAffine.transformLine( src, dest, i, ds0, d0, d1, d2, ss0, ss1, sf0, sf1, sf2 );
-				dispFieldAffine.scale( dest, i, ds0, displacementScale0, displacementScale1 );
+				dispFieldAffine.scale( dest, i, ds0, displacementScale0, displacementScale1, displacementScale2 );
 				i += 3 * ds0;
 			}
 		}
