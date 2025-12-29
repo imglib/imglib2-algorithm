@@ -164,36 +164,83 @@ interface DispFieldAffine3D< P >
 		final int ss0, final int ss1,
 		float sf0, float sf1, float sf2 )
 		{
-			throw new UnsupportedOperationException("TODO. not implemented yet");
-//			for ( int x = 0; x < length; ++x )
-//			{
-//				final int s0 = ( int ) sf0;
-//				final int s1 = ( int ) sf1;
-//				final int s2 = ( int ) sf2;
-//				final float r0 = sf0 - s0;
-//				final float r1 = sf1 - s1;
-//				final float r2 = sf2 - s2;
-//				final int o = s2 * ss1 + s1 * ss0 + s0;
-//				final float a000 = src[ o ];
-//				final float a001 = src[ o + 1 ];
-//				final float a010 = src[ o + ss0 ];
-//				final float a011 = src[ o + ss0 + 1 ];
-//				final float a100 = src[ o + ss1 ];
-//				final float a101 = src[ o + ss1 + 1 ];
-//				final float a110 = src[ o + ss1 + ss0 ];
-//				final float a111 = src[ o + ss1 + ss0 + 1 ];
-//				dest[ offset++ ] = a000 +
-//						r0 * ( -a000 + a001 ) +
-//						r1 * ( ( -a000 + a010 ) +
-//								r0 * ( a000 - a001 - a010 + a011 ) ) +
-//						r2 * ( ( -a000 + a100 ) +
-//								r0 * ( a000 - a001 - a100 + a101 ) +
-//								r1 * ( ( a000 - a010 - a100 + a110 ) +
-//										r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
-//				sf0 += d0;
-//				sf1 += d1;
-//				sf2 += d2;
-//			}
+			final int n = 3;
+			final int nss0 = n * ss0;
+			final int nss1 = n * ss1;
+			for ( int x = 0; x < length; ++x )
+			{
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final int s2 = ( int ) sf2;
+				final float r0 = sf0 - s0;
+				final float r1 = sf1 - s1;
+				final float r2 = sf2 - s2;
+				final int o = s2 * nss1 + s1 * nss0 + n * s0;
+				// TODO: create benchmark and play with loop unrolling, inlining n, etc...
+				{
+					final int k = 0;
+					final float a000 = src[ k + o ];
+					final float a001 = src[ k + o + n ];
+					final float a010 = src[ k + o + nss0 ];
+					final float a011 = src[ k + o + nss0 + n ];
+					final float a100 = src[ k + o + nss1 ];
+					final float a101 = src[ k + o + nss1 + n ];
+					final float a110 = src[ k + o + nss1 + nss0 ];
+					final float a111 = src[ k + o + nss1 + nss0 + n ];
+					final float v0 = a000 +
+							r0 * ( -a000 + a001 ) +
+							r1 * ( ( -a000 + a010 ) +
+									r0 * ( a000 - a001 - a010 + a011 ) ) +
+							r2 * ( ( -a000 + a100 ) +
+									r0 * ( a000 - a001 - a100 + a101 ) +
+									r1 * ( ( a000 - a010 - a100 + a110 ) +
+											r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
+					dest[ offset++ ] = v0 + sf0;
+				}
+				{
+					final int k = 1;
+					final float a000 = src[ k + o ];
+					final float a001 = src[ k + o + n ];
+					final float a010 = src[ k + o + nss0 ];
+					final float a011 = src[ k + o + nss0 + n ];
+					final float a100 = src[ k + o + nss1 ];
+					final float a101 = src[ k + o + nss1 + n ];
+					final float a110 = src[ k + o + nss1 + nss0 ];
+					final float a111 = src[ k + o + nss1 + nss0 + n ];
+					final float v1 = a000 +
+							r0 * ( -a000 + a001 ) +
+							r1 * ( ( -a000 + a010 ) +
+									r0 * ( a000 - a001 - a010 + a011 ) ) +
+							r2 * ( ( -a000 + a100 ) +
+									r0 * ( a000 - a001 - a100 + a101 ) +
+									r1 * ( ( a000 - a010 - a100 + a110 ) +
+											r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
+					dest[ offset++ ] = v1 + sf1;
+				}
+				{
+					final int k = 2;
+					final float a000 = src[ k + o ];
+					final float a001 = src[ k + o + n ];
+					final float a010 = src[ k + o + nss0 ];
+					final float a011 = src[ k + o + nss0 + n ];
+					final float a100 = src[ k + o + nss1 ];
+					final float a101 = src[ k + o + nss1 + n ];
+					final float a110 = src[ k + o + nss1 + nss0 ];
+					final float a111 = src[ k + o + nss1 + nss0 + n ];
+					final float v2 = a000 +
+							r0 * ( -a000 + a001 ) +
+							r1 * ( ( -a000 + a010 ) +
+									r0 * ( a000 - a001 - a010 + a011 ) ) +
+							r2 * ( ( -a000 + a100 ) +
+									r0 * ( a000 - a001 - a100 + a101 ) +
+									r1 * ( ( a000 - a010 - a100 + a110 ) +
+											r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
+					dest[ offset++ ] = v2 + sf2;
+				}
+				sf0 += d0;
+				sf1 += d1;
+				sf2 += d2;
+			}
 		}
 
 		@Override
@@ -274,40 +321,87 @@ interface DispFieldAffine3D< P >
 
 		@Override
 		public void transformLine( final double[] src, final double[] dest, int offset, final int length,
-		final float d0, final float d1, final float d2,
-		final int ss0, final int ss1,
-		float sf0, float sf1, float sf2 )
+				final float d0, final float d1, final float d2,
+				final int ss0, final int ss1,
+				float sf0, float sf1, float sf2 )
 		{
-			throw new UnsupportedOperationException("TODO. not implemented yet");
-//			for ( int x = 0; x < length; ++x )
-//			{
-//				final int s0 = ( int ) sf0;
-//				final int s1 = ( int ) sf1;
-//				final int s2 = ( int ) sf2;
-//				final float r0 = sf0 - s0;
-//				final float r1 = sf1 - s1;
-//				final float r2 = sf2 - s2;
-//				final int o = s2 * ss1 + s1 * ss0 + s0;
-//				final double a000 = src[ o ];
-//				final double a001 = src[ o + 1 ];
-//				final double a010 = src[ o + ss0 ];
-//				final double a011 = src[ o + ss0 + 1 ];
-//				final double a100 = src[ o + ss1 ];
-//				final double a101 = src[ o + ss1 + 1 ];
-//				final double a110 = src[ o + ss1 + ss0 ];
-//				final double a111 = src[ o + ss1 + ss0 + 1 ];
-//				dest[ offset++ ] = a000 +
-//						r0 * ( -a000 + a001 ) +
-//						r1 * ( ( -a000 + a010 ) +
-//								r0 * ( a000 - a001 - a010 + a011 ) ) +
-//						r2 * ( ( -a000 + a100 ) +
-//								r0 * ( a000 - a001 - a100 + a101 ) +
-//								r1 * ( ( a000 - a010 - a100 + a110 ) +
-//										r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
-//				sf0 += d0;
-//				sf1 += d1;
-//				sf2 += d2;
-//			}
+			final int n = 3;
+			final int nss0 = n * ss0;
+			final int nss1 = n * ss1;
+			for ( int x = 0; x < length; ++x )
+			{
+				final int s0 = ( int ) sf0;
+				final int s1 = ( int ) sf1;
+				final int s2 = ( int ) sf2;
+				final float r0 = sf0 - s0;
+				final float r1 = sf1 - s1;
+				final float r2 = sf2 - s2;
+				final int o = s2 * nss1 + s1 * nss0 + n * s0;
+				// TODO: create benchmark and play with loop unrolling, inlining n, etc...
+				{
+					final int k = 0;
+					final double a000 = src[ k + o ];
+					final double a001 = src[ k + o + n ];
+					final double a010 = src[ k + o + nss0 ];
+					final double a011 = src[ k + o + nss0 + n ];
+					final double a100 = src[ k + o + nss1 ];
+					final double a101 = src[ k + o + nss1 + n ];
+					final double a110 = src[ k + o + nss1 + nss0 ];
+					final double a111 = src[ k + o + nss1 + nss0 + n ];
+					final double v0 = a000 +
+							r0 * ( -a000 + a001 ) +
+							r1 * ( ( -a000 + a010 ) +
+									r0 * ( a000 - a001 - a010 + a011 ) ) +
+							r2 * ( ( -a000 + a100 ) +
+									r0 * ( a000 - a001 - a100 + a101 ) +
+									r1 * ( ( a000 - a010 - a100 + a110 ) +
+											r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
+					dest[ offset++ ] = v0 + sf0;
+				}
+				{
+					final int k = 1;
+					final double a000 = src[ k + o ];
+					final double a001 = src[ k + o + n ];
+					final double a010 = src[ k + o + nss0 ];
+					final double a011 = src[ k + o + nss0 + n ];
+					final double a100 = src[ k + o + nss1 ];
+					final double a101 = src[ k + o + nss1 + n ];
+					final double a110 = src[ k + o + nss1 + nss0 ];
+					final double a111 = src[ k + o + nss1 + nss0 + n ];
+					final double v1 = a000 +
+							r0 * ( -a000 + a001 ) +
+							r1 * ( ( -a000 + a010 ) +
+									r0 * ( a000 - a001 - a010 + a011 ) ) +
+							r2 * ( ( -a000 + a100 ) +
+									r0 * ( a000 - a001 - a100 + a101 ) +
+									r1 * ( ( a000 - a010 - a100 + a110 ) +
+											r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
+					dest[ offset++ ] = v1 + sf1;
+				}
+				{
+					final int k = 2;
+					final double a000 = src[ k + o ];
+					final double a001 = src[ k + o + n ];
+					final double a010 = src[ k + o + nss0 ];
+					final double a011 = src[ k + o + nss0 + n ];
+					final double a100 = src[ k + o + nss1 ];
+					final double a101 = src[ k + o + nss1 + n ];
+					final double a110 = src[ k + o + nss1 + nss0 ];
+					final double a111 = src[ k + o + nss1 + nss0 + n ];
+					final double v2 = a000 +
+							r0 * ( -a000 + a001 ) +
+							r1 * ( ( -a000 + a010 ) +
+									r0 * ( a000 - a001 - a010 + a011 ) ) +
+							r2 * ( ( -a000 + a100 ) +
+									r0 * ( a000 - a001 - a100 + a101 ) +
+									r1 * ( ( a000 - a010 - a100 + a110 ) +
+											r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
+					dest[ offset++ ] = v2 + sf2;
+				}
+				sf0 += d0;
+				sf1 += d1;
+				sf2 += d2;
+			}
 		}
 
 		@Override
