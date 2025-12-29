@@ -191,8 +191,8 @@ interface Lookup3D< F, P >
 		{
 			for ( int x = 0; x < length; ++x )
 			{
-				final float sf0 = pfield[ 2 * x ] + (float) d0;
-				final float sf1 = pfield[ 2 * x + 1 ] + (float) d1;
+				final float sf0 = pfield[ 3 * x ] + (float) d0;
+				final float sf1 = pfield[ 3 * x + 1 ] + (float) d1;
 				final float sf2 = pfield[ 3 * x + 2 ] + (float) d2;
 				final int s0 = ( int ) sf0;
 				final int s1 = ( int ) sf1;
@@ -238,8 +238,8 @@ interface Lookup3D< F, P >
 		{
 			for ( int x = 0; x < length; ++x )
 			{
-				final float sf0 = pfield[ 2 * x ] + (float) d0;
-				final float sf1 = pfield[ 2 * x + 1 ] + (float) d1;
+				final float sf0 = pfield[ 3 * x ] + (float) d0;
+				final float sf1 = pfield[ 3 * x + 1 ] + (float) d1;
 				final float sf2 = pfield[ 3 * x + 2 ] + (float) d2;
 				final int s0 = ( int ) sf0;
 				final int s1 = ( int ) sf1;
