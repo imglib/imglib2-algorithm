@@ -42,7 +42,7 @@ import net.imglib2.util.Cast;
  * Compute a destination X line for 2D.
  * <p>
  * An instance for a given input/output type ({@code double[]} or {@code
- * float[]})can be obtained by {@link #of TransformLine2D.of}.
+ * float[]})can be obtained by {@link #of DispFieldAffine2D.of}.
  * <p>
  * A destination X line can then be computed by {@link #transformLine}, giving starting
  * position and X differential vector.
