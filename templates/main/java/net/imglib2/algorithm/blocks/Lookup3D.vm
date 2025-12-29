@@ -196,8 +196,8 @@ interface Lookup3D< F, P >
 		{
 			for ( int x = 0; x < length; ++x )
 			{
-				final ${f} sf0 = pfield[ 2 * x ] + (${f}) d0;
-				final ${f} sf1 = pfield[ 2 * x + 1 ] + (${f}) d1;
+				final ${f} sf0 = pfield[ 3 * x ] + (${f}) d0;
+				final ${f} sf1 = pfield[ 3 * x + 1 ] + (${f}) d1;
 				final ${f} sf2 = pfield[ 3 * x + 2 ] + (${f}) d2;
 				final int s0 = ( int ) sf0;
 				final int s1 = ( int ) sf1;
