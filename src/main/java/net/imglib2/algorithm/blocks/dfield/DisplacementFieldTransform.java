@@ -58,6 +58,21 @@ public class DisplacementFieldTransform
 {
 	/**
 	 * TODO javadoc
+	 *
+	 * @param transformFromSource
+	 * 		a 2D or 3D affine transform from displacementField coordinates to
+	 * 		target coordinates
+	 * @param displacementField
+	 * 		the (normalized) displacement field
+	 * @param interpolation
+	 * 		which interpolation method to use for lookup in the source image.
+	 * 		(displacement field is always linearly interpolated)
+	 * @param <D>
+	 * 		displacement field type
+	 * @param <T>
+	 * 		the source/target type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to transform blocks of type {@code T}
 	 */
 	public static < D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
 	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > displacementFieldAffine( final AffineGet transformFromSource, final DisplacementField< D > displacementField, final Interpolation interpolation )
@@ -83,7 +98,8 @@ public class DisplacementFieldTransform
 	 * @param type
 	 * 		instance of the source/target type
 	 * @param transformFromSource
-	 * 		a 2D or 3D affine transform
+	 * 		a 2D or 3D affine transform from displacementField coordinates to
+	 * 		target coordinates
 	 * @param displacementField
 	 *      the (normalized) displacement field
 	 * @param interpolation
@@ -163,10 +179,11 @@ public class DisplacementFieldTransform
 		final PrimitiveType primitiveType = type.getNativeTypeFactory().getPrimitiveType();
 		final PrimitiveType dfieldPrimitiveType = displacementField.getType().getNativeTypeFactory().getPrimitiveType();
 		final double[] scale = displacementField.scale();
+		final double[] translation = displacementField.translation();
 		final BlockSupplier< D > displacements = displacementField.displacements();
 		final AbstractDispFieldAffineProcessor< ? > fieldProcessor = ( n == 2 )
-				? new DispFieldAffine2DProcessor<>( ( AffineTransform2D ) transform, scale, interpolation, dfieldPrimitiveType )
-				: new DispFieldAffine3DProcessor<>( ( AffineTransform3D ) transform, scale, interpolation, dfieldPrimitiveType );
+				? new DispFieldAffine2DProcessor<>( ( AffineTransform2D ) transform, scale, translation, interpolation, dfieldPrimitiveType )
+				: new DispFieldAffine3DProcessor<>( ( AffineTransform3D ) transform, scale, translation, interpolation, dfieldPrimitiveType );
 		final AbstractLookupProcessor< ?, ? > lookupProcessor = ( n == 2 )
 				? new Lookup2DProcessor<>( dfieldPrimitiveType, interpolation, primitiveType )
 				: new Lookup3DProcessor<>( dfieldPrimitiveType, interpolation, primitiveType );

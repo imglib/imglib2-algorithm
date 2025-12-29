@@ -61,10 +61,14 @@ class DispFieldAffine3DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 	private final double displacementScale0;
 	private final double displacementScale1;
 	private final double displacementScale2;
+	private final double displacementOffset0;
+	private final double displacementOffset1;
+	private final double displacementOffset2;
 
 	DispFieldAffine3DProcessor(
 			final AffineTransform3D transformToSource, // TODO: rename? "source" == "displacement field" here ...
 			final double[] displacementScale, // for a "normalized" displacement field, this is the spacing (i.e. downsampling factor wrt input grid)
+			final double[] displacementOffset,
 			final Interpolation inputInterpolation,
 			final PrimitiveType primitiveType )
 	{
@@ -72,6 +76,9 @@ class DispFieldAffine3DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 		this.displacementScale0 = displacementScale[ 0 ];
 		this.displacementScale1 = displacementScale[ 1 ];
 		this.displacementScale2 = displacementScale[ 2 ];
+		this.displacementOffset0 = displacementOffset[ 0 ];
+		this.displacementOffset1 = displacementOffset[ 1 ];
+		this.displacementOffset2 = displacementOffset[ 2 ];
 		this.transformToSource = transformToSource;
 		this.dispFieldAffine = DispFieldAffine3D.of( primitiveType );
 	}
@@ -82,6 +89,9 @@ class DispFieldAffine3DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 		displacementScale0 = processor.displacementScale0;
 		displacementScale1 = processor.displacementScale1;
 		displacementScale2 = processor.displacementScale2;
+		displacementOffset0 = processor.displacementOffset0;
+		displacementOffset1 = processor.displacementOffset1;
+		displacementOffset2 = processor.displacementOffset2;
 		transformToSource = processor.transformToSource;
 		dispFieldAffine = processor.dispFieldAffine;
 	}
@@ -131,18 +141,19 @@ class DispFieldAffine3DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 		// 						interpolated displacement
 		// 					  + (real, not rounded) position on displacement grid, relative to sourcePos[1,2,3]
 		//                  ) * displacementScale
+		//                  + displacementOffset
 		//
 		// sourcePos[1,2,3] in input grid = ( sourcePos[1,2,3] * displacementScale )
 		//
 		// vector in dest will look up
-		//					( sourcePos[1,2,3] * displacementScale )
+		//					( sourcePos[1,2,3] * displacementScale + displacementOffset )
 		// 					+ (   interpolated displacement
 		// 					    + (real, not rounded) position on displacement grid, relative to sourcePos[1,2,3]
 		//                    ) * displacementScale
 		//
-		final double o0 = displacementScale0 * sourcePos[ 1 ];
-		final double o1 = displacementScale1 * sourcePos[ 2 ];
-		final double o2 = displacementScale2 * sourcePos[ 3 ];
+		final double o0 = displacementScale0 * sourcePos[ 1 ] + displacementOffset0;
+		final double o1 = displacementScale1 * sourcePos[ 2 ] + displacementOffset1;
+		final double o2 = displacementScale2 * sourcePos[ 3 ] + displacementOffset2;
 		dispFieldAffine.sourceBounds( dest, ds0 * destSize[ 1 ] * destSize[ 2 ], o0, o1, o2, inputInterpolation, inputBounds );
 
 		// now that we know the source bounds, compute the position vector offset
