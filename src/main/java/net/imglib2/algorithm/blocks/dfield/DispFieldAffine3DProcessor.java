@@ -115,8 +115,8 @@ class DispFieldAffine3DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 		final float d1 = transformToSource.d( 0 ).getFloatPosition( 1 );
 		final float d2 = transformToSource.d( 0 ).getFloatPosition( 2 );
 		final int ds0 = destSize[ 0 ];
-		final int ss0 = sourceSize[ 0 ];
-		final int ss1 = sourceSize[ 1 ] * ss0;
+		final int ss0 = sourceSize[ 1 ];
+		final int ss1 = sourceSize[ 2 ] * ss0;
 		pdest[ 0 ] = destPos[ 0 ];
 		int i = 0;
 		for ( int z = 0; z < destSize[ 2 ]; ++z )
