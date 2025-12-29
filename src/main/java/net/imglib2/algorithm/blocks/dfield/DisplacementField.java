@@ -38,6 +38,28 @@ public class DisplacementField< T extends NativeType< T > & RealType< T > >
 
 	private final double[] translation;
 
+	/**
+	 * Constructs a displacement field with the specified normalized displacements, scale, and translation.
+	 * <p>
+	 * A "normalized" field expresses displacements in units relative to the
+	 * displacement grid's own pixel spacing. Consequently, downsampling the grid by
+	 * a factor of N requires scaling the displacement vectors by 1/N to maintain
+	 * normalization.
+	 *
+	 * @param displacements
+	 * 		provides displacement vectors, with components of the displacement vector in dimension 0. (shifting
+	 * 		all other dimensions by 1. That is, the {@code BlockSupplier} has {@link
+	 *        #numDimensions()} + 1 dimensions.)
+	 * @param scale
+	 * 		displacement field coordinates and
+	 * 		displacement vectors should be scaled by this factor when looking up
+	 * 		intensities in a source image.
+	 * @param translation
+	 * 		when interpolating {@link #displacements()} into a position field for
+	 * 		value look-up in the source image, this translation should be is added.
+	 * 		(This happens after scaling, so the translation is in units of source
+	 * 		image pixels).
+	 */
 	public DisplacementField(
 			final BlockSupplier< T > displacements,
 			final double[] scale,
