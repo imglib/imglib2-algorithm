@@ -98,4 +98,7 @@ abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P
 	{
 		positionField = field;
 	}
+
+	@Override
+	public abstract AbstractLookupProcessor< F, P > independentCopy();
 }

@@ -46,16 +46,23 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 
 /**
- * TODO: javadoc
+ * A {@code UnaryBlockOperator} that combines a {@code
+ * AbstractDispFieldAffineProcessor} and a {@code AbstractLookupProcessor} to
+ * compute (blocks of) the transformation of a source image with a displacement
+ * field.
  * <p>
- * {@code type} must be {@code DoubleType} of {@code FloatType}.
+ * The {@code AbstractDispFieldAffineProcessor} interpolates and affine
+ * transforms the displacement field to get a position field.
+ * <p>
+ * The {@code AbstractLookupProcessor} uses the position field to interpolate
+ * into the source image.
  *
  * @param <D>
  * 		displacement field type
  * @param <T>
- * 		the source/target type
+ * 		pixel type (source and target)
  */
-public class DisplacementFieldUnaryBlockOperator< D extends NativeType< D > & RealType< D >, T extends NativeType< T > > extends AbstractUnaryBlockOperator< T, T >
+class DisplacementFieldUnaryBlockOperator< D extends NativeType< D > & RealType< D >, T extends NativeType< T > > extends AbstractUnaryBlockOperator< T, T >
 {
 	@SuppressWarnings( "rawtypes" )
 	private final AbstractDispFieldAffineProcessor fieldProcessor;
@@ -67,12 +74,24 @@ public class DisplacementFieldUnaryBlockOperator< D extends NativeType< D > & Re
 	@SuppressWarnings( "rawtypes" )
 	private final AbstractLookupProcessor lookupProcessor;
 
-	public DisplacementFieldUnaryBlockOperator(
+	/**
+	 *
+	 * @param type
+	 * 		pixel type (source and target) of this operator
+	 * @param numDimensions
+	 * 		number of dimensions (source and target) of this operator
+	 * @param fieldProcessor
+	 * 		interpolates and affine-transforms the {@code displacementField} to get a position field
+	 * @param displacementField
+	 * 		a normalized displacement field and its mapping to the source image
+	 * @param lookupProcessor
+	 * 		uses the position field to interpolate into the source image
+	 */
+	DisplacementFieldUnaryBlockOperator(
 			T type, int numDimensions,
-			AbstractDispFieldAffineProcessor fieldProcessor,
+			AbstractDispFieldAffineProcessor< ? > fieldProcessor,
 			BlockSupplier< D > displacementField,
-			AbstractLookupProcessor lookupProcessor
-	)
+			AbstractLookupProcessor< ?, ? > lookupProcessor )
 	{
 		super( type, type, numDimensions, numDimensions );
 		this.fieldProcessor = fieldProcessor;
