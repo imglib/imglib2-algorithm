@@ -33,7 +33,7 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
-import net.imglib2.algorithm.blocks.transform.Transform;
+import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.util.Cast;
 
@@ -44,7 +44,14 @@ import net.imglib2.util.Cast;
 
 
 /**
- * TODO javadoc
+ * Compute output values by interpolating input values at coordinates stored in
+ * a position field.
+ * <p>
+ * An instance for a given displacement field type (e.g. {@code float[]}),
+ * input/output type (e.g. {@code byte[]}) and {@link Interpolation} scheme can
+ * be obtained by {@link #of Lookup2D.of}.
+ * <p>
+ * A output array can then be computed by {@link #apply}.
  *
  * @param <F>
  * 		displacement field primitive array type (float[] or double[])
@@ -55,7 +62,8 @@ import net.imglib2.util.Cast;
 interface Lookup2D< F, P >
 {
 	/**
-	 * TODO javadoc
+	 * Compute {@code dest} values by interpolating {@code src} values at
+	 * coordinates stored as a flattened position field {@code pfield}.
 	 * <p>
 	 * The dimensions of {@code pfield} match the dimensions of {@code dest}.
 	 * (But {@code pfield} has 2 displacement vector components for every {@code
@@ -90,13 +98,13 @@ interface Lookup2D< F, P >
 
 	static < F, P > Lookup2D< F, P > of(
 			final PrimitiveType dfieldPrimitiveType,
-			final Transform.Interpolation interpolation,
+			final Interpolation interpolation,
 			final PrimitiveType primitiveType )
 	{
 		switch ( dfieldPrimitiveType )
 		{
 		case FLOAT:
-			if ( interpolation == Transform.Interpolation.NLINEAR )
+			if ( interpolation == Interpolation.NLINEAR )
 			{
 				switch ( primitiveType )
 				{
@@ -129,7 +137,7 @@ interface Lookup2D< F, P >
 				}
 			}
 		case DOUBLE:
-			if ( interpolation == Transform.Interpolation.NLINEAR )
+			if ( interpolation == Interpolation.NLINEAR )
 			{
 				switch ( primitiveType )
 				{
