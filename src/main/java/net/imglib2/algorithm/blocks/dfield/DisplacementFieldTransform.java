@@ -57,7 +57,13 @@ import net.imglib2.type.numeric.real.FloatType;
 public class DisplacementFieldTransform
 {
 	/**
-	 * TODO javadoc
+	 * Interpolate and transform blocks of the standard ImgLib2 {@code
+	 * RealType}s using an affine-transformed displacement field.
+	 * <p>
+	 * Only 2D and 3D are supported currently!
+	 * <p>
+	 * The returned factory function creates an operator matching the type a
+	 * given input {@code BlockSupplier<T>}.
 	 *
 	 * @param transformFromSource
 	 * 		a 2D or 3D affine transform from displacementField coordinates to
@@ -81,7 +87,35 @@ public class DisplacementFieldTransform
 	}
 
 	/**
-	 * TODO javadoc
+	 * Interpolate and transform blocks of the standard ImgLib2 {@code
+	 * RealType}s using an affine-transformed displacement field.
+	 * <p>
+	 * Only 2D and 3D are supported currently!
+	 * <p>
+	 * The returned factory function creates an operator matching the type a
+	 * given input {@code BlockSupplier<T>}.
+	 *
+	 * @param transformFromSource
+	 * 		a 2D or 3D affine transform from displacementField coordinates to
+	 * 		target coordinates
+	 * @param displacementField
+	 * 		the (normalized) displacement field
+	 * @param interpolation
+	 * 		which interpolation method to use for lookup in the source image.
+	 * 		(displacement field is always linearly interpolated)
+	 * @param computationType
+	 * 		For n-linear interpolation, this specifies in which precision
+	 * 		intermediate values should be computed. For {@code AUTO}, the type
+	 * 		that can represent the input/output type without loss of precision
+	 * 		is picked. That is, {@code FLOAT} for u8, i8, u16, i16, i32, f32,
+	 *      and otherwise {@code DOUBLE} for u32, i64, f64. For nearest-neighbor
+	 *      interpolation, {@code computationType} is not used.
+	 * @param <D>
+	 * 		displacement field type
+	 * @param <T>
+	 * 		the source/target type
+	 *
+	 * @return factory for {@code UnaryBlockOperator} to transform blocks of type {@code T}
 	 */
 	public static < D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
 	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > displacementFieldAffine( final AffineGet transformFromSource, final DisplacementField< D > displacementField, final Interpolation interpolation, final ComputationType computationType )
@@ -91,7 +125,7 @@ public class DisplacementFieldTransform
 
 	/**
 	 * Combines an affine transformation into a (linearly interpolated)
-	 * displacement field, and look-up with resolting position field vectors in
+	 * displacement field, and look-up with resulting position field vectors in
 	 * a source image of type {@code T}, to produce an output image of type
 	 * {@code T}.
 	 *

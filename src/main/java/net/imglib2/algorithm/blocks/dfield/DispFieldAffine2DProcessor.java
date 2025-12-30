@@ -63,9 +63,29 @@ class DispFieldAffine2DProcessor< P > extends AbstractDispFieldAffineProcessor< 
 	private final double displacementOffset0;
 	private final double displacementOffset1;
 
+	/**
+	 * @param transformToSource
+	 * 		transforms target coordinates into displacement field coordinates
+	 * @param displacementScale
+	 * 		displacement field coordinates and displacement vectors should be
+	 * 		scaled by this factor when looking up intensities in a source image.
+	 * 		For a "normalized" displacement field, this is the spacing, i.e.,
+	 * 		downsampling factor wrt input grid.
+	 * @param displacementOffset
+	 * 		when interpolating displacements into a position field for value
+	 * 		look-up in the source image, this translation should be added. (This
+	 * 		happens after scaling, so the translation is in units of source image
+	 * 		pixels).
+	 * @param inputInterpolation
+	 * 		the interpolation that will be applied later, when using position
+	 * 		vectors to interpolate into the source image. (This determines
+	 * 		required padding for source bounds.)
+	 * @param primitiveType
+	 * 		the component type of displacement vectors (float or double)
+	 */
 	DispFieldAffine2DProcessor(
-			final AffineTransform2D transformToSource, // TODO: rename? "source" == "displacement field" here ...
-			final double[] displacementScale, // for a "normalized" displacement field, this is the spacing (i.e. downsampling factor wrt input grid)
+			final AffineTransform2D transformToSource,
+			final double[] displacementScale,
 			final double[] displacementOffset,
 			final Interpolation inputInterpolation,
 			final PrimitiveType primitiveType )

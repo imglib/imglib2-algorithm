@@ -35,8 +35,9 @@ public class DisplacementField< T extends NativeType< T > & RealType< T > >
 	 * normalization.
 	 *
 	 * @param displacements
-	 * 		provides displacement vectors, with components of the displacement vector in dimension 0. (shifting
-	 * 		all other dimensions by 1. That is, the {@code BlockSupplier} has {@link
+	 * 		provides displacement vectors, with components of the
+	 * 		displacement vector in dimension 0. (shifting all other
+	 * 		dimensions by 1. That is, the {@code BlockSupplier} has {@link
 	 *        #numDimensions()} + 1 dimensions.)
 	 * @param scale
 	 * 		displacement field coordinates and
@@ -44,7 +45,7 @@ public class DisplacementField< T extends NativeType< T > & RealType< T > >
 	 * 		intensities in a source image.
 	 * @param translation
 	 * 		when interpolating {@link #displacements()} into a position field for
-	 * 		value look-up in the source image, this translation should be is added.
+	 * 		value look-up in the source image, this translation should be added.
 	 * 		(This happens after scaling, so the translation is in units of source
 	 * 		image pixels).
 	 */

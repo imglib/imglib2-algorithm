@@ -140,10 +140,14 @@ abstract class AbstractDispFieldAffineProcessor< P > extends AbstractBlockProces
 	 * the last {@link #compute} call, when interpolating into a source img
 	 * block covering {@link #getInputBounds()}.
 	 * <p>
-	 * The offsets {@code d0, d1} accounts for (scaled) offsets of both the
-	 * displacement field block and the src block.
-	 * <p>
-	 * TODO add formulas how offset is computed. See Lookup2D.
+	 * The offsets {@code d0, d1, d2} account for (scaled) offset of both the
+	 * displacement field block and the src block. They should be computed like
+	 * this:
+	 * <pre>{@code
+	 * d0 = displacementScale0 * fieldTransform.sourcePos[1] + displacementOffset0 - lookupTransform.sourcePos[0]
+	 * d1 = displacementScale1 * fieldTransform.sourcePos[2] + displacementOffset1 - lookupTransform.sourcePos[1]
+	 * d2 = displacementScale2 * fieldTransform.sourcePos[3] + displacementOffset2 - lookupTransform.sourcePos[2]
+	 * }</pre>
 	 * <p>
 	 * (This depends on the displacement values, so it can be only computed
 	 * after the position field block has been created.)
