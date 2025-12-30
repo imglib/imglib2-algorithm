@@ -1,22 +1,10 @@
 package net.imglib2.algorithm.blocks.dfield;
 
-import static net.imglib2.type.PrimitiveType.FLOAT;
-
 import net.imglib2.EuclideanSpace;
 import net.imglib2.Typed;
 import net.imglib2.algorithm.blocks.BlockSupplier;
-import net.imglib2.algorithm.blocks.ClampType;
-import net.imglib2.algorithm.blocks.ComputationType;
-import net.imglib2.algorithm.blocks.UnaryBlockOperator;
-import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
-import net.imglib2.realtransform.AffineGet;
-import net.imglib2.realtransform.AffineTransform2D;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.type.numeric.real.FloatType;
 
 /**
  * A normalized displacement field, and its scale and offset with respect to a
@@ -72,7 +60,6 @@ public class DisplacementField< T extends NativeType< T > & RealType< T > >
 		this.displacements = displacements;
 		this.scale = scale;
 		this.translation = translation;
-
 	}
 
 	@Override
@@ -131,10 +118,4 @@ public class DisplacementField< T extends NativeType< T > & RealType< T > >
 	{
 		return translation;
 	}
-
-
-	//
-	// TODO: the following should go into a separate class later
-	//  --------------------------------------------------------
-
 }
