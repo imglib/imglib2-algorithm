@@ -33,7 +33,6 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
-import net.imglib2.algorithm.blocks.transform.Transform;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.blocks.BlockInterval;
 import net.imglib2.type.PrimitiveType;
@@ -54,41 +53,41 @@ import net.imglib2.util.Cast;
 interface DispFieldAffine3D< P >
 {
 
-    /**
+	/**
 	 * Compute a destination X line. Interpolate displacements and add sample
 	 * positions (starting from {@code (sf0, sf1, sf2)} to produce (a line in)
 	 * the {@code dest} position field.
 	 * <p>
 	 * All lengths are counted in full displacement vectors (not individual
 	 * float components).
-     *
-     * @param src
-     * 		flattened source data
-     * @param dest
-     * 		flattened dest data
-     * @param offset
-     * 		offset (into {@code dest}) of the line to compute
-     * @param length
-     * 		length of the line to compute (in {@code dest})
-     * @param d0
-     * 		partial differential vector in X of the transform (X component)
-     * @param d1
-     * 		partial differential vector in X of the transform (Y component)
-     * @param d2
-     * 		partial differential vector in X of the transform (Z component)
-     * @param ss0
-     * 		length of a source line (size_X)
-     * @param ss1
-     * 		length of a source plane (size_X * size_Y)
-     * @param sf0
-     * 		position of the first sample on the line (transformed into source)
-     * @param sf1
-     * 		position of the first sample on the line (transformed into source)
-     * @param sf2
-     * 		position of the first sample on the line (transformed into source)
-     */
-    void transformLine( P src, P dest, int offset, int length,
-            float d0, float d1, float d2,
+	 *
+	 * @param src
+	 * 		flattened source data
+	 * @param dest
+	 * 		flattened dest data
+	 * @param offset
+	 * 		offset (into {@code dest}) of the line to compute
+	 * @param length
+	 * 		length of the line to compute (in {@code dest})
+	 * @param d0
+	 * 		partial differential vector in X of the transform (X component)
+	 * @param d1
+	 * 		partial differential vector in X of the transform (Y component)
+	 * @param d2
+	 * 		partial differential vector in X of the transform (Z component)
+	 * @param ss0
+	 * 		length of a source line (size_X)
+	 * @param ss1
+	 * 		length of a source plane (size_X * size_Y)
+	 * @param sf0
+	 * 		position of the first sample on the line (transformed into source)
+	 * @param sf1
+	 * 		position of the first sample on the line (transformed into source)
+	 * @param sf2
+	 * 		position of the first sample on the line (transformed into source)
+	 */
+	void transformLine( P src, P dest, int offset, int length,
+			float d0, float d1, float d2,
             int ss0, int ss1,
             float sf0, float sf1, float sf2 );
 
@@ -160,9 +159,9 @@ interface DispFieldAffine3D< P >
 
 		@Override
 		public void transformLine( final float[] src, final float[] dest, int offset, final int length,
-		final float d0, final float d1, final float d2,
-		final int ss0, final int ss1,
-		float sf0, float sf1, float sf2 )
+				final float d0, final float d1, final float d2,
+				final int ss0, final int ss1,
+				float sf0, float sf1, float sf2 )
 		{
 			final int n = 3;
 			final int nss0 = n * ss0;
