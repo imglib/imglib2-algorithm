@@ -3,18 +3,16 @@ package net.imglib2.algorithm.blocks.dfield;
 import net.imglib2.algorithm.blocks.transform.Transform.Interpolation;
 import net.imglib2.type.PrimitiveType;
 
-public // TODO: make package private again (public for testing)
 class Lookup2DProcessor< F, P > extends AbstractLookupProcessor< F, P >
 {
 	private final Lookup2D< F, P > lookup;
 
-	public // TODO: make package private again (public for testing)
 	Lookup2DProcessor(
 			final PrimitiveType dfieldPrimitiveType,
 			final Interpolation interpolation,
 			final PrimitiveType primitiveType )
 	{
-		super( 2, interpolation, primitiveType );
+		super( primitiveType, 2 );
 		lookup = Lookup2D.of( dfieldPrimitiveType, interpolation, primitiveType );
 	}
 
@@ -25,7 +23,7 @@ class Lookup2DProcessor< F, P > extends AbstractLookupProcessor< F, P >
 	}
 
 	@Override
-	public AbstractLookupProcessor< F, P > independentCopy()
+	public Lookup2DProcessor< F, P > independentCopy()
 	{
 		return new Lookup2DProcessor<>( this );
 	}

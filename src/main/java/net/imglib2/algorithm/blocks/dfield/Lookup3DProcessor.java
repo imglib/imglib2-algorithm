@@ -12,7 +12,7 @@ class Lookup3DProcessor< F, P > extends AbstractLookupProcessor< F, P >
 			final Interpolation interpolation,
 			final PrimitiveType primitiveType )
 	{
-		super( 3, interpolation, primitiveType );
+		super( primitiveType, 3 );
 		lookup = Lookup3D.of( dfieldPrimitiveType, interpolation, primitiveType );
 	}
 
@@ -23,7 +23,7 @@ class Lookup3DProcessor< F, P > extends AbstractLookupProcessor< F, P >
 	}
 
 	@Override
-	public AbstractLookupProcessor< F, P > independentCopy()
+	public Lookup3DProcessor< F, P > independentCopy()
 	{
 		return new Lookup3DProcessor<>( this );
 	}

@@ -35,15 +35,12 @@ package net.imglib2.algorithm.blocks.dfield;
 
 import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.AbstractBlockProcessor;
-import net.imglib2.algorithm.blocks.transform.Transform;
 import net.imglib2.blocks.BlockInterval;
 import net.imglib2.type.PrimitiveType;
 
 /**
- * TODO: javadoc
- * <p>
- * Abstract base class for ???. Implements source/target interval computation,
- * and {@code TempArray} and thread-safe setup.
+ * Abstract base class for {@link Lookup3DProcessor} and {@link
+ * Lookup2DProcessor}. (Common fields and basic thread-safe setup.)
  *
  * @param <F>
  * 		position field array type (must be float[] or double[])
@@ -52,12 +49,6 @@ import net.imglib2.type.PrimitiveType;
  */
 abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P, P >
 {
-	PrimitiveType primitiveType;
-
-	Transform.Interpolation interpolation;
-
-	final int n;
-
 	final long[] destPos;
 
 	final int[] destSize;
@@ -70,12 +61,9 @@ abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P
 	 */
 	final double[] positionOffset;
 
-	AbstractLookupProcessor( final int n, final Transform.Interpolation interpolation, final PrimitiveType primitiveType )
+	AbstractLookupProcessor( final PrimitiveType primitiveType, final int n )
 	{
 		super( primitiveType, n );
-		this.primitiveType = primitiveType;
-		this.interpolation = interpolation;
-		this.n = n;
 		destPos = new long[ n ];
 		destSize = new int[ n ];
 		positionOffset = new double[ n ];
@@ -84,13 +72,7 @@ abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P
 	AbstractLookupProcessor( AbstractLookupProcessor< F, P > transform )
 	{
 		super( transform );
-
-		// re-use
-		primitiveType = transform.primitiveType;
-		interpolation = transform.interpolation;
-		n = transform.n;
-
-		// init empty
+		final int n = transform.destPos.length;
 		destPos = new long[ n ];
 		destSize = new int[ n ];
 		positionOffset = new double[ n ];
@@ -102,21 +84,18 @@ abstract class AbstractLookupProcessor< F, P > extends AbstractBlockProcessor< P
 		BlockInterval.wrap( destPos, destSize ).setFrom( interval );
 	}
 
-	public void setSourceInterval( final Interval interval )
+	void setSourceInterval( final Interval interval )
 	{
 		getSourceInterval().setFrom( interval );
 	}
 
-	public void setPositionOffset( final double[] offset )
+	void setPositionOffset( final double[] offset )
 	{
-		System.arraycopy( offset, 0, positionOffset, 0, n );
+		System.arraycopy( offset, 0, positionOffset, 0, positionOffset.length );
 	}
 
-	public void setPositionField( final F field )
+	void setPositionField( final F field )
 	{
 		positionField = field;
 	}
-
-	@Override
-	public abstract AbstractLookupProcessor< F, P > independentCopy();
 }
