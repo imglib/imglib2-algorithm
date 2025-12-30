@@ -149,17 +149,19 @@ interface DispFieldAffine3D< P >
 		}
 	}
 
+#set( $nlinear_primitive_types = ["float", "double"] )
+#foreach( $t in $nlinear_primitive_types )
 
-	class NLinear_float implements DispFieldAffine3D< float[] >
+	class NLinear_${t} implements DispFieldAffine3D< ${t}[] >
 	{
-		private NLinear_float()
+		private NLinear_${t}()
 		{
 		}
 
-		static final NLinear_float INSTANCE = new NLinear_float();
+		static final NLinear_${t} INSTANCE = new NLinear_${t}();
 
 		@Override
-		public void transformLine( final float[] src, final float[] dest, int offset, final int length,
+		public void transformLine( final ${t}[] src, final ${t}[] dest, int offset, final int length,
 				final float d0, final float d1, final float d2,
 				final int ss0, final int ss1,
 				float sf0, float sf1, float sf2 )
@@ -179,15 +181,15 @@ interface DispFieldAffine3D< P >
 				// TODO: create benchmark and play with loop unrolling, inlining n, etc...
 				{
 					final int k = 0;
-					final float a000 = src[ k + o ];
-					final float a001 = src[ k + o + n ];
-					final float a010 = src[ k + o + nss0 ];
-					final float a011 = src[ k + o + nss0 + n ];
-					final float a100 = src[ k + o + nss1 ];
-					final float a101 = src[ k + o + nss1 + n ];
-					final float a110 = src[ k + o + nss1 + nss0 ];
-					final float a111 = src[ k + o + nss1 + nss0 + n ];
-					final float v0 = a000 +
+					final ${t} a000 = src[ k + o ];
+					final ${t} a001 = src[ k + o + n ];
+					final ${t} a010 = src[ k + o + nss0 ];
+					final ${t} a011 = src[ k + o + nss0 + n ];
+					final ${t} a100 = src[ k + o + nss1 ];
+					final ${t} a101 = src[ k + o + nss1 + n ];
+					final ${t} a110 = src[ k + o + nss1 + nss0 ];
+					final ${t} a111 = src[ k + o + nss1 + nss0 + n ];
+					final ${t} v0 = a000 +
 							r0 * ( -a000 + a001 ) +
 							r1 * ( ( -a000 + a010 ) +
 									r0 * ( a000 - a001 - a010 + a011 ) ) +
@@ -199,15 +201,15 @@ interface DispFieldAffine3D< P >
 				}
 				{
 					final int k = 1;
-					final float a000 = src[ k + o ];
-					final float a001 = src[ k + o + n ];
-					final float a010 = src[ k + o + nss0 ];
-					final float a011 = src[ k + o + nss0 + n ];
-					final float a100 = src[ k + o + nss1 ];
-					final float a101 = src[ k + o + nss1 + n ];
-					final float a110 = src[ k + o + nss1 + nss0 ];
-					final float a111 = src[ k + o + nss1 + nss0 + n ];
-					final float v1 = a000 +
+					final ${t} a000 = src[ k + o ];
+					final ${t} a001 = src[ k + o + n ];
+					final ${t} a010 = src[ k + o + nss0 ];
+					final ${t} a011 = src[ k + o + nss0 + n ];
+					final ${t} a100 = src[ k + o + nss1 ];
+					final ${t} a101 = src[ k + o + nss1 + n ];
+					final ${t} a110 = src[ k + o + nss1 + nss0 ];
+					final ${t} a111 = src[ k + o + nss1 + nss0 + n ];
+					final ${t} v1 = a000 +
 							r0 * ( -a000 + a001 ) +
 							r1 * ( ( -a000 + a010 ) +
 									r0 * ( a000 - a001 - a010 + a011 ) ) +
@@ -219,15 +221,15 @@ interface DispFieldAffine3D< P >
 				}
 				{
 					final int k = 2;
-					final float a000 = src[ k + o ];
-					final float a001 = src[ k + o + n ];
-					final float a010 = src[ k + o + nss0 ];
-					final float a011 = src[ k + o + nss0 + n ];
-					final float a100 = src[ k + o + nss1 ];
-					final float a101 = src[ k + o + nss1 + n ];
-					final float a110 = src[ k + o + nss1 + nss0 ];
-					final float a111 = src[ k + o + nss1 + nss0 + n ];
-					final float v2 = a000 +
+					final ${t} a000 = src[ k + o ];
+					final ${t} a001 = src[ k + o + n ];
+					final ${t} a010 = src[ k + o + nss0 ];
+					final ${t} a011 = src[ k + o + nss0 + n ];
+					final ${t} a100 = src[ k + o + nss1 ];
+					final ${t} a101 = src[ k + o + nss1 + n ];
+					final ${t} a110 = src[ k + o + nss1 + nss0 ];
+					final ${t} a111 = src[ k + o + nss1 + nss0 + n ];
+					final ${t} v2 = a000 +
 							r0 * ( -a000 + a001 ) +
 							r1 * ( ( -a000 + a010 ) +
 									r0 * ( a000 - a001 - a010 + a011 ) ) +
@@ -244,7 +246,7 @@ interface DispFieldAffine3D< P >
 		}
 
 		@Override
-		public void scale( final float[] dest, int offset, final int length, final double s0, final double s1, final double s2 )
+		public void scale( final ${t}[] dest, int offset, final int length, final double s0, final double s1, final double s2 )
 		{
 			for ( int x = 0; x < length; ++x ) {
 				dest[ offset++ ] *= s0;
@@ -254,37 +256,37 @@ interface DispFieldAffine3D< P >
 		}
 
 		@Override
-		public void sourceBounds( final float[] dest, final int length,
+		public void sourceBounds( final ${t}[] dest, final int length,
 				final double o0, final double o1, final double o2,
 				final Interpolation interpolation, final BlockInterval bounds )
 		{
-			float min0 = dest[ 0 ], max0 = min0;
-			float min1 = dest[ 1 ], max1 = min1;
-			float min2 = dest[ 2 ], max2 = min2;
+			${t} min0 = dest[ 0 ], max0 = min0;
+			${t} min1 = dest[ 1 ], max1 = min1;
+			${t} min2 = dest[ 2 ], max2 = min2;
 			for ( int i = 1; i < length; ++i )
 			{
-				final float v0 = dest[ 3 * i ];
+				final ${t} v0 = dest[ 3 * i ];
 				if ( v0 < min0 )
 					min0 = v0;
 				else if ( v0 > max0 )
 					max0 = v0;
-				final float v1 = dest[ 3 * i + 1 ];
+				final ${t} v1 = dest[ 3 * i + 1 ];
 				if ( v1 < min1 )
 					min1 = v1;
 				else if ( v1 > max1 )
 					max1 = v1;
-				final float v2 = dest[ 3 * i + 2 ];
+				final ${t} v2 = dest[ 3 * i + 2 ];
 				if ( v2 < min2 )
 					min2 = v2;
 				else if ( v2 > max2 )
 					max2 = v2;
 			}
-			min0 += (float) o0;
-			max0 += (float) o0;
-			min1 += (float) o1;
-			max1 += (float) o1;
-			min2 += (float) o2;
-			max2 += (float) o2;
+			min0 += (${t}) o0;
+			max0 += (${t}) o0;
+			min1 += (${t}) o1;
+			max1 += (${t}) o1;
+			min2 += (${t}) o2;
+			max2 += (${t}) o2;
 
 			final long[] boundsMin = bounds.min();
 			final int[] boundsSize = bounds.size();
@@ -309,164 +311,5 @@ interface DispFieldAffine3D< P >
 			}
 		}
 	}
-
-	class NLinear_double implements DispFieldAffine3D< double[] >
-	{
-		private NLinear_double()
-		{
-		}
-
-		static final NLinear_double INSTANCE = new NLinear_double();
-
-		@Override
-		public void transformLine( final double[] src, final double[] dest, int offset, final int length,
-				final float d0, final float d1, final float d2,
-				final int ss0, final int ss1,
-				float sf0, float sf1, float sf2 )
-		{
-			final int n = 3;
-			final int nss0 = n * ss0;
-			final int nss1 = n * ss1;
-			for ( int x = 0; x < length; ++x )
-			{
-				final int s0 = ( int ) sf0;
-				final int s1 = ( int ) sf1;
-				final int s2 = ( int ) sf2;
-				final float r0 = sf0 - s0;
-				final float r1 = sf1 - s1;
-				final float r2 = sf2 - s2;
-				final int o = s2 * nss1 + s1 * nss0 + n * s0;
-				// TODO: create benchmark and play with loop unrolling, inlining n, etc...
-				{
-					final int k = 0;
-					final double a000 = src[ k + o ];
-					final double a001 = src[ k + o + n ];
-					final double a010 = src[ k + o + nss0 ];
-					final double a011 = src[ k + o + nss0 + n ];
-					final double a100 = src[ k + o + nss1 ];
-					final double a101 = src[ k + o + nss1 + n ];
-					final double a110 = src[ k + o + nss1 + nss0 ];
-					final double a111 = src[ k + o + nss1 + nss0 + n ];
-					final double v0 = a000 +
-							r0 * ( -a000 + a001 ) +
-							r1 * ( ( -a000 + a010 ) +
-									r0 * ( a000 - a001 - a010 + a011 ) ) +
-							r2 * ( ( -a000 + a100 ) +
-									r0 * ( a000 - a001 - a100 + a101 ) +
-									r1 * ( ( a000 - a010 - a100 + a110 ) +
-											r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
-					dest[ offset++ ] = v0 + sf0;
-				}
-				{
-					final int k = 1;
-					final double a000 = src[ k + o ];
-					final double a001 = src[ k + o + n ];
-					final double a010 = src[ k + o + nss0 ];
-					final double a011 = src[ k + o + nss0 + n ];
-					final double a100 = src[ k + o + nss1 ];
-					final double a101 = src[ k + o + nss1 + n ];
-					final double a110 = src[ k + o + nss1 + nss0 ];
-					final double a111 = src[ k + o + nss1 + nss0 + n ];
-					final double v1 = a000 +
-							r0 * ( -a000 + a001 ) +
-							r1 * ( ( -a000 + a010 ) +
-									r0 * ( a000 - a001 - a010 + a011 ) ) +
-							r2 * ( ( -a000 + a100 ) +
-									r0 * ( a000 - a001 - a100 + a101 ) +
-									r1 * ( ( a000 - a010 - a100 + a110 ) +
-											r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
-					dest[ offset++ ] = v1 + sf1;
-				}
-				{
-					final int k = 2;
-					final double a000 = src[ k + o ];
-					final double a001 = src[ k + o + n ];
-					final double a010 = src[ k + o + nss0 ];
-					final double a011 = src[ k + o + nss0 + n ];
-					final double a100 = src[ k + o + nss1 ];
-					final double a101 = src[ k + o + nss1 + n ];
-					final double a110 = src[ k + o + nss1 + nss0 ];
-					final double a111 = src[ k + o + nss1 + nss0 + n ];
-					final double v2 = a000 +
-							r0 * ( -a000 + a001 ) +
-							r1 * ( ( -a000 + a010 ) +
-									r0 * ( a000 - a001 - a010 + a011 ) ) +
-							r2 * ( ( -a000 + a100 ) +
-									r0 * ( a000 - a001 - a100 + a101 ) +
-									r1 * ( ( a000 - a010 - a100 + a110 ) +
-											r0 * ( -a000 + a001 + a010 - a011 + a100 - a101 - a110 + a111 ) ) );
-					dest[ offset++ ] = v2 + sf2;
-				}
-				sf0 += d0;
-				sf1 += d1;
-				sf2 += d2;
-			}
-		}
-
-		@Override
-		public void scale( final double[] dest, int offset, final int length, final double s0, final double s1, final double s2 )
-		{
-			for ( int x = 0; x < length; ++x ) {
-				dest[ offset++ ] *= s0;
-				dest[ offset++ ] *= s1;
-				dest[ offset++ ] *= s2;
-			}
-		}
-
-		@Override
-		public void sourceBounds( final double[] dest, final int length,
-				final double o0, final double o1, final double o2,
-				final Interpolation interpolation, final BlockInterval bounds )
-		{
-			double min0 = dest[ 0 ], max0 = min0;
-			double min1 = dest[ 1 ], max1 = min1;
-			double min2 = dest[ 2 ], max2 = min2;
-			for ( int i = 1; i < length; ++i )
-			{
-				final double v0 = dest[ 3 * i ];
-				if ( v0 < min0 )
-					min0 = v0;
-				else if ( v0 > max0 )
-					max0 = v0;
-				final double v1 = dest[ 3 * i + 1 ];
-				if ( v1 < min1 )
-					min1 = v1;
-				else if ( v1 > max1 )
-					max1 = v1;
-				final double v2 = dest[ 3 * i + 2 ];
-				if ( v2 < min2 )
-					min2 = v2;
-				else if ( v2 > max2 )
-					max2 = v2;
-			}
-			min0 += (double) o0;
-			max0 += (double) o0;
-			min1 += (double) o1;
-			max1 += (double) o1;
-			min2 += (double) o2;
-			max2 += (double) o2;
-
-			final long[] boundsMin = bounds.min();
-			final int[] boundsSize = bounds.size();
-			switch ( interpolation )
-			{
-			case NEARESTNEIGHBOR:
-				boundsMin[ 0 ] = Math.round( min0 - 0.5f );
-				boundsMin[ 1 ] = Math.round( min1 - 0.5f );
-				boundsMin[ 2 ] = Math.round( min2 - 0.5f );
-				boundsSize[ 0 ] = ( int ) ( Math.round( max0 + 0.5f ) - boundsMin[ 0 ] ) + 1;
-				boundsSize[ 1 ] = ( int ) ( Math.round( max1 + 0.5f ) - boundsMin[ 1 ] ) + 1;
-				boundsSize[ 2 ] = ( int ) ( Math.round( max2 + 0.5f ) - boundsMin[ 2 ] ) + 1;
-				break;
-			case NLINEAR:
-				boundsMin[ 0 ] = ( long ) Math.floor( min0 - 0.5f );
-				boundsMin[ 1 ] = ( long ) Math.floor( min1 - 0.5f );
-				boundsMin[ 2 ] = ( long ) Math.floor( min2 - 0.5f );
-				boundsSize[ 0 ] = ( int ) ( ( long ) Math.floor( max0 + 0.5f ) - boundsMin[ 0 ] ) + 2;
-				boundsSize[ 1 ] = ( int ) ( ( long ) Math.floor( max1 + 0.5f ) - boundsMin[ 1 ] ) + 2;
-				boundsSize[ 2 ] = ( int ) ( ( long ) Math.floor( max2 + 0.5f ) - boundsMin[ 2 ] ) + 2;
-				break;
-			}
-		}
-	}
+#end
 }
