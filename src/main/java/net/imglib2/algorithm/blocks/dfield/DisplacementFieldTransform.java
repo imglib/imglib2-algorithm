@@ -226,7 +226,7 @@ public class DisplacementFieldTransform
 
 	// TODO: This same method is also in net.imglib2.algorithm.blocks.transform.Transform.
 	//       Should we make it public? Put it into a utility class?
-	private static AffineGet invert( final AffineGet transformFromSource )
+	static AffineGet invert( final AffineGet transformFromSource )
 	{
 		switch ( transformFromSource.numDimensions() )
 		{

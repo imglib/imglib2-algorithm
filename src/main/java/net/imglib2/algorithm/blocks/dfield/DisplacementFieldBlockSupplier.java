@@ -33,13 +33,20 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
+import static net.imglib2.algorithm.blocks.dfield.DisplacementFieldTransform.invert;
+import static net.imglib2.algorithm.blocks.transform.Transform.Interpolation.NLINEAR;
 import static net.imglib2.util.Util.safeInt;
 
 import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.AbstractBlockSupplier;
 import net.imglib2.algorithm.blocks.BlockSupplier;
+import net.imglib2.blocks.BlockInterval;
 import net.imglib2.blocks.TempArray;
+import net.imglib2.realtransform.AffineGet;
+import net.imglib2.realtransform.AffineTransform2D;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 
@@ -60,8 +67,62 @@ import net.imglib2.util.Intervals;
  * @param <T>
  * 		target pixel type
  */
-class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealType< D >, T extends NativeType< T > > extends AbstractBlockSupplier< T >
+public class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealType< D >, T extends NativeType< T > > extends AbstractBlockSupplier< T >
 {
+	/**
+	 * Create a {@code BlockSupplier} that transforms {@code displacementField}
+	 * into a position field and produces target values by applying
+	 * {@code positionFieldFunction} to the resulting position vectors.
+	 * <p>
+	 * {@code transformFromSource} is an affine transform from {@code
+	 * displacementField} coordinates to target coordinates. For example, this
+	 * can be used to upscale a downsampled displacement field.
+	 *
+	 * @param type
+	 * 		instance of the target type
+	 * @param transformFromSource
+	 * 		a 2D or 3D affine transform from displacementField coordinates to
+	 * 		target coordinates
+	 * @param displacementField
+	 * 		the (normalized) displacement field
+	 * @param positionFieldFunction
+	 * 		maps position vectors to target values
+	 * @param <D>
+	 * 		displacement field type
+	 * @param <T>
+	 * 		the source/target type
+	 *
+	 * @return a {@code BlockSupplier} that transforms {@code displacementField}
+	 * into a position field and produces target values by applying
+	 * positionFieldFunction to the resulting position vectors
+	 */
+	public static < D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
+	BlockSupplier< T > create(
+			final T type,
+			final AffineGet transformFromSource,
+			final DisplacementField< D > displacementField,
+			final PositionFieldFunction< D, T, ?, ? > positionFieldFunction )
+	{
+		final int n = transformFromSource.numDimensions();
+		if ( n < 2 || n > 3 )
+		{
+			throw new IllegalArgumentException( "Only 2D and 3D affine transforms are supported currently" );
+		}
+		if ( displacementField.numDimensions() != n )
+		{
+			throw new IllegalArgumentException( "Number of dimension must be the same for the affine transform and the displacement field" );
+		}
+
+		final AffineGet transformToSource = invert( transformFromSource );
+		final PrimitiveType dfieldPrimitiveType = displacementField.getType().getNativeTypeFactory().getPrimitiveType();
+		final double[] scale = displacementField.scale();
+		final double[] translation = displacementField.translation();
+		final BlockSupplier< D > displacements = displacementField.displacements();
+		final AbstractDispFieldAffineProcessor< ? > fieldProcessor = ( n == 2 )
+				? new DispFieldAffine2DProcessor<>( ( AffineTransform2D ) transformToSource, scale, translation, NLINEAR, dfieldPrimitiveType )
+				: new DispFieldAffine3DProcessor<>( ( AffineTransform3D ) transformToSource, scale, translation, NLINEAR, dfieldPrimitiveType );
+		return new DisplacementFieldBlockSupplier<>( type, n, fieldProcessor, displacements, positionFieldFunction );
+	}
 
 	private final T type;
 
@@ -80,7 +141,7 @@ class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealType< D >,
 	/**
 	 *
 	 * @param type
-	 * 		pixel type (source and target) of this operator
+	 * 		target pixel type
 	 * @param numDimensions
 	 * 		number of dimensions (source and target) of this operator
 	 * @param fieldProcessor
@@ -88,13 +149,13 @@ class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealType< D >,
 	 * @param displacementField
 	 * 		a normalized displacement field and its mapping to the source image
 	 * @param positionFieldFunction
-	 * 		uses the position field to interpolate into the source image
+	 * 		maps position vectors to target values
 	 */
 	DisplacementFieldBlockSupplier(
 			T type, int numDimensions,
 			AbstractDispFieldAffineProcessor< ? > fieldProcessor,
 			BlockSupplier< D > displacementField,
-			PositionFieldFunction< ?, ? > positionFieldFunction )
+			PositionFieldFunction< D, T, ?, ? > positionFieldFunction )
 	{
 		this.type = type;
 		this.numDimensions = numDimensions;
@@ -118,14 +179,23 @@ class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealType< D >,
 	@Override
 	public void copy( Interval interval, Object dest )
 	{
+		final int destLength = ( int ) Intervals.numElements( interval );
+
 		fieldProcessor.setTargetInterval( interval );
 		final Object bufField = fieldProcessor.getSourceBuffer();
 		displacementField.copy( fieldProcessor.getSourceInterval(), bufField );
-		final Object positions = tempArrayPositionField.get( safeInt( numDimensions() * Intervals.numElements( interval ) ) );
+		final Object positions = tempArrayPositionField.get( safeInt( numDimensions() * ( long ) destLength ) );
 		fieldProcessor.compute( bufField, positions );
+
 		final double[] offset = fieldProcessor.getInputOffset();
-		final int length = ( int ) Intervals.numElements( interval );
-		positionFieldFunction.compute( dest, length, positions, offset );
+		// NB: We don't operate on a translated interval of the input, but use
+		// input coordinates directly. Therefore, we need to undo the shift to
+		// inputBounds.min().
+		final BlockInterval bounds = fieldProcessor.getInputBounds();
+		for ( int d = 0; d < numDimensions; d++ )
+			offset[ d ] += bounds.min( d );
+
+		positionFieldFunction.compute( dest, destLength, positions, offset );
 	}
 
 	@Override

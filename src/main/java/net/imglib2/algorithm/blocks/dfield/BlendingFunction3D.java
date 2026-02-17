@@ -1,11 +1,15 @@
 package net.imglib2.algorithm.blocks.dfield;
 
 import net.imglib2.Interval;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.PrimitiveType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Cast;
 
 // TODO: Move to multiview-reconstruction
-public abstract class BlendingFunction3D< F > implements PositionFieldFunction< F, float[] >
+public abstract class BlendingFunction3D< D extends NativeType< D > & RealType< D >, F > implements PositionFieldFunction< D, FloatType, F, float[] >
 {
 	/**
 	 * Blending weights are {@code 0 <= w <= 1}.
@@ -19,7 +23,7 @@ public abstract class BlendingFunction3D< F > implements PositionFieldFunction< 
 	 * @param border
 	 * @param blending
 	 */
-	public static < F > BlendingFunction3D< F > of(
+	public static < D extends NativeType< D > & RealType< D >, F > BlendingFunction3D< D, F > of(
 			final PrimitiveType dfieldPrimitiveType,
 			final Interval interval,
 			final float[] border,
@@ -122,12 +126,12 @@ public abstract class BlendingFunction3D< F > implements PositionFieldFunction< 
 	}
 
 	@Override
-	public PositionFieldFunction< F, float[] > independentCopy()
+	public PositionFieldFunction< D, FloatType, F, float[] > independentCopy()
 	{
 		return this;
 	}
 
-	private static class Float_ extends BlendingFunction3D< float[] >
+	private static class Float_ extends BlendingFunction3D< FloatType, float[] >
 	{
 		Float_( final Interval interval, final float[] border, final float[] blending )
 		{
@@ -153,7 +157,7 @@ public abstract class BlendingFunction3D< F > implements PositionFieldFunction< 
 		}
 	}
 
-	private static class Double_ extends BlendingFunction3D< double[] >
+	private static class Double_ extends BlendingFunction3D< DoubleType, double[] >
 	{
 		Double_( final Interval interval, final float[] border, final float[] blending )
 		{

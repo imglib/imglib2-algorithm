@@ -33,15 +33,22 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
+
 /**
  * TODO: javadoc
  *
+ * @param <D>
+ *     position component type. should be {@code DoubleType} or {@code FloatType}
+ * @param <T>
+ * 		target pixel type
  * @param <F>
- * 		position field array type (must be float[] or double[])
+ * 		corresponding position field array type (must be float[] or double[])
  * @param <P>
- * 		input/output primitive array type (i.e., float[] or double[])
+ * 		corresponding target primitive array type (i.e., float[] or double[])
  */
-interface PositionFieldFunction< F, P >
+public interface PositionFieldFunction< D extends NativeType< D > & RealType< D >, T extends NativeType< T >, F, P >
 {
 	/**
 	 * TODO: javadoc
@@ -54,5 +61,5 @@ interface PositionFieldFunction< F, P >
 	 */
 	void compute( P dest, int length, F positionField, double[] positionOffset );
 
-	PositionFieldFunction< F, P > independentCopy();
+	PositionFieldFunction< D, T, F, P > independentCopy();
 }
