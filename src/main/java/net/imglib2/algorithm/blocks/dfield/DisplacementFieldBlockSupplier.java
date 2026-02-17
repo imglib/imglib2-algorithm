@@ -33,35 +33,32 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
+import static net.imglib2.util.Util.safeInt;
+
 import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.AbstractBlockSupplier;
-import net.imglib2.algorithm.blocks.AbstractUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.BlockSupplier;
-import net.imglib2.algorithm.blocks.UnaryBlockOperator;
-import net.imglib2.blocks.BlockInterval;
 import net.imglib2.blocks.TempArray;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 
-import static net.imglib2.util.Util.safeInt;
-
 /**
- * A {@code UnaryBlockOperator} that combines a {@code
- * AbstractDispFieldAffineProcessor} and a {@code AbstractLookupProcessor} to
- * compute (blocks of) the transformation of a source image with a displacement
+ * A {@code BlockSupplier} that combines a {@code
+ * AbstractDispFieldAffineProcessor} and a {@code PositionFieldFunction} to
+ * compute (blocks of) the transformation of a function with a displacement
  * field.
  * <p>
  * The {@code AbstractDispFieldAffineProcessor} interpolates and affine
  * transforms the displacement field to get a position field.
  * <p>
- * The {@code AbstractLookupProcessor} uses the position field to interpolate
- * into the source image.
+ * The {@code PositionFieldFunction} computes target values using the position
+ * field vectors.
  *
  * @param <D>
  * 		displacement field type
  * @param <T>
- * 		pixel type (source and target)
+ * 		target pixel type
  */
 class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealType< D >, T extends NativeType< T > > extends AbstractBlockSupplier< T >
 {
@@ -72,6 +69,9 @@ class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealType< D >,
 
 	@SuppressWarnings( "rawtypes" )
 	private final AbstractDispFieldAffineProcessor fieldProcessor;
+
+	@SuppressWarnings( "rawtypes" )
+	private final PositionFieldFunction positionFieldFunction;
 
 	private final BlockSupplier< D > displacementField;
 
@@ -87,18 +87,19 @@ class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealType< D >,
 	 * 		interpolates and affine-transforms the {@code displacementField} to get a position field
 	 * @param displacementField
 	 * 		a normalized displacement field and its mapping to the source image
-	 * @param lookupProcessor
+	 * @param positionFieldFunction
 	 * 		uses the position field to interpolate into the source image
 	 */
 	DisplacementFieldBlockSupplier(
 			T type, int numDimensions,
 			AbstractDispFieldAffineProcessor< ? > fieldProcessor,
 			BlockSupplier< D > displacementField,
-			AbstractLookupProcessor< ?, ? > lookupProcessor )
+			PositionFieldFunction< ?, ? > positionFieldFunction )
 	{
 		this.type = type;
 		this.numDimensions = numDimensions;
 		this.fieldProcessor = fieldProcessor;
+		this.positionFieldFunction = positionFieldFunction;
 		this.displacementField = displacementField;
 		tempArrayPositionField = TempArray.forPrimitiveType( displacementField.getType().getNativeTypeFactory().getPrimitiveType() );
 	}
@@ -108,6 +109,7 @@ class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealType< D >,
 		this.type = op.type;
 		this.numDimensions = op.numDimensions;
 		this.fieldProcessor = op.fieldProcessor.independentCopy();
+		this.positionFieldFunction = op.positionFieldFunction.independentCopy();
 		this.displacementField = op.displacementField.independentCopy();
 		this.tempArrayPositionField = op.tempArrayPositionField.newInstance();
 	}
@@ -121,17 +123,9 @@ class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealType< D >,
 		displacementField.copy( fieldProcessor.getSourceInterval(), bufField );
 		final Object positions = tempArrayPositionField.get( safeInt( numDimensions() * Intervals.numElements( interval ) ) );
 		fieldProcessor.compute( bufField, positions );
-
-		final BlockInterval bounds = fieldProcessor.getInputBounds();
 		final double[] offset = fieldProcessor.getInputOffset();
-
-//		lookupProcessor.setTargetInterval( interval );
-//		lookupProcessor.setSourceInterval( bounds );
-//		final Object buf = lookupProcessor.getSourceBuffer();
-//		src.copy( bounds, buf );
-//		lookupProcessor.setPositionField( positions );
-//		lookupProcessor.setPositionOffset( offset );
-//		lookupProcessor.compute( buf, dest );
+		final int length = ( int ) Intervals.numElements( interval );
+		positionFieldFunction.compute( dest, length, positions, offset );
 	}
 
 	@Override

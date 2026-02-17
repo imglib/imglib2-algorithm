@@ -2,11 +2,11 @@ package net.imglib2.algorithm.blocks.dfield;
 
 import net.imglib2.Interval;
 import net.imglib2.type.PrimitiveType;
+import net.imglib2.util.Cast;
 
-class BlendingFunction3D< F > extends AbstractLookupFunction< F, float[] >
+// TODO: Move to multiview-reconstruction
+public abstract class BlendingFunction3D< F > implements PositionFieldFunction< F, float[] >
 {
-	private final Blend3D< F > blend3D;
-
 	/**
 	 * Blending weights are {@code 0 <= w <= 1}.
 	 * <p>
@@ -19,133 +19,115 @@ class BlendingFunction3D< F > extends AbstractLookupFunction< F, float[] >
 	 * @param border
 	 * @param blending
 	 */
-	BlendingFunction3D(
+	public static < F > BlendingFunction3D< F > of(
 			final PrimitiveType dfieldPrimitiveType,
 			final Interval interval,
 			final float[] border,
 			final float[] blending )
 	{
-		super( 3 );
-
-		if ( dfieldPrimitiveType == PrimitiveType.FLOAT )
-			blend3D = ( Blend3D< F > ) new Float_( interval, border, blending );
-		else if ( dfieldPrimitiveType == PrimitiveType.DOUBLE )
-			blend3D = ( Blend3D< F > ) new Double_( interval, border, blending );
-		else
-			throw new IllegalArgumentException();
-	}
-
-	private BlendingFunction3D( BlendingFunction3D< F > processor )
-	{
-		super( processor );
-		blend3D = processor.blend3D;
-	}
-
-	@Override
-	public BlendingFunction3D< F > independentCopy()
-	{
-		return new BlendingFunction3D<>( this );
-	}
-
-	@Override
-	public void compute( final float[] dest )
-	{
-		// TODO: We only need destLength directly. We don't care about destSize[], because we get vectors to look up anyway/
-		final int length = destSize[ 0 ] * destSize[ 1 ] * destSize[ 2 ];
-		blend3D.apply( positionField, dest, length, positionOffset );
-	}
-
-	private static abstract class Blend3D< F >
-	{
-		/**
-		 * min border distance.
-		 * for {@code x<b0: w(x)=0}.
-		 */
-		final float b0d0;
-		final float b0d1;
-		final float b0d2;
-
-		/**
-		 * min border+blend distance.
-		 * for {@code b0<x<b1: w(x)=fn(x-b0)}.
-		 */
-		final float b1d0;
-		final float b1d1;
-		final float b1d2;
-
-		/**
-		 * max border+blend distance.
-		 * for {@code b1<x<b2: w(x)=1}.
-		 */
-		final float b2d0;
-		final float b2d1;
-		final float b2d2;
-
-		/**
-		 * max border distance.
-		 * for {@code b2<x<b3: w(x)=fn(b3-x)}.
-		 * for {@code b3<x: w(x)=0}.
-		 */
-		final float b3d0;
-		final float b3d1;
-		final float b3d2;
-
-		/**
-		 * 1 / blend distance
-		 */
-		final float bs0;
-		final float bs1;
-		final float bs2;
-
-		Blend3D(
-				final Interval interval,
-				final float[] border,
-				final float[] blending )
+		switch ( dfieldPrimitiveType )
 		{
-			final int n = 3;
-			final float[] b0 = new float[ n ];
-			final float[] b1 = new float[ n ];
-			final float[] b2 = new float[ n ];
-			final float[] b3 = new float[ n ];
-			final float[] blendScale = new float[ n ];
-			for ( int d = 0; d < n; ++d )
+		case FLOAT:
+			return Cast.unchecked( new Float_( interval, border, blending ) );
+		case DOUBLE:
+			return Cast.unchecked( new Double_( interval, border, blending ) );
+		default:
+			throw new IllegalArgumentException();
+		}
+	}
+
+	/**
+	 * min border distance.
+	 * for {@code x<b0: w(x)=0}.
+	 */
+	final float b0d0;
+	final float b0d1;
+	final float b0d2;
+
+	/**
+	 * min border+blend distance.
+	 * for {@code b0<x<b1: w(x)=fn(x-b0)}.
+	 */
+	final float b1d0;
+	final float b1d1;
+	final float b1d2;
+
+	/**
+	 * max border+blend distance.
+	 * for {@code b1<x<b2: w(x)=1}.
+	 */
+	final float b2d0;
+	final float b2d1;
+	final float b2d2;
+
+	/**
+	 * max border distance.
+	 * for {@code b2<x<b3: w(x)=fn(b3-x)}.
+	 * for {@code b3<x: w(x)=0}.
+	 */
+	final float b3d0;
+	final float b3d1;
+	final float b3d2;
+
+	/**
+	 * 1 / blend distance
+	 */
+	final float bs0;
+	final float bs1;
+	final float bs2;
+
+	BlendingFunction3D(
+			final Interval interval,
+			final float[] border,
+			final float[] blending )
+	{
+		final int n = 3;
+		final float[] b0 = new float[ n ];
+		final float[] b1 = new float[ n ];
+		final float[] b2 = new float[ n ];
+		final float[] b3 = new float[ n ];
+		final float[] blendScale = new float[ n ];
+		for ( int d = 0; d < n; ++d )
+		{
+			final int dim = ( int ) interval.dimension( d );
+			b0[ d ] = border[ d ];
+			b1[ d ] = border[ d ] + blending[ d ];
+			b2[ d ] = dim - 1 - border[ d ] - blending[ d ];
+			b3[ d ] = dim - 1 - border[ d ];
+			blendScale[ d ] = 1f / blending[ d ];
+
+			if ( b1[ d ] > b2[ d ] ) // there is no "inside region" where w=1
 			{
-				final int dim = ( int ) interval.dimension( d );
-				b0[ d ] = border[ d ];
-				b1[ d ] = border[ d ] + blending[ d ];
-				b2[ d ] = dim - 1 - border[ d ] - blending[ d ];
-				b3[ d ] = dim - 1 - border[ d ];
-				blendScale[ d ] = 1f / blending[ d ];
-
-				if ( b1[ d ] > b2[ d ] ) // there is no "inside region" where w=1
-				{
-					b1[ d ] = ( b1[ d ] + b2[ d ] ) / 2;
-					b2[ d ] = b1[ d ];
-				}
-				// TODO handle the case where border is so big that w=0 everywhere
+				b1[ d ] = ( b1[ d ] + b2[ d ] ) / 2;
+				b2[ d ] = b1[ d ];
 			}
-
-			b0d0 = b0[ 0 ];
-			b0d1 = b0[ 1 ];
-			b0d2 = b0[ 2 ];
-			b1d0 = b1[ 0 ];
-			b1d1 = b1[ 1 ];
-			b1d2 = b1[ 2 ];
-			b2d0 = b2[ 0 ];
-			b2d1 = b2[ 1 ];
-			b2d2 = b2[ 2 ];
-			b3d0 = b3[ 0 ];
-			b3d1 = b3[ 1 ];
-			b3d2 = b3[ 2 ];
-			bs0 = blendScale[ 0 ];
-			bs1 = blendScale[ 1 ];
-			bs2 = blendScale[ 2 ];
+			// TODO handle the case where border is so big that w=0 everywhere
 		}
 
-		abstract void apply( F pfield, float[] dest, int length, final double[] positionOffset );
+		b0d0 = b0[ 0 ];
+		b0d1 = b0[ 1 ];
+		b0d2 = b0[ 2 ];
+		b1d0 = b1[ 0 ];
+		b1d1 = b1[ 1 ];
+		b1d2 = b1[ 2 ];
+		b2d0 = b2[ 0 ];
+		b2d1 = b2[ 1 ];
+		b2d2 = b2[ 2 ];
+		b3d0 = b3[ 0 ];
+		b3d1 = b3[ 1 ];
+		b3d2 = b3[ 2 ];
+		bs0 = blendScale[ 0 ];
+		bs1 = blendScale[ 1 ];
+		bs2 = blendScale[ 2 ];
 	}
 
-	private static class Float_ extends Blend3D< float[] >
+	@Override
+	public PositionFieldFunction< F, float[] > independentCopy()
+	{
+		return this;
+	}
+
+	private static class Float_ extends BlendingFunction3D< float[] >
 	{
 		Float_( final Interval interval, final float[] border, final float[] blending )
 		{
@@ -153,7 +135,7 @@ class BlendingFunction3D< F > extends AbstractLookupFunction< F, float[] >
 		}
 
 		@Override
-		public void apply( final float[] pfield, final float[] dest, final int length, final double[] positionOffset )
+		public void compute( final float[] dest, final int length, final float[] pfield, final double[] positionOffset )
 		{
 			final float d0 = ( float ) positionOffset[ 0 ];
 			final float d1 = ( float ) positionOffset[ 1 ];
@@ -171,7 +153,7 @@ class BlendingFunction3D< F > extends AbstractLookupFunction< F, float[] >
 		}
 	}
 
-	private static class Double_ extends Blend3D< double[] >
+	private static class Double_ extends BlendingFunction3D< double[] >
 	{
 		Double_( final Interval interval, final float[] border, final float[] blending )
 		{
@@ -179,7 +161,7 @@ class BlendingFunction3D< F > extends AbstractLookupFunction< F, float[] >
 		}
 
 		@Override
-		public void apply( final double[] pfield, final float[] dest, final int length, final double[] positionOffset  )
+		public void compute( final float[] dest, final int length, final double[] pfield, final double[] positionOffset )
 		{
 			final double d0 = positionOffset[ 0 ];
 			final double d1 = positionOffset[ 1 ];

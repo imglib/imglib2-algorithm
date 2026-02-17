@@ -33,12 +33,7 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
-import net.imglib2.Interval;
-import net.imglib2.blocks.BlockInterval;
-
 /**
- * Abstract base class for ...
- * <p>
  * TODO: javadoc
  *
  * @param <F>
@@ -46,48 +41,18 @@ import net.imglib2.blocks.BlockInterval;
  * @param <P>
  * 		input/output primitive array type (i.e., float[] or double[])
  */
-abstract class AbstractLookupFunction< F, P >
+interface PositionFieldFunction< F, P >
 {
-	final long[] destPos;
-
-	final int[] destSize;
-
-	F positionField;
-
 	/**
-	 * The offset to apply to {@code positionField} vectors when interpolating
-	 * into the source img block.
+	 * TODO: javadoc
+	 *
+	 * @param dest
+	 * @param length
+	 * @param positionField
+	 * @param positionOffset
+	 * 		offset to add to {@code positionField} vectors
 	 */
-	final double[] positionOffset;
+	void compute( P dest, int length, F positionField, double[] positionOffset );
 
-	AbstractLookupFunction( final int n )
-	{
-		destPos = new long[ n ];
-		destSize = new int[ n ];
-		positionOffset = new double[ n ];
-	}
-
-	AbstractLookupFunction( AbstractLookupFunction< F, P > transform )
-	{
-		this( transform.destPos.length );
-	}
-
-	public void setTargetInterval( final Interval interval )
-	{
-		BlockInterval.wrap( destPos, destSize ).setFrom( interval );
-	}
-
-	void setPositionOffset( final double[] offset )
-	{
-		System.arraycopy( offset, 0, positionOffset, 0, positionOffset.length );
-	}
-
-	void setPositionField( final F field )
-	{
-		positionField = field;
-	}
-
-	public abstract void compute( final P dest );
-
-	public abstract AbstractLookupFunction< F, P > independentCopy();
+	PositionFieldFunction< F, P > independentCopy();
 }
