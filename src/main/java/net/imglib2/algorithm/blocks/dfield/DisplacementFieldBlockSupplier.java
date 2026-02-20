@@ -78,8 +78,6 @@ public class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealTyp
 	 * displacementField} coordinates to target coordinates. For example, this
 	 * can be used to upscale a downsampled displacement field.
 	 *
-	 * @param type
-	 * 		instance of the target type
 	 * @param transformFromSource
 	 * 		a 2D or 3D affine transform from displacementField coordinates to
 	 * 		target coordinates
@@ -90,7 +88,7 @@ public class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealTyp
 	 * @param <D>
 	 * 		displacement field type
 	 * @param <T>
-	 * 		the source/target type
+	 * 		the target type
 	 *
 	 * @return a {@code BlockSupplier} that transforms {@code displacementField}
 	 * into a position field and produces target values by applying
@@ -98,7 +96,6 @@ public class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealTyp
 	 */
 	public static < D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
 	BlockSupplier< T > create(
-			final T type,
 			final AffineGet transformFromSource,
 			final DisplacementField< D > displacementField,
 			final PositionFieldFunction< D, T, ?, ? > positionFieldFunction )
@@ -121,7 +118,7 @@ public class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealTyp
 		final AbstractDispFieldAffineProcessor< ? > fieldProcessor = ( n == 2 )
 				? new DispFieldAffine2DProcessor<>( ( AffineTransform2D ) transformToSource, scale, translation, NLINEAR, dfieldPrimitiveType )
 				: new DispFieldAffine3DProcessor<>( ( AffineTransform3D ) transformToSource, scale, translation, NLINEAR, dfieldPrimitiveType );
-		return new DisplacementFieldBlockSupplier<>( type, n, fieldProcessor, displacements, positionFieldFunction );
+		return new DisplacementFieldBlockSupplier<>( n, fieldProcessor, displacements, positionFieldFunction );
 	}
 
 	private final T type;
@@ -140,8 +137,6 @@ public class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealTyp
 
 	/**
 	 *
-	 * @param type
-	 * 		target pixel type
 	 * @param numDimensions
 	 * 		number of dimensions (source and target) of this operator
 	 * @param fieldProcessor
@@ -152,12 +147,12 @@ public class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealTyp
 	 * 		maps position vectors to target values
 	 */
 	DisplacementFieldBlockSupplier(
-			T type, int numDimensions,
+			int numDimensions,
 			AbstractDispFieldAffineProcessor< ? > fieldProcessor,
 			BlockSupplier< D > displacementField,
 			PositionFieldFunction< D, T, ?, ? > positionFieldFunction )
 	{
-		this.type = type;
+		this.type = positionFieldFunction.getType();
 		this.numDimensions = numDimensions;
 		this.fieldProcessor = fieldProcessor;
 		this.positionFieldFunction = positionFieldFunction;

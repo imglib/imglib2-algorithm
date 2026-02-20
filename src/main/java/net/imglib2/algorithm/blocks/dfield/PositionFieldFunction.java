@@ -33,11 +33,12 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
+import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
 /**
- * TODO: javadoc
+ * A function that maps position vectors to {@code T}.
  *
  * @param <D>
  *     position component type. should be {@code DoubleType} or {@code FloatType}
@@ -61,5 +62,16 @@ public interface PositionFieldFunction< D extends NativeType< D > & RealType< D 
 	 */
 	void compute( P dest, int length, F positionField, double[] positionOffset );
 
+	/**
+	 * Returns an instance of this {@link PositionFieldFunction} that can be
+	 * used independently, e.g., in another thread.
+	 */
 	PositionFieldFunction< D, T, F, P > independentCopy();
+
+	/**
+	 * Returns an instance of the target pixel type.
+	 *
+	 * @return target pixel type
+	 */
+	T getType();
 }
