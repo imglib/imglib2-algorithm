@@ -188,7 +188,13 @@ public class Transform
 						: new Affine3DProcessor<>( ( AffineTransform3D ) transform, interpolation, type.getNativeTypeFactory().getPrimitiveType() ) );
 	}
 
-	private static AffineGet invert( final AffineGet transformFromSource )
+	/**
+	 * Invert the given 2D/3D affine transform.
+	 *
+	 * @param transformFromSource transform to invert, must be 2D or 3D
+	 * @return inverse transform
+	 */
+	public static AffineGet invert( final AffineGet transformFromSource )
 	{
 		switch ( transformFromSource.numDimensions() )
 		{
