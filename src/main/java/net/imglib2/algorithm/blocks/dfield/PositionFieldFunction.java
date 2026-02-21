@@ -52,11 +52,15 @@ import net.imglib2.type.numeric.RealType;
 public interface PositionFieldFunction< D extends NativeType< D > & RealType< D >, T extends NativeType< T >, F, P >
 {
 	/**
-	 * TODO: javadoc
+	 * Compute a block of target values from a block of position vectors.
+	 * (The components of the position vectors are flattened in dimension 0.)
 	 *
 	 * @param dest
+	 * 		block of output values to fill
 	 * @param length
+	 * 		number of output values (and number of positionField vectors)
 	 * @param positionField
+	 * 		position field block
 	 * @param positionOffset
 	 * 		offset to add to {@code positionField} vectors
 	 */
