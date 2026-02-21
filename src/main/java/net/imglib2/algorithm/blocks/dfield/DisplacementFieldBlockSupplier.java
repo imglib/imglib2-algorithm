@@ -33,10 +33,6 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
-import static net.imglib2.algorithm.blocks.dfield.DisplacementFieldTransform.invert;
-import static net.imglib2.algorithm.blocks.transform.Transform.Interpolation.NLINEAR;
-import static net.imglib2.util.Util.safeInt;
-
 import net.imglib2.Interval;
 import net.imglib2.algorithm.blocks.AbstractBlockSupplier;
 import net.imglib2.algorithm.blocks.BlockSupplier;
@@ -49,6 +45,10 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
+
+import static net.imglib2.algorithm.blocks.transform.Transform.Interpolation.NLINEAR;
+import static net.imglib2.algorithm.blocks.transform.Transform.invert;
+import static net.imglib2.util.Util.safeInt;
 
 /**
  * A {@code BlockSupplier} that combines a {@code
@@ -74,11 +74,11 @@ public class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealTyp
 	 * into a position field and produces target values by applying
 	 * {@code positionFieldFunction} to the resulting position vectors.
 	 * <p>
-	 * {@code transformFromSource} is an affine transform from {@code
+	 * {@code transformFromField} is an affine transform from {@code
 	 * displacementField} coordinates to target coordinates. For example, this
 	 * can be used to upscale a downsampled displacement field.
 	 *
-	 * @param transformFromSource
+	 * @param transformFromField
 	 * 		a 2D or 3D affine transform from displacementField coordinates to
 	 * 		target coordinates
 	 * @param displacementField
@@ -96,11 +96,11 @@ public class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealTyp
 	 */
 	public static < D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
 	BlockSupplier< T > create(
-			final AffineGet transformFromSource,
+			final AffineGet transformFromField,
 			final DisplacementField< D > displacementField,
 			final PositionFieldFunction< D, T, ?, ? > positionFieldFunction )
 	{
-		final int n = transformFromSource.numDimensions();
+		final int n = transformFromField.numDimensions();
 		if ( n < 2 || n > 3 )
 		{
 			throw new IllegalArgumentException( "Only 2D and 3D affine transforms are supported currently" );
@@ -110,14 +110,14 @@ public class DisplacementFieldBlockSupplier< D extends NativeType< D > & RealTyp
 			throw new IllegalArgumentException( "Number of dimension must be the same for the affine transform and the displacement field" );
 		}
 
-		final AffineGet transformToSource = invert( transformFromSource );
+		final AffineGet transformToField = invert( transformFromField );
 		final PrimitiveType dfieldPrimitiveType = displacementField.getType().getNativeTypeFactory().getPrimitiveType();
 		final double[] scale = displacementField.scale();
 		final double[] translation = displacementField.translation();
 		final BlockSupplier< D > displacements = displacementField.displacements();
 		final AbstractDispFieldAffineProcessor< ? > fieldProcessor = ( n == 2 )
-				? new DispFieldAffine2DProcessor<>( ( AffineTransform2D ) transformToSource, scale, translation, NLINEAR, dfieldPrimitiveType )
-				: new DispFieldAffine3DProcessor<>( ( AffineTransform3D ) transformToSource, scale, translation, NLINEAR, dfieldPrimitiveType );
+				? new DispFieldAffine2DProcessor<>( ( AffineTransform2D ) transformToField, scale, translation, NLINEAR, dfieldPrimitiveType )
+				: new DispFieldAffine3DProcessor<>( ( AffineTransform3D ) transformToField, scale, translation, NLINEAR, dfieldPrimitiveType );
 		return new DisplacementFieldBlockSupplier<>( n, fieldProcessor, displacements, positionFieldFunction );
 	}
 

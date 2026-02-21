@@ -33,6 +33,7 @@
  */
 package net.imglib2.algorithm.blocks.dfield;
 
+import static net.imglib2.algorithm.blocks.transform.Transform.invert;
 import static net.imglib2.type.PrimitiveType.FLOAT;
 
 import java.util.function.Function;
@@ -65,7 +66,7 @@ public class DisplacementFieldTransform
 	 * The returned factory function creates an operator matching the type a
 	 * given input {@code BlockSupplier<T>}.
 	 *
-	 * @param transformFromSource
+	 * @param transformFromField
 	 * 		a 2D or 3D affine transform from displacementField coordinates to
 	 * 		target coordinates
 	 * @param displacementField
@@ -81,9 +82,9 @@ public class DisplacementFieldTransform
 	 * @return factory for {@code UnaryBlockOperator} to transform blocks of type {@code T}
 	 */
 	public static < D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
-	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > displacementFieldAffine( final AffineGet transformFromSource, final DisplacementField< D > displacementField, final Interpolation interpolation )
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > displacementFieldAffine( final AffineGet transformFromField, final DisplacementField< D > displacementField, final Interpolation interpolation )
 	{
-		return displacementFieldAffine( transformFromSource, displacementField, interpolation, ComputationType.AUTO );
+		return displacementFieldAffine( transformFromField, displacementField, interpolation, ComputationType.AUTO );
 	}
 
 	/**
@@ -95,7 +96,7 @@ public class DisplacementFieldTransform
 	 * The returned factory function creates an operator matching the type a
 	 * given input {@code BlockSupplier<T>}.
 	 *
-	 * @param transformFromSource
+	 * @param transformFromField
 	 * 		a 2D or 3D affine transform from displacementField coordinates to
 	 * 		target coordinates
 	 * @param displacementField
@@ -118,9 +119,9 @@ public class DisplacementFieldTransform
 	 * @return factory for {@code UnaryBlockOperator} to transform blocks of type {@code T}
 	 */
 	public static < D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
-	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > displacementFieldAffine( final AffineGet transformFromSource, final DisplacementField< D > displacementField, final Interpolation interpolation, final ComputationType computationType )
+	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > displacementFieldAffine( final AffineGet transformFromField, final DisplacementField< D > displacementField, final Interpolation interpolation, final ComputationType computationType )
 	{
-		return s -> createDisplacementFieldOperator( s.getType(), transformFromSource, displacementField, interpolation, computationType, ClampType.CLAMP );
+		return s -> createDisplacementFieldOperator( s.getType(), transformFromField, displacementField, interpolation, computationType, ClampType.CLAMP );
 	}
 
 	/**
@@ -131,7 +132,7 @@ public class DisplacementFieldTransform
 	 *
 	 * @param type
 	 * 		instance of the source/target type
-	 * @param transformFromSource
+	 * @param transformFromField
 	 * 		a 2D or 3D affine transform from displacementField coordinates to
 	 * 		target coordinates
 	 * @param displacementField
@@ -159,13 +160,13 @@ public class DisplacementFieldTransform
 	public static < D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
 	UnaryBlockOperator< T, T > createDisplacementFieldOperator(
 			final T type,
-			final AffineGet transformFromSource,
+			final AffineGet transformFromField,
 			final DisplacementField< D > displacementField,
 			final Interpolation interpolation,
 			final ComputationType computationType,
 			final ClampType clampType )
 	{
-		final int n = transformFromSource.numDimensions();
+		final int n = transformFromField.numDimensions();
 		if ( n < 2 || n > 3 ) {
 			throw new IllegalArgumentException( "Only 2D and 3D affine transforms are supported currently" );
 		}
@@ -173,7 +174,7 @@ public class DisplacementFieldTransform
 			throw new IllegalArgumentException( "Number of dimension must be the same for the affine transform and the displacement field" );
 		}
 
-		final AffineGet transformToSource = invert( transformFromSource );
+		final AffineGet transformToField = invert( transformFromField );
 
 		if ( interpolation == Interpolation.NLINEAR )
 		{
@@ -193,13 +194,13 @@ public class DisplacementFieldTransform
 				break;
 			}
 			final UnaryBlockOperator< ?, ? > op = processAsFloat
-					? _disp( transformToSource, displacementField, interpolation, new FloatType() )
-					: _disp( transformToSource, displacementField, interpolation, new DoubleType() );
+					? _disp( transformToField, displacementField, interpolation, new FloatType() )
+					: _disp( transformToField, displacementField, interpolation, new DoubleType() );
 			return op.adaptSourceType( type, ClampType.NONE ).adaptTargetType( type, clampType );
 		}
 		else // if ( interpolation == Interpolation.NEARESTNEIGHBOR )
 		{
-			return _disp( transformToSource, displacementField, interpolation, type );
+			return _disp( transformToField, displacementField, interpolation, type );
 		}
 	}
 
@@ -223,28 +224,4 @@ public class DisplacementFieldTransform
 				: new Lookup3DProcessor<>( dfieldPrimitiveType, interpolation, primitiveType );
 		return new DisplacementFieldUnaryBlockOperator<>( type, n, fieldProcessor, displacements, lookupProcessor );
 	}
-
-	// TODO: This same method is also in net.imglib2.algorithm.blocks.transform.Transform.
-	//       Should we make it public? Put it into a utility class?
-	static AffineGet invert( final AffineGet transformFromSource )
-	{
-		switch ( transformFromSource.numDimensions() )
-		{
-		case 2:
-		{
-			final AffineTransform2D transform = new AffineTransform2D();
-			transform.set( transformFromSource.inverse().getRowPackedCopy() );
-			return transform;
-		}
-		case 3:
-		{
-			final AffineTransform3D transform = new AffineTransform3D();
-			transform.set( transformFromSource.inverse().getRowPackedCopy() );
-			return transform;
-		}
-		default:
-			throw new IllegalArgumentException();
-		}
-	}
-
 }
