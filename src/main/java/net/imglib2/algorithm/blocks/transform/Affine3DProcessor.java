@@ -61,18 +61,9 @@ class Affine3DProcessor< P > extends AbstractTransformProcessor< P >
 			final Transform.Interpolation interpolation,
 			final PrimitiveType primitiveType )
 	{
-		this( transformToSource, interpolation, primitiveType, TransformLine3D.of( interpolation, primitiveType ) );
-	}
-
-	private Affine3DProcessor(
-			final AffineTransform3D transformToSource,
-			final Transform.Interpolation interpolation,
-			final PrimitiveType primitiveType,
-			final TransformLine3D< P > transformLine )
-	{
 		super( 3, interpolation, primitiveType );
 		this.transformToSource = transformToSource;
-		this.transformLine = transformLine;
+		this.transformLine = TransformLine3D.of( interpolation, primitiveType );
 	}
 
 	private Affine3DProcessor( Affine3DProcessor< P > processor )
