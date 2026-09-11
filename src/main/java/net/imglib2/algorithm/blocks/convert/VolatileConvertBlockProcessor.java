@@ -60,13 +60,6 @@ class VolatileConvertBlockProcessor< I, O > extends AbstractDimensionlessBlockPr
 		loop = ConvertLoops.get( UnaryOperatorType.of( ( NativeType< ? > ) sourceType.get(), ( NativeType< ? > ) targetType.get() ), clamp );
 	}
 
-	@SuppressWarnings( "unchecked" )
-	public static < S extends Volatile< ? > & NativeType< S >, T extends Volatile< ? > & NativeType< T > >
-	VolatileConvertBlockProcessor< ?, ? > createUnchecked( final Object sourceType, final Object targetType, final ClampType clamp )
-	{
-		return new VolatileConvertBlockProcessor<>( ( S ) sourceType, ( T ) targetType, clamp );
-	}
-
 	private VolatileConvertBlockProcessor( VolatileConvertBlockProcessor< I, O > convert )
 	{
 		super( convert );

@@ -37,14 +37,14 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import net.imglib2.Interval;
 import net.imglib2.Volatile;
-import net.imglib2.algorithm.blocks.AbstractUnaryBlockOperator;
-import net.imglib2.algorithm.blocks.BlockProcessor;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
+import net.imglib2.algorithm.blocks.DefaultVolatileUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
+import net.imglib2.algorithm.blocks.VolatileBlockSupplier;
+import net.imglib2.algorithm.blocks.VolatileUnaryBlockOperator;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Cast;
@@ -174,59 +174,69 @@ public class Convert
 	UnaryBlockOperator< S, T > createOperator( final S sourceType, final T targetType, final ClampType clamp )
 	{
 		if ( Objects.equals( sourceType.getClass(), targetType.getClass() ) )
-			return Cast.unchecked( new Identity<>( sourceType, 0 ) );
+			return Cast.unchecked( new IdentityUnaryBlockOperator<>( sourceType ) );
 
-		final boolean volatileSource = sourceType instanceof Volatile;
-		final boolean volatileTarget = targetType instanceof Volatile;
-		if ( volatileSource != volatileTarget )
-			throw new IllegalArgumentException();
+		if ( sourceType instanceof Volatile || targetType instanceof Volatile )
+			throw new IllegalArgumentException( "Volatile types are not supported by Convert.createOperator(). Use Convert.createVolatileOperator() instead." );
 
-		final BlockProcessor< ?, ? > blockProcessor;
-		if ( volatileSource )
-			blockProcessor = VolatileConvertBlockProcessor.createUnchecked( sourceType, targetType, clamp );
-		else
-			blockProcessor = new ConvertBlockProcessor<>( sourceType, targetType, clamp );
 		return new DefaultUnaryBlockOperator<>(
 				sourceType, targetType, 0, 0,
-				blockProcessor );
+				new ConvertBlockProcessor<>( sourceType, targetType, clamp ) );
 	}
 
-	// TODO: move to upper level, make public?
-	static class Identity< T extends NativeType< T > > extends AbstractUnaryBlockOperator< T, T >
+	/**
+	 * Create {@link VolatileUnaryBlockOperator} to convert blocks from {@code
+	 * S} to {@code T}. The {@code Volatile} counterpart of {@link
+	 * #convert(NativeType)}.
+	 * <p>
+	 * Values are converted as for the non-volatile {@link Volatile#get()
+	 * value} types. Validity is passed through unchanged.
+	 */
+	public static < S extends Volatile< ? > & NativeType< S >, T extends Volatile< ? > & NativeType< T > >
+	Function< VolatileBlockSupplier< S >, VolatileUnaryBlockOperator< S, T > > volatileConvert( final T targetType )
 	{
-		protected Identity( final T type, final int numDimensions )
-		{
-			super( type, type, numDimensions, numDimensions );
-		}
+		return volatileConvert( targetType, ClampType.NONE );
+	}
 
-		protected Identity( final AbstractUnaryBlockOperator< T, T > op )
-		{
-			super( op );
-		}
+	/**
+	 * Create {@link VolatileUnaryBlockOperator} to convert blocks from {@code
+	 * S} to {@code T}. The {@code Volatile} counterpart of {@link
+	 * #convert(NativeType, ClampType)}.
+	 * <p>
+	 * Values are converted as for the non-volatile {@link Volatile#get()
+	 * value} types. Validity is passed through unchanged.
+	 */
+	public static < S extends Volatile< ? > & NativeType< S >, T extends Volatile< ? > & NativeType< T > >
+	Function< VolatileBlockSupplier< S >, VolatileUnaryBlockOperator< S, T > > volatileConvert( final T targetType, final ClampType clamp )
+	{
+		return s -> createVolatileOperator( s.getType(), targetType, clamp );
+	}
 
-		@Override
-		public void compute( final BlockSupplier< T > src, final Interval interval, final Object dest )
-		{
-			src.copy( interval, dest );
-		}
+	/**
+	 * Create {@link VolatileUnaryBlockOperator} to convert blocks between
+	 * {@code sourceType} and {@code targetType}.
+	 * No clamping.
+	 */
+	public static < S extends Volatile< ? > & NativeType< S >, T extends Volatile< ? > & NativeType< T > >
+	VolatileUnaryBlockOperator< S, T > createVolatileOperator( final S sourceType, final T targetType )
+	{
+		return createVolatileOperator( sourceType, targetType, ClampType.NONE );
+	}
 
-		@Override
-		public UnaryBlockOperator< T, T > independentCopy()
-		{
-			return this;
-		}
+	/**
+	 * Create {@link VolatileUnaryBlockOperator} to convert blocks between
+	 * {@code sourceType} and {@code targetType}.
+	 * Clamp target values according to {@code clamp}.
+	 */
+	public static < S extends Volatile< ? > & NativeType< S >, T extends Volatile< ? > & NativeType< T > >
+	VolatileUnaryBlockOperator< S, T > createVolatileOperator( final S sourceType, final T targetType, final ClampType clamp )
+	{
+		if ( Objects.equals( sourceType.getClass(), targetType.getClass() ) )
+			return Cast.unchecked( new IdentityVolatileUnaryBlockOperator<>( sourceType ) );
 
-		@Override
-		public BlockSupplier< T > applyTo( final BlockSupplier< T > blocks )
-		{
-			return blocks;
-		}
-
-		@Override
-		public < U extends NativeType< U > > UnaryBlockOperator< T, U > andThen( final UnaryBlockOperator< T, U > op )
-		{
-			return op;
-		}
+		return new DefaultVolatileUnaryBlockOperator<>(
+				sourceType, targetType, 0, 0,
+				new VolatileConvertBlockProcessor<>( sourceType, targetType, clamp ) );
 	}
 
 	/**

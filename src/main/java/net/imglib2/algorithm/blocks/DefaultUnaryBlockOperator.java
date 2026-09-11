@@ -54,7 +54,9 @@ import net.imglib2.util.Cast;
  * @param <T>
  * 		target type
  */
-public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends NativeType< T > > extends AbstractUnaryBlockOperator< S, T >
+public class DefaultUnaryBlockOperator< S extends NativeType< S >, T extends NativeType< T > >
+		extends AbstractUnaryBlockOperator< S, T >
+		implements UnaryBlockOperator< S, T >
 {
 	@SuppressWarnings( "rawtypes" )
 	private final BlockProcessor blockProcessor;

@@ -62,7 +62,9 @@ import net.imglib2.util.Intervals;
  * @param <T>
  * 		pixel type (source and target)
  */
-class DisplacementFieldUnaryBlockOperator< D extends NativeType< D > & RealType< D >, T extends NativeType< T > > extends AbstractUnaryBlockOperator< T, T >
+class DisplacementFieldUnaryBlockOperator< D extends NativeType< D > & RealType< D >, T extends NativeType< T > >
+		extends AbstractUnaryBlockOperator< T, T >
+		implements UnaryBlockOperator< T, T >
 {
 	@SuppressWarnings( "rawtypes" )
 	private final AbstractDispFieldAffineProcessor fieldProcessor;

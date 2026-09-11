@@ -36,7 +36,10 @@ package net.imglib2.algorithm.blocks.transform;
 import net.imglib2.Volatile;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.DefaultUnaryBlockOperator;
+import net.imglib2.algorithm.blocks.DefaultVolatileUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
+import net.imglib2.algorithm.blocks.VolatileBlockSupplier;
+import net.imglib2.algorithm.blocks.VolatileUnaryBlockOperator;
 import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.realtransform.AffineGet;
@@ -66,13 +69,11 @@ public class Transform
 	}
 
 	/**
-	 * Interpolate and affine-transform blocks of the standard ImgLib2 {@code
-	 * RealType}s.
+	 * Interpolate and affine-transform blocks of the standard ImgLib2 {@code RealType}s.
 	 * <p>
 	 * Only 2D and 3D are supported currently!
 	 * <p>
-	 * The returned factory function creates an operator matching the type a
-	 * given input {@code BlockSupplier<T>}.
+	 * The returned factory function creates an operator matching the type a given input {@code BlockSupplier<T>}.
 	 *
 	 * @param transformFromSource
 	 * 		a 2D or 3D affine transform
@@ -90,13 +91,11 @@ public class Transform
 	}
 
 	/**
-	 * Interpolate and affine-transform blocks of the standard ImgLib2 {@code
-	 * RealType}s.
+	 * Interpolate and affine-transform blocks of the standard ImgLib2 {@code RealType}s.
 	 * <p>
 	 * Only 2D and 3D are supported currently!
 	 * <p>
-	 * The returned factory function creates an operator matching the type a
-	 * given input {@code BlockSupplier<T>}.
+	 * The returned factory function creates an operator matching the type a given input {@code BlockSupplier<T>}.
 	 *
 	 * @param transformFromSource
 	 * 		a 2D or 3D affine transform
@@ -118,6 +117,58 @@ public class Transform
 	Function< BlockSupplier< T >, UnaryBlockOperator< T, T > > affine( final AffineGet transformFromSource, Interpolation interpolation, final ComputationType computationType )
 	{
 		return s -> createAffineOperator( s.getType(), transformFromSource, interpolation, computationType, ClampType.CLAMP );
+	}
+
+	/**
+	 * Interpolate and affine-transform blocks of the standard ImgLib2 {@code Volatile} {@code RealType}s.
+	 * <p>
+	 * Only 2D and 3D are supported currently!
+	 * <p>
+	 * The returned factory function creates an operator matching the type a given input {@code VolatileBlockSupplier<T>}.
+	 *
+	 * @param transformFromSource
+	 * 		a 2D or 3D affine transform
+	 * @param interpolation
+	 * 		which interpolation method to use
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code VolatileUnaryBlockOperator} to affine-transform blocks of type {@code T}
+	 */
+	public static < T extends Volatile< ? > & NativeType< T > >
+	Function< VolatileBlockSupplier< T >, VolatileUnaryBlockOperator< T, T > > volatileAffine( final AffineGet transformFromSource, Interpolation interpolation )
+	{
+		return volatileAffine( transformFromSource, interpolation, ComputationType.AUTO );
+	}
+
+	/**
+	 * Interpolate and affine-transform blocks of the standard ImgLib2 {@code Volatile} {@code RealType}s.
+	 * <p>
+	 * Only 2D and 3D are supported currently!
+	 * <p>
+	 * The returned factory function creates an operator matching the type a given input {@code VolatileBlockSupplier<T>}.
+	 *
+	 * @param transformFromSource
+	 * 		a 2D or 3D affine transform
+	 * @param interpolation
+	 * 		which interpolation method to use
+	 * @param computationType
+	 * 		For n-linear interpolation, this specifies in which precision
+	 * 		intermediate values should be computed. For {@code AUTO}, the type
+	 * 		that can represent the input/output type without loss of precision
+	 * 		is picked. That is, {@code FLOAT} for u8, i8, u16, i16, i32, f32,
+	 *      and otherwise {@code DOUBLE} for u32, i64, f64. For nearest-neighbor
+	 *      interpolation, {@code computationType} is not used.
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return factory for {@code VolatileUnaryBlockOperator} to affine-transform blocks of type {@code T}
+	 */
+	// TODO: rename to volatileAffine ???
+	public static < T extends Volatile< ? > & NativeType< T > >
+	Function< VolatileBlockSupplier< T >, VolatileUnaryBlockOperator< T, T > > volatileAffine( final AffineGet transformFromSource, Interpolation interpolation, final ComputationType computationType )
+	{
+		return s -> createVolatileAffineOperator( s.getType(), transformFromSource, interpolation, computationType, ClampType.CLAMP );
 	}
 
 	/**
@@ -148,50 +199,86 @@ public class Transform
 	UnaryBlockOperator< T, T > createAffineOperator( final T type, final AffineGet transformFromSource, Interpolation interpolation, final ComputationType computationType, final ClampType clampType )
 	{
 		final int n = transformFromSource.numDimensions();
-		if ( n < 2 || n > 3 ) {
+		if ( n < 2 || n > 3 )
 			throw new IllegalArgumentException( "Only 2D and 3D affine transforms are supported currently" );
-		}
+
+		if ( type instanceof Volatile )
+			throw new IllegalArgumentException( "Volatile types are not supported by Transform.createAffineOperator(). Use Transform.createVolatileAffineOperator() instead." );
 
 		final AffineGet transformToSource = invert( transformFromSource );
 
 		if ( interpolation == Interpolation.NLINEAR )
 		{
-			final boolean processAsFloat;
-			switch ( computationType )
-			{
-			case FLOAT:
-				processAsFloat = true;
-				break;
-			case DOUBLE:
-				processAsFloat = false;
-				break;
-			default:
-			case AUTO:
-				final PrimitiveType pt = type.getNativeTypeFactory().getPrimitiveType();
-				processAsFloat = pt.equals( FLOAT ) || pt.getByteCount() < FLOAT.getByteCount();
-				break;
-			}
-			final UnaryBlockOperator< ?, ? > op;
-			if ( type instanceof Volatile )
-			{
-				op = processAsFloat
-						? _volatile_affine( transformToSource, interpolation, new VolatileFloatType() )
-						: _volatile_affine( transformToSource, interpolation, new VolatileDoubleType() );
-			}
-			else
-			{
-				op = processAsFloat
-						? _affine( transformToSource, interpolation, new FloatType() )
-						: _affine( transformToSource, interpolation, new DoubleType() );
-			}
+			final boolean processAsFloat = processAsFloat( type, computationType );
+			final UnaryBlockOperator< ?, ? > op = processAsFloat
+					? _affine( transformToSource, interpolation, new FloatType() )
+					: _affine( transformToSource, interpolation, new DoubleType() );
 			return op.adaptSourceType( type, ClampType.NONE ).adaptTargetType( type, clampType );
 		}
 		else // if ( interpolation == Interpolation.NEARESTNEIGHBOR )
 		{
-			if ( type instanceof Volatile )
-				return _volatile_affine( transformToSource, interpolation, type );
-			else
-				return _affine( transformToSource, interpolation, type );
+			return _affine( transformToSource, interpolation, type );
+		}
+	}
+
+	/**
+	 * Create a {@code VolatileUnaryBlockOperator} to interpolate and affine-transform
+	 * blocks of the standard ImgLib2 {@code Volatile} {@code RealType}s.
+	 * <p>
+	 * Only 2D and 3D are supported currently!
+	 *
+	 * @param type
+	 * 		instance of the input type
+	 * @param transformFromSource
+	 * 		a 2D or 3D affine transform
+	 * @param interpolation
+	 * 		which interpolation method to use
+	 * @param computationType
+	 * 		For n-linear interpolation, this specifies in which precision
+	 * 		intermediate values should be computed. For {@code AUTO}, the type
+	 * 		that can represent the input/output type without loss of precision
+	 * 		is picked. That is, {@code FLOAT} for u8, i8, u16, i16, i32, f32,
+	 *      and otherwise {@code DOUBLE} for u32, i64, f64. For nearest-neighbor
+	 *      interpolation, {@code computationType} is not used.
+	 * @param <T>
+	 * 		the input/output type
+	 *
+	 * @return {@code VolatileUnaryBlockOperator} to affine-transform blocks of type {@code T}
+	 */
+	public static < T extends Volatile< ? > & NativeType< T > >
+	VolatileUnaryBlockOperator< T, T > createVolatileAffineOperator( final T type, final AffineGet transformFromSource, Interpolation interpolation, final ComputationType computationType, final ClampType clampType )
+	{
+		final int n = transformFromSource.numDimensions();
+		if ( n < 2 || n > 3 )
+			throw new IllegalArgumentException( "Only 2D and 3D affine transforms are supported currently" );
+
+		final AffineGet transformToSource = invert( transformFromSource );
+
+		if ( interpolation == Interpolation.NLINEAR )
+		{
+			final VolatileUnaryBlockOperator< ?, ? > op = processAsFloat( type, computationType )
+					? _volatile_affine( transformToSource, interpolation, new VolatileFloatType() )
+					: _volatile_affine( transformToSource, interpolation, new VolatileDoubleType() );
+			return op.adaptSourceType( type, ClampType.NONE ).adaptTargetType( type, clampType );
+		}
+		else // if ( interpolation == Interpolation.NEARESTNEIGHBOR )
+		{
+			return _volatile_affine( transformToSource, interpolation, type );
+		}
+	}
+
+	private static boolean processAsFloat( final NativeType< ? > type, final ComputationType computationType )
+	{
+		switch ( computationType )
+		{
+		case FLOAT:
+			return true;
+		case DOUBLE:
+			return false;
+		default:
+		case AUTO:
+			final PrimitiveType pt = type.getNativeTypeFactory().getPrimitiveType();
+			return pt.equals( FLOAT ) || pt.getByteCount() < FLOAT.getByteCount();
 		}
 	}
 
@@ -204,12 +291,12 @@ public class Transform
 						: new Affine3DProcessor<>( ( AffineTransform3D ) transform, interpolation, type.getNativeTypeFactory().getPrimitiveType() ) );
 	}
 
-	private static < T extends NativeType< T > > UnaryBlockOperator< T, T > _volatile_affine( final AffineGet transform, final Interpolation interpolation, final T type )
+	private static < T extends Volatile< ? > & NativeType< T > > VolatileUnaryBlockOperator< T, T > _volatile_affine( final AffineGet transform, final Interpolation interpolation, final T type )
 	{
 		final int n = transform.numDimensions();
 		if ( n == 2 )
 			throw new UnsupportedOperationException( "volatile 2D is not implemented yet" ); // TODO
-		return new DefaultUnaryBlockOperator<>( type, type, n, n,
+		return new DefaultVolatileUnaryBlockOperator<>( type, type, n, n,
 				new VolatileAffine3DProcessor<>( ( AffineTransform3D ) transform, interpolation, type.getNativeTypeFactory().getPrimitiveType() ) );
 	}
 

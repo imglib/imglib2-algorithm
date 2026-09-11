@@ -71,7 +71,9 @@ import net.imglib2.util.Util;
  *
  * @see BlockSupplier#tile
  */
-class TilingUnaryBlockOperator< T extends NativeType< T >, P > extends AbstractUnaryBlockOperator< T, T >
+class TilingUnaryBlockOperator< T extends NativeType< T >, P >
+		extends AbstractUnaryBlockOperator< T, T >
+		implements UnaryBlockOperator< T, T >
 {
 	private final int[] innerTileSize;
 	private final int[] borderTileSize;

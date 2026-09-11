@@ -36,15 +36,20 @@ package net.imglib2.algorithm.blocks;
 import net.imglib2.type.NativeType;
 
 /**
- * Abstract implementation of {@link UnaryBlockOperator}.
- * Takes care of source/target type/dimensionality boilerplate.
+ * Type and dimensionality boilerplate for {@link UnaryBlockOperator} and
+ * {@link VolatileUnaryBlockOperator}.
+ * <p>
+ * This deliberately does not implement either, and there is no common
+ * super-interface to keep hierarchies clearly separated. Subclasses just
+ * declare the respective interface in addition to extending {@code
+ * AbstractUnaryBlockOperator}.
  *
  * @param <S>
  * 		source type
  * @param <T>
  * 		target type
  */
-public abstract class AbstractUnaryBlockOperator< S extends NativeType< S >, T extends NativeType< T > > implements UnaryBlockOperator< S, T >
+public abstract class AbstractUnaryBlockOperator< S extends NativeType< S >, T extends NativeType< T > >
 {
 	private final S sourceType;
 	private final T targetType;
@@ -67,25 +72,21 @@ public abstract class AbstractUnaryBlockOperator< S extends NativeType< S >, T e
 		this.numTargetDimensions = op.numTargetDimensions;
 	}
 
-	@Override
 	public S getSourceType()
 	{
 		return sourceType;
 	}
 
-	@Override
 	public T getTargetType()
 	{
 		return targetType;
 	}
 
-	@Override
 	public int numSourceDimensions()
 	{
 		return numSourceDimensions;
 	}
 
-	@Override
 	public int numTargetDimensions()
 	{
 		return numTargetDimensions;
