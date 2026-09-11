@@ -152,7 +152,7 @@ interface VolatileTransformLine3D< P >
             final float[] srcData = vsrc.data();
             final float[] destData = vdest.data();
             final byte[] srcValid = vsrc.valid();
-            final byte[] destValid = vdest.valid();
+            final byte[] destValid = vdest.validForWriting();
 
 			for ( int x = 0; x < length; ++x )
 			{
@@ -218,7 +218,7 @@ interface VolatileTransformLine3D< P >
             final double[] srcData = vsrc.data();
             final double[] destData = vdest.data();
             final byte[] srcValid = vsrc.valid();
-            final byte[] destValid = vdest.valid();
+            final byte[] destValid = vdest.validForWriting();
 
 			for ( int x = 0; x < length; ++x )
 			{
@@ -287,7 +287,7 @@ interface VolatileTransformLine3D< P >
             final float[] srcData = vsrc.data();
             final float[] destData = vdest.data();
             final byte[] srcValid = vsrc.valid();
-            final byte[] destValid = vdest.valid();
+            final byte[] destValid = vdest.validForWriting();
 
             sf0 += .5f;
 			sf1 += .5f;
@@ -326,7 +326,7 @@ interface VolatileTransformLine3D< P >
             final double[] srcData = vsrc.data();
             final double[] destData = vdest.data();
             final byte[] srcValid = vsrc.valid();
-            final byte[] destValid = vdest.valid();
+            final byte[] destValid = vdest.validForWriting();
 
             sf0 += .5f;
 			sf1 += .5f;
@@ -365,7 +365,7 @@ interface VolatileTransformLine3D< P >
             final byte[] srcData = vsrc.data();
             final byte[] destData = vdest.data();
             final byte[] srcValid = vsrc.valid();
-            final byte[] destValid = vdest.valid();
+            final byte[] destValid = vdest.validForWriting();
 
             sf0 += .5f;
 			sf1 += .5f;
@@ -404,7 +404,7 @@ interface VolatileTransformLine3D< P >
             final short[] srcData = vsrc.data();
             final short[] destData = vdest.data();
             final byte[] srcValid = vsrc.valid();
-            final byte[] destValid = vdest.valid();
+            final byte[] destValid = vdest.validForWriting();
 
             sf0 += .5f;
 			sf1 += .5f;
@@ -443,7 +443,7 @@ interface VolatileTransformLine3D< P >
             final int[] srcData = vsrc.data();
             final int[] destData = vdest.data();
             final byte[] srcValid = vsrc.valid();
-            final byte[] destValid = vdest.valid();
+            final byte[] destValid = vdest.validForWriting();
 
             sf0 += .5f;
 			sf1 += .5f;
@@ -482,7 +482,7 @@ interface VolatileTransformLine3D< P >
             final long[] srcData = vsrc.data();
             final long[] destData = vdest.data();
             final byte[] srcValid = vsrc.valid();
-            final byte[] destValid = vdest.valid();
+            final byte[] destValid = vdest.validForWriting();
 
             sf0 += .5f;
 			sf1 += .5f;

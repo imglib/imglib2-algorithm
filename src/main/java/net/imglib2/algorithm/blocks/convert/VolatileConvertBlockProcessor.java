@@ -84,8 +84,8 @@ class VolatileConvertBlockProcessor< I, O > extends AbstractDimensionlessBlockPr
 	{
 		loop.apply( src.data(), dest.data(), sourceLength() );
 
-
-		// TODO: make VolatileArray.valid settable, to avoid unnecessary copying here
-		System.arraycopy( src.valid(), 0, dest.valid(), 0, sourceLength() );
+		// Conversion does not touch validity, so forward it as-is. Nothing is
+		// copied, and a RangeValidity stays compact through this stage.
+		dest.setValidity( src.getValidity() );
 	}
 }

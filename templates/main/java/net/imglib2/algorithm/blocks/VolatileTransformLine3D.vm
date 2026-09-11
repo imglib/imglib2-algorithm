@@ -155,7 +155,7 @@ interface VolatileTransformLine3D< P >
             final ${t}[] srcData = vsrc.data();
             final ${t}[] destData = vdest.data();
             final byte[] srcValid = vsrc.valid();
-            final byte[] destValid = vdest.valid();
+            final byte[] destValid = vdest.validForWriting();
 
 			for ( int x = 0; x < length; ++x )
 			{
@@ -227,7 +227,7 @@ interface VolatileTransformLine3D< P >
             final ${t}[] srcData = vsrc.data();
             final ${t}[] destData = vdest.data();
             final byte[] srcValid = vsrc.valid();
-            final byte[] destValid = vdest.valid();
+            final byte[] destValid = vdest.validForWriting();
 
             sf0 += .5f;
 			sf1 += .5f;
