@@ -34,14 +34,16 @@
 
 package net.imglib2.algorithm.convolution.kernel;
 
+import java.util.Arrays;
+
 import net.imglib2.RandomAccess;
 import net.imglib2.algorithm.convolution.LineConvolverFactory;
 import net.imglib2.type.numeric.RealType;
 
 /**
  * A 1-dimensional line convolver that operates on all {@link RealType}. It
- * implemented using a shifting window buffer that is stored in a small double[]
- * array.
+ * copies the input line into a double[] array and loops over the kernel in the
+ * outer loop, so that the JIT can vectorize the inner loop over the line.
  *
  * @author Tobias Pietzsch
  * @author Matthias Arzt
@@ -59,13 +61,11 @@ public final class DoubleConvolverRealType implements Runnable
 
 	private final int d;
 
-	private final int k1k;
-
 	private final int k1k1;
 
-	private final long linelen;
+	private final double[] src;
 
-	private final double[] buffer;
+	private final double[] dst;
 
 	public DoubleConvolverRealType( final Kernel1D kernel, final RandomAccess< ? extends RealType< ? > > in, final RandomAccess< ? extends RealType< ? > > out, final int d, final long lineLength )
 	{
@@ -75,40 +75,32 @@ public final class DoubleConvolverRealType implements Runnable
 		this.d = d;
 		this.kernel = kernel.fullKernel().clone();
 
-		k1k = this.kernel.length;
-		k1k1 = k1k - 1;
-		linelen = lineLength;
-		buffer = new double[ k1k + 1 ];
-	}
-
-	private void prefill()
-	{
-		final double w = in.get().getRealDouble();
-		process( w );
-		in.fwd( d );
-	}
-
-	private void next()
-	{
-		final double w = in.get().getRealDouble();
-		out.get().setReal( w * kernel[ 0 ] + buffer[ 1 ] );
-		process( w );
-		in.fwd( d );
-		out.fwd( d );
-	}
-
-	private void process( final double w )
-	{
-		for ( int i = 1; i < k1k; ++i )
-			buffer[ i ] = w * kernel[ i ] + buffer[ i + 1 ];
+		k1k1 = this.kernel.length - 1;
+		dst = new double[ Math.toIntExact( lineLength ) ];
+		src = new double[ Math.toIntExact( lineLength + k1k1 ) ];
 	}
 
 	@Override
 	public void run()
 	{
-		for ( int i = 0; i < k1k1; ++i )
-			prefill();
-		for ( long i = 0; i < linelen; ++i )
-			next();
+		final int n = dst.length;
+		for ( int i = 0; i < src.length; ++i )
+		{
+			src[ i ] = in.get().getRealDouble();
+			in.fwd( d );
+		}
+		Arrays.fill( dst, 0 );
+		for ( int j = k1k1; j >= 0; --j )
+		{
+			final double w = kernel[ j ];
+			final int o = k1k1 - j;
+			for ( int i = 0; i < n; ++i )
+				dst[ i ] += w * src[ i + o ];
+		}
+		for ( int i = 0; i < n; ++i )
+		{
+			out.get().setReal( dst[ i ] );
+			out.fwd( d );
+		}
 	}
 }
