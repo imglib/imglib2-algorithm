@@ -33,8 +33,15 @@
  */
 package net.imglib2.algorithm.convolution;
 
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.iterator.LocalizingIntervalIterator;
 import net.imglib2.type.Type;
+
+import java.util.function.Consumer;
 
 /**
  * The interesting part of a separable convolution is how one line of the image
@@ -88,6 +95,54 @@ public interface LineConvolverFactory< T >
 	 *         getBorderAfter())
 	 */
 	Runnable getConvolver( RandomAccess< ? extends T > in, RandomAccess< ? extends T > out, int d, long lineLength );
+
+	/**
+	 * The {@link Consumer} returned by this method convolves blocks of the
+	 * {@code target} image. {@link LineConvolution} splits the target into
+	 * blocks that contain full lines along {@code d}, calls this method once,
+	 * and passes the blocks to the returned {@link Consumer} from multiple
+	 * threads.
+	 * <p>
+	 * The default implementation convolves the lines of each block one by one
+	 * with a {@link Runnable} obtained from {@link #getConvolver}. Override this
+	 * method to provide an implementation that is specialized for the given
+	 * {@code source} and {@code target}, e.g., one that processes many lines
+	 * at once.
+	 *
+	 * @param source
+	 *            input image, which needs to be defined on
+	 *            {@link LineConvolution#requiredSourceInterval} of each block.
+	 * @param target
+	 *            output image.
+	 * @param d
+	 *            Dimension in which the lines go.
+	 * @return A thread-safe {@link Consumer} that convolves {@code source} and
+	 *         writes the result to the given block of {@code target}.
+	 */
+	default Consumer< Interval > getBlockConvolver( final RandomAccessible< ? extends T > source, final RandomAccessibleInterval< ? extends T > target, final int d )
+	{
+		return block -> {
+			final long[] sourceMin = block.minAsLongArray();
+			final long[] sourceMax = block.maxAsLongArray();
+			sourceMin[ d ] -= getBorderBefore();
+			sourceMax[ d ] += getBorderAfter();
+			final RandomAccess< ? extends T > in = source.randomAccess( new FinalInterval( sourceMin, sourceMax ) );
+			final RandomAccess< ? extends T > out = target.randomAccess();
+			final Runnable convolver = getConvolver( in, out, d, block.dimension( d ) );
+
+			final long[] lineStartsMax = block.maxAsLongArray();
+			lineStartsMax[ d ] = block.min( d );
+			final LocalizingIntervalIterator lineStarts = new LocalizingIntervalIterator( block.minAsLongArray(), lineStartsMax );
+			while ( lineStarts.hasNext() )
+			{
+				lineStarts.fwd();
+				in.setPosition( lineStarts );
+				in.move( -getBorderBefore(), d );
+				out.setPosition( lineStarts );
+				convolver.run();
+			}
+		};
+	}
 
 	T preferredSourceType( T targetType );
 }

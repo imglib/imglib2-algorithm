@@ -35,20 +35,18 @@ package net.imglib2.algorithm.convolution;
 
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
-import net.imglib2.Localizable;
-import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.loops.LoopBuilder;
+import net.imglib2.loops.IntervalChunks;
 import net.imglib2.parallel.Parallelization;
 import net.imglib2.parallel.TaskExecutor;
 import net.imglib2.parallel.TaskExecutors;
 import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
-import net.imglib2.util.Localizables;
-import net.imglib2.view.Views;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 /**
  * This class can be used to implement a separable convolution. It applies a
@@ -96,32 +94,18 @@ public class LineConvolution< T > implements Convolution<T>
 	@Override
 	public void process( RandomAccessible< ? extends T > source, RandomAccessibleInterval< ? extends T > target )
 	{
-		final RandomAccessibleInterval< ? extends T > sourceInterval = Views.interval( source, requiredSourceInterval( target ) );
-		final long[] sourceMin = Intervals.minAsLongArray( sourceInterval );
-		final long[] targetMin = Intervals.minAsLongArray( target );
+		final Consumer< Interval > convolver = factory.getBlockConvolver( source, target, direction );
 
-		final long[] dim = Intervals.dimensionsAsLongArray( target );
-		dim[ direction ] = 1;
+		final long[] lineStartsMax = target.maxAsLongArray();
+		lineStartsMax[ direction ] = target.min( direction );
+		final Interval lineStarts = new FinalInterval( target.minAsLongArray(), lineStartsMax );
 
-		RandomAccessibleInterval< Localizable > positions = Localizables.randomAccessibleInterval( new FinalInterval( dim ) );
 		TaskExecutor taskExecutor = executor == null ? Parallelization.getTaskExecutor() : TaskExecutors.forExecutorService( executor );
-		LoopBuilder.setImages( positions ).multiThreaded(taskExecutor).forEachChunk(
-				chunk -> {
-
-					final RandomAccess< ? extends T > in = sourceInterval.randomAccess();
-					final RandomAccess< ? extends T > out = target.randomAccess();
-					final Runnable convolver = factory.getConvolver( in, out, direction, target.dimension( direction ) );
-
-					chunk.forEachPixel( position -> {
-						in.setPosition( sourceMin );
-						out.setPosition( targetMin );
-						in.move( position );
-						out.move( position );
-						convolver.run();
-					} );
-
-					return null;
-				}
-		);
+		final List< Interval > chunks = IntervalChunks.chunkInterval( lineStarts, taskExecutor.suggestNumberOfTasks() );
+		taskExecutor.forEach( chunks, chunk -> {
+			final long[] max = chunk.maxAsLongArray();
+			max[ direction ] = target.max( direction );
+			convolver.accept( new FinalInterval( chunk.minAsLongArray(), max ) );
+		} );
 	}
 }
