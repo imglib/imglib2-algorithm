@@ -93,8 +93,8 @@ final class BlockwiseKernelConvolver
 		try
 		{
 			blocks = targetType instanceof DoubleType
-					? convolvedBlocks( ( RandomAccessible ) source, new DoubleType(), ComputationType.DOUBLE, kernels )
-					: convolvedBlocks( ( RandomAccessible ) source, new FloatType(), ComputationType.FLOAT, kernels );
+					? convolvedBlocks( source, new DoubleType(), ComputationType.DOUBLE, kernels )
+					: convolvedBlocks( source, new FloatType(), ComputationType.FLOAT, kernels );
 		}
 		catch ( final IllegalArgumentException e )
 		{
@@ -118,8 +118,9 @@ final class BlockwiseKernelConvolver
 	}
 
 	private static < S extends NativeType< S >, C extends NativeType< C > > BlockSupplier< C > convolvedBlocks(
-			final RandomAccessible< S > source, final C type, final ComputationType computationType, final Kernel1D[] kernels )
+			final RandomAccessible< ? > anySource, final C type, final ComputationType computationType, final Kernel1D[] kernels )
 	{
+		final RandomAccessible< S > source = Cast.unchecked( anySource );
 		final UnaryBlockOperator< S, C > convolve = Convolve
 				.createOperator( type, computationType, ClampType.NONE, kernels )
 				.adaptSourceType( source.getType(), ClampType.NONE );
