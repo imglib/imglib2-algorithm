@@ -39,7 +39,6 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.iterator.LocalizingIntervalIterator;
-import net.imglib2.type.Type;
 
 import java.util.function.Consumer;
 
@@ -49,7 +48,7 @@ import java.util.function.Consumer;
  * exactly this: Convolve one line of the image.
  * <p>
  * All the "boring" stuff is done by {@link LineConvolution}, which takes care
- * of applying {@link LineConvolverFactory} in a multi threaded fashion on an
+ * of applying {@link LineConvolverFactory} in a multithreaded fashion on a
  * complete image.
  */
 public interface LineConvolverFactory< T >
@@ -72,11 +71,11 @@ public interface LineConvolverFactory< T >
 
 	/**
 	 * The {@link Runnable} returned by this method is responsible for
-	 * convolving on line of the image. But it will be reused. After the first
+	 * convolving one line of the image. But it will be reused. After the first
 	 * line is convolved. The {@link RandomAccess}es are moved to the start of
 	 * the next line. And the Runnable is executed again.
 	 * {@link LineConvolution} works with multiple threads.
-	 * {@link #getConvolver} is called once per thread, and the returned
+	 * {@link #getConvolver} is called once per chunk, and the returned
 	 * {@link Runnable} is exclusively used in one thread.
 	 *
 	 * @param in
