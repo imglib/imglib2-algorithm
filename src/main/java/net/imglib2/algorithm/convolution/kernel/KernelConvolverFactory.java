@@ -35,8 +35,12 @@ package net.imglib2.algorithm.convolution.kernel;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
+import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.convolution.LineConvolverFactory;
 import net.imglib2.loops.ClassCopyProvider;
 import net.imglib2.type.NativeType;
@@ -88,6 +92,23 @@ public class KernelConvolverFactory implements LineConvolverFactory< NumericType
 		final ClassCopyProvider< Runnable > provider = getProvider( sourceType, targetType );
 		final List< Class< ? > > key = Arrays.asList( in.getClass(), out.getClass(), sourceType.getClass(), targetType.getClass() );
 		return provider.newInstanceForKey( key, kernel, in, out, d, lineLength );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * If {@code source} can be copied with {@link net.imglib2.blocks.PrimitiveBlocks
+	 * PrimitiveBlocks} and {@code target} is a {@link RealType}, this convolves
+	 * many lines at once with {@link net.imglib2.algorithm.blocks.convolve.Convolve
+	 * Convolve}. Otherwise, it falls back to the per-line convolvers from
+	 * {@link #getConvolver}. Subclasses that override {@link #getConvolver}
+	 * should therefore also override this method.
+	 */
+	@Override
+	public Consumer< Interval > getBlockConvolver( final RandomAccessible< ? extends NumericType< ? > > source, final RandomAccessibleInterval< ? extends NumericType< ? > > target, final int d )
+	{
+		final Consumer< Interval > convolver = BlockwiseKernelConvolver.create( kernel, source, target, d );
+		return convolver != null ? convolver : LineConvolverFactory.super.getBlockConvolver( source, target, d );
 	}
 
 	@Override
