@@ -48,6 +48,7 @@ import net.imglib2.img.list.ListImgFactory;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
@@ -95,6 +96,26 @@ public class BlockwiseKernelConvolverTest
 		assertNotNull( BlockwiseKernelConvolver.create( identity, Views.extendZero( source ), target, 0 ) );
 		new LineConvolution<>( new KernelConvolverFactory( identity ), 0 ).process( Views.extendBorder( source ), target );
 		target.forEach( t -> assertEquals( value, t.get() ) );
+	}
+
+	@Test
+	public void testUnsignedByteBlockwiseMatchesFallback()
+	{
+		final Img< UnsignedByteType > array = ArrayImgs.unsignedBytes( DIMS );
+		long i = 0;
+		for ( final UnsignedByteType t : array )
+			t.set( ( int ) ( i++ * 7919 % 256 ) );
+		final Img< UnsignedByteType > list = new ListImgFactory<>( new UnsignedByteType() ).create( DIMS );
+		LoopBuilder.setImages( array, list ).forEachPixel( ( a, b ) -> b.set( a ) );
+		final Kernel1D kernel = Kernel1D.symmetric( new double[] { 0.4, 0.2, 0.1 } );
+		for ( int d = 0; d < DIMS.length; ++d )
+		{
+			final Img< UnsignedByteType > blockwise = ArrayImgs.unsignedBytes( DIMS );
+			final Img< UnsignedByteType > fallback = ArrayImgs.unsignedBytes( DIMS );
+			new LineConvolution<>( new KernelConvolverFactory( kernel ), d ).process( Views.extendBorder( array ), blockwise );
+			new LineConvolution<>( new KernelConvolverFactory( kernel ), d ).process( Views.extendBorder( list ), fallback );
+			LoopBuilder.setImages( blockwise, fallback ).forEachPixel( ( a, b ) -> assertEquals( b.get(), a.get() ) );
+		}
 	}
 
 	private static void testMatchesDirectConvolution( final Img< DoubleType > source )
