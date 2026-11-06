@@ -41,13 +41,13 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.blocks.BlockAlgoUtils;
 import net.imglib2.algorithm.blocks.BlockSupplier;
 import net.imglib2.algorithm.blocks.ClampType;
 import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.algorithm.blocks.convolve.Convolve;
 import net.imglib2.blocks.PrimitiveBlocks;
-import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.loops.IntervalChunks;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.NativeType;
@@ -64,10 +64,10 @@ import net.imglib2.view.Views;
 /**
  * Convolves blocks of lines with {@link Convolve}, i.e., many lines at once.
  * <p>
- * The source block is copied with {@link PrimitiveBlocks} and convolved in
- * float or double precision. Like {@link ComputationType#AUTO}, this uses
- * float only if it can represent all values of the target type exactly. The
- * result is then written to the target.
+ * The source block is copied with {@link PrimitiveBlocks}, convolved in float
+ * or double precision, and converted to the target type. Like
+ * {@link ComputationType#AUTO}, this uses float only if it can represent all
+ * values of the target type exactly.
  */
 final class BlockwiseKernelConvolver
 {
@@ -98,9 +98,7 @@ final class BlockwiseKernelConvolver
 		final BlockSupplier< ? > blocks;
 		try
 		{
-			blocks = !processAsFloat( ( NativeType< ? > ) targetType )
-					? convolvedBlocks( source, new DoubleType(), ComputationType.DOUBLE, kernels )
-					: convolvedBlocks( source, new FloatType(), ComputationType.FLOAT, kernels );
+			blocks = convolvedBlocks( source, Cast.unchecked( targetType ), kernels );
 		}
 		catch ( final IllegalArgumentException e )
 		{
@@ -122,13 +120,16 @@ final class BlockwiseKernelConvolver
 		};
 	}
 
-	private static < S extends NativeType< S >, C extends NativeType< C > > BlockSupplier< C > convolvedBlocks(
-			final RandomAccessible< ? > anySource, final C type, final ComputationType computationType, final Kernel1D[] kernels )
+	private static < S extends NativeType< S >, T extends NativeType< T > > BlockSupplier< T > convolvedBlocks(
+			final RandomAccessible< ? > anySource, final T targetType, final Kernel1D[] kernels )
 	{
 		final RandomAccessible< S > source = Cast.unchecked( anySource );
-		final UnaryBlockOperator< S, C > convolve = Convolve
-				.createOperator( type, computationType, ClampType.NONE, kernels )
-				.adaptSourceType( source.getType(), ClampType.NONE );
+		final UnaryBlockOperator< ?, ? > op = processAsFloat( targetType )
+				? Convolve.createOperator( new FloatType(), ComputationType.FLOAT, ClampType.NONE, kernels )
+				: Convolve.createOperator( new DoubleType(), ComputationType.DOUBLE, ClampType.NONE, kernels );
+		final UnaryBlockOperator< S, T > convolve = op
+				.adaptSourceType( source.getType(), ClampType.NONE )
+				.adaptTargetType( targetType, ClampType.NONE );
 		return BlockSupplier.of( source, PrimitiveBlocks.OnFallback.FAIL ).andThen( convolve ).threadSafe();
 	}
 
@@ -143,56 +144,41 @@ final class BlockwiseKernelConvolver
 		return pt.equals( FLOAT ) || pt.getByteCount() < FLOAT.getByteCount();
 	}
 
-	private static void convolveBlock( final BlockSupplier< ? > blocks, final Interval block, final RandomAccessibleInterval< ? > target )
+	private static < T extends NativeType< T > > void convolveBlock( final BlockSupplier< T > blocks, final Interval block, final RandomAccessibleInterval< ? > target )
 	{
-		final long[] size = block.dimensionsAsLongArray();
-		final int n = Math.toIntExact( Intervals.numElements( size ) );
-		final RandomAccessibleInterval< ? > targetBlock = Views.interval( target, block );
+		final RandomAccessibleInterval< T > values = BlockAlgoUtils.arrayImg( blocks, block );
+		final RandomAccessibleInterval< T > targetBlock = Views.interval( Cast.unchecked( target ), block );
 		// LoopBuilder compiles one loop per lambda class. Separate lambdas keep
 		// the JIT profiles of the common target types apart. A shared lambda
 		// makes whichever type runs second much slower on Java 8.
-		if ( blocks.getType() instanceof DoubleType )
+		final T type = blocks.getType();
+		if ( type instanceof FloatType )
 		{
-			final double[] data = new double[ n ];
-			blocks.copy( block, data );
-			final RandomAccessibleInterval< DoubleType > values = ArrayImgs.doubles( data, size );
-			if ( target.getType() instanceof DoubleType )
-			{
-				final RandomAccessibleInterval< DoubleType > doubleTarget = Cast.unchecked( targetBlock );
-				LoopBuilder.setImages( values, doubleTarget ).forEachPixel( ( v, t ) -> t.set( v ) );
-			}
-			else
-			{
-				final RandomAccessibleInterval< RealType< ? > > realTarget = Cast.unchecked( targetBlock );
-				LoopBuilder.setImages( values, realTarget ).forEachPixel( ( v, t ) -> t.setReal( v.get() ) );
-			}
+			final RandomAccessibleInterval< FloatType > v = Cast.unchecked( values );
+			final RandomAccessibleInterval< FloatType > t = Cast.unchecked( targetBlock );
+			LoopBuilder.setImages( v, t ).forEachPixel( ( a, b ) -> b.set( a ) );
+		}
+		else if ( type instanceof DoubleType )
+		{
+			final RandomAccessibleInterval< DoubleType > v = Cast.unchecked( values );
+			final RandomAccessibleInterval< DoubleType > t = Cast.unchecked( targetBlock );
+			LoopBuilder.setImages( v, t ).forEachPixel( ( a, b ) -> b.set( a ) );
+		}
+		else if ( type instanceof UnsignedByteType )
+		{
+			final RandomAccessibleInterval< UnsignedByteType > v = Cast.unchecked( values );
+			final RandomAccessibleInterval< UnsignedByteType > t = Cast.unchecked( targetBlock );
+			LoopBuilder.setImages( v, t ).forEachPixel( ( a, b ) -> b.set( a ) );
+		}
+		else if ( type instanceof UnsignedShortType )
+		{
+			final RandomAccessibleInterval< UnsignedShortType > v = Cast.unchecked( values );
+			final RandomAccessibleInterval< UnsignedShortType > t = Cast.unchecked( targetBlock );
+			LoopBuilder.setImages( v, t ).forEachPixel( ( a, b ) -> b.set( a ) );
 		}
 		else
 		{
-			final float[] data = new float[ n ];
-			blocks.copy( block, data );
-			final RandomAccessibleInterval< FloatType > values = ArrayImgs.floats( data, size );
-			final Object targetType = target.getType();
-			if ( targetType instanceof FloatType )
-			{
-				final RandomAccessibleInterval< FloatType > floatTarget = Cast.unchecked( targetBlock );
-				LoopBuilder.setImages( values, floatTarget ).forEachPixel( ( v, t ) -> t.set( v ) );
-			}
-			else if ( targetType instanceof UnsignedByteType )
-			{
-				final RandomAccessibleInterval< UnsignedByteType > u8Target = Cast.unchecked( targetBlock );
-				LoopBuilder.setImages( values, u8Target ).forEachPixel( ( v, t ) -> t.setReal( v.get() ) );
-			}
-			else if ( targetType instanceof UnsignedShortType )
-			{
-				final RandomAccessibleInterval< UnsignedShortType > u16Target = Cast.unchecked( targetBlock );
-				LoopBuilder.setImages( values, u16Target ).forEachPixel( ( v, t ) -> t.setReal( v.get() ) );
-			}
-			else
-			{
-				final RandomAccessibleInterval< RealType< ? > > realTarget = Cast.unchecked( targetBlock );
-				LoopBuilder.setImages( values, realTarget ).forEachPixel( ( v, t ) -> t.setReal( v.get() ) );
-			}
+			LoopBuilder.setImages( values, targetBlock ).forEachPixel( ( a, b ) -> b.set( a ) );
 		}
 	}
 }
