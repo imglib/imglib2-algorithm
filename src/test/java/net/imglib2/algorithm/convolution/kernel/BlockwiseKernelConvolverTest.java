@@ -47,6 +47,7 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.list.ListImgFactory;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
@@ -80,6 +81,20 @@ public class BlockwiseKernelConvolverTest
 	public void testFallbackMatchesDirectConvolution()
 	{
 		testMatchesDirectConvolution( toListImg( createSource() ) );
+	}
+
+	@Test
+	public void testIntTargetIsExact()
+	{
+		// NB: not representable as float, so this needs double precision
+		final int value = 100_000_001;
+		final Img< IntType > source = ArrayImgs.ints( DIMS );
+		source.forEach( t -> t.set( value ) );
+		final Img< IntType > target = ArrayImgs.ints( DIMS );
+		final Kernel1D identity = Kernel1D.symmetric( new double[] { 1 } );
+		assertNotNull( BlockwiseKernelConvolver.create( identity, Views.extendZero( source ), target, 0 ) );
+		new LineConvolution<>( new KernelConvolverFactory( identity ), 0 ).process( Views.extendBorder( source ), target );
+		target.forEach( t -> assertEquals( value, t.get() ) );
 	}
 
 	private static void testMatchesDirectConvolution( final Img< DoubleType > source )

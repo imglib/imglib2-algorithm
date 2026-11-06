@@ -33,6 +33,8 @@
  */
 package net.imglib2.algorithm.convolution.kernel;
 
+import static net.imglib2.type.PrimitiveType.FLOAT;
+
 import java.util.function.Consumer;
 
 import net.imglib2.FinalInterval;
@@ -49,6 +51,7 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.loops.IntervalChunks;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -62,8 +65,9 @@ import net.imglib2.view.Views;
  * Convolves blocks of lines with {@link Convolve}, i.e., many lines at once.
  * <p>
  * The source block is copied with {@link PrimitiveBlocks} and convolved in
- * float (or double, if the target is {@link DoubleType}) precision. The result
- * is then written to the target.
+ * float or double precision. Like {@link ComputationType#AUTO}, this uses
+ * float only if it can represent all values of the target type exactly. The
+ * result is then written to the target.
  */
 final class BlockwiseKernelConvolver
 {
@@ -86,7 +90,7 @@ final class BlockwiseKernelConvolver
 	{
 		final Object sourceType = source.getType();
 		final Object targetType = target.getType();
-		if ( !( sourceType instanceof NativeType ) || !( targetType instanceof RealType ) )
+		if ( !( sourceType instanceof NativeType ) || !( targetType instanceof NativeType ) || !( targetType instanceof RealType ) )
 			return null;
 
 		final Kernel1D[] kernels = new Kernel1D[ target.numDimensions() ];
@@ -94,7 +98,7 @@ final class BlockwiseKernelConvolver
 		final BlockSupplier< ? > blocks;
 		try
 		{
-			blocks = targetType instanceof DoubleType
+			blocks = !processAsFloat( ( NativeType< ? > ) targetType )
 					? convolvedBlocks( source, new DoubleType(), ComputationType.DOUBLE, kernels )
 					: convolvedBlocks( source, new FloatType(), ComputationType.FLOAT, kernels );
 		}
@@ -128,6 +132,17 @@ final class BlockwiseKernelConvolver
 		return BlockSupplier.of( source, PrimitiveBlocks.OnFallback.FAIL ).andThen( convolve ).threadSafe();
 	}
 
+	/**
+	 * Same rule as {@link ComputationType#AUTO} in
+	 * {@link Convolve#createOperator}: float if it represents all values of
+	 * {@code type} exactly, double otherwise.
+	 */
+	private static boolean processAsFloat( final NativeType< ? > type )
+	{
+		final PrimitiveType pt = type.getNativeTypeFactory().getPrimitiveType();
+		return pt.equals( FLOAT ) || pt.getByteCount() < FLOAT.getByteCount();
+	}
+
 	private static void convolveBlock( final BlockSupplier< ? > blocks, final Interval block, final RandomAccessibleInterval< ? > target )
 	{
 		final long[] size = block.dimensionsAsLongArray();
@@ -140,8 +155,17 @@ final class BlockwiseKernelConvolver
 		{
 			final double[] data = new double[ n ];
 			blocks.copy( block, data );
-			final RandomAccessibleInterval< DoubleType > doubleTarget = Cast.unchecked( targetBlock );
-			LoopBuilder.setImages( ArrayImgs.doubles( data, size ), doubleTarget ).forEachPixel( ( v, t ) -> t.set( v ) );
+			final RandomAccessibleInterval< DoubleType > values = ArrayImgs.doubles( data, size );
+			if ( target.getType() instanceof DoubleType )
+			{
+				final RandomAccessibleInterval< DoubleType > doubleTarget = Cast.unchecked( targetBlock );
+				LoopBuilder.setImages( values, doubleTarget ).forEachPixel( ( v, t ) -> t.set( v ) );
+			}
+			else
+			{
+				final RandomAccessibleInterval< RealType< ? > > realTarget = Cast.unchecked( targetBlock );
+				LoopBuilder.setImages( values, realTarget ).forEachPixel( ( v, t ) -> t.setReal( v.get() ) );
+			}
 		}
 		else
 		{

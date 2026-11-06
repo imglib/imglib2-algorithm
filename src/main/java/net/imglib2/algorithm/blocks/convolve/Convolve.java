@@ -187,8 +187,8 @@ public class Convolve
 		case DOUBLE:
 			processAsFloat = false;
 			break;
-		default:
 		case AUTO:
+		default:
 			final PrimitiveType pt = type.getNativeTypeFactory().getPrimitiveType();
 			processAsFloat = pt.equals( FLOAT ) || pt.getByteCount() < FLOAT.getByteCount();
 			break;
