@@ -35,6 +35,7 @@ package net.imglib2.algorithm.convolution.kernel;
 
 import static net.imglib2.type.PrimitiveType.FLOAT;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import net.imglib2.FinalInterval;
@@ -48,13 +49,13 @@ import net.imglib2.algorithm.blocks.ComputationType;
 import net.imglib2.algorithm.blocks.UnaryBlockOperator;
 import net.imglib2.algorithm.blocks.convolve.Convolve;
 import net.imglib2.blocks.PrimitiveBlocks;
+import net.imglib2.loops.ClassCopyProvider;
 import net.imglib2.loops.IntervalChunks;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.PrimitiveType;
+import net.imglib2.type.Type;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Cast;
@@ -105,7 +106,12 @@ final class BlockwiseKernelConvolver
 			// source cannot be copied with PrimitiveBlocks, or its type is not supported
 			return null;
 		}
+		return blockConvolver( blocks, target, d );
+	}
 
+	private static < T extends NativeType< T > > Consumer< Interval > blockConvolver( final BlockSupplier< T > blocks, final RandomAccessibleInterval< ? > target, final int d )
+	{
+		final BiConsumer< T, T > copy = copyAction( blocks.getType() );
 		return block -> {
 			final long[] lineStartsMax = block.maxAsLongArray();
 			lineStartsMax[ d ] = block.min( d );
@@ -115,7 +121,7 @@ final class BlockwiseKernelConvolver
 			{
 				final long[] max = chunk.maxAsLongArray();
 				max[ d ] = block.max( d );
-				convolveBlock( blocks, new FinalInterval( chunk.minAsLongArray(), max ), target );
+				convolveBlock( blocks, copy, new FinalInterval( chunk.minAsLongArray(), max ), target );
 			}
 		};
 	}
@@ -144,41 +150,38 @@ final class BlockwiseKernelConvolver
 		return pt.equals( FLOAT ) || pt.getByteCount() < FLOAT.getByteCount();
 	}
 
-	private static < T extends NativeType< T > > void convolveBlock( final BlockSupplier< T > blocks, final Interval block, final RandomAccessibleInterval< ? > target )
+	private static < T extends NativeType< T > > void convolveBlock( final BlockSupplier< T > blocks, final BiConsumer< T, T > copy, final Interval block, final RandomAccessibleInterval< ? > target )
 	{
 		final RandomAccessibleInterval< T > values = BlockAlgoUtils.arrayImg( blocks, block );
 		final RandomAccessibleInterval< T > targetBlock = Views.interval( Cast.unchecked( target ), block );
-		// LoopBuilder compiles one loop per lambda class. Separate lambdas keep
-		// the JIT profiles of the common target types apart. A shared lambda
-		// makes whichever type runs second much slower on Java 8.
-		final T type = blocks.getType();
-		if ( type instanceof FloatType )
+		LoopBuilder.setImages( values, targetBlock ).forEachPixel( copy );
+	}
+
+	/**
+	 * Copies of {@link CopyAction}, one per target type class.
+	 * <p>
+	 * LoopBuilder compiles one loop per action class. Separate classes keep the
+	 * JIT profiles of the target types apart. A shared action makes whichever
+	 * type runs second much slower on Java 8.
+	 */
+	@SuppressWarnings( "rawtypes" )
+	private static final ClassCopyProvider< BiConsumer > COPY_ACTIONS = new ClassCopyProvider<>( CopyAction.class, BiConsumer.class );
+
+	private static < T extends Type< T > > BiConsumer< T, T > copyAction( final T type )
+	{
+		return Cast.unchecked( COPY_ACTIONS.newInstanceForKey( type.getClass() ) );
+	}
+
+	/**
+	 * Sets the second argument to the first. Public, so that
+	 * {@link ClassCopyProvider} can copy it.
+	 */
+	public static final class CopyAction< T extends Type< T > > implements BiConsumer< T, T >
+	{
+		@Override
+		public void accept( final T source, final T target )
 		{
-			final RandomAccessibleInterval< FloatType > v = Cast.unchecked( values );
-			final RandomAccessibleInterval< FloatType > t = Cast.unchecked( targetBlock );
-			LoopBuilder.setImages( v, t ).forEachPixel( ( a, b ) -> b.set( a ) );
-		}
-		else if ( type instanceof DoubleType )
-		{
-			final RandomAccessibleInterval< DoubleType > v = Cast.unchecked( values );
-			final RandomAccessibleInterval< DoubleType > t = Cast.unchecked( targetBlock );
-			LoopBuilder.setImages( v, t ).forEachPixel( ( a, b ) -> b.set( a ) );
-		}
-		else if ( type instanceof UnsignedByteType )
-		{
-			final RandomAccessibleInterval< UnsignedByteType > v = Cast.unchecked( values );
-			final RandomAccessibleInterval< UnsignedByteType > t = Cast.unchecked( targetBlock );
-			LoopBuilder.setImages( v, t ).forEachPixel( ( a, b ) -> b.set( a ) );
-		}
-		else if ( type instanceof UnsignedShortType )
-		{
-			final RandomAccessibleInterval< UnsignedShortType > v = Cast.unchecked( values );
-			final RandomAccessibleInterval< UnsignedShortType > t = Cast.unchecked( targetBlock );
-			LoopBuilder.setImages( v, t ).forEachPixel( ( a, b ) -> b.set( a ) );
-		}
-		else
-		{
-			LoopBuilder.setImages( values, targetBlock ).forEachPixel( ( a, b ) -> b.set( a ) );
+			target.set( source );
 		}
 	}
 }
