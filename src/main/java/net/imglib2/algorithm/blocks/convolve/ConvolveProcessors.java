@@ -109,7 +109,7 @@ class ConvolveProcessors
 				if ( kernel1D != null )
 				{
 					kernels[ d ] = extractKernel.apply( kernel1D );
-					kernelOffsets[ d ] = safeInt( kernel1D.min() );
+					kernelOffsets[ d ] = safeInt( -kernel1D.max() );
 					kernelSizes[ d ] = safeInt( kernel1D.size() );
 				}
 			}
